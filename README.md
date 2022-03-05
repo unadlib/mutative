@@ -1,2 +1,3 @@
-# usm-vuex-demo
-vue, usm-vuex and  typescript
+# mutative
+
+Efficient creation of immutable state
