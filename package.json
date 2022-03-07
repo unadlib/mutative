@@ -1,0 +1,38 @@
+{
+  "name": "mutative-monorepo",
+  "private": true,
+  "engines": {
+    "node": ">=12.2.0"
+  },
+  "keywords": [
+    "immutable"
+  ],
+  "description": "Efficient creation of immutable state",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "commit": "yarn git-cz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unadlib/mutative.git"
+  },
+  "author": "unadlib",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/unadlib/mutative/issues"
+  },
+  "homepage": "https://github.com/unadlib/mutative#readme",
+  "packageManager": "pnpm@6.32.3",
+  "devDependencies": {
+    "commitizen": "^4.2.4",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.3",
+    "typescript": "^4.6.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  }
+}
