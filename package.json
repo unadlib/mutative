@@ -10,7 +10,7 @@
   "description": "Efficient creation of immutable state",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "commit": "yarn git-cz"
   },
   "repository": {
@@ -25,6 +25,7 @@
   "homepage": "https://github.com/unadlib/mutative#readme",
   "packageManager": "pnpm@6.32.3",
   "devDependencies": {
+    "@types/jest": "^27.4.1",
     "commitizen": "^4.2.4",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
