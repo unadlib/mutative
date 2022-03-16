@@ -85,10 +85,16 @@ function markChanged(proxyDraft: ProxyDraft) {
 
 function finalizeDraft<T>(result: T, property?: string | symbol) {
   const proxyDraft: ProxyDraft = (result as any)[PROXY_DRAFT];
-  Object.keys(proxyDraft.assigned ?? {}).forEach((key) => {
-    proxyDraft.copy![key] = finalizeDraft(proxyDraft.proxy, key);
+  if (proxyDraft.updated && !proxyDraft.copy) {
+    proxyDraft.copy = { ...proxyDraft.current };
+  }
+  Object.keys(proxyDraft.copy ?? {}).forEach((key) => {
+    const subProxyDraft = proxiesMap.get(proxyDraft.current![key]);
+    if (subProxyDraft) {
+      proxyDraft.copy![key] = finalizeDraft(subProxyDraft, key);
+    }
   });
-  return property ? proxyDraft.copy![property] : proxyDraft.copy;
+  return proxyDraft.copy;
 }
 
 export function create<T extends object>(
@@ -98,5 +104,6 @@ export function create<T extends object>(
   changedSet = new WeakSet();
   const draftState = createDraft(initialState);
   mutate(draftState);
+  draftState;
   return finalizeDraft(draftState) as T;
 }

@@ -6,12 +6,13 @@ describe("", () => {
       foo: {
         bar: "str",
       },
-      arr: [
-        {
-          id: "0",
-          text: "text",
-        },
-      ],
+      foobar: {},
+      // arr: [
+      //   {
+      //     id: "0",
+      //     text: "text",
+      //   },
+      // ],
     };
 
     const state = create(data, (draft) => {
@@ -21,6 +22,18 @@ describe("", () => {
       //   text: "new text",
       // });
     });
-    console.log(state);
+    expect(state).toEqual({ foo: { bar: "new str" }, foobar: {} });
+    expect(
+      state !==
+        {
+          foo: {
+            bar: "str",
+          },
+          foobar: {},
+        }
+    ).toBeTruthy();
+    expect(state !== data).toBeTruthy();
+    expect(state.foo !== data.foo).toBeTruthy();
+    expect(state.foobar === data.foobar).toBeTruthy();
   });
 });
