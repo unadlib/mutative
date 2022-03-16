@@ -8,18 +8,41 @@ const enum DraftType {
 interface ProxyDraft {
   type: DraftType;
   updated: boolean;
-  assigned: boolean;
-  parent: any;
+  finalized: boolean;
+  assigned: Record<string | symbol, any> | null;
+  current: any;
+  copy: Record<string | symbol, any> | null;
+  parent: ProxyDraft;
+  proxy: ProxyDraft | null;
 }
 
-const proxiesMap = new WeakMap<object, object>();
+const PROXY_DRAFT: unique symbol = Symbol("proxyDraft");
+const proxiesMap = new WeakMap<object, ProxyDraft>();
 let changedSet: WeakSet<object>;
 
-function get(target: object, key: string | symbol, receiver: any) {
-  return Reflect.get(target, key, receiver);
+function get(target: ProxyDraft, key: string | symbol, receiver: any) {
+  if (key === PROXY_DRAFT) return target;
+  const state = target.copy ?? target.current;
+  const value = state[key];
+  if (typeof value === "object") {
+    const proxyDraft = proxiesMap.get(value);
+    if (!proxiesMap.get(value)) {
+      return createDraft(value, target);
+    } else {
+      return proxyDraft;
+    }
+  }
+  return value;
 }
 
-function set(target: object, key: string | symbol, value: any) {
+function set(target: ProxyDraft, key: string | symbol, value: any) {
+  if (!target.updated) {
+    target.copy = { ...target.current };
+    target.assigned = {};
+    markChanged(target);
+  }
+  target.copy![key] = value;
+  target.assigned![key] = true;
   return true;
 }
 
@@ -31,16 +54,41 @@ function has(target: object, key: string | symbol) {
   return Reflect.has(target, key);
 }
 
-function createDraft<T>(current: T, parent?: any): T {
-  const { proxy, revoke } = Proxy.revocable<any>(current, {
+function createDraft<T extends object>(current: T, parentDraft?: any): T {
+  const proxyDraft: ProxyDraft = {
+    type: DraftType.Object,
+    finalized: false,
+    updated: false,
+    assigned: null,
+    parent: parentDraft,
+    current,
+    copy: null,
+    proxy: null,
+  };
+  const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
     get,
     set,
   });
+  proxyDraft.proxy = proxy;
+  proxiesMap.set(current, proxy);
   return proxy;
 }
 
-function finalizeDraft<T>(result: T) {
-  return result;
+function markChanged(proxyDraft: ProxyDraft) {
+  if (!proxyDraft.updated) {
+    proxyDraft.updated = true;
+    if (proxyDraft.parent) {
+      markChanged(proxyDraft.parent);
+    }
+  }
+}
+
+function finalizeDraft<T>(result: T, property?: string | symbol) {
+  const proxyDraft: ProxyDraft = (result as any)[PROXY_DRAFT];
+  Object.keys(proxyDraft.assigned ?? {}).forEach((key) => {
+    proxyDraft.copy![key] = finalizeDraft(proxyDraft.proxy, key);
+  });
+  return property ? proxyDraft.copy![property] : proxyDraft.copy;
 }
 
 export function create<T extends object>(
@@ -49,7 +97,6 @@ export function create<T extends object>(
 ): T {
   changedSet = new WeakSet();
   const draftState = createDraft(initialState);
-  proxiesMap.set(initialState, draftState);
-  const result = mutate(draftState) as any;
-  return finalizeDraft(result);
+  mutate(draftState);
+  return finalizeDraft(draftState) as T;
 }

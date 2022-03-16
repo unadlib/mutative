@@ -21,5 +21,6 @@ describe("", () => {
       //   text: "new text",
       // });
     });
+    console.log(state);
   });
 });
