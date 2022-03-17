@@ -18,7 +18,6 @@ interface ProxyDraft {
 
 const PROXY_DRAFT: unique symbol = Symbol("proxyDraft");
 const proxiesMap = new WeakMap<object, ProxyDraft>();
-let changedSet: WeakSet<object>;
 
 function get(target: ProxyDraft, key: string | symbol, receiver: any) {
   if (key === PROXY_DRAFT) return target;
@@ -35,13 +34,27 @@ function get(target: ProxyDraft, key: string | symbol, receiver: any) {
   return value;
 }
 
+function isProxyDraft<T extends { [PROXY_DRAFT]: any }>(value: {
+  [PROXY_DRAFT]: any;
+}) {
+  return value && value[PROXY_DRAFT];
+}
+
+function getCopyValue<T extends { [PROXY_DRAFT]: any }>(value: {
+  [PROXY_DRAFT]: any;
+}) {
+  const proxyDraft: ProxyDraft = value[PROXY_DRAFT];
+  proxyDraft.copy ??= { ...proxyDraft.current };
+  return proxyDraft.copy;
+}
+
 function set(target: ProxyDraft, key: string | symbol, value: any) {
   if (!target.updated) {
-    target.copy = { ...target.current };
+    target.copy ??= { ...target.current };
     target.assigned = {};
     markChanged(target);
   }
-  target.copy![key] = value;
+  target.copy![key] = isProxyDraft(value) ? getCopyValue(value) : value;
   target.assigned![key] = true;
   return true;
 }
@@ -83,7 +96,7 @@ function markChanged(proxyDraft: ProxyDraft) {
   }
 }
 
-function finalizeDraft<T>(result: T, property?: string | symbol) {
+function finalizeDraft<T>(result: T) {
   const proxyDraft: ProxyDraft = (result as any)[PROXY_DRAFT];
   if (proxyDraft.updated && !proxyDraft.copy) {
     proxyDraft.copy = { ...proxyDraft.current };
@@ -91,7 +104,7 @@ function finalizeDraft<T>(result: T, property?: string | symbol) {
   Object.keys(proxyDraft.copy ?? {}).forEach((key) => {
     const subProxyDraft = proxiesMap.get(proxyDraft.current![key]);
     if (subProxyDraft) {
-      proxyDraft.copy![key] = finalizeDraft(subProxyDraft, key);
+      proxyDraft.copy![key] = finalizeDraft(subProxyDraft);
     }
   });
   return proxyDraft.copy;
@@ -101,7 +114,6 @@ export function create<T extends object>(
   initialState: T,
   mutate: (draftState: T) => void
 ): T {
-  changedSet = new WeakSet();
   const draftState = createDraft(initialState);
   mutate(draftState);
   draftState;
