@@ -14,7 +14,7 @@ interface ProxyDraft {
   copy: Record<string | symbol, any> | null;
   parent: ProxyDraft;
   proxy: ProxyDraft | null;
-  key: string | symbol | null;
+  key?: string | symbol;
 }
 
 const PROXY_DRAFT: unique symbol = Symbol("proxyDraft");
@@ -29,8 +29,7 @@ function get(target: ProxyDraft, key: string | symbol, receiver: any) {
   if (typeof value === "object") {
     const proxyDraft = proxiesMap.get(value);
     if (!proxyDraft) {
-      target.key = key;
-      target.copy![key] = createDraft(value, target);
+      target.copy![key] = createDraft(value, target, key);
       return target.copy![key];
     } else {
       return proxyDraft;
@@ -58,12 +57,11 @@ function set(target: ProxyDraft, key: string, value: any) {
     target.copy ??= { ...target.current };
     target.assigned = {};
   }
-  target.key = key;
   target.copy![key] = isProxyDraft(value) ? getCopyValue(value) : value;
   target.assigned![key] = true;
   patches ??= []; 
   patches.push([1, [key], value]);
-  makeChange(target.parent, target.copy);
+  makeChange(target);
   return true;
 }
 
@@ -75,7 +73,7 @@ function has(target: object, key: string | symbol) {
   return Reflect.has(target, key);
 }
 
-function createDraft<T extends object>(current: T, parentDraft?: any): T {
+function createDraft<T extends object>(current: T, parentDraft?: any, key?: string | symbol): T {
   const proxyDraft: ProxyDraft = {
     type: DraftType.Object,
     finalized: false,
@@ -85,7 +83,7 @@ function createDraft<T extends object>(current: T, parentDraft?: any): T {
     current,
     copy: null,
     proxy: null,
-    key: null,
+    key,
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
     get,
@@ -96,15 +94,15 @@ function createDraft<T extends object>(current: T, parentDraft?: any): T {
   return proxy;
 }
 
-function makeChange(proxyDraftParent: ProxyDraft, copy?: any) {
-  if (proxyDraftParent) {
-    proxyDraftParent.copy ??= { ...proxyDraftParent.current };
-    if (proxyDraftParent.key) {
-      patches.slice(-1)[0][1].unshift(proxyDraftParent.key);
-      proxyDraftParent.copy![proxyDraftParent.key] = copy;
+function makeChange(proxyDraft: ProxyDraft) {
+  if (proxyDraft.parent) {
+    proxyDraft.parent.copy ??= { ...proxyDraft.parent.current };
+    if (proxyDraft.key) {
+      patches.slice(-1)[0][1].unshift(proxyDraft.key);
+      proxyDraft.parent.copy![proxyDraft.key] = proxyDraft.copy;
     }
-    if (proxyDraftParent.parent) {
-      makeChange(proxyDraftParent.parent, proxyDraftParent.copy);
+    if (proxyDraft.parent.parent) {
+      makeChange(proxyDraft.parent.parent);
     }
   }
 }

@@ -36,4 +36,22 @@ describe("", () => {
     expect(state.foo !== data.foo).toBeTruthy();
     expect(state.foobar === data.foobar).toBeTruthy();
   });
+
+  test("", () => {
+    const data = {
+      foo: {
+        bar: {
+          baz: "baz",
+        },
+      },
+      foobar: {},
+    };
+
+    const state = create(data, (draft) => {
+      const foo = draft.foo;
+      draft.foobar;
+      foo.bar = { baz: "new baz" };
+    });
+    expect(state).toEqual({ foo: { bar: { baz: "new baz" } }, foobar: {} });
+  });
 });
