@@ -14,19 +14,24 @@ interface ProxyDraft {
   copy: Record<string | symbol, any> | null;
   parent: ProxyDraft;
   proxy: ProxyDraft | null;
+  key: string | symbol | null;
 }
 
 const PROXY_DRAFT: unique symbol = Symbol("proxyDraft");
 const proxiesMap = new WeakMap<object, ProxyDraft>();
+let patches: [1 | 2 | 3, (string | number | symbol)[], any][];
 
 function get(target: ProxyDraft, key: string | symbol, receiver: any) {
   if (key === PROXY_DRAFT) return target;
-  const state = target.copy ?? target.current;
+  target.copy ??= { ...target.current };
+  const state = target.copy!;
   const value = state[key];
   if (typeof value === "object") {
     const proxyDraft = proxiesMap.get(value);
-    if (!proxiesMap.get(value)) {
-      return createDraft(value, target);
+    if (!proxyDraft) {
+      target.key = key;
+      target.copy![key] = createDraft(value, target);
+      return target.copy![key];
     } else {
       return proxyDraft;
     }
@@ -48,14 +53,17 @@ function getCopyValue<T extends { [PROXY_DRAFT]: any }>(value: {
   return proxyDraft.copy;
 }
 
-function set(target: ProxyDraft, key: string | symbol, value: any) {
+function set(target: ProxyDraft, key: string, value: any) {
   if (!target.updated) {
     target.copy ??= { ...target.current };
     target.assigned = {};
-    markChanged(target);
   }
+  target.key = key;
   target.copy![key] = isProxyDraft(value) ? getCopyValue(value) : value;
   target.assigned![key] = true;
+  patches ??= []; 
+  patches.push([1, [key], value]);
+  makeChange(target.parent, target.copy);
   return true;
 }
 
@@ -77,6 +85,7 @@ function createDraft<T extends object>(current: T, parentDraft?: any): T {
     current,
     copy: null,
     proxy: null,
+    key: null,
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
     get,
@@ -87,26 +96,21 @@ function createDraft<T extends object>(current: T, parentDraft?: any): T {
   return proxy;
 }
 
-function markChanged(proxyDraft: ProxyDraft) {
-  if (!proxyDraft.updated) {
-    proxyDraft.updated = true;
-    if (proxyDraft.parent) {
-      markChanged(proxyDraft.parent);
+function makeChange(proxyDraftParent: ProxyDraft, copy?: any) {
+  if (proxyDraftParent) {
+    proxyDraftParent.copy ??= { ...proxyDraftParent.current };
+    if (proxyDraftParent.key) {
+      patches.slice(-1)[0][1].unshift(proxyDraftParent.key);
+      proxyDraftParent.copy![proxyDraftParent.key] = copy;
+    }
+    if (proxyDraftParent.parent) {
+      makeChange(proxyDraftParent.parent, proxyDraftParent.copy);
     }
   }
 }
 
 function finalizeDraft<T>(result: T) {
   const proxyDraft: ProxyDraft = (result as any)[PROXY_DRAFT];
-  if (proxyDraft.updated && !proxyDraft.copy) {
-    proxyDraft.copy = { ...proxyDraft.current };
-  }
-  Object.keys(proxyDraft.copy ?? {}).forEach((key) => {
-    const subProxyDraft = proxiesMap.get(proxyDraft.current![key]);
-    if (subProxyDraft) {
-      proxyDraft.copy![key] = finalizeDraft(subProxyDraft);
-    }
-  });
   return proxyDraft.copy;
 }
 
@@ -116,6 +120,5 @@ export function create<T extends object>(
 ): T {
   const draftState = createDraft(initialState);
   mutate(draftState);
-  draftState;
   return finalizeDraft(draftState) as T;
 }
