@@ -27,6 +27,7 @@ type Patches = [Operation, (string | number | symbol)[], any][];
 
 const PROXY_DRAFT: unique symbol = Symbol("proxyDraft");
 const proxiesMap = new WeakMap<object, ProxyDraft>();
+let recoveryList: (() => void)[];
 
 function has(thing: any, prop: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(thing, prop);
@@ -65,6 +66,9 @@ function createGetter(patches?: Patches, inversePatches?: Patches) {
           patches,
           inversePatches,
         });
+        recoveryList.push(() => {
+          target.copy![key] = getValue(target.copy![key]);
+        })
         return target.copy![key];
       } else {
         return proxyDraft;
@@ -84,8 +88,11 @@ function getValue<T extends { [PROXY_DRAFT]: any }>(value: {
   [PROXY_DRAFT]: any;
 }) {
   const proxyDraft: ProxyDraft = value[PROXY_DRAFT];
+  if (!proxyDraft) {
+    return value;
+  }
   proxyDraft.copy ??= { ...proxyDraft.original };
-  return proxyDraft.proxy;
+  return proxyDraft.copy;
 }
 
 function createSetter(patches?: Patches, inversePatches?: Patches) {
@@ -188,13 +195,11 @@ function makeChange(
 }
 
 function finalizeDraft<T>(result: T) {
+  for(const recover of recoveryList) {
+    recover();
+  }
   const proxyDraft: ProxyDraft = (result as any)[PROXY_DRAFT];
   if (!proxyDraft.updated) return proxyDraft.original;
-  Object.keys(proxyDraft.copy!).forEach((key) => {
-    if (isProxyDraft(proxyDraft.copy![key])) {
-      proxyDraft.copy![key] = finalizeDraft(proxyDraft.copy![key]);
-    }
-  })
   return proxyDraft.copy;
 }
 
@@ -209,6 +214,7 @@ export function create<T extends object, O extends boolean = false>(
     enablePatches?: O;
   }
 ) {
+  recoveryList = [];
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
   if (options?.enablePatches) {
