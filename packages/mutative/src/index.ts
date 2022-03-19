@@ -77,15 +77,15 @@ function createGetter(patches?: Patches, inversePatches?: Patches) {
 function isProxyDraft<T extends { [PROXY_DRAFT]: any }>(value: {
   [PROXY_DRAFT]: any;
 }) {
-  return value && value[PROXY_DRAFT];
+  return !!(value && value[PROXY_DRAFT]);
 }
 
-function getCopyValue<T extends { [PROXY_DRAFT]: any }>(value: {
+function getValue<T extends { [PROXY_DRAFT]: any }>(value: {
   [PROXY_DRAFT]: any;
 }) {
   const proxyDraft: ProxyDraft = value[PROXY_DRAFT];
   proxyDraft.copy ??= { ...proxyDraft.original };
-  return proxyDraft.copy;
+  return proxyDraft.proxy;
 }
 
 function createSetter(patches?: Patches, inversePatches?: Patches) {
@@ -95,7 +95,7 @@ function createSetter(patches?: Patches, inversePatches?: Patches) {
       target.assigned = {};
     }
     const previousState = target.copy![key];
-    target.copy![key] = isProxyDraft(value) ? getCopyValue(value) : value;
+    target.copy![key] = isProxyDraft(value) ? getValue(value) : value;
     target.assigned![key] = true;
     target.updated = true;
     patches?.push([Operation.Add, [key], value]);
@@ -190,6 +190,11 @@ function makeChange(
 function finalizeDraft<T>(result: T) {
   const proxyDraft: ProxyDraft = (result as any)[PROXY_DRAFT];
   if (!proxyDraft.updated) return proxyDraft.original;
+  Object.keys(proxyDraft.copy!).forEach((key) => {
+    if (isProxyDraft(proxyDraft.copy![key])) {
+      proxyDraft.copy![key] = finalizeDraft(proxyDraft.copy![key]);
+    }
+  })
   return proxyDraft.copy;
 }
 

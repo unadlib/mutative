@@ -48,7 +48,44 @@ describe("base", () => {
   test("object case2", () => {
     const d = { e: 1 };
     const baseState = { a: { b: { c: { d } } }, f: { d } };
-    const { state, inversePatches, patches } = create(baseState, (draft) => {
+    const { state } = create(baseState, (draft) => {
+      const a = draft.a;
+      // @ts-ignore
+      draft.x = a;
+    });
+    expect(state).toEqual({
+      a: {
+        b: {
+          c: {
+            d: {
+              e: 1,
+            },
+          },
+        },
+      },
+      f: {
+        d: {
+          e: 1,
+        },
+      },
+      x: {
+        b: {
+          c: {
+            d: {
+              e: 1,
+            },
+          },
+        },
+      },
+    });
+    // @ts-ignore
+    expect(state.x === state.a).toBeTruthy();
+  });
+
+  test("object case3", () => {
+    const d = { e: 1 };
+    const baseState = { a: { b: { c: { d } } }, f: { d } };
+    const { state } = create(baseState, (draft) => {
       const a = draft.a;
       // @ts-ignore
       draft.x = a;
@@ -83,5 +120,7 @@ describe("base", () => {
         },
       },
     });
+    // @ts-ignore
+    expect(state.x === state.a).toBeTruthy();
   });
 });
