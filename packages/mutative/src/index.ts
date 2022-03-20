@@ -5,6 +5,30 @@ const enum DraftType {
   Set = "set",
 }
 
+const mutableArrayMethods: (keyof Array<any>)[] = [
+  'copyWithin',
+  'fill',
+  'pop',
+  'push',
+  'reverse',
+  'shift',
+  'splice',
+  'unshift',
+];
+// Exclude `sort` method: Its argument can be a sort callback, so the operation patch cannot be serialized correctly.
+
+const mutableMapMethods: (keyof Map<any, any>)[] = [
+  'clear',
+  'delete',
+  'set'
+];
+
+const mutableSetMethods: (keyof Set<any>)[] = [
+  'clear',
+  'delete',
+  'add'
+];
+
 interface ProxyDraft {
   type: DraftType;
   updated: boolean;
@@ -88,9 +112,7 @@ function isProxyDraft<T extends { [PROXY_DRAFT]: any }>(value: T) {
   return !!(value && value[PROXY_DRAFT]);
 }
 
-function getValue<T extends { [PROXY_DRAFT]: any }>(value: {
-  [PROXY_DRAFT]: any;
-}) {
+function getValue<T extends { [PROXY_DRAFT]: any }>(value:  T) {
   const proxyDraft: ProxyDraft = value[PROXY_DRAFT];
   if (!proxyDraft) {
     return value;
@@ -109,8 +131,8 @@ function createSetter(patches?: Patches, inversePatches?: Patches) {
     target.copy![key] = isProxyDraft(value) ? getValue(value) : value;
     target.assigned![key] = true;
     target.updated = true;
-    patches?.push([Operation.Add, [key], value]);
-    inversePatches?.push([Operation.Add, [key], previousState]);
+    patches?.push([Operation.Replace, [key], value]);
+    inversePatches?.push([Operation.Replace, [key], previousState]);
     makeChange(target, patches, inversePatches);
     return true;
   };
