@@ -23,7 +23,11 @@ const enum Operation {
   Replace,
 }
 
-type Patches = [Operation, (string | number | symbol)[], any][];
+type Patches = (
+  | [Operation.Add, (string | number | symbol)[], any]
+  | [Operation.Remove, (string | number | symbol)[]]
+  | [Operation.Replace, (string | number | symbol)[], any]
+)[];
 
 const PROXY_DRAFT: unique symbol = Symbol("proxyDraft");
 const proxiesMap = new WeakMap<object, ProxyDraft>();
@@ -67,8 +71,10 @@ function createGetter(patches?: Patches, inversePatches?: Patches) {
           inversePatches,
         });
         recoveryList.push(() => {
-          target.copy![key] = getValue(target.copy![key]);
-        })
+          if (isProxyDraft(target.copy![key])) {
+            target.copy![key] = getValue(target.copy![key]);
+          }
+        });
         return target.copy![key];
       } else {
         return proxyDraft;
@@ -78,9 +84,7 @@ function createGetter(patches?: Patches, inversePatches?: Patches) {
   };
 }
 
-function isProxyDraft<T extends { [PROXY_DRAFT]: any }>(value: {
-  [PROXY_DRAFT]: any;
-}) {
+function isProxyDraft<T extends { [PROXY_DRAFT]: any }>(value: T) {
   return !!(value && value[PROXY_DRAFT]);
 }
 
@@ -140,28 +144,53 @@ function createDraft<T extends object>({
     proxy: null,
     key,
   };
+  // TODO: handle revoke
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
     get: createGetter(patches, inversePatches),
     set: createSetter(patches, inversePatches),
-    has(proxyDraft, prop) {
-      return prop in latest(proxyDraft);
+    has(target: ProxyDraft, key: string | symbol) {
+      return key in latest(target);
     },
-    ownKeys(proxyDraft) {
-      return Reflect.ownKeys(latest(proxyDraft));
+    ownKeys(target: ProxyDraft) {
+      return Reflect.ownKeys(latest(target));
     },
-    getOwnPropertyDescriptor(proxyDraft, key) {
-      const owner = latest(proxyDraft);
-      const desc = Reflect.getOwnPropertyDescriptor(owner, key);
-      if (!desc) return desc;
+    getOwnPropertyDescriptor(target: ProxyDraft, key: string | symbol) {
+      const owner = latest(target);
+      const descriptor = Reflect.getOwnPropertyDescriptor(owner, key);
+      if (!descriptor) return descriptor;
       return {
         writable: true,
-        configurable: proxyDraft.type !== DraftType.Array || key !== "length",
-        enumerable: desc.enumerable,
+        configurable: target.type !== DraftType.Array || key !== "length",
+        enumerable: descriptor.enumerable,
         value: owner[key],
       };
     },
-    getPrototypeOf(proxyDraft) {
-      return Reflect.getPrototypeOf(proxyDraft.original);
+    getPrototypeOf(target: ProxyDraft) {
+      return Reflect.getPrototypeOf(target.original);
+    },
+    setPrototypeOf(target: ProxyDraft, value: object | null) {
+      throw new Error("Cannot set prototype on draft");
+    },
+    defineProperty(
+      target: ProxyDraft,
+      key: string | symbol,
+      descriptor: PropertyDescriptor
+    ) {
+      throw new Error("Cannot define property on draft");
+    },
+    deleteProperty(target: ProxyDraft, key: string | symbol) {
+      if (!target.updated) {
+        target.copy ??= { ...target.original };
+        target.assigned = {};
+      }
+      const previousState = target.copy![key];
+      delete target.copy![key];
+      delete target.assigned![key];
+      target.updated = true;
+      patches?.push([Operation.Remove, [key]]);
+      inversePatches?.push([Operation.Replace, [key], previousState]);
+      makeChange(target, patches, inversePatches);
+      return true;
     },
   });
   proxyDraft.proxy = proxy;
@@ -195,7 +224,7 @@ function makeChange(
 }
 
 function finalizeDraft<T>(result: T) {
-  for(const recover of recoveryList) {
+  for (const recover of recoveryList) {
     recover();
   }
   const proxyDraft: ProxyDraft = (result as any)[PROXY_DRAFT];
@@ -204,8 +233,8 @@ function finalizeDraft<T>(result: T) {
 }
 
 type Result<T, O extends boolean> = O extends true
-? { state: T; patches: Patches; inversePatches: Patches }
-: { state: T; patches: undefined; inversePatches: undefined };
+  ? { state: T; patches: Patches; inversePatches: Patches }
+  : { state: T; patches: undefined; inversePatches: undefined };
 
 export function create<T extends object, O extends boolean = false>(
   initialState: T,
