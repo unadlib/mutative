@@ -6,28 +6,20 @@ const enum DraftType {
 }
 
 const mutableArrayMethods: (keyof Array<any>)[] = [
-  'copyWithin',
-  'fill',
-  'pop',
-  'push',
-  'reverse',
-  'shift',
-  'splice',
-  'unshift',
+  "copyWithin",
+  "fill",
+  "pop",
+  "push",
+  "reverse",
+  "shift",
+  "splice",
+  "unshift",
 ];
 // Exclude `sort` method: Its argument can be a sort callback, so the operation patch cannot be serialized correctly.
 
-const mutableMapMethods: (keyof Map<any, any>)[] = [
-  'clear',
-  'delete',
-  'set'
-];
+const mutableMapMethods: (keyof Map<any, any>)[] = ["clear", "delete", "set"];
 
-const mutableSetMethods: (keyof Set<any>)[] = [
-  'clear',
-  'delete',
-  'add'
-];
+const mutableSetMethods: (keyof Set<any>)[] = ["clear", "delete", "add"];
 
 interface ProxyDraft {
   type: DraftType;
@@ -55,7 +47,6 @@ type Patches = (
 
 const PROXY_DRAFT: unique symbol = Symbol("proxyDraft");
 const proxiesMap = new WeakMap<object, ProxyDraft>();
-let recoveryList: (() => void)[];
 
 function has(thing: any, prop: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(thing, prop);
@@ -75,7 +66,11 @@ function getDescriptor(
   }
 }
 
-function createGetter(patches?: Patches, inversePatches?: Patches) {
+function createGetter(
+  patches?: Patches,
+  inversePatches?: Patches,
+  finalities: (() => void)[] = []
+) {
   return function get(target: ProxyDraft, key: string | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
     target.copy ??= { ...target.original };
@@ -93,8 +88,9 @@ function createGetter(patches?: Patches, inversePatches?: Patches) {
           key,
           patches,
           inversePatches,
+          finalities,
         });
-        recoveryList.push(() => {
+        finalities.unshift(() => {
           if (isProxyDraft(target.copy![key])) {
             target.copy![key] = getValue(target.copy![key]);
           }
@@ -112,7 +108,7 @@ function isProxyDraft<T extends { [PROXY_DRAFT]: any }>(value: T) {
   return !!(value && value[PROXY_DRAFT]);
 }
 
-function getValue<T extends { [PROXY_DRAFT]: any }>(value:  T) {
+function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
   const proxyDraft: ProxyDraft = value[PROXY_DRAFT];
   if (!proxyDraft) {
     return value;
@@ -121,7 +117,10 @@ function getValue<T extends { [PROXY_DRAFT]: any }>(value:  T) {
   return proxyDraft.copy;
 }
 
-function createSetter(patches?: Patches, inversePatches?: Patches) {
+function createSetter(
+  patches?: Patches,
+  inversePatches?: Patches,
+) {
   return function set(target: ProxyDraft, key: string, value: any) {
     if (!target.updated) {
       target.copy ??= { ...target.original };
@@ -148,8 +147,10 @@ function createDraft<T extends object>({
   key,
   patches,
   inversePatches,
+  finalities,
 }: {
   original: T;
+  finalities: (() => void)[];
   parentDraft?: any;
   key?: string | symbol;
   patches?: Patches;
@@ -166,9 +167,8 @@ function createDraft<T extends object>({
     proxy: null,
     key,
   };
-  // TODO: handle revoke
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
-    get: createGetter(patches, inversePatches),
+    get: createGetter(patches, inversePatches, finalities),
     set: createSetter(patches, inversePatches),
     has(target: ProxyDraft, key: string | symbol) {
       return key in latest(target);
@@ -215,6 +215,7 @@ function createDraft<T extends object>({
       return true;
     },
   });
+  finalities.unshift(revoke);
   proxyDraft.proxy = proxy;
   proxiesMap.set(original, proxy);
   return proxy;
@@ -245,11 +246,11 @@ function makeChange(
   }
 }
 
-function finalizeDraft<T>(result: T) {
-  for (const recover of recoveryList) {
-    recover();
-  }
+function finalizeDraft<T>(result: T, finalities: (() => void)[]) {
   const proxyDraft: ProxyDraft = (result as any)[PROXY_DRAFT];
+  for (const finalize of finalities) {
+    finalize();
+  }
   if (!proxyDraft.updated) return proxyDraft.original;
   return proxyDraft.copy;
 }
@@ -265,7 +266,7 @@ export function create<T extends object, O extends boolean = false>(
     enablePatches?: O;
   }
 ) {
-  recoveryList = [];
+  const finalities: (() => void)[] = [];
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
   if (options?.enablePatches) {
@@ -277,9 +278,10 @@ export function create<T extends object, O extends boolean = false>(
     parentDraft: null,
     patches,
     inversePatches,
+    finalities,
   });
   mutate(draftState);
-  const state = finalizeDraft(draftState) as T;
+  const state = finalizeDraft(draftState, finalities) as T;
   return {
     state,
     patches,

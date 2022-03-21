@@ -37,9 +37,11 @@ describe("base", () => {
       },
     };
 
-    const { state } = create(data, (draft) => {
+    const { state, inversePatches, patches } = create(data, (draft) => {
       // @ts-ignore
       delete draft.foo.bar;
+    }, {
+      enablePatches: true,
     });
     expect(state).toEqual({ foo: {}, foobar: { bar: "str" } });
     expect(
