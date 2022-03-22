@@ -5,9 +5,10 @@ const enum DraftType {
   Set = "set",
 }
 
-const mutableArrayMethods: (keyof Array<any>)[] = [
-  "copyWithin",
-  "fill",
+const mutableArrayMethods: string[] = [
+  // "copyWithin",
+  // "fill",
+  // "sort",
   "pop",
   "push",
   "reverse",
@@ -20,6 +21,8 @@ const mutableArrayMethods: (keyof Array<any>)[] = [
 const mutableMapMethods: (keyof Map<any, any>)[] = ["clear", "delete", "set"];
 
 const mutableSetMethods: (keyof Set<any>)[] = ["clear", "delete", "add"];
+
+const mutableObjectMethods = ["delete", "set"];
 
 interface ProxyDraft {
   type: DraftType;
@@ -34,16 +37,19 @@ interface ProxyDraft {
 }
 
 const enum Operation {
+  Delete,
+  Set,
+  Clear,
   Add,
-  Remove,
-  Replace,
+  Pop,
+  Push,
+  Reverse,
+  Shift,
+  Splice,
+  Unshift,
 }
 
-type Patches = (
-  | [Operation.Add, (string | number | symbol)[], any]
-  | [Operation.Remove, (string | number | symbol)[]]
-  | [Operation.Replace, (string | number | symbol)[], any]
-)[];
+type Patches = [Operation, (string | number | symbol)[], any[]][];
 
 const PROXY_DRAFT: unique symbol = Symbol("proxyDraft");
 const proxiesMap = new WeakMap<object, ProxyDraft>();
@@ -73,10 +79,35 @@ function createGetter(
 ) {
   return function get(target: ProxyDraft, key: string | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
-    target.copy ??= { ...target.original };
+    if (Array.isArray(target.original)) {
+      target.copy ??= Array.prototype.concat.call(target.original);
+    } else {
+      target.copy ??= { ...target.original };
+    }
     const state = target.copy!;
     const value = state[key];
     if (!has(state, key)) {
+      if (
+        Array.isArray(state) &&
+        typeof key === "string" &&
+        mutableArrayMethods.includes(key)
+      ) {
+        return function push(...args: any[]) {
+          if (!target.updated) {
+            target.assigned = {};
+          }
+          target.assigned![key] = true;
+          target.updated = true;
+          patches?.push([Operation.Push, [key], args]);
+          inversePatches?.push([
+            Operation.Shift,
+            [key],
+            [state.length, args.length],
+          ]);
+          makeChange(target, patches, inversePatches);
+          return Array.prototype.push.apply(state, args);
+        };
+      }
       return getDescriptor(state, key)?.value;
     }
     if (typeof value === "object" && !isProxyDraft(value)) {
@@ -117,21 +148,22 @@ function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
   return proxyDraft.copy;
 }
 
-function createSetter(
-  patches?: Patches,
-  inversePatches?: Patches,
-) {
+function createSetter(patches?: Patches, inversePatches?: Patches) {
   return function set(target: ProxyDraft, key: string, value: any) {
     if (!target.updated) {
-      target.copy ??= { ...target.original };
+      if (Array.isArray(target.original)) {
+        target.copy ??= Array.prototype.concat.call(target.original);
+      } else {
+        target.copy ??= { ...target.original };
+      }
       target.assigned = {};
     }
     const previousState = target.copy![key];
     target.copy![key] = isProxyDraft(value) ? getValue(value) : value;
     target.assigned![key] = true;
     target.updated = true;
-    patches?.push([Operation.Replace, [key], value]);
-    inversePatches?.push([Operation.Replace, [key], previousState]);
+    patches?.push([Operation.Set, [key], [value]]);
+    inversePatches?.push([Operation.Set, [key], [previousState]]);
     makeChange(target, patches, inversePatches);
     return true;
   };
@@ -209,8 +241,8 @@ function createDraft<T extends object>({
       delete target.copy![key];
       delete target.assigned![key];
       target.updated = true;
-      patches?.push([Operation.Remove, [key]]);
-      inversePatches?.push([Operation.Replace, [key], previousState]);
+      patches?.push([Operation.Delete, [key], []]);
+      inversePatches?.push([Operation.Set, [key], [previousState]]);
       makeChange(target, patches, inversePatches);
       return true;
     },

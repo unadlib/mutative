@@ -37,12 +37,16 @@ describe("base", () => {
       },
     };
 
-    const { state, inversePatches, patches } = create(data, (draft) => {
-      // @ts-ignore
-      delete draft.foo.bar;
-    }, {
-      enablePatches: true,
-    });
+    const { state, inversePatches, patches } = create(
+      data,
+      (draft) => {
+        // @ts-ignore
+        delete draft.foo.bar;
+      },
+      {
+        enablePatches: true,
+      }
+    );
     expect(state).toEqual({ foo: {}, foobar: { bar: "str" } });
     expect(
       state !==
@@ -119,5 +123,34 @@ describe("base", () => {
       draft[0].c = { i: 0 };
     });
     console.timeEnd();
+  });
+
+  test("base array", () => {
+    const data = {
+      list: ["foo"],
+      bar: {},
+    };
+
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.list.push("bar");
+        // Array.prototype.push.call(draft.list, 'bar');
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({ list: ["foo", "bar"], bar: {} });
+    expect(
+      state !==
+        {
+          list: ["foo", "bar"],
+          bar: {},
+        }
+    ).toBeTruthy();
+    expect(state !== data).toBeTruthy();
+    expect(state.list !== data.list).toBeTruthy();
+    expect(state.bar === data.bar).toBeTruthy();
   });
 });
