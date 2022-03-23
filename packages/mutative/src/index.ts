@@ -239,7 +239,9 @@ function createDraft<T extends object>({
       }
       const previousState = target.copy![key];
       delete target.copy![key];
-      delete target.assigned![key];
+      if (target.assigned) {
+        delete target.assigned![key];
+      }
       target.updated = true;
       patches?.push([Operation.Delete, [key], []]);
       inversePatches?.push([Operation.Set, [key], [previousState]]);

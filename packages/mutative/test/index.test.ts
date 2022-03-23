@@ -30,7 +30,9 @@ describe("base", () => {
   test("delete key in object", () => {
     const data = {
       foo: {
-        bar: "str",
+        bar: {
+          b: "str"
+        },
       },
       foobar: {
         bar: "str",
@@ -40,6 +42,7 @@ describe("base", () => {
     const { state, inversePatches, patches } = create(
       data,
       (draft) => {
+        draft.foo.bar.b = 'new str';
         // @ts-ignore
         delete draft.foo.bar;
       },
