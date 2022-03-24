@@ -13,8 +13,8 @@ const mutableArrayMethods: string[] = [
   "push",
   "reverse",
   "shift",
-  "splice",
   "unshift",
+  "splice",
 ];
 // Exclude `sort` method: Its argument can be a sort callback, so the operation patch cannot be serialized correctly.
 
@@ -92,21 +92,88 @@ function createGetter(
         typeof key === "string" &&
         mutableArrayMethods.includes(key)
       ) {
-        return function push(...args: any[]) {
-          if (!target.updated) {
-            target.assigned = {};
-          }
-          target.assigned![key] = true;
-          target.updated = true;
-          patches?.push([Operation.Push, [key], args]);
-          inversePatches?.push([
-            Operation.Shift,
-            [key],
-            [state.length, args.length],
-          ]);
-          makeChange(target, patches, inversePatches);
-          return Array.prototype.push.apply(state, args);
-        };
+        return {
+          pop() {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Array.prototype.pop.apply(state);
+            target.updated = true;
+            const [last] = state.slice(-1);
+            patches?.push([Operation.Pop, [key], []]);
+            inversePatches?.push([Operation.Push, [key], [last]]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
+          push(...args: any[]) {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Array.prototype.push.apply(state, args);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Push, [key], args]);
+            inversePatches?.push([
+              Operation.Shift,
+              [key],
+              [state.length, args.length],
+            ]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
+          reverse() {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Array.prototype.reverse.apply(state);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Reverse, [key], []]);
+            inversePatches?.push([Operation.Reverse, [key], []]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
+          shift() {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const [first] = state;
+            const result = Array.prototype.shift.apply(state);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Shift, [key], []]);
+            inversePatches?.push([Operation.Unshift, [key], [first]]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
+          unshift(...args: any[]) {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Array.prototype.unshift.apply(state, args);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Unshift, [key], [args]]);
+            inversePatches?.push([Operation.Splice, [key], [0, args.length]]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
+          splice(...args: any) {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Array.prototype.splice.apply(state, args);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Splice, [key], [args]]);
+            // TODO: inverse patches
+            // const [startIndex, deleteCount] = args;
+            // const count = args.length - 2 - deleteCount;
+            // inversePatches?.push([Operation.Splice, [key], [startIndex, , args]]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
+        }[key];
       }
       return getDescriptor(state, key)?.value;
     }
@@ -163,7 +230,20 @@ function createSetter(patches?: Patches, inversePatches?: Patches) {
     target.assigned![key] = true;
     target.updated = true;
     patches?.push([Operation.Set, [key], [value]]);
-    inversePatches?.push([Operation.Set, [key], [previousState]]);
+    if (Array.isArray(target.original)) {
+      const numberKey = Number(key);
+      if (!isNaN(numberKey) && numberKey >= target.original.length) {
+        inversePatches?.push([
+          Operation.Set,
+          ["length"],
+          [target.original.length],
+        ]);
+      } else {
+        inversePatches?.push([Operation.Set, [key], [previousState]]);
+      }
+    } else {
+      inversePatches?.push([Operation.Set, [key], [previousState]]);
+    }
     makeChange(target, patches, inversePatches);
     return true;
   };
@@ -262,7 +342,13 @@ function makeChange(
 ) {
   if (proxyDraft.parent) {
     proxyDraft.parent.updated = true;
-    proxyDraft.parent.copy ??= { ...proxyDraft.parent.original };
+    if (Array.isArray(proxyDraft.parent.original)) {
+      proxyDraft.parent.copy ??= Array.prototype.concat.call(
+        proxyDraft.parent.original
+      );
+    } else {
+      proxyDraft.parent.copy ??= { ...proxyDraft.parent.original };
+    }
     if (proxyDraft.key) {
       if (patches) {
         const [last] = patches.slice(-1);
@@ -277,6 +363,8 @@ function makeChange(
     if (proxyDraft.parent.parent) {
       makeChange(proxyDraft.parent.parent);
     }
+  } else {
+    proxyDraft.updated = true;
   }
 }
 

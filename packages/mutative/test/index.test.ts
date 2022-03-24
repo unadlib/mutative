@@ -22,16 +22,16 @@ describe("base", () => {
           foobar: {},
         }
     ).toBeTruthy();
-    expect(state !== data).toBeTruthy();
-    expect(state.foo !== data.foo).toBeTruthy();
-    expect(state.foobar === data.foobar).toBeTruthy();
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
   });
 
   test("delete key in object", () => {
     const data = {
       foo: {
         bar: {
-          b: "str"
+          b: "str",
         },
       },
       foobar: {
@@ -42,7 +42,7 @@ describe("base", () => {
     const { state, inversePatches, patches } = create(
       data,
       (draft) => {
-        draft.foo.bar.b = 'new str';
+        draft.foo.bar.b = "new str";
         // @ts-ignore
         delete draft.foo.bar;
       },
@@ -155,5 +155,62 @@ describe("base", () => {
     expect(state !== data).toBeTruthy();
     expect(state.list !== data.list).toBeTruthy();
     expect(state.bar === data.bar).toBeTruthy();
+  });
+
+  test("base array set", () => {
+    const data = {
+      list: ["foo"],
+      bar: {},
+    };
+
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.list[1] = "bar";
+      },
+      {
+        enablePatches: true,
+      }
+    );
+    expect(state).toEqual({ list: ["foo", "bar"], bar: {} });
+    expect(
+      state !==
+        {
+          list: ["foo", "bar"],
+          bar: {},
+        }
+    ).toBeTruthy();
+    expect(state !== data).toBeTruthy();
+    expect(state.list !== data.list).toBeTruthy();
+    expect(state.bar === data.bar).toBeTruthy();
+  });
+
+  test("base array set with object", () => {
+    const data = {
+      list: [{ a: 1 }, { a: 2 }, { a: 3 }],
+      bar: {},
+    };
+
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.list[1].a = 4;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({ list: [{ a: 1 }, { a: 4 }, { a: 3 }], bar: {} });
+    expect(
+      state !==
+        {
+          list: [{ a: 1 }, { a: 4 }, { a: 3 }],
+          bar: {},
+        }
+    ).toBeTruthy();
+    expect(state !== data).toBeTruthy();
+    expect(state.list !== data.list).toBeTruthy();
+    expect(state.bar === data.bar).toBeTruthy();
+    expect(state.list[0] === data.list[0]).toBeTruthy();
   });
 });

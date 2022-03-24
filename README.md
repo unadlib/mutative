@@ -12,21 +12,10 @@ const initState = {
   list: [{ id: '0', text: 'todo' }]
 };
 
-const state = create(initState, (draft) => {
+const { state } = create(initState, (draft) => {
   //
 })
-
-const [state, patches, inversePatches] = createWithPatches(initState, (draft) => {
-  //
-});
-
-const state = applyPatches(initState, patches);
-
-// enableFreeze
-// enableMapSet?
-// Record&Tuple
 ```
-
 ### Features
 
 - Performance
