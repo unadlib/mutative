@@ -8,7 +8,7 @@
   "scripts": {
     "test": "jest",
     "clean": "rimraf dist",
-    "test:perf": "cd __performance_tests__ && ts-node add-data.ts && ts-node todo.ts && ts-node incremental.ts",
+    "test:perf": "cd test/performance && ts-node add-data.ts && ts-node todo.ts && ts-node incremental.ts",
     "build": "yarn clean && tsc && yarn build:prod && yarn build:dev",
     "build:prod": "NODE_ENV=production rollup --config",
     "build:dev": "NODE_ENV=development rollup --config",
