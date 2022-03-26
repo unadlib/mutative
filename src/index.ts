@@ -1,28 +1,28 @@
 const enum DraftType {
-  Object = "object",
-  Array = "array",
-  Map = "map",
-  Set = "set",
+  Object = 'object',
+  Array = 'array',
+  Map = 'map',
+  Set = 'set',
 }
 
 const mutableArrayMethods: string[] = [
   // "copyWithin",
   // "fill",
   // "sort",
-  "pop",
-  "push",
-  "reverse",
-  "shift",
-  "unshift",
-  "splice",
+  'pop',
+  'push',
+  'reverse',
+  'shift',
+  'unshift',
+  'splice',
 ];
 // Exclude `sort` method: Its argument can be a sort callback, so the operation patch cannot be serialized correctly.
 
-const mutableMapMethods: (keyof Map<any, any>)[] = ["clear", "delete", "set"];
+const mutableMapMethods: (keyof Map<any, any>)[] = ['clear', 'delete', 'set'];
 
-const mutableSetMethods: (keyof Set<any>)[] = ["clear", "delete", "add"];
+const mutableSetMethods: (keyof Set<any>)[] = ['clear', 'delete', 'add'];
 
-const mutableObjectMethods = ["delete", "set"];
+const mutableObjectMethods = ['delete', 'set'];
 
 interface ProxyDraft {
   type: DraftType;
@@ -51,7 +51,7 @@ const enum Operation {
 
 type Patches = [Operation, (string | number | symbol)[], any[]][];
 
-const PROXY_DRAFT: unique symbol = Symbol("proxyDraft");
+const PROXY_DRAFT: unique symbol = Symbol('proxyDraft');
 const proxiesMap = new WeakMap<object, ProxyDraft>();
 
 function has(thing: any, prop: PropertyKey): boolean {
@@ -89,7 +89,7 @@ function createGetter(
     if (!has(state, key)) {
       if (
         Array.isArray(state) &&
-        typeof key === "string" &&
+        typeof key === 'string' &&
         mutableArrayMethods.includes(key)
       ) {
         return {
@@ -177,7 +177,7 @@ function createGetter(
       }
       return getDescriptor(state, key)?.value;
     }
-    if (typeof value === "object" && !isProxyDraft(value)) {
+    if (typeof value === 'object' && !isProxyDraft(value)) {
       const proxyDraft = proxiesMap.get(value);
       if (!proxyDraft) {
         target.copy![key] = createDraft({
@@ -235,7 +235,7 @@ function createSetter(patches?: Patches, inversePatches?: Patches) {
       if (!isNaN(numberKey) && numberKey >= target.original.length) {
         inversePatches?.push([
           Operation.Set,
-          ["length"],
+          ['length'],
           [target.original.length],
         ]);
       } else {
@@ -294,7 +294,7 @@ function createDraft<T extends object>({
       if (!descriptor) return descriptor;
       return {
         writable: true,
-        configurable: target.type !== DraftType.Array || key !== "length",
+        configurable: target.type !== DraftType.Array || key !== 'length',
         enumerable: descriptor.enumerable,
         value: owner[key],
       };
@@ -303,14 +303,14 @@ function createDraft<T extends object>({
       return Reflect.getPrototypeOf(target.original);
     },
     setPrototypeOf(target: ProxyDraft, value: object | null) {
-      throw new Error("Cannot set prototype on draft");
+      throw new Error('Cannot set prototype on draft');
     },
     defineProperty(
       target: ProxyDraft,
       key: string | symbol,
       descriptor: PropertyDescriptor
     ) {
-      throw new Error("Cannot define property on draft");
+      throw new Error('Cannot define property on draft');
     },
     deleteProperty(target: ProxyDraft, key: string | symbol) {
       if (!target.updated) {
@@ -381,6 +381,9 @@ type Result<T, O extends boolean> = O extends true
   ? { state: T; patches: Patches; inversePatches: Patches }
   : { state: T; patches: undefined; inversePatches: undefined };
 
+  /**
+   * something
+   */
 export function create<T extends object, O extends boolean = false>(
   initialState: T,
   mutate: (draftState: T) => void,

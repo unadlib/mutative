@@ -1,23 +1,23 @@
-import { create } from "../src";
+import { create } from '../src';
 
-describe("base", () => {
-  test("object", () => {
+describe('base', () => {
+  test('object', () => {
     const data = {
       foo: {
-        bar: "str",
+        bar: 'str',
       },
       foobar: {},
     };
 
     const { state } = create(data, (draft) => {
-      draft.foo.bar = "new str";
+      draft.foo.bar = 'new str';
     });
-    expect(state).toEqual({ foo: { bar: "new str" }, foobar: {} });
+    expect(state).toEqual({ foo: { bar: 'new str' }, foobar: {} });
     expect(
       state !==
         {
           foo: {
-            bar: "str",
+            bar: 'str',
           },
           foobar: {},
         }
@@ -27,22 +27,22 @@ describe("base", () => {
     expect(state.foobar).toBe(data.foobar);
   });
 
-  test("delete key in object", () => {
+  test('delete key in object', () => {
     const data = {
       foo: {
         bar: {
-          b: "str",
+          b: 'str',
         },
       },
       foobar: {
-        bar: "str",
+        bar: 'str',
       },
     };
 
     const { state, inversePatches, patches } = create(
       data,
       (draft) => {
-        draft.foo.bar.b = "new str";
+        draft.foo.bar.b = 'new str';
         // @ts-ignore
         delete draft.foo.bar;
       },
@@ -50,12 +50,12 @@ describe("base", () => {
         enablePatches: true,
       }
     );
-    expect(state).toEqual({ foo: {}, foobar: { bar: "str" } });
+    expect(state).toEqual({ foo: {}, foobar: { bar: 'str' } });
     expect(
       state !==
         ({
           foo: {},
-          foobar: { bar: "str" },
+          foobar: { bar: 'str' },
         } as any)
     ).toBeTruthy();
     expect(state !== data).toBeTruthy();
@@ -63,11 +63,11 @@ describe("base", () => {
     expect(state.foobar === data.foobar).toBeTruthy();
   });
 
-  test("object case1", () => {
+  test('object case1', () => {
     const data = {
       foo: {
         bar: {
-          baz: "baz",
+          baz: 'baz',
         },
       },
       foobar: {},
@@ -76,12 +76,12 @@ describe("base", () => {
     const { state } = create(data, (draft) => {
       const foo = draft.foo;
       draft.foobar;
-      foo.bar = { baz: "new baz" };
+      foo.bar = { baz: 'new baz' };
     });
-    expect(state).toEqual({ foo: { bar: { baz: "new baz" } }, foobar: {} });
+    expect(state).toEqual({ foo: { bar: { baz: 'new baz' } }, foobar: {} });
   });
 
-  test("object case2", () => {
+  test('object case2', () => {
     const d = { e: 1 };
     const baseState = { a: { b: { c: { d } } }, f: { d } };
     const { state } = create(baseState, (draft) => {
@@ -94,7 +94,7 @@ describe("base", () => {
     expect(state.x === state.a.b).toBeTruthy();
   });
 
-  test("object case3", () => {
+  test('object case3', () => {
     const d = { e: 1 };
     const baseState = { a: { c: { e: 2 }, b: { c: { d } } }, f: { d } };
     const { state } = create(baseState, (draft) => {
@@ -114,7 +114,7 @@ describe("base", () => {
     expect(state.x === state.a.c).toBeTruthy();
   });
 
-  test("performance", () => {
+  test('performance', () => {
     const baseState: any = {};
     Array(10 ** 5)
       .fill(1)
@@ -128,27 +128,27 @@ describe("base", () => {
     console.timeEnd();
   });
 
-  test("base array", () => {
+  test('base array', () => {
     const data = {
-      list: ["foo"],
+      list: ['foo'],
       bar: {},
     };
 
     const { state, patches, inversePatches } = create(
       data,
       (draft) => {
-        draft.list.push("bar");
+        draft.list.push('bar');
         // Array.prototype.push.call(draft.list, 'bar');
       },
       {
         enablePatches: false,
       }
     );
-    expect(state).toEqual({ list: ["foo", "bar"], bar: {} });
+    expect(state).toEqual({ list: ['foo', 'bar'], bar: {} });
     expect(
       state !==
         {
-          list: ["foo", "bar"],
+          list: ['foo', 'bar'],
           bar: {},
         }
     ).toBeTruthy();
@@ -157,26 +157,26 @@ describe("base", () => {
     expect(state.bar === data.bar).toBeTruthy();
   });
 
-  test("base array set", () => {
+  test('base array set', () => {
     const data = {
-      list: ["foo"],
+      list: ['foo'],
       bar: {},
     };
 
     const { state, patches, inversePatches } = create(
       data,
       (draft) => {
-        draft.list[1] = "bar";
+        draft.list[1] = 'bar';
       },
       {
         enablePatches: true,
       }
     );
-    expect(state).toEqual({ list: ["foo", "bar"], bar: {} });
+    expect(state).toEqual({ list: ['foo', 'bar'], bar: {} });
     expect(
       state !==
         {
-          list: ["foo", "bar"],
+          list: ['foo', 'bar'],
           bar: {},
         }
     ).toBeTruthy();
@@ -185,7 +185,7 @@ describe("base", () => {
     expect(state.bar === data.bar).toBeTruthy();
   });
 
-  test("base array set with object", () => {
+  test('base array set with object', () => {
     const data = {
       list: [{ a: 1 }, { a: 2 }, { a: 3 }],
       bar: {},

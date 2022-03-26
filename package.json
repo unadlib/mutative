@@ -1,17 +1,18 @@
 {
-  "name": "mutative-monorepo",
-  "private": true,
-  "engines": {
-    "node": ">=12.2.0"
-  },
-  "keywords": [
-    "immutable"
-  ],
+  "name": "mutative",
+  "version": "0.0.1",
   "description": "Efficient creation of immutable state",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "unpkg": "dist/index.umd.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
+    "clean": "rimraf dist",
     "test:perf": "cd __performance_tests__ && ts-node add-data.ts && ts-node todo.ts && ts-node incremental.ts",
+    "build": "yarn clean && tsc && yarn build:prod && yarn build:dev",
+    "build:prod": "NODE_ENV=production rollup --config",
+    "build:dev": "NODE_ENV=development rollup --config",
+    "build:doc": "rimraf docs && typedoc --out docs src/index.ts",
     "commit": "yarn git-cz"
   },
   "repository": {
@@ -19,29 +20,57 @@
     "url": "git+https://github.com/unadlib/mutative.git"
   },
   "author": "unadlib",
+  "keywords": [],
   "license": "MIT",
+  "engines": {
+    "node": ">=12.2.0"
+  },
   "bugs": {
     "url": "https://github.com/unadlib/mutative/issues"
   },
   "homepage": "https://github.com/unadlib/mutative#readme",
-  "packageManager": "pnpm@6.32.3",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^21.0.2",
+    "@rollup/plugin-node-resolve": "^13.1.3",
+    "@rollup/plugin-replace": "^4.0.0",
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.21",
+    "@typescript-eslint/eslint-plugin": "^5.15.0",
+    "@typescript-eslint/parser": "^5.15.0",
     "commitizen": "^4.2.4",
     "deep-freeze": "^0.0.1",
+    "eslint": "^8.11.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-prettier": "^4.0.0",
     "immer": "^9.0.12",
     "immutable": "^4.0.0",
     "jest": "^27.5.1",
+    "jsdoc-tests": "^0.1.1",
     "lodash": "^4.17.21",
+    "prettier": "^2.5.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.70.1",
+    "rollup-plugin-terser": "^7.0.0",
     "seamless-immutable": "^7.1.4",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.7.0",
-    "typescript": "^4.6.2"
+    "tslib": "^2.3.1",
+    "typedoc": "^0.22.13",
+    "typedoc-plugin-markdown": "^3.11.14",
+    "typescript": "^4.6.2",
+    "yargs": "^17.3.1"
   },
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
+    }
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "globals": {
+      "__DEV__": true
     }
   }
 }

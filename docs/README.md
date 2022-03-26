@@ -1,3 +1,5 @@
+mutative / [Exports](modules.md)
+
 # mutative
 
 ![Node CI](https://github.com/unadlib/mutative/workflows/Node%20CI/badge.svg)

@@ -1,0 +1,59 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
+    "jest": true
+  },
+  "extends": [
+    "airbnb",
+    "prettier",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2019,
+    "sourceType": "module"
+  },
+  "plugins": ["prettier", "@typescript-eslint"],
+  "rules": {
+    "no-useless-constructor": 0,
+    "class-methods-use-this": 0,
+    "no-underscore-dangle": 0,
+    "@typescript-eslint/no-non-null-assertion": 0,
+    "@typescript-eslint/interface-name-prefix": 0,
+    "@typescript-eslint/explicit-function-return-type": 0,
+    "max-classes-per-file": 0,
+    "no-await-in-loop": "off",
+    "no-restricted-syntax": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": true
+      }
+    ],
+    "import/prefer-default-export": "off",
+    "prettier/prettier": ["error"],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "ts": "never"
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".ts"]
+      }
+    }
+  }
+}
