@@ -9,6 +9,7 @@
     "test": "jest",
     "clean": "rimraf dist",
     "test:perf": "cd test/performance && ts-node add-data.ts && ts-node todo.ts && ts-node incremental.ts",
+    "test:performance": "cd test/performance && ts-node index.ts",
     "build": "yarn clean && tsc && yarn build:prod && yarn build:dev",
     "build:prod": "NODE_ENV=production rollup --config",
     "build:dev": "NODE_ENV=development rollup --config",
@@ -20,7 +21,12 @@
     "url": "git+https://github.com/unadlib/mutative.git"
   },
   "author": "unadlib",
-  "keywords": [],
+  "keywords": [
+    "mutative",
+    "immutable",
+    "mutable",
+    "mutation"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=12.2.0"

@@ -1,21 +1,22 @@
 // @ts-nocheck
-"use strict";
+'use strict';
 
-import produce, { setAutoFreeze, setUseProxies, enableAllPlugins } from "immer";
-import lodash from "lodash";
-import * as Immutable from "immutable";
-import { measure } from "./measure";
+import produce, { setAutoFreeze, setUseProxies, enableAllPlugins } from 'immer';
+import lodash from 'lodash';
+import * as Immutable from 'immutable';
+import { measure } from './measure';
+import { create } from '../../src';
 
 const { cloneDeep } = lodash;
 
 enableAllPlugins();
 
-console.log("\n# incremental - lot of small incremental changes\n");
+console.log('\n# incremental - lot of small incremental changes\n');
 
 function createTestObject() {
   return {
     a: 1,
-    b: "Some data here",
+    b: 'Some data here',
   };
 }
 
@@ -33,7 +34,7 @@ immutableJsBaseState = {
 };
 
 measure(
-  "just mutate",
+  'just mutate',
   () => cloneDeep(baseState),
   (draft) => {
     for (let i = 0; i < MAX; i++) {
@@ -44,7 +45,7 @@ measure(
 );
 
 measure(
-  "handcrafted reducer",
+  'handcrafted reducer',
   () => cloneDeep(baseState),
   (state) => {
     for (let i = 0; i < MAX; i++) {
@@ -60,7 +61,7 @@ measure(
 );
 
 measure(
-  "immutableJS",
+  'immutableJS',
   () => immutableJsBaseState,
   (state) => {
     for (let i = 0; i < MAX; i++) {
@@ -73,7 +74,7 @@ measure(
 );
 
 measure(
-  "immer (proxy)",
+  'immer (proxy)',
   () => {
     setUseProxies(true);
     setAutoFreeze(false);
@@ -90,7 +91,7 @@ measure(
 );
 
 measure(
-  "immer (es5)",
+  'immer (es5)',
   () => {
     setUseProxies(false);
     setAutoFreeze(false);
@@ -107,7 +108,7 @@ measure(
 );
 
 measure(
-  "immer (proxy) - single produce",
+  'immer (proxy) - single produce',
   () => {
     setUseProxies(true);
     setAutoFreeze(false);
@@ -124,7 +125,7 @@ measure(
 );
 
 measure(
-  "immer (es5) - single produce",
+  'immer (es5) - single produce',
   () => {
     setUseProxies(false);
     setAutoFreeze(false);
@@ -139,3 +140,18 @@ measure(
     });
   }
 );
+
+// measure(
+//   'mutative',
+//   () => {
+//     return baseState;
+//   },
+//   (state) => {
+//     for (let i = 0; i < MAX; i++) {
+//       state = create(state, (draft) => {
+//         draft.ids.push(i);
+//         draft.map[i] = createTestObject();
+//       });
+//     }
+//   }
+// );

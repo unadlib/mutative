@@ -1,12 +1,12 @@
 // @ts-nocheck
-"use strict";
+'use strict';
 
-import produce, { setAutoFreeze, setUseProxies, enableAllPlugins } from "immer";
-import lodash from "lodash";
-import { List, Record } from "immutable";
-import Seamless from "seamless-immutable";
-import deepFreeze from "deep-freeze";
-import { measure } from "./measure";
+import produce, { setAutoFreeze, setUseProxies, enableAllPlugins } from 'immer';
+import lodash from 'lodash';
+import { List, Record } from 'immutable';
+import Seamless from 'seamless-immutable';
+import deepFreeze from 'deep-freeze';
+import { measure } from './measure';
 
 const { cloneDeep } = lodash;
 
@@ -27,7 +27,7 @@ let seamlessBaseState;
 // produce the base state
 for (let i = 0; i < MAX; i++) {
   baseState.push({
-    todo: "todo_" + i,
+    todo: 'todo_' + i,
     done: false,
     someThingCompletelyIrrelevant: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
   });
@@ -38,7 +38,7 @@ frozenBazeState = deepFreeze(cloneDeep(baseState));
 
 // generate immutalbeJS base state
 const todoRecord = Record({
-  todo: "",
+  todo: '',
   done: false,
   someThingCompletelyIrrelevant: [],
 });
@@ -47,10 +47,10 @@ immutableJsBaseState = List(baseState.map((todo) => todoRecord(todo)));
 // generate seamless-immutable base state
 seamlessBaseState = Seamless.from(baseState);
 
-console.log("\n# todo - performance\n");
+console.log('\n# todo - performance\n');
 
 measure(
-  "just mutate",
+  'just mutate',
   () => ({ draft: cloneDeep(baseState) }),
   ({ draft }) => {
     for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
@@ -60,7 +60,7 @@ measure(
 );
 
 measure(
-  "just mutate, freeze",
+  'just mutate, freeze',
   () => ({ draft: cloneDeep(baseState) }),
   ({ draft }) => {
     for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
@@ -70,14 +70,14 @@ measure(
   }
 );
 
-measure("deepclone, then mutate", () => {
+measure('deepclone, then mutate', () => {
   const draft = cloneDeep(baseState);
   for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
     draft[i].done = true;
   }
 });
 
-measure("deepclone, then mutate, then freeze", () => {
+measure('deepclone, then mutate, then freeze', () => {
   const draft = cloneDeep(baseState);
   for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
     draft[i].done = true;
@@ -85,7 +85,7 @@ measure("deepclone, then mutate, then freeze", () => {
   deepFreeze(draft);
 });
 
-measure("handcrafted reducer (no freeze)", () => {
+measure('handcrafted reducer (no freeze)', () => {
   const nextState = [
     ...baseState.slice(0, MAX * MODIFY_FACTOR).map((todo) => ({
       ...todo,
@@ -95,7 +95,7 @@ measure("handcrafted reducer (no freeze)", () => {
   ];
 });
 
-measure("handcrafted reducer (with freeze)", () => {
+measure('handcrafted reducer (with freeze)', () => {
   const nextState = freeze([
     ...baseState.slice(0, MAX * MODIFY_FACTOR).map((todo) =>
       freeze({
@@ -107,7 +107,7 @@ measure("handcrafted reducer (with freeze)", () => {
   ]);
 });
 
-measure("naive handcrafted reducer (without freeze)", () => {
+measure('naive handcrafted reducer (without freeze)', () => {
   const nextState = baseState.map((todo, index) => {
     if (index < MAX * MODIFY_FACTOR)
       return {
@@ -118,7 +118,7 @@ measure("naive handcrafted reducer (without freeze)", () => {
   });
 });
 
-measure("naive handcrafted reducer (with freeze)", () => {
+measure('naive handcrafted reducer (with freeze)', () => {
   const nextState = deepFreeze(
     baseState.map((todo, index) => {
       if (index < MAX * MODIFY_FACTOR)
@@ -131,45 +131,45 @@ measure("naive handcrafted reducer (with freeze)", () => {
   );
 });
 
-measure("immutableJS", () => {
+measure('immutableJS', () => {
   let state = immutableJsBaseState;
   state.withMutations((state) => {
     for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
-      state.setIn([i, "done"], true);
+      state.setIn([i, 'done'], true);
     }
   });
 });
 
-measure("immutableJS + toJS", () => {
+measure('immutableJS + toJS', () => {
   let state = immutableJsBaseState
     .withMutations((state) => {
       for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
-        state.setIn([i, "done"], true);
+        state.setIn([i, 'done'], true);
       }
     })
     .toJS();
 });
 
-measure("seamless-immutable", () => {
+measure('seamless-immutable', () => {
   const state = seamlessBaseState;
   state.map((todo, index) => {
-    if (index < MAX * MODIFY_FACTOR) return todo.set("done", true);
+    if (index < MAX * MODIFY_FACTOR) return todo.set('done', true);
     else return todo;
   });
 });
 
-measure("seamless-immutable + asMutable", () => {
+measure('seamless-immutable + asMutable', () => {
   const state = seamlessBaseState;
   state
     .map((todo, index) => {
-      if (index < MAX * MODIFY_FACTOR) return todo.set("done", true);
+      if (index < MAX * MODIFY_FACTOR) return todo.set('done', true);
       else return todo;
     })
     .asMutable({ deep: true });
 });
 
 measure(
-  "immer (proxy) - without autofreeze",
+  'immer (proxy) - without autofreeze',
   () => {
     setUseProxies(true);
     setAutoFreeze(false);
@@ -184,7 +184,7 @@ measure(
 );
 
 measure(
-  "immer (proxy) - with autofreeze",
+  'immer (proxy) - with autofreeze',
   () => {
     setUseProxies(true);
     setAutoFreeze(true);
@@ -199,7 +199,7 @@ measure(
 );
 
 measure(
-  "immer (proxy) - without autofreeze - with patch listener",
+  'immer (proxy) - without autofreeze - with patch listener',
   () => {
     setUseProxies(true);
     setAutoFreeze(false);
@@ -218,7 +218,7 @@ measure(
 );
 
 measure(
-  "immer (proxy) - with autofreeze - with patch listener",
+  'immer (proxy) - with autofreeze - with patch listener',
   () => {
     setUseProxies(true);
     setAutoFreeze(true);
@@ -237,7 +237,7 @@ measure(
 );
 
 measure(
-  "immer (es5) - without autofreeze",
+  'immer (es5) - without autofreeze',
   () => {
     setUseProxies(false);
     setAutoFreeze(false);
@@ -252,7 +252,7 @@ measure(
 );
 
 measure(
-  "immer (es5) - with autofreeze",
+  'immer (es5) - with autofreeze',
   () => {
     setUseProxies(false);
     setAutoFreeze(true);
@@ -267,7 +267,7 @@ measure(
 );
 
 measure(
-  "immer (es5) - without autofreeze - with patch listener",
+  'immer (es5) - without autofreeze - with patch listener',
   () => {
     setUseProxies(false);
     setAutoFreeze(false);
@@ -286,7 +286,7 @@ measure(
 );
 
 measure(
-  "immer (es5) - with autofreeze - with patch listener",
+  'immer (es5) - with autofreeze - with patch listener',
   () => {
     setUseProxies(false);
     setAutoFreeze(true);
