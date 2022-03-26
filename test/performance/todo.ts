@@ -7,6 +7,7 @@ import { List, Record } from 'immutable';
 import Seamless from 'seamless-immutable';
 import deepFreeze from 'deep-freeze';
 import { measure } from './measure';
+import { create } from '../../src';
 
 const { cloneDeep } = lodash;
 
@@ -301,5 +302,19 @@ measure(
       },
       function () {}
     );
+  }
+);
+
+measure(
+  'mutative',
+  () => {
+    //
+  },
+  () => {
+    create(baseState, (draft) => {
+      for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
+        draft[i].done = true;
+      }
+    });
   }
 );

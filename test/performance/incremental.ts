@@ -108,6 +108,23 @@ measure(
 );
 
 measure(
+  'mutative',
+  () => {
+    return baseState;
+  },
+  (baseState) => {
+    let state = baseState;
+    for (let i = 0; i < MAX; i++) {
+      const result = create(state, (draft) => {
+        draft.ids.push(i);
+        draft.map[i] = createTestObject();
+      });
+      state = result.state;
+    }
+  }
+);
+
+measure(
   'immer (proxy) - single produce',
   () => {
     setUseProxies(true);
@@ -141,17 +158,17 @@ measure(
   }
 );
 
-// measure(
-//   'mutative',
-//   () => {
-//     return baseState;
-//   },
-//   (state) => {
-//     for (let i = 0; i < MAX; i++) {
-//       state = create(state, (draft) => {
-//         draft.ids.push(i);
-//         draft.map[i] = createTestObject();
-//       });
-//     }
-//   }
-// );
+measure(
+  'mutative - single create',
+  () => {
+    return baseState;
+  },
+  (state) => {
+    create(state, (draft) => {
+      for (let i = 0; i < MAX; i++) {
+        draft.ids.push(i);
+        draft.map[i] = createTestObject();
+      }
+    });
+  }
+);

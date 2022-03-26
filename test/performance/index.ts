@@ -48,7 +48,7 @@ measure(
     for (let i = 0; i < MAX; i++) {
       const { state } = create(baseState, (draft) => {
         draft.arr.push(i);
-        draft.map[i] = 1;
+        draft.map[i] = i;
       });
     }
   }
@@ -65,7 +65,7 @@ measure(
     for (let i = 0; i < MAX; i++) {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
-        draft.map[i] = createTestObject();
+        draft.map[i] = i;
       });
     }
   }

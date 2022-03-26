@@ -6,6 +6,7 @@ import { fromJS } from 'immutable';
 import Seamless from 'seamless-immutable';
 import deepFreeze from 'deep-freeze';
 import { measure } from './measure';
+import { create } from '../../src';
 
 const { cloneDeep } = lodash;
 
@@ -108,6 +109,13 @@ measure('immer (es5) - with autofreeze * ' + MAX, () => {
   setAutoFreeze(true);
   for (let i = 0; i < MAX; i++)
     produce(frozenBazeState, (draft) => {
+      draft.data = dataSet;
+    });
+});
+
+measure('mutative * ' + MAX, () => {
+  for (let i = 0; i < MAX; i++)
+    create(frozenBazeState, (draft) => {
       draft.data = dataSet;
     });
 });
