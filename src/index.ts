@@ -183,10 +183,10 @@ function createGetter({
       return getDescriptor(state, key)?.value;
     }
     if (typeof value === 'object' && !isProxyDraft(value)) {
-      const proxyDraft = proxiesMap.get(value);
+      const proxyDraft = proxiesMap.get(target.original[key]);
       if (!proxyDraft) {
         target.copy![key] = createDraft({
-          original: value,
+          original: target.original[key],
           parentDraft: target,
           key,
           patches,
@@ -201,7 +201,9 @@ function createGetter({
         });
         return target.copy![key];
       } else {
-        proxyDraft.key = key;
+        // TODO: think about set proxy draft parent key for some key
+        // @ts-ignore
+        // proxyDraft[PROXY_DRAFT].key = key;
         return proxyDraft;
       }
     }
@@ -236,10 +238,11 @@ function createSetter({
       } else {
         target.copy ??= { ...target.original };
       }
-      target.assigned = {};
     }
     const previousState = target.copy![key];
+    // TODO: think about set proxy draft parent key for some key
     target.copy![key] = isProxyDraft(value) ? getValue(value) : value;
+    target.assigned ??= {};
     target.assigned![key] = true;
     target.updated = true;
     patches?.push([Operation.Set, [key], [value]]);
@@ -346,7 +349,9 @@ function createDraft<T extends object>({
   });
   finalities.unshift(revoke);
   proxyDraft.proxy = proxy;
-  proxiesMap.set(original, proxy);
+  if (original) {
+    proxiesMap.set(original, proxy);
+  }
   return proxy;
 }
 

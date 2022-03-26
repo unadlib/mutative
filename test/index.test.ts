@@ -213,4 +213,71 @@ describe('base', () => {
     expect(state.bar === data.bar).toBeTruthy();
     expect(state.list[0] === data.list[0]).toBeTruthy();
   });
+
+  test('base object set ref object', () => {
+    const data: any = {
+      bar: { a: { c: 1 }, b: { x: 1 } },
+    };
+
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.a = draft.bar;
+        draft.bar.a.c = 2;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      bar: { a: { c: 2 }, b: { x: 1 } },
+      a: { a: { c: 2 }, b: { x: 1 } },
+    });
+    expect(state.a).toBe(state.bar);
+  });
+
+  test('base object set ref object', () => {
+    const data: any = {
+      bar: { a: { c: 1 }, b: { x: 1 } },
+    };
+
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.bar.a.c = 2;
+        draft.a = draft.bar;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      bar: { a: { c: 2 }, b: { x: 1 } },
+      a: { a: { c: 2 }, b: { x: 1 } },
+    });
+    expect(state.a).toBe(state.bar);
+  });
+
+  // test.only('base object set ref object1', () => {
+  //   const data: any = {
+  //     bar: { a: { c: 1 }, b: { x: 1 } },
+  //   };
+
+  //   const { state, patches, inversePatches } = create(
+  //     data,
+  //     (draft) => {
+  //       // draft.bar.a.c = 2;
+  //       draft.k = draft.bar;
+  //       // draft.k.a = 3;
+  //     },
+  //     {
+  //       enablePatches: false,
+  //     }
+  //   );
+  //   console.log(state);
+  //   // expect(state).toEqual({
+  //   //   bar: { a: { c: 2 }, b: { x: 1 } },
+  //   //   a: { a: { c: 3 }, b: { x: 1 } },
+  //   // });
+  // });
 });
