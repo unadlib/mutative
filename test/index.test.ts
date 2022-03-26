@@ -1,3 +1,4 @@
+import { produce } from 'immer';
 import { create } from '../src';
 
 describe('base', () => {
@@ -278,5 +279,23 @@ describe('base', () => {
       bar: { a: 3, b: { x: 1 } },
       k: { a: 3, b: { x: 1 } },
     });
+  });
+
+  test('base object set ref object2', () => {
+    const a = { c: 1 };
+    const data: any = {
+      bar: { a, b: { a } },
+    };
+
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.bar.a.c = 2;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({ bar: { a: { c: 2 }, b: { a: { c: 1 } } } });
   });
 });
