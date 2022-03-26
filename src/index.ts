@@ -52,7 +52,6 @@ const enum Operation {
 type Patches = [Operation, (string | number | symbol)[], any[]][];
 
 const PROXY_DRAFT: unique symbol = Symbol('proxyDraft');
-const proxiesMap = new WeakMap<object, ProxyDraft>();
 
 function has(thing: any, prop: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(thing, prop);
@@ -72,11 +71,17 @@ function getDescriptor(
   }
 }
 
-function createGetter(
-  patches?: Patches,
-  inversePatches?: Patches,
-  finalities: (() => void)[] = []
-) {
+function createGetter({
+  proxiesMap,
+  finalities,
+  patches,
+  inversePatches,
+}: {
+  proxiesMap: WeakMap<object, ProxyDraft>;
+  finalities: (() => void)[];
+  patches?: Patches;
+  inversePatches?: Patches;
+}) {
   return function get(target: ProxyDraft, key: string | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
     if (Array.isArray(target.original)) {
@@ -187,6 +192,7 @@ function createGetter(
           patches,
           inversePatches,
           finalities,
+          proxiesMap,
         });
         finalities.unshift(() => {
           if (isProxyDraft(target.copy![key])) {
@@ -195,6 +201,7 @@ function createGetter(
         });
         return target.copy![key];
       } else {
+        proxyDraft.key = key;
         return proxyDraft;
       }
     }
@@ -215,7 +222,13 @@ function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
   return proxyDraft.copy;
 }
 
-function createSetter(patches?: Patches, inversePatches?: Patches) {
+function createSetter({
+  patches,
+  inversePatches,
+}: {
+  patches?: Patches;
+  inversePatches?: Patches;
+}) {
   return function set(target: ProxyDraft, key: string, value: any) {
     if (!target.updated) {
       if (Array.isArray(target.original)) {
@@ -260,9 +273,11 @@ function createDraft<T extends object>({
   patches,
   inversePatches,
   finalities,
+  proxiesMap,
 }: {
   original: T;
   finalities: (() => void)[];
+  proxiesMap: WeakMap<object, ProxyDraft>;
   parentDraft?: any;
   key?: string | symbol;
   patches?: Patches;
@@ -280,8 +295,8 @@ function createDraft<T extends object>({
     key,
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
-    get: createGetter(patches, inversePatches, finalities),
-    set: createSetter(patches, inversePatches),
+    get: createGetter({ patches, inversePatches, finalities, proxiesMap }),
+    set: createSetter({ patches, inversePatches }),
     has(target: ProxyDraft, key: string | symbol) {
       return key in latest(target);
     },
@@ -381,9 +396,9 @@ type Result<T, O extends boolean> = O extends true
   ? { state: T; patches: Patches; inversePatches: Patches }
   : { state: T; patches: undefined; inversePatches: undefined };
 
-  /**
-   * something
-   */
+/**
+ * something
+ */
 export function create<T extends object, O extends boolean = false>(
   initialState: T,
   mutate: (draftState: T) => void,
@@ -391,6 +406,7 @@ export function create<T extends object, O extends boolean = false>(
     enablePatches?: O;
   }
 ) {
+  const proxiesMap = new WeakMap<object, ProxyDraft>();
   const finalities: (() => void)[] = [];
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
@@ -400,6 +416,7 @@ export function create<T extends object, O extends boolean = false>(
   }
   const draftState = createDraft({
     original: initialState,
+    proxiesMap,
     parentDraft: null,
     patches,
     inversePatches,
