@@ -203,7 +203,7 @@ function createGetter({
       } else {
         // TODO: think about set proxy draft parent key for some key
         // @ts-ignore
-        // proxyDraft[PROXY_DRAFT].key = key;
+        proxyDraft[PROXY_DRAFT].key = key;
         return proxyDraft;
       }
     }
@@ -225,9 +225,11 @@ function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
 }
 
 function createSetter({
+  finalities,
   patches,
   inversePatches,
 }: {
+  finalities: (() => void)[];
   patches?: Patches;
   inversePatches?: Patches;
 }) {
@@ -240,8 +242,14 @@ function createSetter({
       }
     }
     const previousState = target.copy![key];
-    // TODO: think about set proxy draft parent key for some key
-    target.copy![key] = isProxyDraft(value) ? getValue(value) : value;
+    if (isProxyDraft(value)) {
+      finalities.unshift(() => {
+        if (isProxyDraft(target.copy![key])) {
+          target.copy![key] = getValue(target.copy![key]);
+        }
+      });
+    }
+    target.copy![key] = value;
     target.assigned ??= {};
     target.assigned![key] = true;
     target.updated = true;
@@ -299,7 +307,7 @@ function createDraft<T extends object>({
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
     get: createGetter({ patches, inversePatches, finalities, proxiesMap }),
-    set: createSetter({ patches, inversePatches }),
+    set: createSetter({ patches, inversePatches, finalities }),
     has(target: ProxyDraft, key: string | symbol) {
       return key in latest(target);
     },

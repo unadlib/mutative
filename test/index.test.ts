@@ -258,26 +258,25 @@ describe('base', () => {
     expect(state.a).toBe(state.bar);
   });
 
-  // test.only('base object set ref object1', () => {
-  //   const data: any = {
-  //     bar: { a: { c: 1 }, b: { x: 1 } },
-  //   };
+  test('base object set ref object1', () => {
+    const data: any = {
+      bar: { a: { c: 1 }, b: { x: 1 } },
+    };
 
-  //   const { state, patches, inversePatches } = create(
-  //     data,
-  //     (draft) => {
-  //       // draft.bar.a.c = 2;
-  //       draft.k = draft.bar;
-  //       // draft.k.a = 3;
-  //     },
-  //     {
-  //       enablePatches: false,
-  //     }
-  //   );
-  //   console.log(state);
-  //   // expect(state).toEqual({
-  //   //   bar: { a: { c: 2 }, b: { x: 1 } },
-  //   //   a: { a: { c: 3 }, b: { x: 1 } },
-  //   // });
-  // });
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.bar.a.c = 2;
+        draft.k = draft.bar;
+        draft.k.a = 3;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      bar: { a: 3, b: { x: 1 } },
+      k: { a: 3, b: { x: 1 } },
+    });
+  });
 });
