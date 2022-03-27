@@ -113,7 +113,7 @@ describe('base', () => {
     // @ts-ignore
     expect(state.x).toEqual(state.a.c);
     // @ts-ignore
-    expect(state.x).not.toBe(state.a.c);
+    expect(state.x).toBe(state.a.c);
   });
 
   test('performance', () => {

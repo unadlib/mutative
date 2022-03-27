@@ -315,9 +315,11 @@ function createGetter({
         finalities.unshift(() => {
           const proxyDraft = getProxyDraft(target.copy![key]);
           if (proxyDraft) {
-            target.copy![key] = proxyDraft.updated
-              ? getValue(target.copy![key])
-              : proxyDraft.original;
+            target.copy![key] =
+              proxyDraft.updated &&
+              Object.keys(proxyDraft.assigned ?? {}).length > 0
+                ? getValue(target.copy![key])
+                : proxyDraft.original;
           }
         });
         return target.copy![key];
@@ -344,8 +346,7 @@ function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
   if (!proxyDraft) {
     return value;
   }
-  proxyDraft.copy ??= { ...proxyDraft.original };
-  return proxyDraft.copy;
+  return proxyDraft.copy ?? proxyDraft.original;
 }
 
 function createSetter({
@@ -364,7 +365,8 @@ function createSetter({
     const previousState = target.copy![key];
     if (getProxyDraft(value)) {
       finalities.unshift(() => {
-        if (getProxyDraft(target.copy![key])) {
+        const proxyDraft = getProxyDraft(target.copy![key]);
+        if (proxyDraft) {
           target.copy![key] = getValue(target.copy![key]);
         }
       });
@@ -490,13 +492,11 @@ function makeChange(
 ) {
   if (proxyDraft.parent) {
     proxyDraft.parent.updated = true;
-    if (Array.isArray(proxyDraft.parent.original)) {
-      proxyDraft.parent.copy ??= Array.prototype.concat.call(
-        proxyDraft.parent.original
-      );
-    } else {
-      proxyDraft.parent.copy ??= { ...proxyDraft.parent.original };
+    proxyDraft.parent.assigned ??= {};
+    if (proxyDraft.key) {
+      proxyDraft.parent.assigned![proxyDraft.key] = true;
     }
+    ensureShallowCopy(proxyDraft.parent);
     if (proxyDraft.key) {
       if (patches) {
         const [last] = patches.slice(-1);
