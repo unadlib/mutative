@@ -49,6 +49,7 @@ const enum Operation {
   Shift,
   Splice,
   Unshift,
+  Construct,
 }
 
 type Patches = [Operation, (string | number | symbol)[], any[]][];
@@ -205,9 +206,46 @@ function createGetter({
         mutableSetMethods.includes(key)
       ) {
         return {
-          add(value: any) {},
-          clear() {},
-          delete(value: any) {},
+          add(value: any) {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Set.prototype.add.call(state, value);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Set, [key], [value]]);
+            inversePatches?.push([Operation.Delete, [key], [value]]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
+          clear() {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Set.prototype.clear.call(state);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Clear, [key], []]);
+            inversePatches?.push([
+              Operation.Construct,
+              [key],
+              [state.values()],
+            ]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
+          delete(value: any) {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Set.prototype.delete.call(state, value);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Delete, [key], [value]]);
+            inversePatches?.push([Operation.Set, [key], [value]]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
         };
       }
 
@@ -217,12 +255,46 @@ function createGetter({
         mutableMapMethods.includes(key)
       ) {
         return {
-          set(key: any, value: any) {
-            //
+          set(_key: any, _value: any) {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Map.prototype.set.call(state, _key, _value);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Set, [key], [_key, _value]]);
+            inversePatches?.push([Operation.Delete, [key], [_key]]);
+            makeChange(target, patches, inversePatches);
+            return result;
           },
-          clear() {},
-          delete(key: any) {
-            //
+          clear() {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Map.prototype.clear.call(state);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Clear, [key], []]);
+            inversePatches?.push([
+              Operation.Construct,
+              [key],
+              [state.entries()],
+            ]);
+            makeChange(target, patches, inversePatches);
+            return result;
+          },
+          delete(_key: any) {
+            if (!target.updated) {
+              target.assigned = {};
+            }
+            const result = Map.prototype.delete.call(state, _key);
+            target.assigned![key] = true;
+            target.updated = true;
+            patches?.push([Operation.Delete, [key], [_key]]);
+            const _value = state.get(_key);
+            inversePatches?.push([Operation.Set, [key], [_key, _value]]);
+            makeChange(target, patches, inversePatches);
+            return result;
           },
         };
       }
