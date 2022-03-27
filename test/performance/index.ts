@@ -23,11 +23,7 @@ Array(10 ** 3)
 
 measure(
   'native handcrafted',
-  () => {
-    setAutoFreeze(false);
-    setUseProxies(true);
-    return baseState;
-  },
+  () => baseState,
   (baseState: any) => {
     for (let i = 0; i < MAX; i++) {
       const state = {
@@ -41,9 +37,7 @@ measure(
 
 measure(
   'mutative',
-  () => {
-    return baseState;
-  },
+  () => baseState,
   (baseState: any) => {
     for (let i = 0; i < MAX; i++) {
       const { state } = create(baseState, (draft) => {

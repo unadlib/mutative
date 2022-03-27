@@ -59,6 +59,25 @@ function has(thing: any, prop: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(thing, prop);
 }
 
+function ensureShallowCopy(target: ProxyDraft) {
+  if (Array.isArray(target.original)) {
+    target.copy ??= Array.prototype.concat.call(target.original);
+  } else if (target.original instanceof Set) {
+    target.copy ??= new Set(target.original.values());
+  } else if (target.original instanceof Set) {
+    target.copy ??= new Map(target.original.entries());
+  } else {
+    if (!target.copy) {
+      // For best performance with shallow copies,
+      // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));`.
+      target.copy = {};
+      Object.keys(target.original).forEach((key) => {
+        target.copy![key] = target.original[key];
+      });
+    }
+  }
+}
+
 function getDescriptor(
   state: any,
   key: PropertyKey
@@ -87,11 +106,7 @@ function createGetter({
   return function get(target: ProxyDraft, key: string | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
     // TODO: refactor without shallow copy
-    if (Array.isArray(target.original)) {
-      target.copy ??= Array.prototype.concat.call(target.original);
-    } else {
-      target.copy ??= { ...target.original };
-    }
+    ensureShallowCopy(target);
     const state = target.copy!;
     const value = state[key];
     if (!has(state, key)) {
@@ -269,11 +284,7 @@ function createSetter({
 }) {
   return function set(target: ProxyDraft, key: string, value: any) {
     if (!target.updated) {
-      if (Array.isArray(target.original)) {
-        target.copy ??= Array.prototype.concat.call(target.original);
-      } else {
-        target.copy ??= { ...target.original };
-      }
+      ensureShallowCopy(target);
     }
     const previousState = target.copy![key];
     if (getProxyDraft(value)) {
@@ -374,7 +385,7 @@ function createDraft<T extends object>({
     },
     deleteProperty(target: ProxyDraft, key: string | symbol) {
       if (!target.updated) {
-        target.copy ??= { ...target.original };
+        ensureShallowCopy(target);
         target.assigned = {};
       }
       const previousState = target.copy![key];
