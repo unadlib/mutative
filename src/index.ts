@@ -3,9 +3,11 @@ const enum DraftType {
   Array = 'array',
   Map = 'map',
   Set = 'set',
+  Record = 'record',
+  Tuple = 'Tuple',
 }
 
-const mutableArrayMethods: string[] = [
+const mutableArrayMethods = [
   // "copyWithin",
   // "fill",
   // "sort",
@@ -18,9 +20,9 @@ const mutableArrayMethods: string[] = [
 ];
 // Exclude `sort` method: Its argument can be a sort callback, so the operation patch cannot be serialized correctly.
 
-const mutableMapMethods: (keyof Map<any, any>)[] = ['clear', 'delete', 'set'];
+const mutableMapMethods = ['clear', 'delete', 'set'];
 
-const mutableSetMethods: (keyof Set<any>)[] = ['clear', 'delete', 'add'];
+const mutableSetMethods = ['clear', 'delete', 'add'];
 
 const mutableObjectMethods = ['delete', 'set'];
 
@@ -84,6 +86,7 @@ function createGetter({
 }) {
   return function get(target: ProxyDraft, key: string | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
+    // TODO: refactor without shallow copy
     if (Array.isArray(target.original)) {
       target.copy ??= Array.prototype.concat.call(target.original);
     } else {
@@ -180,9 +183,37 @@ function createGetter({
           },
         }[key];
       }
+
+      if (
+        state instanceof Set &&
+        typeof key === 'string' &&
+        mutableSetMethods.includes(key)
+      ) {
+        return {
+          add(value: any) {},
+          clear() {},
+          delete(value: any) {},
+        };
+      }
+
+      if (
+        state instanceof Map &&
+        typeof key === 'string' &&
+        mutableMapMethods.includes(key)
+      ) {
+        return {
+          set(key: any, value: any) {
+            //
+          },
+          clear() {},
+          delete(key: any) {
+            //
+          },
+        };
+      }
       return getDescriptor(state, key)?.value;
     }
-    if (typeof value === 'object' && !isProxyDraft(value)) {
+    if (typeof value === 'object' && !getProxyDraft(value)) {
       const proxyDraft = proxiesMap.get(target.original[key]);
       if (!proxyDraft) {
         target.copy![key] = createDraft({
@@ -195,7 +226,7 @@ function createGetter({
           proxiesMap,
         });
         finalities.unshift(() => {
-          if (isProxyDraft(target.copy![key])) {
+          if (getProxyDraft(target.copy![key])) {
             target.copy![key] = getValue(target.copy![key]);
           }
         });
@@ -203,7 +234,7 @@ function createGetter({
       } else {
         // TODO: think about set proxy draft parent key for some key
         // @ts-ignore
-        proxyDraft[PROXY_DRAFT].key = key;
+        // proxyDraft[PROXY_DRAFT].key = key;
         return proxyDraft;
       }
     }
@@ -211,12 +242,15 @@ function createGetter({
   };
 }
 
-function isProxyDraft<T extends { [PROXY_DRAFT]: any }>(value: T) {
-  return !!(value && value[PROXY_DRAFT]);
+function getProxyDraft<T extends { [PROXY_DRAFT]: any }>(
+  value: T
+): ProxyDraft | null {
+  if (typeof value !== 'object') return null;
+  return value[PROXY_DRAFT];
 }
 
 function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
-  const proxyDraft: ProxyDraft = value[PROXY_DRAFT];
+  const proxyDraft = getProxyDraft(value);
   if (!proxyDraft) {
     return value;
   }
@@ -242,9 +276,9 @@ function createSetter({
       }
     }
     const previousState = target.copy![key];
-    if (isProxyDraft(value)) {
+    if (getProxyDraft(value)) {
       finalities.unshift(() => {
-        if (isProxyDraft(target.copy![key])) {
+        if (getProxyDraft(target.copy![key])) {
           target.copy![key] = getValue(target.copy![key]);
         }
       });
@@ -397,7 +431,7 @@ function makeChange(
 }
 
 function finalizeDraft<T>(result: T, finalities: (() => void)[]) {
-  const proxyDraft: ProxyDraft = (result as any)[PROXY_DRAFT];
+  const proxyDraft: ProxyDraft = getProxyDraft(result as any)!;
   for (const finalize of finalities) {
     finalize();
   }

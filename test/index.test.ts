@@ -122,10 +122,22 @@ describe('base', () => {
         baseState[i] = { i };
       });
     console.time();
-    const state = create(baseState, (draft) => {
+    create(baseState, (draft) => {
       draft[0].c = { i: 0 };
     });
     console.timeEnd();
+  });
+
+  test('performance 100k', () => {
+    const a = Array(10 ** 5)
+      .fill(1)
+      .map((_, i) => ({ [i]: i }));
+    console.time('performance 100k');
+    create({ b: { c: 2 }, a }, (draft) => {
+      draft.b.c = 3;
+      draft.a.push({ '1': 1 });
+    });
+    console.timeEnd('performance 100k');
   });
 
   test('base array', () => {
@@ -260,7 +272,7 @@ describe('base', () => {
 
   test('base array set ref array', () => {
     const data: any = {
-      bar: { a: [1,2,3], b: { x: 1 } },
+      bar: { a: [1, 2, 3], b: { x: 1 } },
     };
 
     const { state, patches, inversePatches } = create(
@@ -274,8 +286,8 @@ describe('base', () => {
       }
     );
     expect(state).toEqual({
-      bar: { a: [ 1, 2, 3, 4 ], b: { x: 1 } },
-      a: { a: [ 1, 2, 3, 4 ], b: { x: 1 } }
+      bar: { a: [1, 2, 3, 4], b: { x: 1 } },
+      a: { a: [1, 2, 3, 4], b: { x: 1 } },
     });
     expect(state.a).toBe(state.bar);
   });
@@ -318,5 +330,108 @@ describe('base', () => {
       }
     );
     expect(state).toEqual({ bar: { a: { c: 2 }, b: { a: { c: 1 } } } });
+  });
+
+  test('base array push', () => {
+    const data = {
+      bar: {},
+      list: [{ text: '' }],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.list.push({ text: 'foo' });
+    });
+    expect(state).toEqual({ bar: {}, list: [{ text: '' }, { text: 'foo' }] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+    expect(state.list[0]).toBe(data.list[0]);
+    expect(state.list[1]).not.toBe(data.list[1]);
+  });
+
+  test('base array pop', () => {
+    const data = {
+      bar: {},
+      list: [{ text: '' }],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.list.pop();
+    });
+    expect(state).toEqual({ bar: {}, list: [] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
+  test('base array reverse', () => {
+    const data = {
+      bar: {},
+      list: [{ text: 'foobar' }, { text: 'foo' }],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.list.reverse();
+    });
+    expect(state).toEqual({
+      bar: {},
+      list: [{ text: 'foo' }, { text: 'foobar' }],
+    });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+    expect(state.list[0]).toBe(data.list[1]);
+    expect(state.list[1]).toBe(data.list[0]);
+  });
+
+  test('base array shift', () => {
+    const data = {
+      bar: {},
+      list: [{ text: 'foobar' }, { text: 'foo' }],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.list.shift();
+    });
+    expect(state).toEqual({ bar: {}, list: [{ text: 'foo' }] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
+  test('base array shift', () => {
+    const data = {
+      bar: {},
+      list: [{ text: 'foobar' }],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.list.unshift({ text: 'foo' });
+    });
+    expect(state).toEqual({
+      bar: {},
+      list: [{ text: 'foo' }, { text: 'foobar' }],
+    });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
+  test('base array splice', () => {
+    const data = {
+      bar: {},
+      list: [{ text: 'foobar' }, { text: 'bar' }, { text: 'bar1' }],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.list.splice(1, 2, { text: 'foo' });
+    });
+    expect(state).toEqual({
+      bar: {},
+      list: [{ text: 'foobar' }, { text: 'foo' }],
+    });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
   });
 });
