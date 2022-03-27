@@ -65,7 +65,7 @@ function ensureShallowCopy(target: ProxyDraft) {
     target.copy ??= Array.prototype.concat.call(target.original);
   } else if (target.original instanceof Set) {
     target.copy ??= new Set(target.original.values());
-  } else if (target.original instanceof Set) {
+  } else if (target.original instanceof Map) {
     target.copy ??= new Map(target.original.entries());
   } else {
     if (!target.copy) {

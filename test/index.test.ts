@@ -491,4 +491,59 @@ describe('base', () => {
     expect(state.bar).toBe(data.bar);
     expect(state.set).not.toBe(data.set);
   });
+
+  test('base map set', () => {
+    const data = {
+      bar: {},
+      map: new Map([[1, 1], [2, 2], [3, 3]]),
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.map.set(4, 4);
+    });
+    expect(state).toEqual({
+      bar: {},
+      map: new Map([[1, 1], [2, 2], [3, 3], [4, 4]]),
+    });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.map).not.toBe(data.map);
+  });
+
+  test('base map clear', () => {
+    const data = {
+      bar: {},
+      map: new Map([[1, 1], [2, 2], [3, 3]]),
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.map.clear();
+    });
+    expect(state).toEqual({
+      bar: {},
+      map: new Map(),
+    });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.map).not.toBe(data.map);
+  });
+
+  test('base map delete', () => {
+    const data = {
+      bar: { a: 1 },
+      map: new Map([[1, 1], [2, 2], [3, 3]]),
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.bar.a;
+      draft.map.delete(2);
+    });
+    expect(state).toEqual({
+      bar: { a: 1 },
+      map: new Map([[1, 1],[3, 3]]),
+    });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.map).not.toBe(data.map);
+  });
 });
