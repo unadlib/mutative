@@ -111,7 +111,9 @@ describe('base', () => {
       x: { e: 2 },
     });
     // @ts-ignore
-    expect(state.x === state.a.c).toBeTruthy();
+    expect(state.x).toEqual(state.a.c);
+    // @ts-ignore
+    expect(state.x).not.toBe(state.a.c);
   });
 
   test('performance', () => {
@@ -433,5 +435,60 @@ describe('base', () => {
     expect(state).not.toBe(data);
     expect(state.bar).toBe(data.bar);
     expect(state.list).not.toBe(data.list);
+  });
+
+  test('base set add', () => {
+    const data = {
+      bar: {},
+      set: new Set([1, 2, 3]),
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.set.add(4);
+    });
+    expect(state).toEqual({
+      bar: {},
+      set: new Set([1, 2, 3, 4]),
+    });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.set).not.toBe(data.set);
+  });
+
+  test('base set clear', () => {
+    const data = {
+      bar: {},
+      set: new Set([1, 2, 3]),
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.set.clear();
+    });
+    expect(state).toEqual({
+      bar: {},
+      set: new Set(),
+    });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.set).not.toBe(data.set);
+  });
+
+  test('base set delete', () => {
+    const data = {
+      bar: { a: 1 },
+      set: new Set([1, 2, 3]),
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.bar.a;
+      draft.set.delete(2);
+    });
+    expect(state).toEqual({
+      bar: { a: 1 },
+      set: new Set([1, 3]),
+    });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.set).not.toBe(data.set);
   });
 });

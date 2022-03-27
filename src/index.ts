@@ -246,7 +246,7 @@ function createGetter({
             makeChange(target, patches, inversePatches);
             return result;
           },
-        };
+        }[key];
       }
 
       if (
@@ -296,7 +296,7 @@ function createGetter({
             makeChange(target, patches, inversePatches);
             return result;
           },
-        };
+        }[key];
       }
       return getDescriptor(state, key)?.value;
     }
@@ -313,8 +313,11 @@ function createGetter({
           proxiesMap,
         });
         finalities.unshift(() => {
-          if (getProxyDraft(target.copy![key])) {
-            target.copy![key] = getValue(target.copy![key]);
+          const proxyDraft = getProxyDraft(target.copy![key]);
+          if (proxyDraft) {
+            target.copy![key] = proxyDraft.updated
+              ? getValue(target.copy![key])
+              : proxyDraft.original;
           }
         });
         return target.copy![key];
