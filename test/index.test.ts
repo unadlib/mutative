@@ -437,6 +437,116 @@ describe('base', () => {
     expect(state.list).not.toBe(data.list);
   });
 
+  test('base array sort', () => {
+    const data = {
+      bar: {},
+      list: [3, 1, 2, 4],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.list.sort();
+    });
+    expect(state).toEqual({ bar: {}, list: [1, 2, 3, 4] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
+  test('base array fill', () => {
+    const data = {
+      bar: {},
+      list: new Array(3),
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      draft.list.fill(1);
+    });
+    expect(state).toEqual({ bar: {}, list: [1, 1, 1] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
+  test('base array copyWithin 0', () => {
+    const data = {
+      bar: {},
+      list: [1, 2, 3, 4, 5],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      // @ts-ignore
+      draft.list.copyWithin(-2);
+    });
+    expect(state).toEqual({ bar: {}, list: [1, 2, 3, 1, 2] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
+  test('base array copyWithin 1', () => {
+    const data = {
+      bar: {},
+      list: [1, 2, 3, 4, 5],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      // @ts-ignore
+      draft.list.copyWithin(0, 3);
+    });
+    expect(state).toEqual({ bar: {}, list: [4, 5, 3, 4, 5] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
+  test('base array copyWithin 2', () => {
+    const data = {
+      bar: {},
+      list: [1, 2, 3, 4, 5],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      // @ts-ignore
+      draft.list.copyWithin(0, 3, 4);
+    });
+    expect(state).toEqual({ bar: {}, list: [4, 2, 3, 4, 5] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
+  test('base array copyWithin 3', () => {
+    const data = {
+      bar: {},
+      list: [1, 2, 3, 4, 5],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      // @ts-ignore
+      draft.list.copyWithin(-2, -3, -1);
+    });
+    expect(state).toEqual({ bar: {}, list: [1, 2, 3, 3, 4] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
+  test('base array copyWithin 4', () => {
+    const data = {
+      bar: {},
+      list: [1, 2, 3, 4, 5],
+    };
+
+    const { state, patches, inversePatches } = create(data, (draft) => {
+      // @ts-ignore
+      draft.list.copyWithin(-3, -3);
+    });
+    expect(state).toEqual({ bar: {}, list: [1, 2, 3, 4, 5] });
+    expect(state).not.toBe(data);
+    expect(state.bar).toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+  });
+
   test('base set add', () => {
     const data = {
       bar: {},
@@ -495,7 +605,11 @@ describe('base', () => {
   test('base map set', () => {
     const data = {
       bar: {},
-      map: new Map([[1, 1], [2, 2], [3, 3]]),
+      map: new Map([
+        [1, 1],
+        [2, 2],
+        [3, 3],
+      ]),
     };
 
     const { state, patches, inversePatches } = create(data, (draft) => {
@@ -503,7 +617,12 @@ describe('base', () => {
     });
     expect(state).toEqual({
       bar: {},
-      map: new Map([[1, 1], [2, 2], [3, 3], [4, 4]]),
+      map: new Map([
+        [1, 1],
+        [2, 2],
+        [3, 3],
+        [4, 4],
+      ]),
     });
     expect(state).not.toBe(data);
     expect(state.bar).toBe(data.bar);
@@ -513,7 +632,11 @@ describe('base', () => {
   test('base map clear', () => {
     const data = {
       bar: {},
-      map: new Map([[1, 1], [2, 2], [3, 3]]),
+      map: new Map([
+        [1, 1],
+        [2, 2],
+        [3, 3],
+      ]),
     };
 
     const { state, patches, inversePatches } = create(data, (draft) => {
@@ -531,7 +654,11 @@ describe('base', () => {
   test('base map delete', () => {
     const data = {
       bar: { a: 1 },
-      map: new Map([[1, 1], [2, 2], [3, 3]]),
+      map: new Map([
+        [1, 1],
+        [2, 2],
+        [3, 3],
+      ]),
     };
 
     const { state, patches, inversePatches } = create(data, (draft) => {
@@ -540,7 +667,10 @@ describe('base', () => {
     });
     expect(state).toEqual({
       bar: { a: 1 },
-      map: new Map([[1, 1],[3, 3]]),
+      map: new Map([
+        [1, 1],
+        [3, 3],
+      ]),
     });
     expect(state).not.toBe(data);
     expect(state.bar).toBe(data.bar);
