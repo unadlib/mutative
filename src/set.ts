@@ -1,9 +1,10 @@
-import { Operation } from './constant';
 import type { Patches, ProxyDraft } from './interface';
+import { Operation } from './constant';
 import { makeChange } from './utils';
 
 export const mutableSetMethods = ['clear', 'delete', 'add'];
 
+// TODO: implement freeze
 export function createSetHandler({
   target,
   key,

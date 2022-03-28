@@ -1,5 +1,6 @@
 import { createDraft, finalizeDraft } from './draft';
 import type { Patches, ProxyDraft, Result } from './interface';
+import { deepFreeze } from './utils';
 
 /**
  * something
@@ -9,6 +10,7 @@ export function create<T extends object, O extends boolean = false>(
   mutate: (draftState: T) => void,
   options?: {
     enablePatches?: O;
+    enableAutoFreeze?: boolean;
   }
 ) {
   const proxiesMap = new WeakMap<object, ProxyDraft>();
@@ -29,6 +31,9 @@ export function create<T extends object, O extends boolean = false>(
   });
   mutate(draftState);
   const state = finalizeDraft(draftState, finalities) as T;
+  if (options?.enableAutoFreeze) {
+    deepFreeze(state);
+  }
   return {
     state,
     patches,

@@ -306,7 +306,7 @@ measure(
 );
 
 measure(
-  'mutative',
+  'mutative - without autofreeze',
   () => {
     //
   },
@@ -316,5 +316,25 @@ measure(
         draft[i].done = true;
       }
     });
+  }
+);
+
+measure(
+  'mutative - with autofreeze',
+  () => {
+    //
+  },
+  () => {
+    create(
+      baseState,
+      (draft) => {
+        for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
+          draft[i].done = true;
+        }
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
   }
 );

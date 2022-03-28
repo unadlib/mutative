@@ -676,4 +676,57 @@ describe('base', () => {
     expect(state.bar).toBe(data.bar);
     expect(state.map).not.toBe(data.map);
   });
+
+  test('base freeze', () => {
+    const data = {
+      bar: { a: 1 },
+      list: [{ id: 1 }],
+    };
+
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.list.push({ id: 2 });
+        draft.bar.a = 2;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+    expect(state).toEqual({ bar: { a: 2 }, list: [{ id: 1 }, { id: 2 }] });
+    expect(state).not.toBe(data);
+    expect(state.bar).not.toBe(data.bar);
+    expect(state.list).not.toBe(data.list);
+    expect(() => {
+      state.bar.a = 3;
+    }).toThrowError();
+    expect(() => {
+      state.list.push({ id: 3 });
+    }).toThrowError();
+    expect(() => {
+      state.list[0].id = 3;
+    }).toThrowError();
+    expect(() => {
+      state.list[1].id = 3;
+    }).toThrowError();
+
+    const result = create(
+      state,
+      (draft) => {
+        draft.list.push({ id: 2 });
+        draft.bar.a = 2;
+      },
+      {
+        enableAutoFreeze: false,
+      }
+    );
+    expect(() => {
+      result.state.list[0].id = 3;
+    }).toThrowError();
+    expect(() => {
+      result.state.list[1].id = 3;
+    }).toThrowError();
+    result.state.list.push({ id: 4 });
+    result.state.bar.a = 4;
+  });
 });

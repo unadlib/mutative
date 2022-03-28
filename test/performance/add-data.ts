@@ -113,9 +113,18 @@ measure('immer (es5) - with autofreeze * ' + MAX, () => {
     });
 });
 
-measure('mutative * ' + MAX, () => {
+measure('mutative without autofreeze * ' + MAX, () => {
   for (let i = 0; i < MAX; i++)
     create(frozenBazeState, (draft) => {
       draft.data = dataSet;
+    });
+});
+
+measure('mutative with autofreeze * ' + MAX, () => {
+  for (let i = 0; i < MAX; i++)
+    create(frozenBazeState, (draft) => {
+      draft.data = dataSet;
+    }, {
+      enableAutoFreeze: true,
     });
 });
