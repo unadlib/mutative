@@ -10,12 +10,17 @@ Efficient creation of immutable state
 - `create()`
 
 ```ts
-const initState = {
+const baseState = {
   foo: 'bar',
-  list: [{ id: '0', text: 'todo' }],
+  list: [{ text: 'todo' }],
 };
 
-const { state } = create(initState, (draft) => {
-  //
+const { state } = create(baseState, (draft) => {
+  draft.foo = 'foobar';
+  draft.list.push({ text: 'learning' });
 });
 ```
+
+- `apply()`
+- `createDraft()`
+- `finalizeDraft()`
