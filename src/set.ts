@@ -4,7 +4,6 @@ import { makeChange } from './utils';
 
 export const mutableSetMethods = ['clear', 'delete', 'add'];
 
-// TODO: implement freeze
 export function createSetHandler({
   target,
   key,

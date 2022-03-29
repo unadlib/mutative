@@ -4,7 +4,6 @@ import { makeChange } from './utils';
 
 export const mutableMapMethods = ['clear', 'delete', 'set'];
 
-// TODO: implement freeze
 export function createMapHandler({
   target,
   key,

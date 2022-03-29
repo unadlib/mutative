@@ -729,4 +729,69 @@ describe('base', () => {
     result.state.list.push({ id: 4 });
     result.state.bar.a = 4;
   });
+
+  test('base set freeze', () => {
+    const data = {
+      set: new Set([1, 2, 3]),
+    };
+
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.set.delete(2);
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+    expect(state).toEqual({
+      set: new Set([1, 3]),
+    });
+    expect(state).not.toBe(data);
+    expect(() => {
+      state.set.add(4);
+    }).toThrowError();
+    expect(() => {
+      state.set.delete(1);
+    }).toThrowError();
+    expect(() => {
+      state.set.clear();
+    }).toThrowError();
+  });
+
+  test('base map freeze', () => {
+    const data = {
+      map: new Map([
+        [1, 1],
+        [2, 2],
+        [3, 3],
+      ]),
+    };
+
+    const { state, patches, inversePatches } = create(
+      data,
+      (draft) => {
+        draft.map.delete(2);
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+    expect(state).toEqual({
+      map: new Map([
+        [1, 1],
+        [3, 3],
+      ]),
+    });
+
+    expect(() => {
+      state.map.set(4, 4);
+    }).toThrowError();
+    expect(() => {
+      state.map.delete(1);
+    }).toThrowError();
+    expect(() => {
+      state.map.clear();
+    }).toThrowError();
+  });
 });

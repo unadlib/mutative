@@ -1,3 +1,9 @@
+const readonlyDescriptors = {
+  writable: false,
+  enumerable: false,
+  configurable: false,
+};
+
 export function deepFreeze(target: any) {
   if (Object.isFrozen(target)) return;
   if (target instanceof Map) {
@@ -22,6 +28,26 @@ export function deepFreeze(target: any) {
       }
       deepFreeze(value);
     }
+    Object.defineProperties(target, {
+      set: {
+        ...readonlyDescriptors,
+        value(key: any) {
+          throw new Error(`Cannot set property ${key}, map is not extensible`);
+        },
+      },
+      clear: {
+        ...readonlyDescriptors,
+        value() {
+          throw new Error(`Cannot clear map, map is frozen`);
+        },
+      },
+      delete: {
+        ...readonlyDescriptors,
+        value(key: any) {
+          throw new Error(`Cannot delete property ${key}, map is frozen`);
+        },
+      },
+    });
   } else if (target instanceof Set) {
     for (const value of target) {
       if (
@@ -34,6 +60,26 @@ export function deepFreeze(target: any) {
       }
       deepFreeze(value);
     }
+    Object.defineProperties(target, {
+      add: {
+        ...readonlyDescriptors,
+        value(value: any) {
+          throw new Error(`Cannot add ${value}, set is not extensible`);
+        },
+      },
+      clear: {
+        ...readonlyDescriptors,
+        value() {
+          throw new Error(`Cannot clear set, set is frozen`);
+        },
+      },
+      delete: {
+        ...readonlyDescriptors,
+        value(key: any) {
+          throw new Error(`Cannot delete property ${key}, set is frozen`);
+        },
+      },
+    });
   } else if (Array.isArray(target)) {
     for (const value of target) {
       if (
