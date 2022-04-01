@@ -1,23 +1,48 @@
 import type { Patches, ProxyDraft } from './interface';
 import { Operation } from './constant';
-import { makeChange } from './utils';
+import {
+  ensureShallowCopy,
+  getProxyDraft,
+  getValue,
+  latest,
+  makeChange,
+} from './utils';
+import { createDraft } from './draft';
 
-export const mutableMapMethods = ['clear', 'delete', 'set'];
+export const mutableMapMethods = [
+  'get',
+  'set',
+  'has',
+  'delete',
+  'clear',
+  'entries',
+  'forEach',
+  'keys',
+  'size',
+  'values',
+];
 
 export function createMapHandler({
   target,
   key,
   state,
+  finalities,
+  proxiesMap,
   patches,
   inversePatches,
 }: {
   target: ProxyDraft;
   key: string;
   state: any;
+  finalities: (() => void)[];
+  proxiesMap: WeakMap<object, ProxyDraft>;
   patches?: Patches;
   inversePatches?: Patches;
 }) {
-  return {
+  if (key === 'size') {
+    return latest(target).size;
+  }
+  const obj = {
     set(_key: any, _value: any) {
       if (!target.updated) {
         target.assigned = {};
@@ -55,5 +80,84 @@ export function createMapHandler({
       makeChange(target, patches, inversePatches);
       return result;
     },
-  }[key];
+    get(_key: any): any {
+      if (!target.updated) {
+        target.assigned = {};
+      }
+      ensureShallowCopy(target);
+      const currentDraft = createDraft({
+        original: target.original.get(_key),
+        parentDraft: target,
+        key: _key,
+        patches,
+        inversePatches,
+        finalities,
+        proxiesMap,
+      });
+      target.copy!.set(_key, currentDraft);
+      finalities.unshift(() => {
+        const proxyDraft = getProxyDraft(target.copy!.get(_key));
+        if (proxyDraft) {
+          const value =
+            proxyDraft.updated &&
+            Object.keys(proxyDraft.assigned ?? {}).length > 0
+              ? getValue(target.copy!.get(_key))
+              : proxyDraft.original;
+          target.copy!.set(_key, value);
+        }
+      });
+      return currentDraft;
+    },
+    has(key: any): boolean {
+      return latest(target).has(key);
+    },
+    forEach(
+      this: Map<any, any>,
+      callback: (value: any, key: any, self: Map<any, any>) => void,
+      thisArg?: any
+    ) {
+      latest(target).forEach((_: any, key: any) => {
+        callback.call(thisArg, this.get(key), key, this);
+      });
+    },
+    keys(): IterableIterator<any> {
+      return latest(target).keys();
+    },
+    values(): IterableIterator<any> {
+      const iterator = this.keys();
+      return {
+        [Symbol.iterator]: () => this.values(),
+        next: () => {
+          const iteratorResult = iterator.next();
+          if (iteratorResult.done) return iteratorResult;
+          const value = this.get(iteratorResult.value);
+          return {
+            done: false,
+            value,
+          };
+        },
+      };
+    },
+    entries(): IterableIterator<[any, any]> {
+      const iterator = this.keys();
+      return {
+        [Symbol.iterator]: () => this.entries(),
+        next: () => {
+          const iteratorResult = iterator.next();
+          if (iteratorResult.done) return iteratorResult;
+          const value = this.get(iteratorResult.value);
+          return {
+            done: false,
+            value: [iteratorResult.value, value],
+          };
+        },
+      };
+    },
+    [Symbol.iterator]() {
+      return this.entries();
+    },
+  };
+  // TODO: refactor for better performance
+  // @ts-ignore
+  return obj[key].bind(obj);
 }

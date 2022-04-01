@@ -3,7 +3,13 @@ import { createArrayHandler, mutableArrayMethods } from './array';
 import { DraftType, Operation, PROXY_DRAFT } from './constant';
 import { createMapHandler, mutableMapMethods } from './map';
 import { createSetHandler, mutableSetMethods } from './set';
-import { ensureShallowCopy, makeChange } from './utils';
+import {
+  ensureShallowCopy,
+  getProxyDraft,
+  getValue,
+  latest,
+  makeChange,
+} from './utils';
 
 const mutableObjectMethods = ['delete', 'set'];
 
@@ -69,7 +75,6 @@ function createGetter({
           inversePatches,
         });
       }
-
       if (
         state instanceof Map &&
         typeof key === 'string' &&
@@ -79,6 +84,8 @@ function createGetter({
           target,
           key,
           state,
+          proxiesMap,
+          finalities,
           patches,
           inversePatches,
         });
@@ -117,21 +124,6 @@ function createGetter({
     }
     return value;
   };
-}
-
-function getProxyDraft<T extends { [PROXY_DRAFT]: any }>(
-  value: T
-): ProxyDraft | null {
-  if (typeof value !== 'object') return null;
-  return value[PROXY_DRAFT];
-}
-
-function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
-  const proxyDraft = getProxyDraft(value);
-  if (!proxyDraft) {
-    return value;
-  }
-  return proxyDraft.copy ?? proxyDraft.original;
 }
 
 function createSetter({
@@ -178,10 +170,6 @@ function createSetter({
     makeChange(target, patches, inversePatches);
     return true;
   };
-}
-
-function latest(proxyDraft: ProxyDraft): any {
-  return proxyDraft.copy || proxyDraft.original;
 }
 
 export function createDraft<T extends object>({

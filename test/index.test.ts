@@ -794,4 +794,33 @@ describe('base', () => {
       state.map.clear();
     }).toThrowError();
   });
+
+  test('base map deep set', () => {
+    const a = { a: 1 };
+    const b = {};
+    const data = {
+      bar: {},
+      map: new Map([
+        [a, {}],
+        [b, {}],
+        [{}, {}],
+      ]),
+    };
+
+    const { state } = create(data, (draft) => {
+      // @ts-ignore
+      draft.map.values().next().value.x = 1;
+    });
+    expect(state).toEqual({
+      bar: {},
+      map: new Map([
+        [a, { x: 1 }],
+        [b, {}],
+        [{}, {}],
+      ]),
+    });
+    expect(state).not.toBe(data);
+    expect([...state.map.values()][0]).not.toBe([...data.map.values()][0]);
+    expect([...state.map.values()][1]).toBe([...data.map.values()][1]);
+  });
 });

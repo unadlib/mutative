@@ -22,7 +22,11 @@ export function makeChange(
         const [last] = inversePatches.slice(-1);
         last[1].unshift(proxyDraft.key);
       }
-      proxyDraft.parent.copy![proxyDraft.key] = proxyDraft.copy;
+      if (proxyDraft.parent.copy instanceof Map) {
+        proxyDraft.parent.copy.set(proxyDraft.key, proxyDraft.copy);
+      } else {
+        proxyDraft.parent.copy![proxyDraft.key] = proxyDraft.copy;
+      }
     }
     if (proxyDraft.parent.parent) {
       makeChange(proxyDraft.parent.parent);
