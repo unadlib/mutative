@@ -90,6 +90,16 @@ function createGetter({
           inversePatches,
         });
       }
+
+      const { Record, Tuple } = globalThis;
+      if (Record && state instanceof Record) {
+        // TODO: implement Record
+        return;
+      }
+      if (Tuple && state instanceof Tuple) {
+        // TODO: implement Tuple
+        return;
+      }
       return getDescriptor(state, key)?.value;
     }
     if (typeof value === 'object' && !getProxyDraft(value)) {

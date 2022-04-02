@@ -3,38 +3,39 @@ import produce, {
   setUseProxies,
   produceWithPatches,
   enablePatches,
+  enableMapSet,
 } from 'immer';
 import { create } from '../../src';
 import { measure } from './measure';
 
 const MAX = 1000;
 
-const baseState: { arr: any[]; map: Record<string, any> } = {
-  arr: [],
-  map: {},
+const baseState = {
+  set: new Set(
+    Array(10 ** 3)
+      .fill('')
+      .map((_, i) => ({ [i]: i }))
+  ),
+  map: new Map(
+    Array(10 ** 3)
+      .fill('')
+      .map((_, i) => [{ [i]: i }, { [i]: i }])
+  ),
 };
 
-const createTestObject = () => ({ a: 1, b: 'b' });
+type BaseState = typeof baseState;
 
-baseState.arr = Array(10 ** 4)
-  .fill('')
-  .map(() => createTestObject());
-
-Array(10 ** 3)
-  .fill(1)
-  .forEach((_, i) => {
-    baseState.map[i] = { i };
-  });
+enableMapSet();
 
 measure(
   'native handcrafted',
   () => baseState,
-  (baseState: any) => {
+  (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
       const state = {
         ...baseState,
-        arr: [...baseState.arr, i],
-        map: { ...baseState.map, [i]: { i } },
+        arr: new Set([...baseState.set.values(), { [i]: i }]),
+        map: new Map([...baseState.map.entries(), [{ [i]: i }, { [i]: i }]]),
       };
     }
   }
@@ -43,11 +44,11 @@ measure(
 measure(
   'mutative - without autoFreeze',
   () => baseState,
-  (baseState: any) => {
+  (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
       const { state } = create(baseState, (draft) => {
-        draft.arr.push(i);
-        draft.map[i] = i;
+        draft.set.add({ [i]: i });
+        draft.map.set({ [i]: i }, { [i]: i });
       });
     }
   }
@@ -60,11 +61,11 @@ measure(
     setUseProxies(true);
     return baseState;
   },
-  (baseState: any) => {
+  (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
-      const state = produce(baseState, (draft: any) => {
-        draft.arr.push(i);
-        draft.map[i] = i;
+      const state = produce(baseState, (draft) => {
+        draft.set.add({ [i]: i });
+        draft.map.set({ [i]: i }, { [i]: i });
       });
     }
   }
@@ -75,13 +76,13 @@ console.log('');
 measure(
   'mutative - with autoFreeze',
   () => baseState,
-  (baseState: any) => {
+  (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
       const { state } = create(
         baseState,
         (draft) => {
-          draft.arr.push(i);
-          draft.map[i] = i;
+          draft.set.add({ [i]: i });
+          draft.map.set({ [i]: i }, { [i]: i });
         },
         {
           enableAutoFreeze: true,
@@ -98,11 +99,11 @@ measure(
     setUseProxies(true);
     return baseState;
   },
-  (baseState: any) => {
+  (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
-      const state = produce(baseState, (draft: any) => {
-        draft.arr.push(i);
-        draft.map[i] = i;
+      const state = produce(baseState, (draft) => {
+        draft.set.add({ [i]: i });
+        draft.map.set({ [i]: i }, { [i]: i });
       });
     }
   }
@@ -113,13 +114,13 @@ console.log('');
 measure(
   'mutative - with autoFreeze and patches',
   () => baseState,
-  (baseState: any) => {
+  (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
       const { state } = create(
         baseState,
         (draft) => {
-          draft.arr.push(i);
-          draft.map[i] = i;
+          draft.set.add({ [i]: i });
+          draft.map.set({ [i]: i }, { [i]: i });
         },
         {
           enableAutoFreeze: true,
@@ -138,11 +139,11 @@ measure(
     enablePatches();
     return baseState;
   },
-  (baseState: any) => {
+  (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
-      const state = produceWithPatches(baseState, (draft: any) => {
-        draft.arr.push(i);
-        draft.map[i] = i;
+      const state = produceWithPatches(baseState, (draft) => {
+        draft.set.add({ [i]: i });
+        draft.map.set({ [i]: i }, { [i]: i });
       });
     }
   }
