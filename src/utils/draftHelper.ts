@@ -1,7 +1,7 @@
 import { PROXY_DRAFT } from "../constant";
 import { ProxyDraft } from "../interface";
 
-export function latest(proxyDraft: ProxyDraft): any {
+export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy || proxyDraft.original;
 }
 

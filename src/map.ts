@@ -40,9 +40,9 @@ export function createMapHandler({
   inversePatches?: Patches;
 }) {
   if (key === 'size') {
-    return latest(target).size;
+    return latest<Map<any, any>>(target).size;
   }
-  const obj = {
+  const proxyProto = {
     set(_key: any, _value: any) {
       if (!target.updated) {
         target.assigned = {};
@@ -85,43 +85,47 @@ export function createMapHandler({
         target.assigned = {};
       }
       ensureShallowCopy(target);
-      const currentDraft = createDraft({
-        original: target.original.get(_key),
-        parentDraft: target,
-        key: _key,
-        patches,
-        inversePatches,
-        finalities,
-        proxiesMap,
-      });
-      target.copy!.set(_key, currentDraft);
-      finalities.unshift(() => {
-        const proxyDraft = getProxyDraft(target.copy!.get(_key));
-        if (proxyDraft) {
-          const value =
-            proxyDraft.updated &&
-            Object.keys(proxyDraft.assigned ?? {}).length > 0
-              ? getValue(target.copy!.get(_key))
-              : proxyDraft.original;
-          target.copy!.set(_key, value);
-        }
-      });
-      return currentDraft;
+      const value = target.copy!.get(_key);
+      if (typeof value === 'object' && !getProxyDraft(value)) {
+        const currentDraft = createDraft({
+          original: target.original.get(_key),
+          parentDraft: target,
+          key: _key,
+          patches,
+          inversePatches,
+          finalities,
+          proxiesMap,
+        });
+        target.copy!.set(_key, currentDraft);
+        finalities.unshift(() => {
+          const proxyDraft = getProxyDraft(target.copy!.get(_key));
+          if (proxyDraft) {
+            const value =
+              proxyDraft.updated &&
+              Object.keys(proxyDraft.assigned ?? {}).length > 0
+                ? getValue(target.copy!.get(_key))
+                : proxyDraft.original;
+            target.copy!.set(_key, value);
+          }
+        });
+        return currentDraft;
+      }
+      return value;
     },
     has(key: any): boolean {
-      return latest(target).has(key);
+      return latest<Map<any, any>>(target).has(key);
     },
     forEach(
       this: Map<any, any>,
       callback: (value: any, key: any, self: Map<any, any>) => void,
       thisArg?: any
     ) {
-      latest(target).forEach((_: any, key: any) => {
+      latest<Map<any, any>>(target).forEach((value: any, key: any) => {
         callback.call(thisArg, this.get(key), key, this);
       });
     },
     keys(): IterableIterator<any> {
-      return latest(target).keys();
+      return latest<Map<any, any>>(target).keys();
     },
     values(): IterableIterator<any> {
       const iterator = this.keys();
@@ -159,5 +163,5 @@ export function createMapHandler({
   };
   // TODO: refactor for better performance
   // @ts-ignore
-  return obj[key].bind(obj);
+  return proxyProto[key].bind(proxyProto);
 }
