@@ -20,6 +20,7 @@ export const mutableMapMethods = [
   'keys',
   'size',
   'values',
+  Symbol.iterator,
 ];
 
 export function createMapHandler({
@@ -32,7 +33,7 @@ export function createMapHandler({
   inversePatches,
 }: {
   target: ProxyDraft;
-  key: string;
+  key: string | symbol;
   state: any;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;

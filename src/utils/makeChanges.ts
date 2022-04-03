@@ -23,7 +23,7 @@ export function makeChange(
         last[1].unshift(proxyDraft.key);
       }
       if (proxyDraft.parent.copy instanceof Map) {
-        proxyDraft.parent.copy.set(proxyDraft.key, proxyDraft.copy);
+        proxyDraft.parent.copy.set(proxyDraft.key, proxyDraft.proxy);
       } else if (proxyDraft.parent.copy instanceof Set) {
         // for Set
       } else {

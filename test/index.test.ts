@@ -810,11 +810,18 @@ describe('base', () => {
     const { state } = create(data, (draft) => {
       // @ts-ignore
       draft.map.values().next().value.x = 1;
+      for (const [key, item] of draft.map) {
+        // @ts-ignore
+        if (item.x === 1) {
+          // @ts-ignore
+          item.c = 2;
+        }
+      }
     });
     expect(state).toEqual({
       bar: {},
       map: new Map([
-        [a, { x: 1 }],
+        [a, { x: 1, c: 2 }],
         [b, {}],
         [{}, {}],
       ]),
@@ -838,11 +845,11 @@ describe('base', () => {
         draft.set.values().next().value.x = 1;
         const [first] = draft.set.values();
         expect(draft.set.has(first)).toBeTruthy();
-        for (const item of draft.set.keys()) {
+        for (const item of draft.set) {
           // @ts-ignore
           if (item.x === 1) {
             // @ts-ignore
-            item.x = 2;
+            item.c = 2;
           }
         }
       },
@@ -852,7 +859,7 @@ describe('base', () => {
     );
     expect(state).toEqual({
       bar: {},
-      set: new Set([{ a: 1, x: 2 }, {}]),
+      set: new Set([{ a: 1, x: 1, c: 2 }, {}]),
     });
     expect(state).not.toBe(data);
     expect([...state.set.values()][0]).not.toBe([...data.set.values()][0]);

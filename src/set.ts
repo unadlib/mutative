@@ -13,6 +13,7 @@ export const mutableSetMethods = [
   'size',
   'values',
   'keys',
+  Symbol.iterator,
 ];
 
 export function createSetHandler({
@@ -25,7 +26,7 @@ export function createSetHandler({
   inversePatches,
 }: {
   target: ProxyDraft;
-  key: string;
+  key: string | symbol;
   state: any;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;

@@ -98,7 +98,7 @@ function createGetter({
 
       if (
         state instanceof Set &&
-        typeof key === 'string' &&
+        (typeof key === 'string' || typeof key === 'symbol') &&
         mutableSetMethods.includes(key)
       ) {
         return createSetHandler({
@@ -113,7 +113,7 @@ function createGetter({
       }
       if (
         state instanceof Map &&
-        typeof key === 'string' &&
+        (typeof key === 'string' || typeof key === 'symbol') &&
         mutableMapMethods.includes(key)
       ) {
         return createMapHandler({
