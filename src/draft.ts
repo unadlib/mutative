@@ -7,6 +7,7 @@ import {
   ensureShallowCopy,
   getProxyDraft,
   getValue,
+  isDraftable,
   latest,
   makeChange,
 } from './utils';
@@ -138,7 +139,7 @@ function createGetter({
       }
       return getDescriptor(state, key)?.value;
     }
-    if (typeof value === 'object' && !getProxyDraft(value)) {
+    if (isDraftable(value) && !getProxyDraft(value)) {
       const proxyDraft = proxiesMap.get(target.original[key]);
       if (!proxyDraft) {
         target.copy![key] = createDraft({

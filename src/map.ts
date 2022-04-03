@@ -4,6 +4,7 @@ import {
   ensureShallowCopy,
   getProxyDraft,
   getValue,
+  isDraftable,
   latest,
   makeChange,
 } from './utils';
@@ -87,7 +88,7 @@ export function createMapHandler({
       }
       ensureShallowCopy(target);
       const value = target.copy!.get(_key);
-      if (typeof value === 'object' && !getProxyDraft(value)) {
+      if (isDraftable(value) && !getProxyDraft(value)) {
         const currentDraft = createDraft({
           original: target.original.get(_key),
           parentDraft: target,

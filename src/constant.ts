@@ -7,7 +7,7 @@ export const enum DraftType {
   Map = 'map',
   Set = 'set',
   Record = 'record',
-  Tuple = 'Tuple',
+  Tuple = 'tuple',
 }
 
 export const enum Operation {

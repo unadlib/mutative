@@ -1,6 +1,6 @@
 import { createDraft, finalizeDraft } from './draft';
 import type { Patches, ProxyDraft, Result } from './interface';
-import { deepFreeze } from './utils';
+import { deepFreeze, isDraftable } from './utils';
 
 /**
  * something
@@ -13,6 +13,11 @@ export function create<T extends object, O extends boolean = false>(
     enableAutoFreeze?: boolean;
   }
 ) {
+  if (!isDraftable(initialState)) {
+    throw new Error(
+      'create() only supports plain object, array, set, map, record, and tuple.'
+    );
+  }
   const proxiesMap = new WeakMap<object, ProxyDraft>();
   const finalities: (() => void)[] = [];
   let patches: Patches | undefined;

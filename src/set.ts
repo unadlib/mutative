@@ -1,6 +1,6 @@
 import type { Patches, ProxyDraft } from './interface';
 import { Operation } from './constant';
-import { getProxyDraft, latest, makeChange } from './utils';
+import { getProxyDraft, isDraftable, latest, makeChange } from './utils';
 import { createDraft } from './draft';
 
 export const mutableSetMethods = [
@@ -106,7 +106,7 @@ export function createSetHandler({
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value;
           let proxyDraft = target.setMap!.get(original);
-          if (typeof original === 'object' && !proxyDraft) {
+          if (isDraftable(original) && !proxyDraft) {
             const key = Array.from(target.original.values())
               .indexOf(original)
               .toString();
@@ -139,7 +139,7 @@ export function createSetHandler({
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value[0];
           let proxyDraft = target.setMap!.get(original);
-          if (typeof original === 'object' && !proxyDraft) {
+          if (isDraftable(original) && !proxyDraft) {
             const key = Array.from(target.original.values())
               .indexOf(original)
               .toString();
