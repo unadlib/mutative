@@ -22,11 +22,11 @@ export function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
 
 export function isDraftable(value: any) {
   return (
-    !value ||
-    (typeof value === 'object' &&
+    !!value &&
+    ((typeof value === 'object' &&
       Object.getPrototypeOf(value) === Object.prototype) ||
-    Array.isArray(value) ||
-    value instanceof Map ||
-    value instanceof Set
+      Array.isArray(value) ||
+      value instanceof Map ||
+      value instanceof Set)
   );
 }

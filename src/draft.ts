@@ -5,32 +5,16 @@ import { createMapHandler, mutableMapMethods } from './map';
 import { createSetHandler, mutableSetMethods } from './set';
 import {
   ensureShallowCopy,
+  getDescriptor,
   getProxyDraft,
   getValue,
+  has,
   isDraftable,
   latest,
   makeChange,
 } from './utils';
 
 const mutableObjectMethods = ['delete', 'set'];
-
-function has(thing: any, prop: PropertyKey): boolean {
-  return Object.prototype.hasOwnProperty.call(thing, prop);
-}
-
-function getDescriptor(
-  state: any,
-  key: PropertyKey
-): PropertyDescriptor | undefined {
-  if (key in state) {
-    let prototype = Reflect.getPrototypeOf(state);
-    while (prototype) {
-      const descriptor = Reflect.getOwnPropertyDescriptor(prototype, key);
-      if (descriptor) return descriptor;
-      prototype = Reflect.getPrototypeOf(prototype);
-    }
-  }
-}
 
 function createGetter({
   proxiesMap,
