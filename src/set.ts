@@ -1,23 +1,41 @@
 import type { Patches, ProxyDraft } from './interface';
 import { Operation } from './constant';
-import { makeChange } from './utils';
+import { getProxyDraft, latest, makeChange } from './utils';
+import { createDraft } from './draft';
 
-export const mutableSetMethods = ['clear', 'delete', 'add'];
+export const mutableSetMethods = [
+  'has',
+  'add',
+  'delete',
+  'clear',
+  'entries',
+  'forEach',
+  'size',
+  'values',
+  'keys',
+];
 
 export function createSetHandler({
   target,
   key,
   state,
+  finalities,
+  proxiesMap,
   patches,
   inversePatches,
 }: {
   target: ProxyDraft;
   key: string;
   state: any;
+  finalities: (() => void)[];
+  proxiesMap: WeakMap<object, ProxyDraft>;
   patches?: Patches;
   inversePatches?: Patches;
 }) {
-  return {
+  if (key === 'size') {
+    return latest(target).size;
+  }
+  const proxyProto = {
     add(value: any) {
       if (!target.updated) {
         target.assigned = {};
@@ -54,5 +72,100 @@ export function createSetHandler({
       makeChange(target, patches, inversePatches);
       return result;
     },
-  }[key];
+    has(value: any): boolean {
+      if (latest(target).has(value)) return true;
+      for (const item of target.setMap?.values()!) {
+        if (
+          item.copy === value ||
+          item.original === value ||
+          item.proxy === value
+        )
+          return true;
+      }
+      return false;
+    },
+    forEach(
+      this: Set<any>,
+      callback: (value: any, key: any, self: Set<any>) => void,
+      thisArg?: any
+    ) {
+      for (const value of this.values()) {
+        callback.call(thisArg, value, value, this);
+      }
+    },
+    keys(): IterableIterator<any> {
+      return this.values();
+    },
+    values(): IterableIterator<any> {
+      const iterator = target.copy!.values();
+      return {
+        [Symbol.iterator]: () => this.values(),
+        next: () => {
+          const iteratorResult = iterator.next();
+          if (iteratorResult.done) return iteratorResult;
+          const original = iteratorResult.value;
+          let proxyDraft = target.setMap!.get(original);
+          if (typeof original === 'object' && !proxyDraft) {
+            const key = Array.from(target.original.values())
+              .indexOf(original)
+              .toString();
+            const proxy = createDraft({
+              original,
+              parentDraft: target,
+              key,
+              patches,
+              inversePatches,
+              finalities,
+              proxiesMap,
+            });
+            proxyDraft = getProxyDraft(proxy)!;
+            target.setMap!.set(original, proxyDraft);
+          }
+          const value = proxyDraft?.proxy;
+          return {
+            done: false,
+            value,
+          };
+        },
+      };
+    },
+    entries(): IterableIterator<[any, any]> {
+      const iterator = target.copy!.entries();
+      return {
+        [Symbol.iterator]: () => this.entries(),
+        next: () => {
+          const iteratorResult = iterator.next();
+          if (iteratorResult.done) return iteratorResult;
+          const original = iteratorResult.value[0];
+          let proxyDraft = target.setMap!.get(original);
+          if (typeof original === 'object' && !proxyDraft) {
+            const key = Array.from(target.original.values())
+              .indexOf(original)
+              .toString();
+            const proxy = createDraft({
+              original,
+              parentDraft: target,
+              key,
+              patches,
+              inversePatches,
+              finalities,
+              proxiesMap,
+            });
+            proxyDraft = getProxyDraft(proxy)!;
+            target.setMap!.set(original, proxyDraft);
+          }
+          const value = proxyDraft?.proxy;
+          return {
+            done: false,
+            value: [value, value],
+          };
+        },
+      };
+    },
+    [Symbol.iterator]() {
+      return this.values();
+    },
+  };
+  // @ts-ignore
+  return proxyProto[key].bind(proxyProto);
 }

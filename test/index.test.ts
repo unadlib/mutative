@@ -795,7 +795,7 @@ describe('base', () => {
     }).toThrowError();
   });
 
-  test('base map deep set', () => {
+  test('base map with deep object', () => {
     const a = { a: 1 };
     const b = {};
     const data = {
@@ -822,5 +822,40 @@ describe('base', () => {
     expect(state).not.toBe(data);
     expect([...state.map.values()][0]).not.toBe([...data.map.values()][0]);
     expect([...state.map.values()][1]).toBe([...data.map.values()][1]);
+  });
+
+  test('base set deep object', () => {
+    const a = { a: 1 };
+    const b = {};
+    const data = {
+      bar: {},
+      set: new Set([a, b]),
+    };
+
+    const { state, patches } = create(
+      data,
+      (draft) => {
+        draft.set.values().next().value.x = 1;
+        const [first] = draft.set.values();
+        expect(draft.set.has(first)).toBeTruthy();
+        for (const item of draft.set.keys()) {
+          // @ts-ignore
+          if (item.x === 1) {
+            // @ts-ignore
+            item.x = 2;
+          }
+        }
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      bar: {},
+      set: new Set([{ a: 1, x: 2 }, {}]),
+    });
+    expect(state).not.toBe(data);
+    expect([...state.set.values()][0]).not.toBe([...data.set.values()][0]);
+    expect([...state.set.values()][1]).toBe([...data.set.values()][1]);
   });
 });

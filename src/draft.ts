@@ -44,6 +44,40 @@ function createGetter({
 }) {
   return function get(target: ProxyDraft, key: string | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
+    if (target.original instanceof Set && !target.copy) {
+      finalities.unshift(() => {
+        if (target.finalized) return;
+        target.finalized = true;
+        if (
+          target.copy instanceof Set &&
+          target.updated &&
+          Object.keys(target.assigned ?? {}).length > 0
+        ) {
+          const iterator = Array.from(target.copy);
+          target.copy.clear();
+          for (const item of iterator) {
+            if (typeof item === 'object') {
+              const proxyDraft = target.setMap?.get(item);
+              if (proxyDraft) {
+                const value =
+                  proxyDraft.updated &&
+                  Object.keys(proxyDraft.assigned ?? {}).length > 0
+                    ? proxyDraft.copy
+                    : proxyDraft.original;
+                target.copy.add(value);
+              } else {
+                target.copy.add(item);
+              }
+            } else {
+              target.copy.add(item);
+            }
+          }
+        } else {
+          // todo: check
+          // target.parent.copy![target.key!] = target.original;
+        }
+      });
+    }
     ensureShallowCopy(target);
     const state = target.copy!;
     const value = state[key];
@@ -71,6 +105,8 @@ function createGetter({
           target,
           key,
           state,
+          finalities,
+          proxiesMap,
           patches,
           inversePatches,
         });
@@ -194,7 +230,7 @@ export function createDraft<T extends object>({
   original: T;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
-  parentDraft?: any;
+  parentDraft?: ProxyDraft | null;
   key?: string | symbol;
   patches?: Patches;
   inversePatches?: Patches;

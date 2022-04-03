@@ -9,11 +9,11 @@ export function makeChange(
   if (proxyDraft.parent) {
     proxyDraft.parent.updated = true;
     proxyDraft.parent.assigned ??= {};
-    if (proxyDraft.key) {
+    if (typeof proxyDraft.key !== 'undefined' && proxyDraft.key !== null) {
       proxyDraft.parent.assigned![proxyDraft.key] = true;
     }
     ensureShallowCopy(proxyDraft.parent);
-    if (proxyDraft.key) {
+    if (typeof proxyDraft.key !== 'undefined' && proxyDraft.key !== null) {
       if (patches) {
         const [last] = patches.slice(-1);
         last[1].unshift(proxyDraft.key);
@@ -24,12 +24,14 @@ export function makeChange(
       }
       if (proxyDraft.parent.copy instanceof Map) {
         proxyDraft.parent.copy.set(proxyDraft.key, proxyDraft.copy);
+      } else if (proxyDraft.parent.copy instanceof Set) {
+        // for Set
       } else {
         proxyDraft.parent.copy![proxyDraft.key] = proxyDraft.copy;
       }
     }
     if (proxyDraft.parent.parent) {
-      makeChange(proxyDraft.parent.parent);
+      makeChange(proxyDraft.parent, patches, inversePatches);
     }
   } else {
     proxyDraft.updated = true;

@@ -11,9 +11,10 @@ export interface ProxyDraft {
   assigned: Record<string | symbol, any> | null;
   original: any;
   copy: Record<string | symbol, any> | null;
-  parent: ProxyDraft;
+  parent?: ProxyDraft | null;
   proxy: ProxyDraft | null;
   key?: string | symbol;
+  setMap?: Map<object, ProxyDraft>;
 }
 
 export type Patches = [Operation, (string | number | symbol)[], any[]][];
