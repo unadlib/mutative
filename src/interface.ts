@@ -1,9 +1,5 @@
 import { DraftType, Operation } from './constant';
 
-declare global {
-  var Record: new (...args: any[]) => Readonly<Record<string, any>>;
-  var Tuple: new (...args: any[]) => ReadonlyArray<any>;
-}
 export interface ProxyDraft {
   type: DraftType;
   updated: boolean;

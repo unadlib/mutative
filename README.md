@@ -24,3 +24,4 @@ const { state } = create(baseState, (draft) => {
 - `apply()`
 - `createDraft()`
 - `finalizeDraft()`
+- `enableRecordTuple()`

@@ -1,0 +1,7 @@
+{
+  "testMatch": ["**/test/**/*.test.[jt]s?(x)"],
+  "preset": "ts-jest",
+  "globals": {
+    "__DEV__": true
+  }
+}
