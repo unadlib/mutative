@@ -2,7 +2,15 @@ import type { ProxyDraft } from '../interface';
 
 export function ensureShallowCopy(target: ProxyDraft) {
   if (target.copy) return;
-  if (Array.isArray(target.original)) {
+  const { Record, Tuple } = globalThis;
+  if (Record && target.original instanceof Record) {
+    target.copy = {};
+    Object.keys(target.original).forEach((key) => {
+      target.copy![key] = target.original[key];
+    });
+  } else if (Tuple && target.original instanceof Tuple) {
+    target.copy = Array.prototype.concat.call(Array.from(target.original));
+  } else if (Array.isArray(target.original)) {
     target.copy = Array.prototype.concat.call(target.original);
   } else if (target.original instanceof Set) {
     target.copy = new Set(target.original.values());

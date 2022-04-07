@@ -30,6 +30,7 @@ export function createMapHandler({
   state,
   finalities,
   proxiesMap,
+  enableRecordTuple,
   patches,
   inversePatches,
 }: {
@@ -38,6 +39,7 @@ export function createMapHandler({
   state: any;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
+  enableRecordTuple: boolean;
   patches?: Patches;
   inversePatches?: Patches;
 }) {
@@ -97,6 +99,7 @@ export function createMapHandler({
           inversePatches,
           finalities,
           proxiesMap,
+          enableRecordTuple,
         });
         target.copy!.set(_key, currentDraft);
         finalities.unshift(() => {

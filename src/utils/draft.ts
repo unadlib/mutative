@@ -21,12 +21,15 @@ export function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
 }
 
 export function isDraftable(value: any) {
+  const { Record, Tuple } = globalThis;
   return (
-    !!value &&
-    ((typeof value === 'object' &&
-      Object.getPrototypeOf(value) === Object.prototype) ||
-      Array.isArray(value) ||
-      value instanceof Map ||
-      value instanceof Set)
+    (!!value &&
+      ((typeof value === 'object' &&
+        Object.getPrototypeOf(value) === Object.prototype) ||
+        Array.isArray(value) ||
+        value instanceof Map ||
+        value instanceof Set)) ||
+    (Record && value instanceof Record) ||
+    (Tuple && value instanceof Tuple)
   );
 }

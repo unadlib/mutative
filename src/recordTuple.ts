@@ -59,7 +59,3 @@ export function convertToImmutable<T extends Record<string, any> | any[]>(
     );
   }
 }
-
-export function enableRecordTuple() {
-  // TODO:
-}

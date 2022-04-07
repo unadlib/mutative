@@ -13,17 +13,20 @@ import {
   latest,
   makeChange,
 } from './utils';
+import { convertToImmutable } from './recordTuple';
 
 const mutableObjectMethods = ['delete', 'set'];
 
 function createGetter({
   proxiesMap,
   finalities,
+  enableRecordTuple,
   patches,
   inversePatches,
 }: {
   proxiesMap: WeakMap<object, ProxyDraft>;
   finalities: (() => void)[];
+  enableRecordTuple: boolean;
   patches?: Patches;
   inversePatches?: Patches;
 }) {
@@ -92,6 +95,7 @@ function createGetter({
           state,
           finalities,
           proxiesMap,
+          enableRecordTuple,
           patches,
           inversePatches,
         });
@@ -106,20 +110,11 @@ function createGetter({
           key,
           state,
           proxiesMap,
+          enableRecordTuple,
           finalities,
           patches,
           inversePatches,
         });
-      }
-
-      const { Record, Tuple } = globalThis;
-      if (Record && state instanceof Record) {
-        // TODO: implement Record
-        return;
-      }
-      if (Tuple && state instanceof Tuple) {
-        // TODO: implement Tuple
-        return;
       }
       return getDescriptor(state, key)?.value;
     }
@@ -134,15 +129,19 @@ function createGetter({
           inversePatches,
           finalities,
           proxiesMap,
+          enableRecordTuple,
         });
         finalities.unshift(() => {
           const proxyDraft = getProxyDraft(target.copy![key]);
           if (proxyDraft) {
-            target.copy![key] =
+            const value =
               proxyDraft.updated &&
               Object.keys(proxyDraft.assigned ?? {}).length > 0
                 ? getValue(target.copy![key])
                 : proxyDraft.original;
+            target.copy![key] = enableRecordTuple
+              ? convertToImmutable(value)
+              : value;
           }
         });
         return target.copy![key];
@@ -205,16 +204,18 @@ function createSetter({
 
 export function createDraft<T extends object>({
   original,
+  finalities,
+  proxiesMap,
   parentDraft,
+  enableRecordTuple,
   key,
   patches,
   inversePatches,
-  finalities,
-  proxiesMap,
 }: {
   original: T;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
+  enableRecordTuple: boolean;
   parentDraft?: ProxyDraft | null;
   key?: string | symbol;
   patches?: Patches;
@@ -232,7 +233,13 @@ export function createDraft<T extends object>({
     key,
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
-    get: createGetter({ patches, inversePatches, finalities, proxiesMap }),
+    get: createGetter({
+      patches,
+      inversePatches,
+      enableRecordTuple,
+      finalities,
+      proxiesMap,
+    }),
     set: createSetter({ patches, inversePatches, finalities }),
     has(target: ProxyDraft, key: string | symbol) {
       return key in latest(target);

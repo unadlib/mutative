@@ -1,5 +1,6 @@
 import { createDraft, finalizeDraft } from './draft';
 import type { Patches, ProxyDraft, Result } from './interface';
+import { convertToImmutable } from './recordTuple';
 import { deepFreeze, isDraftable } from './utils';
 
 /**
@@ -11,6 +12,7 @@ export function create<T extends object, O extends boolean = false>(
   options?: {
     enablePatches?: O;
     enableAutoFreeze?: boolean;
+    enableRecordTuple?: boolean;
   }
 ) {
   if (!isDraftable(initialState)) {
@@ -26,6 +28,7 @@ export function create<T extends object, O extends boolean = false>(
     patches = [];
     inversePatches = [];
   }
+  const enableRecordTuple = !!options?.enableRecordTuple;
   const draftState = createDraft({
     original: initialState,
     proxiesMap,
@@ -33,11 +36,15 @@ export function create<T extends object, O extends boolean = false>(
     patches,
     inversePatches,
     finalities,
+    enableRecordTuple,
   });
   mutate(draftState);
-  const state = finalizeDraft(draftState, finalities) as T;
-  if (options?.enableAutoFreeze) {
+  let state = finalizeDraft(draftState, finalities) as T;
+  if (options?.enableAutoFreeze && !enableRecordTuple) {
     deepFreeze(state);
+  }
+  if (enableRecordTuple) {
+    state = convertToImmutable(state);
   }
   return {
     state,

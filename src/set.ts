@@ -22,6 +22,7 @@ export function createSetHandler({
   state,
   finalities,
   proxiesMap,
+  enableRecordTuple,
   patches,
   inversePatches,
 }: {
@@ -30,6 +31,7 @@ export function createSetHandler({
   state: any;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
+  enableRecordTuple: boolean;
   patches?: Patches;
   inversePatches?: Patches;
 }) {
@@ -118,6 +120,7 @@ export function createSetHandler({
               inversePatches,
               finalities,
               proxiesMap,
+              enableRecordTuple,
             });
             proxyDraft = getProxyDraft(proxy)!;
             target.setMap!.set(original, proxyDraft);
@@ -151,6 +154,7 @@ export function createSetHandler({
               inversePatches,
               finalities,
               proxiesMap,
+              enableRecordTuple,
             });
             proxyDraft = getProxyDraft(proxy)!;
             target.setMap!.set(original, proxyDraft);
