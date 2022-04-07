@@ -13,8 +13,6 @@ declare global {
   }
 }
 
-Object.fromEntries;
-
 export function convertToImmutable<T extends Record<string, any> | any[]>(
   target: T,
   refs = new WeakSet()
