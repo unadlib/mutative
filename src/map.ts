@@ -46,36 +46,24 @@ export function createMapHandler({
   }
   const proxyProto = {
     set(_key: any, _value: any) {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Map.prototype.set.call(state, _key, _value);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Set, [key], [_key, _value]]);
       inversePatches?.push([Operation.Delete, [key], [_key]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     clear() {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Map.prototype.clear.call(state);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Clear, [key], []]);
       inversePatches?.push([Operation.Construct, [key], [state.entries()]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     delete(_key: any) {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Map.prototype.delete.call(state, _key);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Delete, [key], [_key]]);
       const _value = state.get(_key);
       inversePatches?.push([Operation.Set, [key], [_key, _value]]);
@@ -83,9 +71,6 @@ export function createMapHandler({
       return result;
     },
     get(_key: any): any {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       ensureShallowCopy(target);
       const value = target.copy!.get(_key);
       if (isDraftable(value) && !getProxyDraft(value)) {
@@ -103,8 +88,7 @@ export function createMapHandler({
           const proxyDraft = getProxyDraft(target.copy!.get(_key));
           if (proxyDraft) {
             const value =
-              proxyDraft.updated &&
-              Object.keys(proxyDraft.assigned ?? {}).length > 0
+              proxyDraft.operated.size > 0
                 ? getValue(target.copy!.get(_key))
                 : proxyDraft.original;
             target.copy!.set(_key, value);

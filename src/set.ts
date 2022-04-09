@@ -38,36 +38,24 @@ export function createSetHandler({
   }
   const proxyProto = {
     add(value: any) {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Set.prototype.add.call(state, value);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Set, [key], [value]]);
       inversePatches?.push([Operation.Delete, [key], [value]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     clear() {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Set.prototype.clear.call(state);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Clear, [key], []]);
       inversePatches?.push([Operation.Construct, [key], [state.values()]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     delete(value: any) {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Set.prototype.delete.call(state, value);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Delete, [key], [value]]);
       inversePatches?.push([Operation.Set, [key], [value]]);
       makeChange(target, patches, inversePatches);

@@ -6,9 +6,8 @@ declare global {
 }
 export interface ProxyDraft {
   type: DraftType;
-  updated: boolean;
+  operated: Set<any>;
   finalized: boolean;
-  assigned: Record<string | symbol, any> | null;
   original: any;
   copy: Record<string | symbol, any> | null;
   parent?: ProxyDraft | null;

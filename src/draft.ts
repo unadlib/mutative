@@ -33,11 +33,7 @@ function createGetter({
       finalities.unshift(() => {
         if (target.finalized) return;
         target.finalized = true;
-        if (
-          target.copy instanceof Set &&
-          target.updated &&
-          Object.keys(target.assigned ?? {}).length > 0
-        ) {
+        if (target.copy instanceof Set && target.operated.size > 0) {
           const iterator = Array.from(target.copy);
           target.copy.clear();
           for (const item of iterator) {
@@ -45,8 +41,7 @@ function createGetter({
               const proxyDraft = target.setMap?.get(item);
               if (proxyDraft) {
                 const value =
-                  proxyDraft.updated &&
-                  Object.keys(proxyDraft.assigned ?? {}).length > 0
+                  proxyDraft.operated.size > 0
                     ? proxyDraft.copy
                     : proxyDraft.original;
                 target.copy.add(value);
@@ -139,8 +134,7 @@ function createGetter({
           const proxyDraft = getProxyDraft(target.copy![key]);
           if (proxyDraft) {
             target.copy![key] =
-              proxyDraft.updated &&
-              Object.keys(proxyDraft.assigned ?? {}).length > 0
+              proxyDraft.operated.size > 0
                 ? getValue(target.copy![key])
                 : proxyDraft.original;
           }
@@ -167,7 +161,7 @@ function createSetter({
   inversePatches?: Patches;
 }) {
   return function set(target: ProxyDraft, key: string, value: any) {
-    if (!target.updated) {
+    if (!target.copy) {
       ensureShallowCopy(target);
     }
     const previousState = target.copy![key];
@@ -180,9 +174,7 @@ function createSetter({
       });
     }
     target.copy![key] = value;
-    target.assigned ??= {};
-    target.assigned![key] = true;
-    target.updated = true;
+    target.operated.add(key);
     patches?.push([Operation.Set, [key], [value]]);
     if (Array.isArray(target.original)) {
       const numberKey = Number(key);
@@ -223,8 +215,7 @@ export function createDraft<T extends object>({
   const proxyDraft: ProxyDraft = {
     type: DraftType.Object,
     finalized: false,
-    updated: false,
-    assigned: null,
+    operated: new Set(),
     parent: parentDraft,
     original,
     copy: null,
@@ -265,16 +256,12 @@ export function createDraft<T extends object>({
       throw new Error('Cannot define property on draft');
     },
     deleteProperty(target: ProxyDraft, key: string | symbol) {
-      if (!target.updated) {
+      if (!target.copy) {
         ensureShallowCopy(target);
-        target.assigned = {};
       }
       const previousState = target.copy![key];
       delete target.copy![key];
-      if (target.assigned) {
-        delete target.assigned![key];
-      }
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Delete, [key], []]);
       inversePatches?.push([Operation.Set, [key], [previousState]]);
       makeChange(target, patches, inversePatches);
@@ -294,6 +281,6 @@ export function finalizeDraft<T>(result: T, finalities: (() => void)[]) {
   for (const finalize of finalities) {
     finalize();
   }
-  if (!proxyDraft.updated) return proxyDraft.original;
+  if (!proxyDraft.operated.size) return proxyDraft.original;
   return proxyDraft.copy;
 }

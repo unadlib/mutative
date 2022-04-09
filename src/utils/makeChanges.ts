@@ -7,10 +7,8 @@ export function makeChange(
   inversePatches?: Patches
 ) {
   if (proxyDraft.parent) {
-    proxyDraft.parent.updated = true;
-    proxyDraft.parent.assigned ??= {};
     if (typeof proxyDraft.key !== 'undefined' && proxyDraft.key !== null) {
-      proxyDraft.parent.assigned![proxyDraft.key] = true;
+      proxyDraft.parent.operated.add(proxyDraft.key);
     }
     ensureShallowCopy(proxyDraft.parent);
     if (typeof proxyDraft.key !== 'undefined' && proxyDraft.key !== null) {
@@ -33,7 +31,5 @@ export function makeChange(
     if (proxyDraft.parent.parent) {
       makeChange(proxyDraft.parent, patches, inversePatches);
     }
-  } else {
-    proxyDraft.updated = true;
   }
 }

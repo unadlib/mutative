@@ -30,11 +30,8 @@ export function createArrayHandler({
 }) {
   return {
     pop() {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Array.prototype.pop.apply(state);
-      target.updated = true;
+      target.operated.add(key);
       const [last] = state.slice(-1);
       patches?.push([Operation.Pop, [key], []]);
       inversePatches?.push([Operation.Push, [key], [last]]);
@@ -42,12 +39,8 @@ export function createArrayHandler({
       return result;
     },
     push(...args: any[]) {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Array.prototype.push.apply(state, args);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Push, [key], args]);
       inversePatches?.push([
         Operation.Shift,
@@ -58,49 +51,33 @@ export function createArrayHandler({
       return result;
     },
     reverse() {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Array.prototype.reverse.apply(state);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Reverse, [key], []]);
       inversePatches?.push([Operation.Reverse, [key], []]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     shift() {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const [first] = state;
       const result = Array.prototype.shift.apply(state);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Shift, [key], []]);
       inversePatches?.push([Operation.Unshift, [key], [first]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     unshift(...args: any[]) {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Array.prototype.unshift.apply(state, args);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Unshift, [key], [args]]);
       inversePatches?.push([Operation.Splice, [key], [0, args.length]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     splice(...args: any) {
-      if (!target.updated) {
-        target.assigned = {};
-      }
       const result = Array.prototype.splice.apply(state, args);
-      target.assigned![key] = true;
-      target.updated = true;
+      target.operated.add(key);
       patches?.push([Operation.Splice, [key], [args]]);
       // TODO: inverse patches
       // const [startIndex, deleteCount] = args;
