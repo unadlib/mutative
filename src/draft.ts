@@ -174,7 +174,11 @@ function createSetter({
       });
     }
     target.copy![key] = value;
-    target.operated.add(key);
+    if (value === target.original[key]) {
+      target.operated.delete(key);
+    } else {
+      target.operated.add(key);
+    }
     patches?.push([Operation.Set, [key], [value]]);
     if (Array.isArray(target.original)) {
       const numberKey = Number(key);
@@ -261,7 +265,11 @@ export function createDraft<T extends object>({
       }
       const previousState = target.copy![key];
       delete target.copy![key];
-      target.operated.add(key);
+      if (!Object.hasOwnProperty.call(target.original, key)) {
+        target.operated.delete(key);
+      } else {
+        target.operated.add(key);
+      }
       patches?.push([Operation.Delete, [key], []]);
       inversePatches?.push([Operation.Set, [key], [previousState]]);
       makeChange(target, patches, inversePatches);

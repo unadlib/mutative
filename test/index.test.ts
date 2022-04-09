@@ -27,6 +27,21 @@ describe('base', () => {
     expect(state.foobar).toBe(data.foobar);
   });
 
+  test('no updates for object', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {},
+    };
+
+    const { state } = create(data, (draft) => {
+      draft.foo.bar = 'new str';
+      draft.foo.bar = 'str';
+    });
+    expect(state).toBe(data);
+  });
+
   test('delete key in object', () => {
     const data = {
       foo: {
@@ -542,9 +557,8 @@ describe('base', () => {
       draft.list.copyWithin(-3, -3);
     });
     expect(state).toEqual({ bar: {}, list: [1, 2, 3, 4, 5] });
-    expect(state).not.toBe(data);
-    expect(state.bar).toBe(data.bar);
-    expect(state.list).not.toBe(data.list);
+    // no updates
+    expect(state).toBe(data);
   });
 
   test('base set add', () => {
@@ -864,5 +878,22 @@ describe('base', () => {
     expect(state).not.toBe(data);
     expect([...state.set.values()][0]).not.toBe([...data.set.values()][0]);
     expect([...state.set.values()][1]).toBe([...data.set.values()][1]);
+  });
+
+  test('no update for map', () => {
+    const data = {
+      map: new Map([
+        [1, 1],
+        [2, 2],
+        [3, 3],
+      ]),
+      foo: 'bar',
+    };
+
+    const { state } = create(data, (draft) => {
+      draft.map.set(1, 2);
+      draft.map.set(1, 1);
+    });
+    expect(state).toBe(data);
   });
 });

@@ -47,15 +47,23 @@ export function createMapHandler({
   const proxyProto = {
     set(_key: any, _value: any) {
       const result = Map.prototype.set.call(state, _key, _value);
-      target.operated.add(key);
-      patches?.push([Operation.Set, [key], [_key, _value]]);
+      if (target.original.get(_key) === _value) {
+        target.operated.delete(_key);
+      } else {
+        target.operated.add(_key);
+      }
+      patches?.push([Operation.Set, [_key], [_key, _value]]);
       inversePatches?.push([Operation.Delete, [key], [_key]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     clear() {
       const result = Map.prototype.clear.call(state);
-      target.operated.add(key);
+      if (!target.original.size) {
+        target.operated.delete(key);
+      } else {
+        target.operated.add(key);
+      }
       patches?.push([Operation.Clear, [key], []]);
       inversePatches?.push([Operation.Construct, [key], [state.entries()]]);
       makeChange(target, patches, inversePatches);
@@ -63,7 +71,11 @@ export function createMapHandler({
     },
     delete(_key: any) {
       const result = Map.prototype.delete.call(state, _key);
-      target.operated.add(key);
+      if (target.original.has(_key)) {
+        target.operated.add(_key);
+      } else {
+        target.operated.delete(_key);
+      }
       patches?.push([Operation.Delete, [key], [_key]]);
       const _value = state.get(_key);
       inversePatches?.push([Operation.Set, [key], [_key, _value]]);
