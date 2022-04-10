@@ -105,16 +105,6 @@ function createGetter({
           inversePatches,
         });
       }
-
-      const { Record, Tuple } = globalThis;
-      if (Record && state instanceof Record) {
-        // TODO: implement Record
-        return;
-      }
-      if (Tuple && state instanceof Tuple) {
-        // TODO: implement Tuple
-        return;
-      }
       return getDescriptor(state, key)?.value;
     }
     if (isDraftable(value) && !getProxyDraft(value)) {
@@ -160,9 +150,7 @@ function createSetter({
   inversePatches?: Patches;
 }) {
   return function set(target: ProxyDraft, key: string, value: any) {
-    if (!target.copy) {
-      ensureShallowCopy(target);
-    }
+    ensureShallowCopy(target);
     const previousState = target.copy![key];
     if (getProxyDraft(value)) {
       finalities.unshift(() => {

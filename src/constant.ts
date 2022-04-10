@@ -6,8 +6,6 @@ export const enum DraftType {
   Array = 'array',
   Map = 'map',
   Set = 'set',
-  Record = 'record',
-  Tuple = 'tuple',
 }
 
 export const enum Operation {
