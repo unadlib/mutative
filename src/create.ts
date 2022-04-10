@@ -10,7 +10,7 @@ export function create<T extends object, O extends boolean = false>(
   mutate: (draftState: T) => void,
   options?: {
     enablePatches?: O;
-    enableAutoFreeze?: boolean;
+    enableFreeze?: boolean;
   }
 ) {
   if (!isDraftable(initialState)) {
@@ -33,15 +33,9 @@ export function create<T extends object, O extends boolean = false>(
     patches,
     inversePatches,
     finalities,
+    enableFreeze: options?.enableFreeze,
   });
   mutate(draftState);
-  const state = finalizeDraft(draftState, finalities) as T;
-  if (options?.enableAutoFreeze) {
-    deepFreeze(state);
-  }
-  return {
-    state,
-    patches,
-    inversePatches,
-  } as Result<T, O>;
+  const state = finalizeDraft(draftState) as T;
+  return { state, patches, inversePatches } as Result<T, O>;
 }

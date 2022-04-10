@@ -125,6 +125,6 @@ measure('mutative with autofreeze * ' + MAX, () => {
     create(frozenBazeState, (draft) => {
       draft.data = dataSet;
     }, {
-      enableAutoFreeze: true,
+      enableFreeze: true,
     });
 });

@@ -10,10 +10,12 @@ export interface ProxyDraft {
   finalized: boolean;
   original: any;
   copy: Record<string | symbol, any> | null;
-  parent?: ProxyDraft | null;
   proxy: ProxyDraft | null;
+  finalities: (() => void)[];
+  parent?: ProxyDraft | null;
   key?: string | symbol;
   setMap?: Map<object, ProxyDraft>;
+  enableFreeze?: boolean;
 }
 
 export type Patches = [Operation, (string | number | symbol)[], any[]][];

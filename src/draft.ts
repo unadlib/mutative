@@ -4,6 +4,7 @@ import { DraftType, Operation, PROXY_DRAFT } from './constant';
 import { createMapHandler, mutableMapMethods } from './map';
 import { createSetHandler, mutableSetMethods } from './set';
 import {
+  deepFreeze,
   ensureShallowCopy,
   getDescriptor,
   getProxyDraft,
@@ -13,8 +14,6 @@ import {
   latest,
   makeChange,
 } from './utils';
-
-const mutableObjectMethods = ['delete', 'set'];
 
 function createGetter({
   proxiesMap,
@@ -207,6 +206,7 @@ export function createDraft<T extends object>({
   inversePatches,
   finalities,
   proxiesMap,
+  enableFreeze,
 }: {
   original: T;
   finalities: (() => void)[];
@@ -215,6 +215,7 @@ export function createDraft<T extends object>({
   key?: string | symbol;
   patches?: Patches;
   inversePatches?: Patches;
+  enableFreeze?: boolean;
 }): T {
   const proxyDraft: ProxyDraft = {
     type: DraftType.Object,
@@ -225,6 +226,8 @@ export function createDraft<T extends object>({
     copy: null,
     proxy: null,
     key,
+    finalities,
+    enableFreeze,
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
     get: createGetter({ patches, inversePatches, finalities, proxiesMap }),
@@ -284,11 +287,16 @@ export function createDraft<T extends object>({
   return proxy;
 }
 
-export function finalizeDraft<T>(result: T, finalities: (() => void)[]) {
+export function finalizeDraft<T>(result: T) {
   const proxyDraft: ProxyDraft = getProxyDraft(result as any)!;
-  for (const finalize of finalities) {
+  for (const finalize of proxyDraft.finalities) {
     finalize();
   }
-  if (!proxyDraft.operated.size) return proxyDraft.original;
-  return proxyDraft.copy;
+  const state = !proxyDraft.operated.size
+    ? proxyDraft.original
+    : proxyDraft.copy;
+  if (proxyDraft.enableFreeze) {
+    deepFreeze(state);
+  }
+  return state;
 }
