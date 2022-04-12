@@ -883,16 +883,16 @@ describe('base', () => {
   test('no update for map', () => {
     const data = {
       map: new Map([
-        [1, 1],
-        [2, 2],
-        [3, 3],
+        [1, { a: { b: 1 } }],
+        [2, { a: { b: 2 } }],
+        [3, { a: { b: 3 } }],
       ]),
       foo: 'bar',
     };
 
     const { state } = create(data, (draft) => {
-      draft.map.set(1, 2);
-      draft.map.set(1, 1);
+      draft.map.get(1)!.a.b = 2;
+      draft.map.get(1)!.a.b = 1;
     });
     expect(state).toBe(data);
   });

@@ -1,6 +1,6 @@
 import { createDraft, finalizeDraft } from './draft';
 import type { Patches, ProxyDraft, Result } from './interface';
-import { deepFreeze, isDraftable } from './utils';
+import { isDraftable } from './utils';
 
 /**
  * something

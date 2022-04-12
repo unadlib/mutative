@@ -160,6 +160,5 @@ export function createMapHandler({
     },
   };
   // TODO: refactor for better performance
-  // @ts-ignore
-  return proxyProto[key].bind(proxyProto);
+  return proxyProto[key as keyof typeof proxyProto].bind(proxyProto);
 }

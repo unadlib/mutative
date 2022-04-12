@@ -52,3 +52,8 @@ const { state, patches, inversePatches } = create(baseState, (draft) => {
 
 const nextState = apply(state, patches);
 ```
+
+- `current`
+- `original`
+- `Draft<T>`
+- `Patches`

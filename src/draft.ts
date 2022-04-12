@@ -130,10 +130,10 @@ function createGetter({
         });
         return target.copy![key];
       } else {
-        // TODO: think about set proxy draft parent key for some key
-        // @ts-ignore
-        // proxyDraft[PROXY_DRAFT].key = key;
-        return proxyDraft;
+        if (proxyDraft.key !== key) {
+          proxyDraft.key = key;
+        }
+        return proxyDraft.proxy;
       }
     }
     return value;
@@ -206,6 +206,7 @@ export function createDraft<T extends object>({
   enableFreeze?: boolean;
 }): T {
   const proxyDraft: ProxyDraft = {
+    // todo: check
     type: DraftType.Object,
     finalized: false,
     operated: new Set(),
@@ -270,7 +271,7 @@ export function createDraft<T extends object>({
   finalities.unshift(revoke);
   proxyDraft.proxy = proxy;
   if (original) {
-    proxiesMap.set(original, proxy);
+    proxiesMap.set(original, proxyDraft);
   }
   return proxy;
 }

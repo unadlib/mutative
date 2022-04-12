@@ -155,6 +155,6 @@ export function createSetHandler({
       return this.values();
     },
   };
-  // @ts-ignore
-  return proxyProto[key].bind(proxyProto);
+  // TODO: refactor for better performance
+  return proxyProto[key as keyof typeof proxyProto].bind(proxyProto);
 }
