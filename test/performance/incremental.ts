@@ -115,11 +115,10 @@ measure(
   (baseState) => {
     let state = baseState;
     for (let i = 0; i < MAX; i++) {
-      const result = create(state, (draft) => {
+      state = create(state, (draft) => {
         draft.ids.push(i);
         draft.map[i] = createTestObject();
       });
-      state = result.state;
     }
   }
 );

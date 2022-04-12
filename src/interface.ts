@@ -17,5 +17,5 @@ export interface ProxyDraft {
 export type Patches = [Operation, (string | number | symbol)[], any[]][];
 
 export type Result<T, O extends boolean> = O extends true
-  ? { state: T; patches: Patches; inversePatches: Patches }
-  : { state: T; patches: undefined; inversePatches: undefined };
+  ? [state: T, patches: Patches, inversePatches: Patches]
+  : T;

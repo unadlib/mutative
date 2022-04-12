@@ -15,7 +15,7 @@ const baseState = {
   list: [{ text: 'todo' }],
 };
 
-const { state } = create(baseState, (draft) => {
+const state = create(baseState, (draft) => {
   draft.foo = 'foobar';
   draft.list.push({ text: 'learning' });
 });
@@ -29,10 +29,10 @@ const baseState = {
   list: [{ text: 'todo' }],
 };
 
-const { draft, finalize } = prepare(baseState, { enableFreeze: true });
+const [draft, finalize] = prepare(baseState, { enableFreeze: true });
 draft.foo = 'foobar';
 draft.list.push({ text: 'learning' });
-const { state } = finalize();
+const state = finalize();
 ```
 
 - `apply()`
@@ -43,17 +43,22 @@ const baseState = {
   list: [{ text: 'todo' }],
 };
 
-const { state, patches, inversePatches } = create(baseState, (draft) => {
-  draft.foo = 'foobar';
-  draft.list.push({ text: 'learning' });
-}, {
-  enablePatches: true,
-});
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.foo = 'foobar';
+    draft.list.push({ text: 'learning' });
+  },
+  {
+    enablePatches: true,
+  }
+);
 
 const nextState = apply(state, patches);
 ```
 
-- `current`
-- `original`
+- `current()`
+- `original()`
 - `Draft<T>`
+- `Immutable<T>`
 - `Patches`

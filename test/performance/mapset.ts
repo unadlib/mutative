@@ -46,7 +46,7 @@ measure(
   () => baseState,
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
-      const { state } = create(baseState, (draft) => {
+      const state = create(baseState, (draft) => {
         draft.set.add({ [i]: i });
         draft.map.set({ [i]: i }, { [i]: i });
       });
@@ -78,7 +78,7 @@ measure(
   () => baseState,
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
-      const { state } = create(
+      const state = create(
         baseState,
         (draft) => {
           draft.set.add({ [i]: i });
@@ -116,7 +116,7 @@ measure(
   () => baseState,
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
-      const { state } = create(
+      const state = create(
         baseState,
         (draft) => {
           draft.set.add({ [i]: i });

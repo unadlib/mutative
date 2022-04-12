@@ -9,7 +9,7 @@ describe('base', () => {
       foobar: {},
     };
 
-    const { state } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.foo.bar = 'new str';
     });
     expect(state).toEqual({ foo: { bar: 'new str' }, foobar: {} });
@@ -35,7 +35,7 @@ describe('base', () => {
       foobar: {},
     };
 
-    const { state } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.foo.bar = 'new str';
       draft.foo.bar = 'str';
     });
@@ -54,7 +54,7 @@ describe('base', () => {
       },
     };
 
-    const { state, inversePatches, patches } = create(
+    const [state, patches, inversePatches] = create(
       data,
       (draft) => {
         draft.foo.bar.b = 'new str';
@@ -88,7 +88,7 @@ describe('base', () => {
       foobar: {},
     };
 
-    const { state } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       const foo = draft.foo;
       draft.foobar;
       foo.bar = { baz: 'new baz' };
@@ -99,7 +99,7 @@ describe('base', () => {
   test('object case2', () => {
     const d = { e: 1 };
     const baseState = { a: { b: { c: { d } } }, f: { d } };
-    const { state } = create(baseState, (draft) => {
+    const state = create(baseState, (draft) => {
       const a = draft.a.b;
       // @ts-ignore
       draft.x = a;
@@ -112,7 +112,7 @@ describe('base', () => {
   test('object case3', () => {
     const d = { e: 1 };
     const baseState = { a: { c: { e: 2 }, b: { c: { d } } }, f: { d } };
-    const { state } = create(baseState, (draft) => {
+    const state = create(baseState, (draft) => {
       const a = draft.a.c;
       // @ts-ignore
       draft.x = a;
@@ -163,7 +163,7 @@ describe('base', () => {
       bar: {},
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.list.push('bar');
@@ -192,7 +192,7 @@ describe('base', () => {
       bar: {},
     };
 
-    const { state, patches, inversePatches } = create(
+    const [state, patches, inversePatches] = create(
       data,
       (draft) => {
         draft.list[1] = 'bar';
@@ -220,7 +220,7 @@ describe('base', () => {
       bar: {},
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.list[1].a = 4;
@@ -248,7 +248,7 @@ describe('base', () => {
       bar: { a: { c: 1 }, b: { x: 1 } },
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.a = draft.bar;
@@ -270,7 +270,7 @@ describe('base', () => {
       bar: { a: { c: 1 }, b: { x: 1 } },
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.bar.a.c = 2;
@@ -292,7 +292,7 @@ describe('base', () => {
       bar: { a: [1, 2, 3], b: { x: 1 } },
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.bar.a.push(4);
@@ -314,7 +314,7 @@ describe('base', () => {
       bar: { a: { c: 1 }, b: { x: 1 } },
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.bar.a.c = 2;
@@ -337,7 +337,7 @@ describe('base', () => {
       bar: { a, b: { a } },
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.bar.a.c = 2;
@@ -355,7 +355,7 @@ describe('base', () => {
       list: [{ text: '' }],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.list.push({ text: 'foo' });
     });
     expect(state).toEqual({ bar: {}, list: [{ text: '' }, { text: 'foo' }] });
@@ -372,7 +372,7 @@ describe('base', () => {
       list: [{ text: '' }],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.list.pop();
     });
     expect(state).toEqual({ bar: {}, list: [] });
@@ -387,7 +387,7 @@ describe('base', () => {
       list: [{ text: 'foobar' }, { text: 'foo' }],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.list.reverse();
     });
     expect(state).toEqual({
@@ -407,7 +407,7 @@ describe('base', () => {
       list: [{ text: 'foobar' }, { text: 'foo' }],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.list.shift();
     });
     expect(state).toEqual({ bar: {}, list: [{ text: 'foo' }] });
@@ -422,7 +422,7 @@ describe('base', () => {
       list: [{ text: 'foobar' }],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.list.unshift({ text: 'foo' });
     });
     expect(state).toEqual({
@@ -440,7 +440,7 @@ describe('base', () => {
       list: [{ text: 'foobar' }, { text: 'bar' }, { text: 'bar1' }],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.list.splice(1, 2, { text: 'foo' });
     });
     expect(state).toEqual({
@@ -458,7 +458,7 @@ describe('base', () => {
       list: [3, 1, 2, 4],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.list.sort();
     });
     expect(state).toEqual({ bar: {}, list: [1, 2, 3, 4] });
@@ -473,7 +473,7 @@ describe('base', () => {
       list: new Array(3),
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.list.fill(1);
     });
     expect(state).toEqual({ bar: {}, list: [1, 1, 1] });
@@ -488,7 +488,7 @@ describe('base', () => {
       list: [1, 2, 3, 4, 5],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       // @ts-ignore
       draft.list.copyWithin(-2);
     });
@@ -504,7 +504,7 @@ describe('base', () => {
       list: [1, 2, 3, 4, 5],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       // @ts-ignore
       draft.list.copyWithin(0, 3);
     });
@@ -520,7 +520,7 @@ describe('base', () => {
       list: [1, 2, 3, 4, 5],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       // @ts-ignore
       draft.list.copyWithin(0, 3, 4);
     });
@@ -536,7 +536,7 @@ describe('base', () => {
       list: [1, 2, 3, 4, 5],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       // @ts-ignore
       draft.list.copyWithin(-2, -3, -1);
     });
@@ -552,7 +552,7 @@ describe('base', () => {
       list: [1, 2, 3, 4, 5],
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       // @ts-ignore
       draft.list.copyWithin(-3, -3);
     });
@@ -567,7 +567,7 @@ describe('base', () => {
       set: new Set([1, 2, 3]),
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.set.add(4);
     });
     expect(state).toEqual({
@@ -585,7 +585,7 @@ describe('base', () => {
       set: new Set([1, 2, 3]),
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.set.clear();
     });
     expect(state).toEqual({
@@ -603,7 +603,7 @@ describe('base', () => {
       set: new Set([1, 2, 3]),
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.bar.a;
       draft.set.delete(2);
     });
@@ -626,7 +626,7 @@ describe('base', () => {
       ]),
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.map.set(4, 4);
     });
     expect(state).toEqual({
@@ -653,7 +653,7 @@ describe('base', () => {
       ]),
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.map.clear();
     });
     expect(state).toEqual({
@@ -675,7 +675,7 @@ describe('base', () => {
       ]),
     };
 
-    const { state, patches, inversePatches } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.bar.a;
       draft.map.delete(2);
     });
@@ -697,7 +697,7 @@ describe('base', () => {
       list: [{ id: 1 }],
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.list.push({ id: 2 });
@@ -724,7 +724,7 @@ describe('base', () => {
       state.list[1].id = 3;
     }).toThrowError();
 
-    const result = create(
+    const state1 = create(
       state,
       (draft) => {
         draft.list.push({ id: 2 });
@@ -735,13 +735,13 @@ describe('base', () => {
       }
     );
     expect(() => {
-      result.state.list[0].id = 3;
+      state1.list[0].id = 3;
     }).toThrowError();
     expect(() => {
-      result.state.list[1].id = 3;
+      state1.list[1].id = 3;
     }).toThrowError();
-    result.state.list.push({ id: 4 });
-    result.state.bar.a = 4;
+    state1.list.push({ id: 4 });
+    state1.bar.a = 4;
   });
 
   test('base set freeze', () => {
@@ -749,7 +749,7 @@ describe('base', () => {
       set: new Set([1, 2, 3]),
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.set.delete(2);
@@ -782,7 +782,7 @@ describe('base', () => {
       ]),
     };
 
-    const { state, patches, inversePatches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.map.delete(2);
@@ -821,7 +821,7 @@ describe('base', () => {
       ]),
     };
 
-    const { state } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       // @ts-ignore
       draft.map.values().next().value.x = 1;
       for (const [key, item] of draft.map) {
@@ -853,7 +853,7 @@ describe('base', () => {
       set: new Set([a, b]),
     };
 
-    const { state, patches } = create(
+    const state = create(
       data,
       (draft) => {
         draft.set.values().next().value.x = 1;
@@ -890,7 +890,7 @@ describe('base', () => {
       foo: 'bar',
     };
 
-    const { state } = create(data, (draft) => {
+    const state = create(data, (draft) => {
       draft.map.get(1)!.a.b = 2;
       draft.map.get(1)!.a.b = 1;
     });

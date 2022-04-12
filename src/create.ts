@@ -13,6 +13,7 @@ export function create<T extends object, O extends boolean = false>(
     enableFreeze?: boolean;
   }
 ) {
+  const enablePatches = options?.enablePatches ?? false;
   if (!isDraftable(initialState)) {
     throw new Error(
       'create() only supports plain object, array, set, map, record, and tuple.'
@@ -22,7 +23,7 @@ export function create<T extends object, O extends boolean = false>(
   const finalities: (() => void)[] = [];
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
-  if (options?.enablePatches) {
+  if (enablePatches) {
     patches = [];
     inversePatches = [];
   }
@@ -37,5 +38,8 @@ export function create<T extends object, O extends boolean = false>(
   });
   mutate(draftState);
   const state = finalizeDraft(draftState) as T;
-  return { state, patches, inversePatches } as Result<T, O>;
+  return (enablePatches ? [state, patches, inversePatches] : state) as Result<
+    T,
+    O
+  >;
 }
