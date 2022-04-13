@@ -20,14 +20,22 @@ function createGetter({
   finalities,
   patches,
   inversePatches,
+  mutableFilter,
 }: {
   proxiesMap: WeakMap<object, ProxyDraft>;
   finalities: (() => void)[];
   patches?: Patches;
   inversePatches?: Patches;
+  mutableFilter?: (target: any) => boolean;
 }) {
   return function get(target: ProxyDraft, key: string | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
+    if (mutableFilter) {
+      const value = Reflect.get(target.original, key, receiver);
+      if (mutableFilter(value)) {
+        return value;
+      }
+    }
     if (target.original instanceof Set && !target.copy) {
       finalities.unshift(() => {
         if (target.finalized) return;
@@ -88,6 +96,7 @@ function createGetter({
           proxiesMap,
           patches,
           inversePatches,
+          mutableFilter,
         });
       }
       if (
@@ -103,6 +112,7 @@ function createGetter({
           finalities,
           patches,
           inversePatches,
+          mutableFilter,
         });
       }
       return getDescriptor(state, key)?.value;
@@ -118,6 +128,7 @@ function createGetter({
           inversePatches,
           finalities,
           proxiesMap,
+          mutableFilter,
         });
         finalities.unshift(() => {
           const proxyDraft = getProxyDraft(target.copy![key]);
@@ -195,6 +206,7 @@ export function createDraft<T extends object>({
   finalities,
   proxiesMap,
   enableFreeze,
+  mutableFilter,
 }: {
   original: T;
   finalities: (() => void)[];
@@ -204,6 +216,7 @@ export function createDraft<T extends object>({
   patches?: Patches;
   inversePatches?: Patches;
   enableFreeze?: boolean;
+  mutableFilter?: (target: any) => boolean;
 }): T {
   const proxyDraft: ProxyDraft = {
     // todo: check
@@ -219,8 +232,18 @@ export function createDraft<T extends object>({
     enableFreeze,
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
-    get: createGetter({ patches, inversePatches, finalities, proxiesMap }),
-    set: createSetter({ patches, inversePatches, finalities }),
+    get: createGetter({
+      patches,
+      inversePatches,
+      finalities,
+      proxiesMap,
+      mutableFilter,
+    }),
+    set: createSetter({
+      patches,
+      inversePatches,
+      finalities,
+    }),
     has(target: ProxyDraft, key: string | symbol) {
       return key in latest(target);
     },

@@ -896,4 +896,171 @@ describe('base', () => {
     });
     expect(state).toBe(data);
   });
+
+  test('only mutable object', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {} as any,
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.foobar.text = 'new text';
+      },
+      {
+        mutable: (target) => target === data.foobar,
+      }
+    );
+    expect(state).toEqual({
+      foo: { bar: 'str' },
+      foobar: { text: 'new text' },
+    });
+    expect(state).toBe(data);
+  });
+
+  test('object with mutable', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {} as any,
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.foo.bar = 'new str';
+        draft.foobar.text = 'new text';
+      },
+      {
+        mutable: (target) => target === data.foobar,
+      }
+    );
+    expect(state).toEqual({
+      foo: { bar: 'new str' },
+      foobar: { text: 'new text' },
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
+  });
+
+  test('object with mutable cache', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {} as any,
+    };
+
+    const fn = jest.fn();
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.foo.bar = 'new str';
+        draft.foobar.text = 'new text';
+      },
+      {
+        mutable: (target) => target === data.foobar,
+      }
+    );
+    expect(state).toEqual({
+      foo: { bar: 'new str' },
+      foobar: { text: 'new text' },
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
+  });
+
+  test('array with mutable', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      arr: [] as any,
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.foo.bar = 'new str';
+        draft.arr[0] = 'new text';
+      },
+      {
+        mutable: (target) => target === data.arr,
+      }
+    );
+    expect(state).toEqual({
+      foo: { bar: 'new str' },
+      arr: ['new text'],
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.arr).toBe(data.arr);
+  });
+
+  test('map with mutable', () => {
+    const foobar = {} as any;
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      map: new Map([[1, { foobar }]]),
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.foo.bar = 'new str';
+        draft.map.get(1)!.foobar.text = 'new text';
+      },
+      {
+        mutable: (target) => target === foobar,
+      }
+    );
+    expect(state).toEqual({
+      foo: {
+        bar: 'new str',
+      },
+      map: new Map([[1, { foobar: { text: 'new text' } }]]),
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.map.get(1)!.foobar).toBe(foobar);
+  });
+
+  test('set with mutable', () => {
+    const foobar = {} as any;
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      set: new Set([foobar]),
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.foo.bar = 'new str';
+        draft.set.values().next().value.text = 'new text';
+      },
+      {
+        mutable: (target) => target === foobar,
+      }
+    );
+    expect(state).toEqual({
+      foo: {
+        bar: 'new str',
+      },
+      set: new Set([{ text: 'new text' }]),
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect([...state.set.values()][0]).toBe(foobar);
+  });
 });

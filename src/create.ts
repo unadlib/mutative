@@ -11,8 +11,11 @@ export function create<T extends object, O extends boolean = false>(
   options?: {
     enablePatches?: O;
     enableFreeze?: boolean;
+    mutable?: (target: any) => boolean;
   }
 ) {
+  const mutableFilter = options?.mutable;
+  // todo: check initialState with mutableFilter
   const enablePatches = options?.enablePatches ?? false;
   if (!isDraftable(initialState)) {
     throw new Error(
@@ -35,6 +38,7 @@ export function create<T extends object, O extends boolean = false>(
     inversePatches,
     finalities,
     enableFreeze: options?.enableFreeze,
+    mutableFilter,
   });
   mutate(draftState);
   const state = finalizeDraft(draftState) as T;

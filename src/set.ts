@@ -24,6 +24,7 @@ export function createSetHandler({
   proxiesMap,
   patches,
   inversePatches,
+  mutableFilter,
 }: {
   target: ProxyDraft;
   key: string | symbol;
@@ -32,6 +33,7 @@ export function createSetHandler({
   proxiesMap: WeakMap<object, ProxyDraft>;
   patches?: Patches;
   inversePatches?: Patches;
+  mutableFilter?: (target: any) => boolean;
 }) {
   if (key === 'size') {
     return latest(target).size;
@@ -93,6 +95,12 @@ export function createSetHandler({
           const iteratorResult = iterator.next();
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value;
+          if (mutableFilter?.(original)) {
+            return {
+              done: false,
+              value: original,
+            };
+          }
           let proxyDraft = target.setMap!.get(original);
           if (isDraftable(original) && !proxyDraft) {
             const key = Array.from(target.original.values())
@@ -106,6 +114,7 @@ export function createSetHandler({
               inversePatches,
               finalities,
               proxiesMap,
+              mutableFilter,
             });
             proxyDraft = getProxyDraft(proxy)!;
             target.setMap!.set(original, proxyDraft);
@@ -126,6 +135,12 @@ export function createSetHandler({
           const iteratorResult = iterator.next();
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value[0];
+          if (mutableFilter?.(original)) {
+            return {
+              done: false,
+              value: [original, original],
+            };
+          }
           let proxyDraft = target.setMap!.get(original);
           if (isDraftable(original) && !proxyDraft) {
             const key = Array.from(target.original.values())
@@ -139,6 +154,7 @@ export function createSetHandler({
               inversePatches,
               finalities,
               proxiesMap,
+              mutableFilter,
             });
             proxyDraft = getProxyDraft(proxy)!;
             target.setMap!.set(original, proxyDraft);

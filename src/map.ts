@@ -32,6 +32,7 @@ export function createMapHandler({
   proxiesMap,
   patches,
   inversePatches,
+  mutableFilter,
 }: {
   target: ProxyDraft;
   key: string | symbol;
@@ -40,6 +41,7 @@ export function createMapHandler({
   proxiesMap: WeakMap<object, ProxyDraft>;
   patches?: Patches;
   inversePatches?: Patches;
+  mutableFilter?: (target: any) => boolean;
 }) {
   if (key === 'size') {
     return latest<Map<any, any>>(target).size;
@@ -85,6 +87,9 @@ export function createMapHandler({
     get(_key: any): any {
       ensureShallowCopy(target);
       const value = target.copy!.get(_key);
+      if (mutableFilter?.(value)) {
+        return value;
+      }
       if (isDraftable(value) && !getProxyDraft(value)) {
         const currentDraft = createDraft({
           original: target.original.get(_key),
@@ -94,6 +99,7 @@ export function createMapHandler({
           inversePatches,
           finalities,
           proxiesMap,
+          mutableFilter,
         });
         target.copy!.set(_key, currentDraft);
         finalities.unshift(() => {
