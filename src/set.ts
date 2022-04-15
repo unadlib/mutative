@@ -1,5 +1,5 @@
 import type { Patches, ProxyDraft } from './interface';
-import { Operation } from './constant';
+import { CLEAR, Operation } from './constant';
 import { getProxyDraft, isDraftable, latest, makeChange } from './utils';
 import { createDraft } from './draft';
 
@@ -62,9 +62,9 @@ export function createSetHandler({
     clear() {
       const result = Set.prototype.clear.call(state);
       if (!target.original.size) {
-        target.operated.delete(key);
+        target.operated.delete(CLEAR);
       } else {
-        target.operated.add(key);
+        target.operated.add(CLEAR);
       }
       patches?.push([Operation.Clear, [key], []]);
       inversePatches?.push([Operation.Construct, [key], [state.values()]]);

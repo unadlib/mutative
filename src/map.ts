@@ -1,5 +1,5 @@
 import type { Patches, ProxyDraft } from './interface';
-import { Operation } from './constant';
+import { CLEAR, Operation } from './constant';
 import {
   ensureShallowCopy,
   getProxyDraft,
@@ -67,9 +67,9 @@ export function createMapHandler({
     clear() {
       const result = Map.prototype.clear.call(state);
       if (!target.original.size) {
-        target.operated.delete(key);
+        target.operated.delete(CLEAR);
       } else {
-        target.operated.add(key);
+        target.operated.add(CLEAR);
       }
       patches?.push([Operation.Clear, [key], []]);
       inversePatches?.push([Operation.Construct, [key], [state.entries()]]);
