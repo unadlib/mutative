@@ -23,6 +23,7 @@ export function create<T extends object, O extends boolean = false>(
     );
   }
   const proxiesMap = new WeakMap<object, ProxyDraft>();
+  const assignedSet = new WeakSet<any>();
   const finalities: (() => void)[] = [];
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
@@ -39,6 +40,7 @@ export function create<T extends object, O extends boolean = false>(
     finalities,
     enableFreeze: options?.enableFreeze,
     mutableFilter,
+    assignedSet,
   });
   mutate(draftState);
   const state = finalizeDraft(draftState) as T;

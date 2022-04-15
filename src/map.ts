@@ -30,6 +30,7 @@ export function createMapHandler({
   state,
   finalities,
   proxiesMap,
+  assignedSet,
   patches,
   inversePatches,
   mutableFilter,
@@ -39,6 +40,7 @@ export function createMapHandler({
   state: any;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
+  assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
   mutableFilter?: (target: any) => boolean;
@@ -53,6 +55,9 @@ export function createMapHandler({
         target.operated.delete(_key);
       } else {
         target.operated.add(_key);
+      }
+      if (isDraftable(_value)) {
+        assignedSet.add(_value);
       }
       patches?.push([Operation.Set, [_key], [_key, _value]]);
       inversePatches?.push([Operation.Delete, [key], [_key]]);
@@ -100,6 +105,7 @@ export function createMapHandler({
           finalities,
           proxiesMap,
           mutableFilter,
+          assignedSet,
         });
         target.copy!.set(_key, currentDraft);
         finalities.unshift(() => {

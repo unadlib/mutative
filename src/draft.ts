@@ -17,12 +17,14 @@ import {
 
 function createGetter({
   proxiesMap,
+  assignedSet,
   finalities,
   patches,
   inversePatches,
   mutableFilter,
 }: {
   proxiesMap: WeakMap<object, ProxyDraft>;
+  assignedSet: WeakSet<any>;
   finalities: (() => void)[];
   patches?: Patches;
   inversePatches?: Patches;
@@ -94,6 +96,7 @@ function createGetter({
           state,
           finalities,
           proxiesMap,
+          assignedSet,
           patches,
           inversePatches,
           mutableFilter,
@@ -109,6 +112,7 @@ function createGetter({
           key,
           state,
           proxiesMap,
+          assignedSet,
           finalities,
           patches,
           inversePatches,
@@ -118,6 +122,7 @@ function createGetter({
       return getDescriptor(state, key)?.value;
     }
     if (isDraftable(value) && !getProxyDraft(value)) {
+      if (assignedSet.has(value)) return value;
       const proxyDraft = proxiesMap.get(target.original[key]);
       if (!proxyDraft) {
         target.copy![key] = createDraft({
@@ -129,6 +134,7 @@ function createGetter({
           finalities,
           proxiesMap,
           mutableFilter,
+          assignedSet,
         });
         finalities.unshift(() => {
           const proxyDraft = getProxyDraft(target.copy![key]);
@@ -153,10 +159,12 @@ function createGetter({
 
 function createSetter({
   finalities,
+  assignedSet,
   patches,
   inversePatches,
 }: {
   finalities: (() => void)[];
+  assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
 }) {
@@ -176,6 +184,9 @@ function createSetter({
       target.operated.delete(key);
     } else {
       target.operated.add(key);
+    }
+    if (isDraftable(value)) {
+      assignedSet.add(value);
     }
     patches?.push([Operation.Set, [key], [value]]);
     if (Array.isArray(target.original)) {
@@ -205,12 +216,14 @@ export function createDraft<T extends object>({
   inversePatches,
   finalities,
   proxiesMap,
+  assignedSet,
   enableFreeze,
   mutableFilter,
 }: {
   original: T;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
+  assignedSet: WeakSet<any>;
   parentDraft?: ProxyDraft | null;
   key?: string | symbol;
   patches?: Patches;
@@ -238,11 +251,13 @@ export function createDraft<T extends object>({
       finalities,
       proxiesMap,
       mutableFilter,
+      assignedSet,
     }),
     set: createSetter({
       patches,
       inversePatches,
       finalities,
+      assignedSet,
     }),
     has(target: ProxyDraft, key: string | symbol) {
       return key in latest(target);

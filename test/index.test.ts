@@ -948,35 +948,6 @@ describe('base', () => {
     expect(state.foobar).toBe(data.foobar);
   });
 
-  test('object with mutable cache', () => {
-    const data = {
-      foo: {
-        bar: 'str',
-      },
-      foobar: {} as any,
-    };
-
-    const fn = jest.fn();
-
-    const state = create(
-      data,
-      (draft) => {
-        draft.foo.bar = 'new str';
-        draft.foobar.text = 'new text';
-      },
-      {
-        mutable: (target) => target === data.foobar,
-      }
-    );
-    expect(state).toEqual({
-      foo: { bar: 'new str' },
-      foobar: { text: 'new text' },
-    });
-    expect(state).not.toBe(data);
-    expect(state.foo).not.toBe(data.foo);
-    expect(state.foobar).toBe(data.foobar);
-  });
-
   test('array with mutable', () => {
     const data = {
       foo: {
@@ -1062,5 +1033,52 @@ describe('base', () => {
     expect(state).not.toBe(data);
     expect(state.foo).not.toBe(data.foo);
     expect([...state.set.values()][0]).toBe(foobar);
+  });
+
+  test('object changes with mutable data', () => {
+    const foobar = {};
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {} as any,
+    };
+
+    const state = create(data, (draft) => {
+      draft.foobar = foobar;
+      draft.foobar.text = 'new text0';
+      (foobar as any).text = 'new text1';
+    });
+    expect(state).toEqual({
+      foo: { bar: 'str' },
+      foobar: { text: 'new text1' },
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).toBe(data.foo);
+    expect(state.foobar).not.toBe(data.foobar);
+    expect(state.foobar).toBe(foobar);
+  });
+
+  test('object changes with mutable data', () => {
+    const foobar = {};
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {} as any,
+    };
+
+    const state = create(data, (draft) => {
+      draft.foobar = foobar;
+      draft.foobar.text = 'new text';
+    });
+    expect(state).toEqual({
+      foo: { bar: 'str' },
+      foobar: { text: 'new text' },
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).toBe(data.foo);
+    expect(state.foobar).not.toBe(data.foobar);
+    expect(state.foobar).toBe(foobar);
   });
 });

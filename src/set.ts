@@ -22,6 +22,7 @@ export function createSetHandler({
   state,
   finalities,
   proxiesMap,
+  assignedSet,
   patches,
   inversePatches,
   mutableFilter,
@@ -31,6 +32,7 @@ export function createSetHandler({
   state: any;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
+  assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
   mutableFilter?: (target: any) => boolean;
@@ -41,7 +43,11 @@ export function createSetHandler({
   const proxyProto = {
     add(value: any) {
       const result = Set.prototype.add.call(state, value);
+      // todo: check
       target.operated.add(key);
+      if (isDraftable(value)) {
+        assignedSet.add(value);
+      }
       patches?.push([Operation.Set, [key], [value]]);
       inversePatches?.push([Operation.Delete, [key], [value]]);
       makeChange(target, patches, inversePatches);
@@ -115,6 +121,7 @@ export function createSetHandler({
               finalities,
               proxiesMap,
               mutableFilter,
+              assignedSet,
             });
             proxyDraft = getProxyDraft(proxy)!;
             target.setMap!.set(original, proxyDraft);
@@ -155,6 +162,7 @@ export function createSetHandler({
               finalities,
               proxiesMap,
               mutableFilter,
+              assignedSet,
             });
             proxyDraft = getProxyDraft(proxy)!;
             target.setMap!.set(original, proxyDraft);
