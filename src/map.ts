@@ -37,7 +37,7 @@ export function createMapHandler({
 }: {
   target: ProxyDraft;
   key: string | symbol;
-  state: any;
+  state: Map<any, any>;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;

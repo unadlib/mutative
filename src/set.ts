@@ -29,7 +29,7 @@ export function createSetHandler({
 }: {
   target: ProxyDraft;
   key: string | symbol;
-  state: any;
+  state: Set<any>;
   finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
