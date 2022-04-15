@@ -73,6 +73,7 @@ export function createSetHandler({
     },
     delete(value: any) {
       const result = Set.prototype.delete.call(state, value);
+      // todo: check with index
       if (!target.original.has(value)) {
         target.operated.delete(value);
       } else {

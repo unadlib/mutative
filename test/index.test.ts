@@ -55,6 +55,73 @@ describe('base', () => {
     expect(state).toBe(data);
   });
 
+  test('no update for array with push and pop', () => {
+    const data = {
+      arr: ['str'] as any,
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.arr.push('new str');
+      draft.arr.pop();
+    });
+    expect(state).toBe(data);
+  });
+
+  test('no update 2 items for array with push and pop', () => {
+    const data = {
+      arr: ['str'] as any,
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.arr.push('new str', 'new str1');
+      draft.arr.pop();
+      draft.arr.pop();
+    });
+    expect(state).toBe(data);
+  });
+
+  test('no update for array with reverse', () => {
+    const data = {
+      arr: ['1', '3', '2'] as any,
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.arr.reverse();
+      draft.arr.reverse();
+    });
+    expect(state).toBe(data);
+  });
+
+  test('no update for array with shift and unshift', () => {
+    const data = {
+      arr: ['1'] as any,
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.arr.unshift('new str');
+      draft.arr.shift();
+    });
+    expect(state).toBe(data);
+  });
+
+  test('no update 2 items for array with shift and unshift', () => {
+    const data = {
+      arr: ['1'] as any,
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.arr.unshift('new str', 'new str1');
+      draft.arr.shift();
+      draft.arr.shift();
+    });
+    expect(state).toBe(data);
+  });
+
   test('no update for set', () => {
     const data = {
       set: new Set([{}]),

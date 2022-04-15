@@ -78,6 +78,7 @@ export function createMapHandler({
     },
     delete(_key: any) {
       const result = Map.prototype.delete.call(state, _key);
+      // todo: check with index and value
       if (!target.original.has(_key)) {
         target.operated.delete(_key);
       } else {
