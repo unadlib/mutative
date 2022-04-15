@@ -78,10 +78,10 @@ export function createMapHandler({
     },
     delete(_key: any) {
       const result = Map.prototype.delete.call(state, _key);
-      if (target.original.has(_key)) {
-        target.operated.add(_key);
-      } else {
+      if (!target.original.has(_key)) {
         target.operated.delete(_key);
+      } else {
+        target.operated.add(_key);
       }
       patches?.push([Operation.Delete, [key], [_key]]);
       const _value = state.get(_key);
@@ -92,7 +92,7 @@ export function createMapHandler({
     get(_key: any): any {
       ensureShallowCopy(target);
       const value = target.copy!.get(_key);
-      if (mutableFilter?.(value)) {
+      if (mutableFilter?.(value) || assignedSet.has(value)) {
         return value;
       }
       if (isDraftable(value) && !getProxyDraft(value)) {

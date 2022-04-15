@@ -1,6 +1,6 @@
 import { Operation } from './constant';
 import { Patches, ProxyDraft } from './interface';
-import { makeChange } from './utils';
+import { isDraftable, makeChange } from './utils';
 
 export const mutableArrayMethods = [
   // "copyWithin",
@@ -19,15 +19,18 @@ export function createArrayHandler({
   target,
   key,
   state,
+  assignedSet,
   patches,
   inversePatches,
 }: {
   target: ProxyDraft;
   key: string;
   state: any;
+  assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
 }) {
+  // todo: check for changes
   return {
     pop() {
       const result = Array.prototype.pop.apply(state);
@@ -41,6 +44,11 @@ export function createArrayHandler({
     push(...args: any[]) {
       const result = Array.prototype.push.apply(state, args);
       target.operated.add(key);
+      args.forEach((value) => {
+        if (isDraftable(value)) {
+          assignedSet.add(value);
+        }
+      });
       patches?.push([Operation.Push, [key], args]);
       inversePatches?.push([
         Operation.Shift,
@@ -70,6 +78,11 @@ export function createArrayHandler({
     unshift(...args: any[]) {
       const result = Array.prototype.unshift.apply(state, args);
       target.operated.add(key);
+      args.forEach((value) => {
+        if (isDraftable(value)) {
+          assignedSet.add(value);
+        }
+      });
       patches?.push([Operation.Unshift, [key], [args]]);
       inversePatches?.push([Operation.Splice, [key], [0, args.length]]);
       makeChange(target, patches, inversePatches);
@@ -79,6 +92,11 @@ export function createArrayHandler({
       const result = Array.prototype.splice.apply(state, args);
       target.operated.add(key);
       patches?.push([Operation.Splice, [key], [args]]);
+      args.slice(2).forEach((value: any) => {
+        if (isDraftable(value)) {
+          assignedSet.add(value);
+        }
+      });
       // TODO: inverse patches
       // const [startIndex, deleteCount] = args;
       // const count = args.length - 2 - deleteCount;
@@ -88,4 +106,3 @@ export function createArrayHandler({
     },
   }[key];
 }
-

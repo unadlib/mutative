@@ -80,6 +80,7 @@ function createGetter({
           target,
           key,
           state,
+          assignedSet,
           patches,
           inversePatches,
         });

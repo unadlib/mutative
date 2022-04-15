@@ -42,6 +42,81 @@ describe('base', () => {
     expect(state).toBe(data);
   });
 
+  test('no update for array', () => {
+    const data = {
+      arr: ['str'] as any,
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.arr[0] = 'new str';
+      draft.arr[0] = 'str';
+    });
+    expect(state).toBe(data);
+  });
+
+  test('no update for set', () => {
+    const data = {
+      set: new Set([{}]),
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      const a = {};
+      draft.set.add(a);
+      draft.set.delete(a);
+    });
+    expect(state).toBe(data);
+  });
+
+  test('no update for set', () => {
+    const a = {};
+    const data = {
+      set: new Set([a]),
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.set.delete(a);
+      draft.set.add(a);
+    });
+    expect(state).toBe(data);
+  });
+
+  test('no update for map', () => {
+    const data = {
+      map: new Map([
+        [1, { a: { b: 1 } }],
+        [2, { a: { b: 2 } }],
+        [3, { a: { b: 3 } }],
+      ]),
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.map.set(4, {} as any);
+      draft.map.delete(4);
+    });
+    expect(state).toBe(data);
+  });
+
+  test('no update for map', () => {
+    const data = {
+      map: new Map([
+        [1, { a: { b: 1 } }],
+        [2, { a: { b: 2 } }],
+        [3, { a: { b: 3 } }],
+      ]),
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.map.get(1)!.a.b = 2;
+      draft.map.get(1)!.a.b = 1;
+    });
+    expect(state).toBe(data);
+  });
+
   test('delete key in object', () => {
     const data = {
       foo: {
@@ -880,23 +955,6 @@ describe('base', () => {
     expect([...state.set.values()][1]).toBe([...data.set.values()][1]);
   });
 
-  test('no update for map', () => {
-    const data = {
-      map: new Map([
-        [1, { a: { b: 1 } }],
-        [2, { a: { b: 2 } }],
-        [3, { a: { b: 3 } }],
-      ]),
-      foo: 'bar',
-    };
-
-    const state = create(data, (draft) => {
-      draft.map.get(1)!.a.b = 2;
-      draft.map.get(1)!.a.b = 1;
-    });
-    expect(state).toBe(data);
-  });
-
   test('only mutable object', () => {
     const data = {
       foo: {
@@ -1080,5 +1138,77 @@ describe('base', () => {
     expect(state.foo).toBe(data.foo);
     expect(state.foobar).not.toBe(data.foobar);
     expect(state.foobar).toBe(foobar);
+  });
+
+  test('array changes with mutable data', () => {
+    const foobar = {};
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      arr: [{} as any],
+    };
+
+    const state = create(data, (draft) => {
+      draft.arr.pop();
+      draft.arr.push(foobar);
+      draft.arr[0].text = 'new text';
+    });
+    expect(state).toEqual({
+      foo: { bar: 'str' },
+      arr: [{ text: 'new text' }],
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).toBe(data.foo);
+    expect(state.arr[0]).not.toBe(data.arr[0]);
+    expect(state.arr[0]).toBe(foobar);
+  });
+
+  test('set changes with mutable data', () => {
+    const foobar = {};
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      set: new Set([{} as any]),
+    };
+
+    const state = create(data, (draft) => {
+      draft.set.clear();
+      draft.set.add(foobar);
+      [...draft.set.values()][0].text = 'new text';
+    });
+    expect(state).toEqual({
+      foo: { bar: 'str' },
+      set: new Set([{ text: 'new text' }]),
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).toBe(data.foo);
+    expect([...state.set.values()][0]).not.toBe([...data.set.values()][0]);
+    expect([...state.set.values()][0]).toBe(foobar);
+  });
+
+  test('map changes with mutable data', () => {
+    const foobar = {};
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      map: new Map([[1, {} as any]]),
+    };
+
+    const state = create(data, (draft) => {
+      draft.map.delete(1);
+      draft.map.set(1, foobar);
+      draft.map.get(1).text = 'new text';
+    });
+    expect(state).toEqual({
+      foo: { bar: 'str' },
+      map: new Map([[1, { text: 'new text' }]]),
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).toBe(data.foo);
+    expect(state.map.get(1)).not.toBe(data.map.get(1));
+    expect(state.map.get(1)).toBe(foobar);
   });
 });

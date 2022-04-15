@@ -43,8 +43,14 @@ export function createSetHandler({
   const proxyProto = {
     add(value: any) {
       const result = Set.prototype.add.call(state, value);
-      // todo: check
-      target.operated.add(key);
+      if (
+        target.original.has(value) &&
+        Array.from(target.original.values()).slice(-1)[0] === value
+      ) {
+        target.operated.delete(value);
+      } else {
+        target.operated.add(value);
+      }
       if (isDraftable(value)) {
         assignedSet.add(value);
       }
@@ -55,7 +61,11 @@ export function createSetHandler({
     },
     clear() {
       const result = Set.prototype.clear.call(state);
-      target.operated.add(key);
+      if (!target.original.size) {
+        target.operated.delete(key);
+      } else {
+        target.operated.add(key);
+      }
       patches?.push([Operation.Clear, [key], []]);
       inversePatches?.push([Operation.Construct, [key], [state.values()]]);
       makeChange(target, patches, inversePatches);
@@ -63,7 +73,11 @@ export function createSetHandler({
     },
     delete(value: any) {
       const result = Set.prototype.delete.call(state, value);
-      target.operated.add(key);
+      if (!target.original.has(value)) {
+        target.operated.delete(value);
+      } else {
+        target.operated.add(value);
+      }
       patches?.push([Operation.Delete, [key], [value]]);
       inversePatches?.push([Operation.Set, [key], [value]]);
       makeChange(target, patches, inversePatches);
@@ -101,7 +115,7 @@ export function createSetHandler({
           const iteratorResult = iterator.next();
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value;
-          if (mutableFilter?.(original)) {
+          if (mutableFilter?.(original) || assignedSet.has(original)) {
             return {
               done: false,
               value: original,
@@ -142,7 +156,7 @@ export function createSetHandler({
           const iteratorResult = iterator.next();
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value[0];
-          if (mutableFilter?.(original)) {
+          if (mutableFilter?.(original) || assignedSet.has(original)) {
             return {
               done: false,
               value: [original, original],
