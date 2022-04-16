@@ -15,8 +15,10 @@ export function create<T extends object, O extends boolean = false>(
   }
 ) {
   const mutableFilter = options?.mutable;
-  // todo: check initialState with mutableFilter
   const enablePatches = options?.enablePatches ?? false;
+  if (mutableFilter?.(initialState)) {
+    return enablePatches ? [initialState, [], []] : initialState;
+  }
   if (!isDraftable(initialState)) {
     throw new Error(
       'create() only supports plain object, array, set, map, record, and tuple.'
