@@ -34,7 +34,7 @@ export function createArrayHandler({
     pop() {
       const index = state.length - 1;
       const result = Array.prototype.pop.apply(state);
-      if (target.original[index] !== result) {
+      if (target.original[index] !== result && !target.operated.has(REVERSE)) {
         target.operated.delete(index);
       } else {
         target.operated.add(index);
@@ -50,7 +50,7 @@ export function createArrayHandler({
       const result = Array.prototype.push.apply(state, args);
       args.forEach((value, _index) => {
         const index = originalLength + _index;
-        if (target.original[index] !== result) {
+        if (target.original[index] !== result || target.operated.has(REVERSE)) {
           target.operated.add(index);
         } else {
           target.operated.delete(index);
@@ -85,7 +85,10 @@ export function createArrayHandler({
       const oldState = Array.prototype.concat.call(state);
       const result = Array.prototype.shift.apply(state);
       oldState.forEach((_, index) => {
-        if (target.original[index] === state[index]) {
+        if (
+          target.original[index] === state[index] &&
+          !target.operated.has(REVERSE)
+        ) {
           target.operated.delete(index);
         } else {
           target.operated.add(index);
@@ -99,7 +102,10 @@ export function createArrayHandler({
     unshift(...args: any[]) {
       const result = Array.prototype.unshift.apply(state, args);
       state.forEach((_, index) => {
-        if (target.original[index] === state[index]) {
+        if (
+          target.original[index] === state[index] &&
+          !target.operated.has(REVERSE)
+        ) {
           target.operated.delete(index);
         } else {
           target.operated.add(index);
@@ -126,7 +132,7 @@ export function createArrayHandler({
         }
       });
       // TODO: inverse patches
-      // const [startIndex, deleteCount] = args;
+      const [startIndex, deleteCount] = args;
       // const count = args.length - 2 - deleteCount;
       // inversePatches?.push([Operation.Splice, [key], [startIndex, , args]]);
       makeChange(target, patches, inversePatches);
