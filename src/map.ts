@@ -51,7 +51,7 @@ export function createMapHandler({
   const proxyProto = {
     set(_key: any, _value: any) {
       const result = Map.prototype.set.call(state, _key, _value);
-      if (target.original.get(_key) === _value) {
+      if (target.original.has(_key) && target.original.get(_key) === _value) {
         target.operated.delete(_key);
       } else {
         target.operated.add(_key);
@@ -78,7 +78,6 @@ export function createMapHandler({
     },
     delete(_key: any) {
       const result = Map.prototype.delete.call(state, _key);
-      // todo: check with index and value
       if (!target.original.has(_key)) {
         target.operated.delete(_key);
       } else {

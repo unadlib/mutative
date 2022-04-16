@@ -210,6 +210,30 @@ describe('base', () => {
     expect(state).toBe(data);
   });
 
+  test('update for map', () => {
+    const data = {
+      map: new Map(),
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.map.set(1, undefined);
+    });
+    expect(state).not.toBe(data);
+  });
+
+  test('update for set', () => {
+    const data = {
+      set: new Set(),
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      draft.set.add(undefined);
+    });
+    expect(state).not.toBe(data);
+  });
+
   test('delete key in object', () => {
     const data = {
       foo: {
@@ -1097,6 +1121,63 @@ describe('base', () => {
     expect(state).not.toBe(data);
     expect(state.foo).not.toBe(data.foo);
     expect(state.foobar).toBe(data.foobar);
+  });
+
+  test('object with root value mutable', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {} as any,
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.foo.bar = 'new str';
+        draft.foobar.text = 'new text';
+      },
+      {
+        mutable: (target) => target === data,
+      }
+    );
+    expect(state).toEqual({
+      foo: { bar: 'new str' },
+      foobar: { text: 'new text' },
+    });
+    expect(state).toBe(data);
+    expect(state.foo).toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
+  });
+
+  test('object with deep value mutable', () => {
+    const foo = {
+      bar: {
+        c: 'str',
+      },
+    };
+    const data = {
+      foo,
+      foobar: {} as any,
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.foo.bar.c = 'new str';
+        draft.foobar.text = 'new text';
+      },
+      {
+        mutable: (target) => target === foo,
+      }
+    );
+    expect(state).toEqual({
+      foo: { bar: { c: 'new str' } },
+      foobar: { text: 'new text' },
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).toBe(data.foo);
+    expect(state.foobar).not.toBe(data.foobar);
   });
 
   test('array with mutable', () => {

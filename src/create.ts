@@ -17,7 +17,11 @@ export function create<T extends object, O extends boolean = false>(
   const mutableFilter = options?.mutable;
   const enablePatches = options?.enablePatches ?? false;
   if (mutableFilter?.(initialState)) {
-    return enablePatches ? [initialState, [], []] : initialState;
+    mutate(initialState);
+    return (enablePatches ? [initialState, [], []] : initialState) as Result<
+      T,
+      O
+    >;
   }
   if (!isDraftable(initialState)) {
     throw new Error(
