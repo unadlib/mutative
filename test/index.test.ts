@@ -82,6 +82,32 @@ describe('base', () => {
     expect(state).toBe(data);
   });
 
+  test('no update for array with splice', () => {
+    const data = {
+      arr: ['a', 'b', 'c'] as any,
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      const result = draft.arr.splice(1, 1, 'new str', 'new str1');
+      draft.arr.splice(1, 2, ...result);
+    });
+    expect(state).toBe(data);
+  });
+
+  test('no update for array with splice', () => {
+    const data = {
+      arr: ['a', 'b', 'c'] as any,
+      foo: 'bar',
+    };
+
+    const state = create(data, (draft) => {
+      const result = draft.arr.splice(1, 1);
+      draft.arr.splice(1, 0, ...result);
+    });
+    expect(state).toBe(data);
+  });
+
   test('no update for array with reverse', () => {
     const data = {
       arr: ['1', '3', '2'] as any,

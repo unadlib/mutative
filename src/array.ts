@@ -122,19 +122,33 @@ export function createArrayHandler({
       return result;
     },
     splice(...args: any) {
+      const oldState = Array.prototype.concat.call(state);
       const result = Array.prototype.splice.apply(state, args);
-      // TODO: check changes
-      target.operated.add(key);
-      patches?.push([Operation.Splice, [key], [args]]);
-      args.slice(2).forEach((value: any) => {
+      const [startIndex, deleteCount, ...items] = args;
+      (oldState.length > state.length ? oldState : state)
+        .slice(startIndex)
+        .forEach((_, _index) => {
+          const index = _index + startIndex;
+          if (
+            target.original[index] === state[index] &&
+            !target.operated.has(REVERSE)
+          ) {
+            target.operated.delete(index);
+          } else {
+            target.operated.add(index);
+          }
+        });
+      items.slice(2).forEach((value: any) => {
         if (isDraftable(value)) {
           assignedSet.add(value);
         }
       });
-      // TODO: inverse patches
-      const [startIndex, deleteCount] = args;
-      // const count = args.length - 2 - deleteCount;
-      // inversePatches?.push([Operation.Splice, [key], [startIndex, , args]]);
+      patches?.push([Operation.Splice, [key], [args]]);
+      inversePatches?.push([
+        Operation.Splice,
+        [key],
+        [startIndex, items.length, result],
+      ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
