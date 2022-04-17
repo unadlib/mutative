@@ -1385,4 +1385,32 @@ describe('base', () => {
     expect(state.map.get(1)).not.toBe(data.map.get(1));
     expect(state.map.get(1)).toBe(foobar);
   });
+
+  test('object changes with class instance', () => {
+    class Foobar {
+      bar = 1;
+    }
+
+    const foobar = new Foobar();
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar,
+    };
+
+    const state = create(data, (draft) => {
+      draft.foobar.bar = 2;
+      draft.foo.bar = 'new str';
+    });
+    expect(state).toEqual({
+      foo: {
+        bar: 'new str',
+      },
+      foobar,
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(foobar);
+  });
 });

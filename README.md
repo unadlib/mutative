@@ -21,7 +21,7 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-- `prepare()`
+- `draftify()`
 
 ```ts
 const baseState = {
@@ -29,7 +29,7 @@ const baseState = {
   list: [{ text: 'todo' }],
 };
 
-const [draft, finalize] = prepare(baseState, { enableFreeze: true });
+const [draft, finalize] = draftify(baseState, { enableFreeze: true });
 draft.foo = 'foobar';
 draft.list.push({ text: 'learning' });
 const state = finalize();
@@ -59,6 +59,6 @@ const nextState = apply(state, patches);
 
 - `current()`
 - `original()`
-- `Draft<T>`
+- `Mutable<T>`
 - `Immutable<T>`
 - `Patches`

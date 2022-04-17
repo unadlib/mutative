@@ -25,7 +25,7 @@ export function create<T extends object, O extends boolean = false>(
   }
   if (!isDraftable(initialState)) {
     throw new Error(
-      'create() only supports plain object, array, set, map, record, and tuple.'
+      'create() only supports plain object, array, set, and map.'
     );
   }
   const proxiesMap = new WeakMap<object, ProxyDraft>();
