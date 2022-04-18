@@ -28,7 +28,6 @@ export function createMapHandler({
   target,
   key,
   state,
-  finalities,
   proxiesMap,
   assignedSet,
   patches,
@@ -38,7 +37,6 @@ export function createMapHandler({
   target: ProxyDraft;
   key: string | symbol;
   state: Map<any, any>;
-  finalities: (() => void)[];
   proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
   patches?: Patches;
@@ -102,13 +100,13 @@ export function createMapHandler({
           key: _key,
           patches,
           inversePatches,
-          finalities,
+          finalities: target.finalities,
           proxiesMap,
           mutableFilter,
           assignedSet,
         });
         target.copy!.set(_key, currentDraft);
-        finalities.unshift(() => {
+        target.finalities.unshift(() => {
           const proxyDraft = getProxyDraft(target.copy!.get(_key));
           if (proxyDraft) {
             const value =

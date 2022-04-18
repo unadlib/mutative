@@ -18,14 +18,12 @@ import {
 function createGetter({
   proxiesMap,
   assignedSet,
-  finalities,
   patches,
   inversePatches,
   mutableFilter,
 }: {
   proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
-  finalities: (() => void)[];
   patches?: Patches;
   inversePatches?: Patches;
   mutableFilter?: (target: any) => boolean;
@@ -39,7 +37,7 @@ function createGetter({
       }
     }
     if (target.original instanceof Set && !target.copy) {
-      finalities.unshift(() => {
+      target.finalities.unshift(() => {
         if (target.finalized) return;
         target.finalized = true;
         if (target.copy instanceof Set && target.operated.size > 0) {
@@ -95,7 +93,6 @@ function createGetter({
           target,
           key,
           state,
-          finalities,
           proxiesMap,
           assignedSet,
           patches,
@@ -114,7 +111,6 @@ function createGetter({
           state,
           proxiesMap,
           assignedSet,
-          finalities,
           patches,
           inversePatches,
           mutableFilter,
@@ -132,12 +128,12 @@ function createGetter({
           key,
           patches,
           inversePatches,
-          finalities,
+          finalities: target.finalities,
           proxiesMap,
           mutableFilter,
           assignedSet,
         });
-        finalities.unshift(() => {
+        target.finalities.unshift(() => {
           const proxyDraft = getProxyDraft(target.copy![key]);
           if (proxyDraft) {
             target.copy![key] =
@@ -159,12 +155,10 @@ function createGetter({
 }
 
 function createSetter({
-  finalities,
   assignedSet,
   patches,
   inversePatches,
 }: {
-  finalities: (() => void)[];
   assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
@@ -173,7 +167,7 @@ function createSetter({
     ensureShallowCopy(target);
     const previousState = target.copy![key];
     if (getProxyDraft(value)) {
-      finalities.unshift(() => {
+      target.finalities.unshift(() => {
         const proxyDraft = getProxyDraft(target.copy![key]);
         if (proxyDraft) {
           target.copy![key] = getValue(target.copy![key]);
@@ -249,7 +243,6 @@ export function createDraft<T extends object>({
     get: createGetter({
       patches,
       inversePatches,
-      finalities,
       proxiesMap,
       mutableFilter,
       assignedSet,
@@ -257,7 +250,6 @@ export function createDraft<T extends object>({
     set: createSetter({
       patches,
       inversePatches,
-      finalities,
       assignedSet,
     }),
     has(target: ProxyDraft, key: string | symbol) {
