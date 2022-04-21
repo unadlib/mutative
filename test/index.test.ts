@@ -27,6 +27,35 @@ describe('base', () => {
     expect(state.foobar).toBe(data.foobar);
   });
 
+  test('object with HOF', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {},
+    };
+
+    const update = (data) => {
+      return create(data, (draft) => {
+        draft.foo.bar = 'new str';
+      })
+    };
+    const state = update(data);
+    expect(state).toEqual({ foo: { bar: 'new str' }, foobar: {} });
+    expect(
+      state !==
+        {
+          foo: {
+            bar: 'str',
+          },
+          foobar: {},
+        }
+    ).toBeTruthy();
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
+  });
+
   test('object with async mutation', async () => {
     const data = {
       foo: {
