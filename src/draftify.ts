@@ -36,9 +36,9 @@ export function draftify<T extends object, O extends boolean = false>(
   return [
     draft,
     () => {
-      const state = finalizeDraft(draft) as T;
+      const finalizedState = finalizeDraft(draft) as T;
       return (
-        enablePatches ? [state, patches, inversePatches] : state
+        enablePatches ? [finalizedState, patches, inversePatches] : finalizedState
       ) as Result<T, O>;
     },
   ];

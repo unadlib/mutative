@@ -27,6 +27,32 @@ describe('base', () => {
     expect(state.foobar).toBe(data.foobar);
   });
 
+  test('object with async mutation', async () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {},
+    };
+
+    const state = await create(data, async (draft) => {
+      draft.foo.bar = 'new str';
+    });
+    expect(state).toEqual({ foo: { bar: 'new str' }, foobar: {} });
+    expect(
+      state !==
+        {
+          foo: {
+            bar: 'str',
+          },
+          foobar: {},
+        }
+    ).toBeTruthy();
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
+  });
+
   test('draftify with object', () => {
     const data = {
       foo: {

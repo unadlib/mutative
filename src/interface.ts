@@ -16,9 +16,15 @@ export interface ProxyDraft {
 
 export type Patches = [Operation, (string | number | symbol)[], any[]][];
 
-export type Result<T, O extends boolean> = O extends true
+export type Result<T extends object, O extends boolean> = O extends true
   ? [state: T, patches: Patches, inversePatches: Patches]
   : T;
+
+export type CreateResult<
+  T extends object,
+  O extends boolean,
+  R extends void | Promise<void>
+> = R extends Promise<void> ? Promise<Result<T, O>> : Result<T, O>;
 
 export interface Options<O extends boolean> {
   enablePatches?: O;
