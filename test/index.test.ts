@@ -1,4 +1,4 @@
-import { create } from '../src';
+import { create, draftify } from '../src';
 
 describe('base', () => {
   test('object', () => {
@@ -12,6 +12,32 @@ describe('base', () => {
     const state = create(data, (draft) => {
       draft.foo.bar = 'new str';
     });
+    expect(state).toEqual({ foo: { bar: 'new str' }, foobar: {} });
+    expect(
+      state !==
+        {
+          foo: {
+            bar: 'str',
+          },
+          foobar: {},
+        }
+    ).toBeTruthy();
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
+  });
+
+  test('draftify with object', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {},
+    };
+
+    const [draft, finalize] = draftify(data);
+    draft.foo.bar = 'new str';
+    const state = finalize();
     expect(state).toEqual({ foo: { bar: 'new str' }, foobar: {} });
     expect(
       state !==

@@ -5,14 +5,12 @@ export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy || proxyDraft.original;
 }
 
-export function getProxyDraft<T extends { [PROXY_DRAFT]: any }>(
-  value: T
-): ProxyDraft | null {
+export function getProxyDraft<T extends object>(value: T): ProxyDraft | null {
   if (typeof value !== 'object') return null;
-  return value[PROXY_DRAFT];
+  return (value as { [PROXY_DRAFT]: any })[PROXY_DRAFT];
 }
 
-export function getValue<T extends { [PROXY_DRAFT]: any }>(value: T) {
+export function getValue<T extends object>(value: T) {
   const proxyDraft = getProxyDraft(value);
   if (!proxyDraft) {
     return value;
