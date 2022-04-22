@@ -1,5 +1,5 @@
+import type { CreateResult, Mutable, Options, Result } from './interface';
 import { draftify } from './draftify';
-import type { CreateResult, Options, Result } from './interface';
 
 /**
  * something
@@ -7,20 +7,21 @@ import type { CreateResult, Options, Result } from './interface';
 export function create<
   T extends object,
   O extends boolean = false,
+  F extends boolean = false,
   R extends void | Promise<void> = void
->(state: T, mutate: (draft: T) => R, options?: Options<O>) {
+>(state: T, mutate: (draft: Mutable<T>) => R, options?: Options<O, F>) {
   if (options?.mutable?.(state)) {
-    const result = mutate(state);
+    const result = mutate(state as Mutable<T>);
     const finalization = options?.enablePatches ? [state, [], []] : state;
     if (result instanceof Promise) {
-      return result.then(() => finalization) as CreateResult<T, O, R>;
+      return result.then(() => finalization) as CreateResult<T, O, F, R>;
     }
-    return finalization as CreateResult<T, O, R>;
+    return finalization as CreateResult<T, O, F, R>;
   }
   const [draft, finalize] = draftify(state, options);
-  const result = mutate(draft);
+  const result = mutate(draft as Mutable<T>);
   if (result instanceof Promise) {
-    return result.then(finalize) as CreateResult<T, O, R>;
+    return result.then(finalize) as CreateResult<T, O, F, R>;
   }
-  return finalize() as CreateResult<T, O, R>;
+  return finalize() as CreateResult<T, O, F, R>;
 }

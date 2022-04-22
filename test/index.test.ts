@@ -333,7 +333,7 @@ describe('base', () => {
 
   test('update for set', () => {
     const data = {
-      set: new Set(),
+      set: new Set<any>(),
       foo: 'bar',
     };
 
@@ -1013,15 +1013,19 @@ describe('base', () => {
     expect(state.bar).not.toBe(data.bar);
     expect(state.list).not.toBe(data.list);
     expect(() => {
+      //@ts-expect-error
       state.bar.a = 3;
     }).toThrowError();
     expect(() => {
+      //@ts-expect-error
       state.list.push({ id: 3 });
     }).toThrowError();
     expect(() => {
+      //@ts-expect-error
       state.list[0].id = 3;
     }).toThrowError();
     expect(() => {
+      //@ts-expect-error
       state.list[1].id = 3;
     }).toThrowError();
 
@@ -1036,13 +1040,21 @@ describe('base', () => {
       }
     );
     expect(() => {
+      //@ts-expect-error
       state1.list[0].id = 3;
     }).toThrowError();
     expect(() => {
+      //@ts-expect-error
       state1.list[1].id = 3;
     }).toThrowError();
-    state1.list.push({ id: 4 });
-    state1.bar.a = 4;
+    expect(() => {
+      // just check runtime mutable
+
+      // @ts-ignore
+      state1.list.push({ id: 4 });
+      // @ts-ignore
+      state1.bar.a = 4;
+    }).not.toThrow();
   });
 
   test('base set freeze', () => {
@@ -1064,12 +1076,15 @@ describe('base', () => {
     });
     expect(state).not.toBe(data);
     expect(() => {
+      //@ts-expect-error
       state.set.add(4);
     }).toThrowError();
     expect(() => {
+      //@ts-expect-error
       state.set.delete(1);
     }).toThrowError();
     expect(() => {
+      //@ts-expect-error
       state.set.clear();
     }).toThrowError();
   });
@@ -1100,12 +1115,15 @@ describe('base', () => {
     });
 
     expect(() => {
+      // @ts-expect-error
       state.map.set(4, 4);
     }).toThrowError();
     expect(() => {
+      // @ts-expect-error
       state.map.delete(1);
     }).toThrowError();
     expect(() => {
+      // @ts-expect-error
       state.map.clear();
     }).toThrowError();
   });

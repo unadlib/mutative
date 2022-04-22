@@ -5,6 +5,10 @@ export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy || proxyDraft.original;
 }
 
+export function isDraft(target: any) {
+  return !!getProxyDraft(target);
+}
+
 export function getProxyDraft<T extends object>(value: T): ProxyDraft | null {
   if (typeof value !== 'object') return null;
   return (value as { [PROXY_DRAFT]: any })[PROXY_DRAFT];

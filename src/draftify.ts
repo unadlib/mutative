@@ -2,10 +2,11 @@ import type { Options, Patches, ProxyDraft, Result } from './interface';
 import { createDraft, finalizeDraft } from './draft';
 import { isDraftable } from './utils';
 
-export function draftify<T extends object, O extends boolean = false>(
-  baseState: T,
-  options?: Options<O>
-): [T, () => Result<T, O>] {
+export function draftify<
+  T extends object,
+  O extends boolean = false,
+  F extends boolean = false
+>(baseState: T, options?: Options<O, F>): [T, () => Result<T, O, F>] {
   const mutableFilter = options?.mutable;
   const enablePatches = options?.enablePatches ?? false;
   if (!isDraftable(baseState)) {
@@ -38,8 +39,10 @@ export function draftify<T extends object, O extends boolean = false>(
     () => {
       const finalizedState = finalizeDraft(draft) as T;
       return (
-        enablePatches ? [finalizedState, patches, inversePatches] : finalizedState
-      ) as Result<T, O>;
+        enablePatches
+          ? [finalizedState, patches, inversePatches]
+          : finalizedState
+      ) as Result<T, O, F>;
     },
   ];
 }
