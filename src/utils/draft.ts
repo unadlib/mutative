@@ -1,7 +1,5 @@
 import { PROXY_DRAFT } from '../constant';
-import { current } from '../current';
 import { ProxyDraft } from '../interface';
-import { ensureShallowCopy } from './ensureShallowCopy';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy || proxyDraft.original;
@@ -36,7 +34,13 @@ export function isDraftable(value: any) {
 }
 
 export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
-  if (getProxyDraft(value)) {
+  const proxyDraft = getProxyDraft(value);
+  if (proxyDraft) {
+    if (proxyDraft.finalities !== target.finalities) {
+      throw new Error(
+        `${key} should not be set by other draft ${value}, please use 'current(value)' to make sure it is non-draft.`
+      );
+    }
     target.finalities.draft.unshift(() => {
       if (target.copy) {
         if (target.copy instanceof Map) {
@@ -50,10 +54,7 @@ export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
         const value = target.copy[key];
         const proxyDraft = getProxyDraft(value);
         if (proxyDraft) {
-          target.copy[key] =
-            proxyDraft.finalities === target.finalities
-              ? proxyDraft.copy ?? proxyDraft.original
-              : (ensureShallowCopy(proxyDraft), current(value)); // TODO: Optimize performance
+          target.copy[key] = proxyDraft.copy ?? proxyDraft.original;
         }
       }
     });
