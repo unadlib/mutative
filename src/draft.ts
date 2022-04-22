@@ -5,6 +5,7 @@ import { createMapHandler, mutableMapMethods } from './map';
 import { createSetHandler, mutableSetMethods } from './set';
 import {
   deepFreeze,
+  ensureDraftValue,
   ensureShallowCopy,
   getDescriptor,
   getProxyDraft,
@@ -166,14 +167,7 @@ function createSetter({
   return function set(target: ProxyDraft, key: string, value: any) {
     ensureShallowCopy(target);
     const previousState = target.copy![key];
-    if (getProxyDraft(value)) {
-      target.finalities.unshift(() => {
-        const proxyDraft = getProxyDraft(target.copy![key]);
-        if (proxyDraft) {
-          target.copy![key] = getValue(target.copy![key]);
-        }
-      });
-    }
+    ensureDraftValue(target, key, value);
     target.copy![key] = value;
     if (value === target.original[key]) {
       target.operated.delete(key);

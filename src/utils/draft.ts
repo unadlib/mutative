@@ -32,3 +32,21 @@ export function isDraftable(value: any) {
       value instanceof Set)
   );
 }
+
+export function ensureDraftValue(
+  target: ProxyDraft,
+  key: string | symbol,
+  value: any
+) {
+  if (getProxyDraft(value)) {
+    target.finalities.unshift(() => {
+      if (target.copy) {
+        const value = target.copy[key];
+        const proxyDraft = getProxyDraft(value);
+        if (proxyDraft) {
+          target.copy[key] = proxyDraft.copy ?? proxyDraft.original;
+        }
+      }
+    });
+  }
+}
