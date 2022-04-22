@@ -1,5 +1,7 @@
 import { PROXY_DRAFT } from '../constant';
+import { current } from '../current';
 import { ProxyDraft } from '../interface';
+import { ensureShallowCopy } from './ensureShallowCopy';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy || proxyDraft.original;
@@ -48,7 +50,10 @@ export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
         const value = target.copy[key];
         const proxyDraft = getProxyDraft(value);
         if (proxyDraft) {
-          target.copy[key] = proxyDraft.copy ?? proxyDraft.original;
+          target.copy[key] =
+            proxyDraft.finalities === target.finalities
+              ? proxyDraft.copy ?? proxyDraft.original
+              : (ensureShallowCopy(proxyDraft), current(value)); // TODO: Optimize performance
         }
       }
     });
