@@ -1,4 +1,4 @@
-import { create, draftify, original } from '../src';
+import { create, draftify, original, current } from '../src';
 
 describe('base', () => {
   test('object', () => {
@@ -752,10 +752,7 @@ describe('base', () => {
       }
     );
     expect(state).toEqual({
-      set: new Set<any>([
-        'a',
-        { x: 2 },
-      ]),
+      set: new Set<any>(['a', { x: 2 }]),
       b: { x: 2 },
     });
     expect(Array.from(state.set).slice(-1)[0]).toBe(state.b);
@@ -1676,5 +1673,53 @@ describe('base', () => {
     expect(state).not.toBe(data);
     expect(state.foo).not.toBe(data.foo);
     expect(state.foobar).toBe(foobar);
+  });
+
+  test('current', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {
+        set: new Set<any>([{}]),
+        map: new Map<any, any>([['a', {}]]),
+      },
+    };
+    let currentValue: any;
+    const state = create(data, (draft) => {
+      draft.foo.bar = 'new str';
+      draft.foobar.map.set('b', { x: 1 });
+      draft.foobar.set.values().next().value.x = 2;
+      currentValue = current(draft);
+    });
+    expect(currentValue).toEqual({
+      foo: {
+        bar: 'new str',
+      },
+      foobar: {
+        set: new Set<any>([{ x: 2 }]),
+        map: new Map<any, any>([
+          ['a', {}],
+          ['b', { x: 1 }],
+        ]),
+      },
+    });
+    expect(state).toEqual({
+      foo: {
+        bar: 'new str',
+      },
+      foobar: {
+        set: new Set<any>([{ x: 2 }]),
+        map: new Map<any, any>([
+          ['a', {}],
+          ['b', { x: 1 }],
+        ]),
+      },
+    });
+    expect(state).not.toBe(data);
+    expect(currentValue).not.toBe(data);
+    expect(state).not.toBe(currentValue);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).not.toBe(data.foobar);
   });
 });

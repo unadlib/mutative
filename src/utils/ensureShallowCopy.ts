@@ -1,28 +1,35 @@
 import type { ProxyDraft } from '../interface';
 
-export function ensureShallowCopy(target: ProxyDraft) {
-  if (target.copy) return;
-  if (Array.isArray(target.original)) {
-    target.copy = Array.prototype.concat.call(target.original);
-  } else if (target.original instanceof Set) {
-    target.copy = new Set(target.original.values());
-    // for collection of changing set data
-    target.setMap = new Map();
-  } else if (target.original instanceof Map) {
-    target.copy = new Map(target.original.entries());
+function shallowCopy(original: any) {
+  if (Array.isArray(original)) {
+    return Array.prototype.concat.call(original);
+  } else if (original instanceof Set) {
+    return new Set(original.values());
+  } else if (original instanceof Map) {
+    return new Map(original.entries());
   } else if (
-    typeof target.original === 'object' &&
-    Object.getPrototypeOf(target.original) === Object.prototype
+    typeof original === 'object' &&
+    Object.getPrototypeOf(original) === Object.prototype
   ) {
     // For best performance with shallow copies,
     // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));`.
-    target.copy = {};
-    Object.keys(target.original).forEach((key) => {
-      target.copy![key] = target.original[key];
+    const copy: Record<string | symbol, any> = {};
+    Object.keys(original).forEach((key) => {
+      copy![key] = original[key];
     });
+    return copy;
   } else {
     throw new Error(
-      `Unsupported type: ${target.original}, only regular objects, arrays, Set and Map are supported`
+      `Unsupported type: ${original}, only regular objects, arrays, Set and Map are supported`
     );
+  }
+}
+
+export function ensureShallowCopy(target: ProxyDraft) {
+  if (target.copy) return;
+  target.copy = shallowCopy(target.original)!;
+  if (target.original instanceof Set) {
+    // for collection of changing set data
+    target.setMap = new Map();
   }
 }
