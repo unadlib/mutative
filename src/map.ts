@@ -1,6 +1,7 @@
 import type { Patches, ProxyDraft } from './interface';
 import { CLEAR, Operation } from './constant';
 import {
+  ensureDraftValue,
   ensureShallowCopy,
   getProxyDraft,
   getValue,
@@ -57,6 +58,7 @@ export function createMapHandler({
       if (isDraftable(_value)) {
         assignedSet.add(_value);
       }
+      ensureDraftValue(target, _key, _value);
       patches?.push([Operation.Set, [_key], [_key, _value]]);
       inversePatches?.push([Operation.Delete, [key], [_key]]);
       makeChange(target, patches, inversePatches);
@@ -106,7 +108,7 @@ export function createMapHandler({
           assignedSet,
         });
         target.copy!.set(_key, currentDraft);
-        target.finalities.unshift(() => {
+        target.finalities.draft.unshift(() => {
           const proxyDraft = getProxyDraft(target.copy!.get(_key));
           if (proxyDraft) {
             const value =

@@ -1,4 +1,10 @@
-import type { Options, Patches, ProxyDraft, Result } from './interface';
+import type {
+  Finalities,
+  Options,
+  Patches,
+  ProxyDraft,
+  Result,
+} from './interface';
 import { createDraft, finalizeDraft } from './draft';
 import { isDraftable } from './utils';
 
@@ -16,7 +22,10 @@ export function draftify<
   }
   const proxiesMap = new WeakMap<object, ProxyDraft>();
   const assignedSet = new WeakSet<any>();
-  const finalities: (() => void)[] = [];
+  const finalities: Finalities = {
+    draft: [],
+    revoke: [],
+  };
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
   if (enablePatches) {

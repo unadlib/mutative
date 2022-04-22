@@ -1,7 +1,6 @@
 // Not using `Symbol()` just for 3rd party access the draft
 export const PROXY_DRAFT = Symbol.for('__MUTATIVE_PROXY_DRAFT__');
 export const CLEAR = Symbol('__MUTATIVE_CLEAR__');
-export const REVERSE = Symbol('__MUTATIVE_REVERSE__');
 
 export const enum DraftType {
   Object = 'object',
@@ -17,7 +16,6 @@ export const enum Operation {
   Add,
   Pop,
   Push,
-  Reverse,
   Shift,
   Splice,
   Unshift,

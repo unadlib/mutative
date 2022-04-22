@@ -1,5 +1,10 @@
 import { DraftType, Operation } from './constant';
 
+export interface Finalities {
+  draft: (() => void)[];
+  revoke: (() => void)[];
+}
+
 export interface ProxyDraft {
   type: DraftType;
   operated: Set<any>;
@@ -7,7 +12,7 @@ export interface ProxyDraft {
   original: any;
   copy: Record<string | symbol, any> | null;
   proxy: ProxyDraft | null;
-  finalities: (() => void)[];
+  finalities: Finalities;
   parent?: ProxyDraft | null;
   key?: string | symbol;
   setMap?: Map<object, ProxyDraft>;

@@ -610,6 +610,90 @@ describe('base', () => {
     expect(state.a).toBe(state.bar);
   });
 
+  test('base array push ref', () => {
+    const data: any = {
+      bar: { a: [1, 2, 3] as any, b: { x: 1 } },
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.bar.a.push(draft.bar.b);
+        draft.bar.b.x = 2;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      bar: { a: [1, 2, 3, { x: 2 }], b: { x: 2 } },
+    });
+    expect(state.bar.a.slice(-1)[0]).toBe(state.bar.b);
+  });
+
+  test('base array unshift ref', () => {
+    const data: any = {
+      bar: { a: [1, 2, 3] as any, b: { x: 1 } },
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.bar.a.unshift(draft.bar.b);
+        draft.bar.b.x = 2;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      bar: { a: [{ x: 2 }, 1, 2, 3], b: { x: 2 } },
+    });
+    expect(state.bar.a[0]).toBe(state.bar.b);
+  });
+
+  test('base array splice ref', () => {
+    const data: any = {
+      bar: { a: [1, 2, 3] as any, b: { x: 1 } },
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.bar.a.splice(1, 1, draft.bar.b);
+        draft.bar.b.x = 2;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      bar: { a: [1, { x: 2 }, 3], b: { x: 2 } },
+    });
+    expect(state.bar.a[1]).toBe(state.bar.b);
+  });
+
+  test('base array set ref', () => {
+    const data: any = {
+      bar: { a: [1, 2, 3] as any, b: { x: 1 } },
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.bar.a.push(draft.bar.b);
+        draft.bar.b.x = 2;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      bar: { a: [1, 2, 3, { x: 2 }], b: { x: 2 } },
+    });
+    expect(state.bar.a.slice(-1)[0]).toBe(state.bar.b);
+  });
+
   test('base object set ref object1', () => {
     const data: any = {
       bar: { a: { c: 1 }, b: { x: 1 } },
@@ -648,6 +732,58 @@ describe('base', () => {
       }
     );
     expect(state).toEqual({ bar: { a: { c: 2 }, b: { a: { c: 1 } } } });
+  });
+
+  test('base set add ref', () => {
+    const data = {
+      set: new Set<any>(['a']),
+      b: { x: 1 },
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.set.add(draft.b);
+        draft.b.x = 2;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      set: new Set<any>([
+        'a',
+        { x: 2 },
+      ]),
+      b: { x: 2 },
+    });
+    expect(Array.from(state.set).slice(-1)[0]).toBe(state.b);
+  });
+
+  test('base map set ref', () => {
+    const data = {
+      map: new Map<any, any>([['a', 1]]),
+      b: { x: 1 },
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.map.set('b', draft.b);
+        draft.b.x = 2;
+      },
+      {
+        enablePatches: false,
+      }
+    );
+    expect(state).toEqual({
+      map: new Map<any, any>([
+        ['a', 1],
+        ['b', { x: 2 }],
+      ]),
+      b: { x: 2 },
+    });
+    expect(state.map.get('b')).toBe(state.b);
   });
 
   test('base array push', () => {

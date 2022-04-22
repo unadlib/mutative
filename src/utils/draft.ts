@@ -33,14 +33,18 @@ export function isDraftable(value: any) {
   );
 }
 
-export function ensureDraftValue(
-  target: ProxyDraft,
-  key: string | symbol,
-  value: any
-) {
+export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
   if (getProxyDraft(value)) {
-    target.finalities.unshift(() => {
+    target.finalities.draft.unshift(() => {
       if (target.copy) {
+        if (target.copy instanceof Map) {
+          const value = target.copy.get(key);
+          const proxyDraft = getProxyDraft(value);
+          if (proxyDraft) {
+            target.copy.set(key, proxyDraft.copy ?? proxyDraft.original);
+          }
+          return;
+        }
         const value = target.copy[key];
         const proxyDraft = getProxyDraft(value);
         if (proxyDraft) {

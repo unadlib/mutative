@@ -1,4 +1,4 @@
-import type { Patches, ProxyDraft } from './interface';
+import type { Finalities, Patches, ProxyDraft } from './interface';
 import { createArrayHandler, mutableArrayMethods } from './array';
 import { DraftType, Operation, PROXY_DRAFT } from './constant';
 import { createMapHandler, mutableMapMethods } from './map';
@@ -38,14 +38,20 @@ function createGetter({
       }
     }
     if (target.original instanceof Set && !target.copy) {
-      target.finalities.unshift(() => {
+      target.finalities.draft.unshift(() => {
         if (target.finalized) return;
         target.finalized = true;
+        // For `Set` type, we must ensure that all values should be added to the assigned set.
         if (target.copy instanceof Set && target.operated.size > 0) {
           const iterator = Array.from(target.copy);
           target.copy.clear();
           for (const item of iterator) {
-            if (typeof item === 'object') {
+            // Similar to the execution of `ensureDraftValue()`, we must ensure the value from Draft
+            const proxyDraft = getProxyDraft(item);
+            if (proxyDraft) {
+              const value = proxyDraft.copy ?? proxyDraft.original;
+              target.copy.add(value);
+            } else if (typeof item === 'object') {
               const proxyDraft = target.setMap?.get(item);
               if (proxyDraft) {
                 const value =
@@ -134,7 +140,7 @@ function createGetter({
           mutableFilter,
           assignedSet,
         });
-        target.finalities.unshift(() => {
+        target.finalities.draft.unshift(() => {
           const proxyDraft = getProxyDraft(target.copy![key]);
           if (proxyDraft) {
             target.copy![key] =
@@ -210,7 +216,7 @@ export function createDraft<T extends object>({
   mutableFilter,
 }: {
   original: T;
-  finalities: (() => void)[];
+  finalities: Finalities;
   proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
   parentDraft?: ProxyDraft | null;
@@ -293,7 +299,7 @@ export function createDraft<T extends object>({
       return true;
     },
   });
-  finalities.unshift(revoke);
+  finalities.revoke.unshift(revoke);
   proxyDraft.proxy = proxy;
   if (original) {
     proxiesMap.set(original, proxyDraft);
@@ -303,12 +309,15 @@ export function createDraft<T extends object>({
 
 export function finalizeDraft<T>(result: T) {
   const proxyDraft: ProxyDraft = getProxyDraft(result as any)!;
-  for (const finalize of proxyDraft.finalities) {
+  for (const finalize of proxyDraft.finalities.draft) {
     finalize();
   }
   const state = !proxyDraft.operated.size
     ? proxyDraft.original
     : proxyDraft.copy;
+  for (const revoke of proxyDraft.finalities.revoke) {
+    revoke();
+  }
   if (proxyDraft.enableFreeze) {
     deepFreeze(state);
   }

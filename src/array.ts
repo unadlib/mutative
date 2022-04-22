@@ -1,14 +1,14 @@
-import { Operation, REVERSE } from './constant';
+import { Operation } from './constant';
 import { Patches, ProxyDraft } from './interface';
-import { isDraftable, makeChange } from './utils';
+import { ensureDraftValue, isDraftable, makeChange } from './utils';
 
 export const mutableArrayMethods = [
   // "copyWithin",
   // "fill",
   // "sort",
+  // 'reverse',
   'pop',
   'push',
-  'reverse',
   'shift',
   'unshift',
   'splice',
@@ -34,7 +34,7 @@ export function createArrayHandler({
     pop() {
       const index = state.length - 1;
       const result = Array.prototype.pop.apply(state);
-      if (target.original[index] !== result && !target.operated.has(REVERSE)) {
+      if (target.original[index] !== result) {
         target.operated.delete(index);
       } else {
         target.operated.add(index);
@@ -50,7 +50,7 @@ export function createArrayHandler({
       const result = Array.prototype.push.apply(state, args);
       args.forEach((value, _index) => {
         const index = originalLength + _index;
-        if (target.original[index] !== result || target.operated.has(REVERSE)) {
+        if (target.original[index] !== result) {
           target.operated.add(index);
         } else {
           target.operated.delete(index);
@@ -58,6 +58,7 @@ export function createArrayHandler({
         if (isDraftable(value)) {
           assignedSet.add(value);
         }
+        ensureDraftValue(target, index, value);
       });
       patches?.push([Operation.Push, [key], args]);
       inversePatches?.push([
@@ -68,27 +69,12 @@ export function createArrayHandler({
       makeChange(target, patches, inversePatches);
       return result;
     },
-    reverse() {
-      const result = Array.prototype.reverse.apply(state);
-      if (target.operated.size === 1 && target.operated.has(REVERSE)) {
-        target.operated.delete(REVERSE);
-      } else {
-        target.operated.add(REVERSE);
-      }
-      patches?.push([Operation.Reverse, [key], []]);
-      inversePatches?.push([Operation.Reverse, [key], []]);
-      makeChange(target, patches, inversePatches);
-      return result;
-    },
     shift() {
       const [first] = state;
       const oldState = Array.prototype.concat.call(state);
       const result = Array.prototype.shift.apply(state);
       oldState.forEach((_, index) => {
-        if (
-          target.original[index] === state[index] &&
-          !target.operated.has(REVERSE)
-        ) {
+        if (target.original[index] === state[index]) {
           target.operated.delete(index);
         } else {
           target.operated.add(index);
@@ -102,14 +88,12 @@ export function createArrayHandler({
     unshift(...args: any[]) {
       const result = Array.prototype.unshift.apply(state, args);
       state.forEach((_, index) => {
-        if (
-          target.original[index] === state[index] &&
-          !target.operated.has(REVERSE)
-        ) {
+        if (target.original[index] === state[index]) {
           target.operated.delete(index);
         } else {
           target.operated.add(index);
         }
+        ensureDraftValue(target, index, state[index]);
       });
       args.forEach((value) => {
         if (isDraftable(value)) {
@@ -129,14 +113,12 @@ export function createArrayHandler({
         .slice(startIndex)
         .forEach((_, _index) => {
           const index = _index + startIndex;
-          if (
-            target.original[index] === state[index] &&
-            !target.operated.has(REVERSE)
-          ) {
+          if (target.original[index] === state[index]) {
             target.operated.delete(index);
           } else {
             target.operated.add(index);
           }
+          ensureDraftValue(target, index, state[index]);
         });
       items.slice(2).forEach((value: any) => {
         if (isDraftable(value)) {
