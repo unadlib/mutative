@@ -673,7 +673,7 @@ describe('base', () => {
     expect(state.bar.a[1]).toBe(state.bar.b);
   });
 
-  test('base array set ref', () => {
+  test('base array set ref and reverse', () => {
     const data: any = {
       bar: { a: [1, 2, 3] as any, b: { x: 1 } },
     };
@@ -683,15 +683,16 @@ describe('base', () => {
       (draft) => {
         draft.bar.a.push(draft.bar.b);
         draft.bar.b.x = 2;
+        draft.bar.a.reverse();
       },
       {
         enablePatches: false,
       }
     );
     expect(state).toEqual({
-      bar: { a: [1, 2, 3, { x: 2 }], b: { x: 2 } },
+      bar: { a: [{ x: 2 }, 3, 2, 1], b: { x: 2 } },
     });
-    expect(state.bar.a.slice(-1)[0]).toBe(state.bar.b);
+    expect(state.bar.a[0]).toBe(state.bar.b);
   });
 
   test('base object set ref object1', () => {
