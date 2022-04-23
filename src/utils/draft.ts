@@ -1,4 +1,4 @@
-import { PROXY_DRAFT } from '../constant';
+import { PROXY_DRAFT, REFERENCE } from '../constant';
 import { ProxyDraft } from '../interface';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
@@ -59,4 +59,13 @@ export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
       }
     });
   }
+}
+
+export function getPath(target: ProxyDraft, path: any[] = []): any[] {
+  if (target.key) path.unshift(target.key);
+  if (target.parent) {
+    return getPath(target.parent, path);
+  }
+  path.unshift(REFERENCE);
+  return path;
 }

@@ -27,6 +27,29 @@ describe('base', () => {
     expect(state.foobar).toBe(data.foobar);
   });
 
+  test('enablePatches, no update', () => {
+    const x = { a: { b: { c: 1 }, arr: [] } };
+    const [state, patches, inversePatches] = create(
+      x,
+      (draft: any) => {
+        draft.x = draft.a.b;
+        delete draft.x;
+      },
+      {
+        enablePatches: true,
+      }
+    );
+    expect(state).toEqual({ a: { b: { c: 1 }, arr: [] } });
+    expect(patches).toEqual([
+      ['set', ['x'], [['__MUTATIVE__', 'a', 'b']]],
+      ['delete', ['x'], []],
+    ]);
+    expect(inversePatches).toEqual([
+      ['delete', ['x'], []],
+      ['set', ['x'], [['__MUTATIVE__', 'a', 'b']]],
+    ]);
+  });
+
   test('enablePatches and assign with ref object', () => {
     const x = { a: { b: { c: 1 }, arr: [] } };
     const [state, patches, inversePatches] = create(
@@ -49,12 +72,12 @@ describe('base', () => {
       x1: { c: 333 },
     });
     expect(patches).toEqual([
+      ['set', ['x'], [['__MUTATIVE__', 'a', 'b']]],
+      ['set', ['x1'], [['__MUTATIVE__', 'a', 'b']]],
       ['push', ['a', 'arr'], [1]],
       ['set', ['a', 'b', 'c'], [2]],
       ['set', ['a', 'b', 'c'], [333]],
       ['push', ['a', 'arr'], [2]],
-      ['set', ['x'], [{ c: 333 }]],
-      ['set', ['x1'], [{ c: 333 }]],
     ]);
     expect(inversePatches).toEqual([
       ['delete', ['x'], []],
@@ -91,6 +114,8 @@ describe('base', () => {
       x1: { c: 444 },
     });
     expect(patches).toEqual([
+      ['set', ['x'], [['__MUTATIVE__', 'a', 'b']]],
+      ['set', ['x1'], [['__MUTATIVE__', 'a', 'b']]],
       ['push', ['a', 'arr'], [1]],
       ['set', ['a', 'b', 'c'], [2]],
       ['set', ['a', 'b', 'c'], [333]],
@@ -98,8 +123,6 @@ describe('base', () => {
       ['push', ['a', 'arr'], [2]],
       ['set', ['a', 'b', 'c'], [444]],
       ['set', ['a', 'b'], [{ f: 1 }]],
-      ['set', ['x'], [{ c: 444 }]],
-      ['set', ['x1'], [{ c: 444 }]],
     ]);
     expect(inversePatches).toEqual([
       ['delete', ['x'], []],
@@ -107,10 +130,10 @@ describe('base', () => {
       ['shift', ['a', 'arr'], [1, 1]],
       ['set', ['a', 'b', 'c'], [1]],
       ['set', ['a', 'b', 'c'], [2]],
+      ['set', ['a', 'b'], [['__MUTATIVE__', 'a', 'b']]],
       ['shift', ['a', 'arr'], [2, 1]],
       ['set', ['a', 'b', 'c'], [333]],
       ['delete', ['a', 'b'], []],
-      ['set', ['a', 'b'], [{ c: 444 }]],
     ]);
   });
 

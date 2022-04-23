@@ -8,6 +8,7 @@ import {
   ensureDraftValue,
   ensureShallowCopy,
   getDescriptor,
+  getPath,
   getProxyDraft,
   getValue,
   has,
@@ -318,52 +319,22 @@ export function finalizeDraft<T>(
   patches?: Patches,
   inversePatches?: Patches
 ) {
-  const finalizedPatches: Patches | null = patches ? [] : null;
-  const finalizedInversePatches: Patches | null = inversePatches ? [] : null;
-  if (finalizedPatches) {
-    const finalizedItems: {
-      patches: Patches;
-      inversePatches: Patches;
-    } = {
-      patches: [],
-      inversePatches: [],
-    };
-    patches!.forEach((item) => {
-      let changed = false;
-      const result = item[2].map((value) => {
-        const proxyDraft = getProxyDraft(value);
-        if (!proxyDraft) return value;
-        changed = true;
-        return proxyDraft.copy ?? proxyDraft.original;
-      });
-      item[2] = result;
-      if (!changed) {
-        finalizedPatches.push(item);
-      } else {
-        finalizedItems.patches.push(item);
-      }
+  patches?.forEach((item) => {
+    const result = item[2].map((value) => {
+      const proxyDraft = getProxyDraft(value);
+      if (!proxyDraft) return value;
+      return getPath(proxyDraft);
     });
-    inversePatches!.forEach((item) => {
-      let changed = false;
-      const result = item[2].map((value) => {
-        const proxyDraft = getProxyDraft(value);
-        if (!proxyDraft) return value;
-        changed = true;
-        return proxyDraft.copy ?? proxyDraft.original;
-      });
-      item[2] = result;
-      if (!changed) {
-        finalizedInversePatches!.push(item);
-      } else {
-        finalizedItems.inversePatches.push(item);
-      }
+    item[2] = result;
+  });
+  inversePatches?.forEach((item) => {
+    const result = item[2].map((value) => {
+      const proxyDraft = getProxyDraft(value);
+      if (!proxyDraft) return value;
+      return getPath(proxyDraft);
     });
-    Array.prototype.push.apply(finalizedPatches, finalizedItems.patches);
-    Array.prototype.push.apply(
-      finalizedInversePatches,
-      finalizedItems.inversePatches
-    );
-  }
+    item[2] = result;
+  });
   const proxyDraft: ProxyDraft = getProxyDraft(result as any)!;
   for (const finalize of proxyDraft.finalities.draft) {
     finalize();
@@ -377,7 +348,7 @@ export function finalizeDraft<T>(
   if (proxyDraft.enableFreeze) {
     deepFreeze(state);
   }
-  return [state, finalizedPatches, finalizedInversePatches] as [
+  return [state, patches, inversePatches] as [
     state: T,
     patches?: Patches,
     inversePatches?: Patches
