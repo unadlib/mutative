@@ -15,6 +15,7 @@ import {
   latest,
   makeChange,
 } from './utils';
+import { current } from './current';
 
 function createGetter({
   proxiesMap,
@@ -173,6 +174,7 @@ function createSetter({
   return function set(target: ProxyDraft, key: string, value: any) {
     ensureShallowCopy(target);
     const previousState = target.copy![key];
+    const hasOwnProperty = Object.hasOwnProperty.call(target.copy!, key);
     ensureDraftValue(target, key, value);
     target.copy![key] = value;
     if (value === target.original[key]) {
@@ -196,7 +198,11 @@ function createSetter({
         inversePatches?.push([Operation.Set, [key], [previousState]]);
       }
     } else {
-      inversePatches?.push([Operation.Set, [key], [previousState]]);
+      inversePatches?.push([
+        hasOwnProperty ? Operation.Set : Operation.Delete,
+        [key],
+        hasOwnProperty ? [previousState] : [],
+      ]);
     }
     makeChange(target, patches, inversePatches);
     return true;
@@ -307,7 +313,57 @@ export function createDraft<T extends object>({
   return proxy;
 }
 
-export function finalizeDraft<T>(result: T) {
+export function finalizeDraft<T>(
+  result: T,
+  patches?: Patches,
+  inversePatches?: Patches
+) {
+  const finalizedPatches: Patches | null = patches ? [] : null;
+  const finalizedInversePatches: Patches | null = inversePatches ? [] : null;
+  if (finalizedPatches) {
+    const finalizedItems: {
+      patches: Patches;
+      inversePatches: Patches;
+    } = {
+      patches: [],
+      inversePatches: [],
+    };
+    patches!.forEach((item) => {
+      let changed = false;
+      const result = item[2].map((value) => {
+        const proxyDraft = getProxyDraft(value);
+        if (!proxyDraft) return value;
+        changed = true;
+        return proxyDraft.copy ?? proxyDraft.original;
+      });
+      item[2] = result;
+      if (!changed) {
+        finalizedPatches.push(item);
+      } else {
+        finalizedItems.patches.push(item);
+      }
+    });
+    inversePatches!.forEach((item) => {
+      let changed = false;
+      const result = item[2].map((value) => {
+        const proxyDraft = getProxyDraft(value);
+        if (!proxyDraft) return value;
+        changed = true;
+        return proxyDraft.copy ?? proxyDraft.original;
+      });
+      item[2] = result;
+      if (!changed) {
+        finalizedInversePatches!.push(item);
+      } else {
+        finalizedItems.inversePatches.push(item);
+      }
+    });
+    Array.prototype.push.apply(finalizedPatches, finalizedItems.patches);
+    Array.prototype.push.apply(
+      finalizedInversePatches,
+      finalizedItems.inversePatches
+    );
+  }
   const proxyDraft: ProxyDraft = getProxyDraft(result as any)!;
   for (const finalize of proxyDraft.finalities.draft) {
     finalize();
@@ -321,5 +377,9 @@ export function finalizeDraft<T>(result: T) {
   if (proxyDraft.enableFreeze) {
     deepFreeze(state);
   }
-  return state;
+  return [state, finalizedPatches, finalizedInversePatches] as [
+    state: T,
+    patches?: Patches,
+    inversePatches?: Patches
+  ];
 }

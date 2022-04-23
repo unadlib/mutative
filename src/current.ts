@@ -15,7 +15,11 @@ export function current<T extends object>(target: T): any {
     } else if (proxyDraft.copy instanceof Set) {
       const elements: any[] = [];
       proxyDraft.copy.forEach((item) => {
-        elements.push(getProxyDraft(item) ? current(item) : item);
+        let value: any = item;
+        if (proxyDraft.setMap!.has(item)) {
+          value = proxyDraft.setMap!.get(item)!.proxy;
+        }
+        elements.push(getProxyDraft(value) ? current(value) : value);
       });
       return new Set(elements);
     } else if (proxyDraft.copy instanceof Map) {

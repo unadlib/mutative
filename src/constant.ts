@@ -10,14 +10,14 @@ export const enum DraftType {
 }
 
 export const enum Operation {
-  Delete,
-  Set,
-  Clear,
-  Add,
-  Pop,
-  Push,
-  Shift,
-  Splice,
-  Unshift,
-  Construct,
+  Delete = 'delete',
+  Set = 'set',
+  Clear = 'clear',
+  Add = 'add',
+  Pop = 'pop',
+  Push = 'push',
+  Shift = 'shift',
+  Splice = 'splice',
+  Unshift = 'unshift',
+  Construct = 'construct',
 }

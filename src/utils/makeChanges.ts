@@ -31,7 +31,7 @@ export function makeChange(
         proxyDraft.parent.copy.set(proxyDraft.key, proxyDraft.proxy);
       } else if (proxyDraft.parent.copy instanceof Set) {
         // for Set
-      } else {
+      } else if (!proxyDraft.parent.operated.has(proxyDraft.key)) { // the key maybe be deleted
         proxyDraft.parent.copy![proxyDraft.key] = proxyDraft.copy;
       }
     }

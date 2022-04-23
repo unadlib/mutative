@@ -27,6 +27,117 @@ describe('base', () => {
     expect(state.foobar).toBe(data.foobar);
   });
 
+  test('enablePatches and assign with ref object', () => {
+    const x = { a: { b: { c: 1 }, arr: [] } };
+    const [state, patches, inversePatches] = create(
+      x,
+      (draft: any) => {
+        draft.x = draft.a.b;
+        draft.x1 = draft.a.b;
+        draft.a.arr.push(1);
+        draft.a.b.c = 2;
+        draft.a.b.c = 333;
+        draft.a.arr.push(2);
+      },
+      {
+        enablePatches: true,
+      }
+    );
+    expect(state).toEqual({
+      a: { b: { c: 333 }, arr: [1, 2] },
+      x: { c: 333 },
+      x1: { c: 333 },
+    });
+    expect(patches).toEqual([
+      ['push', ['a', 'arr'], [1]],
+      ['set', ['a', 'b', 'c'], [2]],
+      ['set', ['a', 'b', 'c'], [333]],
+      ['push', ['a', 'arr'], [2]],
+      ['set', ['x'], [{ c: 333 }]],
+      ['set', ['x1'], [{ c: 333 }]],
+    ]);
+    expect(inversePatches).toEqual([
+      ['delete', ['x'], []],
+      ['delete', ['x1'], []],
+      ['shift', ['a', 'arr'], [1, 1]],
+      ['set', ['a', 'b', 'c'], [1]],
+      ['set', ['a', 'b', 'c'], [2]],
+      ['shift', ['a', 'arr'], [2, 1]],
+    ]);
+  });
+
+  test('enablePatches and assign/delete with ref object', () => {
+    const x = { a: { b: { c: 1 }, arr: [] } };
+    const [state, patches, inversePatches] = create(
+      x,
+      (draft: any) => {
+        draft.x = draft.a.b;
+        draft.x1 = draft.a.b;
+        draft.a.arr.push(1);
+        draft.a.b.c = 2;
+        draft.a.b.c = 333;
+        delete draft.a.b;
+        draft.a.arr.push(2);
+        draft.x1.c = 444;
+        draft.a.b = { f: 1 };
+      },
+      {
+        enablePatches: true,
+      }
+    );
+    expect(state).toEqual({
+      a: { arr: [1, 2], b: { f: 1 } },
+      x: { c: 444 },
+      x1: { c: 444 },
+    });
+    expect(patches).toEqual([
+      ['push', ['a', 'arr'], [1]],
+      ['set', ['a', 'b', 'c'], [2]],
+      ['set', ['a', 'b', 'c'], [333]],
+      ['delete', ['a', 'b'], []],
+      ['push', ['a', 'arr'], [2]],
+      ['set', ['a', 'b', 'c'], [444]],
+      ['set', ['a', 'b'], [{ f: 1 }]],
+      ['set', ['x'], [{ c: 444 }]],
+      ['set', ['x1'], [{ c: 444 }]],
+    ]);
+    expect(inversePatches).toEqual([
+      ['delete', ['x'], []],
+      ['delete', ['x1'], []],
+      ['shift', ['a', 'arr'], [1, 1]],
+      ['set', ['a', 'b', 'c'], [1]],
+      ['set', ['a', 'b', 'c'], [2]],
+      ['shift', ['a', 'arr'], [2, 1]],
+      ['set', ['a', 'b', 'c'], [333]],
+      ['delete', ['a', 'b'], []],
+      ['set', ['a', 'b'], [{ c: 444 }]],
+    ]);
+  });
+
+  test('object with share ref', () => {
+    const foobar = {
+      foo: 'foo',
+    };
+    const data = {
+      foo: {
+        bar: 'str',
+        foobar,
+      },
+      foobar,
+    };
+
+    const state = create(data, (draft) => {
+      draft.foobar.foo = 'new str';
+    });
+    expect(state).toEqual({
+      foo: { bar: 'str', foobar: { foo: 'foo' } },
+      foobar: { foo: 'new str' },
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).toBe(data.foo);
+    expect(state.foobar).not.toBe(data.foobar);
+  });
+
   test('object with HOF', () => {
     const data = {
       foo: {

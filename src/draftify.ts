@@ -46,10 +46,11 @@ export function draftify<
   return [
     draft,
     () => {
-      const finalizedState = finalizeDraft(draft) as T;
+      const [finalizedState, finalizedPatches, finalizedInversePatches] =
+        finalizeDraft(draft, patches, inversePatches);
       return (
         enablePatches
-          ? [finalizedState, patches, inversePatches]
+          ? [finalizedState, finalizedPatches, finalizedInversePatches]
           : finalizedState
       ) as Result<T, O, F>;
     },

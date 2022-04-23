@@ -52,8 +52,9 @@ export function createSetHandler({
       if (isDraftable(value)) {
         assignedSet.add(value);
       }
-      patches?.push([Operation.Set, [key], [value]]);
-      inversePatches?.push([Operation.Delete, [key], [value]]);
+      const index = Array.from(result.values()).indexOf(value);
+      patches?.push([Operation.Set, [index], [value]]);
+      inversePatches?.push([Operation.Delete, [index], [value]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -64,8 +65,8 @@ export function createSetHandler({
       } else {
         target.operated.add(CLEAR);
       }
-      patches?.push([Operation.Clear, [key], []]);
-      inversePatches?.push([Operation.Construct, [key], [state.values()]]);
+      patches?.push([Operation.Clear, [], []]);
+      inversePatches?.push([Operation.Construct, [], [state.values()]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -76,8 +77,8 @@ export function createSetHandler({
       } else {
         target.operated.add(value);
       }
-      patches?.push([Operation.Delete, [key], [value]]);
-      inversePatches?.push([Operation.Set, [key], [value]]);
+      patches?.push([Operation.Delete, [], [value]]);
+      inversePatches?.push([Operation.Set, [], [value]]);
       makeChange(target, patches, inversePatches);
       return result;
     },

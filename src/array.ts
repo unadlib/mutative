@@ -40,8 +40,8 @@ export function createArrayHandler({
         target.operated.add(index);
       }
       const [last] = state.slice(-1);
-      patches?.push([Operation.Pop, [key], []]);
-      inversePatches?.push([Operation.Push, [key], [last]]);
+      patches?.push([Operation.Pop, [], []]);
+      inversePatches?.push([Operation.Push, [], [last]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -60,12 +60,8 @@ export function createArrayHandler({
         }
         ensureDraftValue(target, index, value);
       });
-      patches?.push([Operation.Push, [key], args]);
-      inversePatches?.push([
-        Operation.Shift,
-        [key],
-        [state.length, args.length],
-      ]);
+      patches?.push([Operation.Push, [], args]);
+      inversePatches?.push([Operation.Shift, [], [state.length, args.length]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -80,8 +76,8 @@ export function createArrayHandler({
           target.operated.add(index);
         }
       });
-      patches?.push([Operation.Shift, [key], []]);
-      inversePatches?.push([Operation.Unshift, [key], [first]]);
+      patches?.push([Operation.Shift, [], []]);
+      inversePatches?.push([Operation.Unshift, [], [first]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -100,8 +96,8 @@ export function createArrayHandler({
           assignedSet.add(value);
         }
       });
-      patches?.push([Operation.Unshift, [key], [args]]);
-      inversePatches?.push([Operation.Splice, [key], [0, args.length]]);
+      patches?.push([Operation.Unshift, [], [args]]);
+      inversePatches?.push([Operation.Splice, [], [0, args.length]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -125,10 +121,10 @@ export function createArrayHandler({
           assignedSet.add(value);
         }
       });
-      patches?.push([Operation.Splice, [key], [args]]);
+      patches?.push([Operation.Splice, [], [args]]);
       inversePatches?.push([
         Operation.Splice,
-        [key],
+        [],
         [startIndex, items.length, result],
       ]);
       makeChange(target, patches, inversePatches);
