@@ -2,6 +2,10 @@
 export const PROXY_DRAFT = Symbol.for('__MUTATIVE_PROXY_DRAFT__');
 export const CLEAR = Symbol('__MUTATIVE_CLEAR__');
 export const REFERENCE = '__MUTATIVE__';
+export const dataTypes = {
+  mutable: 'mutable',
+  immutable: 'immutable',
+} as const;
 
 export const enum DraftType {
   Object = 'object',

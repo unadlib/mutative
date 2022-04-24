@@ -1,5 +1,5 @@
 import type { Patches, ProxyDraft } from './interface';
-import { CLEAR, Operation } from './constant';
+import { CLEAR, dataTypes, Operation } from './constant';
 import { getProxyDraft, isDraftable, latest, makeChange } from './utils';
 import { createDraft } from './draft';
 
@@ -24,7 +24,6 @@ export function createSetHandler({
   assignedSet,
   patches,
   inversePatches,
-  mutableFilter,
 }: {
   target: ProxyDraft;
   key: string | symbol;
@@ -33,7 +32,6 @@ export function createSetHandler({
   assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
-  mutableFilter?: (target: any) => boolean;
 }) {
   if (key === 'size') {
     return latest(target).size;
@@ -49,7 +47,7 @@ export function createSetHandler({
       } else {
         target.operated.add(value);
       }
-      if (isDraftable(value)) {
+      if (isDraftable(value, target)) {
         assignedSet.add(value);
       }
       const index = Array.from(result.values()).indexOf(value);
@@ -114,14 +112,17 @@ export function createSetHandler({
           const iteratorResult = iterator.next();
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value;
-          if (mutableFilter?.(original) || assignedSet.has(original)) {
+          if (
+            target.marker?.(original, dataTypes) === dataTypes.mutable ||
+            assignedSet.has(original)
+          ) {
             return {
               done: false,
               value: original,
             };
           }
           let proxyDraft = target.setMap!.get(original);
-          if (isDraftable(original) && !proxyDraft) {
+          if (isDraftable(original, target) && !proxyDraft) {
             const key = Array.from(target.original.values())
               .indexOf(original)
               .toString();
@@ -133,7 +134,7 @@ export function createSetHandler({
               inversePatches,
               finalities: target.finalities,
               proxiesMap,
-              mutableFilter,
+              marker: target.marker,
               assignedSet,
             });
             proxyDraft = getProxyDraft(proxy)!;
@@ -155,14 +156,17 @@ export function createSetHandler({
           const iteratorResult = iterator.next();
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value[0];
-          if (mutableFilter?.(original) || assignedSet.has(original)) {
+          if (
+            target.marker?.(original, dataTypes) === dataTypes.mutable ||
+            assignedSet.has(original)
+          ) {
             return {
               done: false,
               value: [original, original],
             };
           }
           let proxyDraft = target.setMap!.get(original);
-          if (isDraftable(original) && !proxyDraft) {
+          if (isDraftable(original, target) && !proxyDraft) {
             const key = Array.from(target.original.values())
               .indexOf(original)
               .toString();
@@ -174,7 +178,7 @@ export function createSetHandler({
               inversePatches,
               finalities: target.finalities,
               proxiesMap,
-              mutableFilter,
+              marker: target.marker,
               assignedSet,
             });
             proxyDraft = getProxyDraft(proxy)!;

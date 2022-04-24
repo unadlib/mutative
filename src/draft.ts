@@ -1,6 +1,6 @@
-import type { Finalities, Patches, ProxyDraft } from './interface';
+import type { Finalities, Patches, ProxyDraft, Marker } from './interface';
 import { createArrayHandler, mutableArrayMethods } from './array';
-import { DraftType, Operation, PROXY_DRAFT } from './constant';
+import { dataTypes, DraftType, Operation, PROXY_DRAFT } from './constant';
 import { createMapHandler, mutableMapMethods } from './map';
 import { createSetHandler, mutableSetMethods } from './set';
 import {
@@ -16,26 +16,23 @@ import {
   latest,
   makeChange,
 } from './utils';
-import { current } from './current';
 
 function createGetter({
   proxiesMap,
   assignedSet,
   patches,
   inversePatches,
-  mutableFilter,
 }: {
   proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
-  mutableFilter?: (target: any) => boolean;
 }) {
   return function get(target: ProxyDraft, key: string | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
-    if (mutableFilter) {
+    if (target.marker) {
       const value = Reflect.get(target.original, key, receiver);
-      if (mutableFilter(value)) {
+      if (target.marker(value, dataTypes) === dataTypes.mutable) {
         return value;
       }
     }
@@ -106,7 +103,6 @@ function createGetter({
           assignedSet,
           patches,
           inversePatches,
-          mutableFilter,
         });
       }
       if (
@@ -122,12 +118,14 @@ function createGetter({
           assignedSet,
           patches,
           inversePatches,
-          mutableFilter,
         });
       }
       return getDescriptor(state, key)?.value;
     }
-    if (isDraftable(value) && !getProxyDraft(value)) {
+    if (
+      isDraftable(value, target) &&
+      !getProxyDraft(value)
+    ) {
       if (assignedSet.has(value)) return value;
       const proxyDraft = proxiesMap.get(target.original[key]);
       if (!proxyDraft) {
@@ -139,7 +137,7 @@ function createGetter({
           inversePatches,
           finalities: target.finalities,
           proxiesMap,
-          mutableFilter,
+          marker: target.marker,
           assignedSet,
         });
         target.finalities.draft.unshift(() => {
@@ -183,7 +181,7 @@ function createSetter({
     } else {
       target.operated.add(key);
     }
-    if (isDraftable(value)) {
+    if (isDraftable(value, target)) {
       assignedSet.add(value);
     }
     patches?.push([Operation.Set, [key], [value]]);
@@ -220,7 +218,7 @@ export function createDraft<T extends object>({
   proxiesMap,
   assignedSet,
   enableFreeze,
-  mutableFilter,
+  marker,
 }: {
   original: T;
   finalities: Finalities;
@@ -231,7 +229,7 @@ export function createDraft<T extends object>({
   patches?: Patches;
   inversePatches?: Patches;
   enableFreeze?: boolean;
-  mutableFilter?: (target: any) => boolean;
+  marker?: Marker;
 }): T {
   const proxyDraft: ProxyDraft = {
     // todo: check
@@ -245,13 +243,13 @@ export function createDraft<T extends object>({
     key,
     finalities,
     enableFreeze,
+    marker,
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
     get: createGetter({
       patches,
       inversePatches,
       proxiesMap,
-      mutableFilter,
       assignedSet,
     }),
     set: createSetter({

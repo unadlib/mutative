@@ -1,5 +1,5 @@
 import type { Patches, ProxyDraft } from './interface';
-import { CLEAR, Operation } from './constant';
+import { CLEAR, dataTypes, Operation } from './constant';
 import {
   ensureDraftValue,
   ensureShallowCopy,
@@ -33,7 +33,6 @@ export function createMapHandler({
   assignedSet,
   patches,
   inversePatches,
-  mutableFilter,
 }: {
   target: ProxyDraft;
   key: string | symbol;
@@ -42,7 +41,6 @@ export function createMapHandler({
   assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
-  mutableFilter?: (target: any) => boolean;
 }) {
   if (key === 'size') {
     return latest<Map<any, any>>(target).size;
@@ -55,7 +53,7 @@ export function createMapHandler({
       } else {
         target.operated.add(_key);
       }
-      if (isDraftable(_value)) {
+      if (isDraftable(_value, target)) {
         assignedSet.add(_value);
       }
       ensureDraftValue(target, _key, _value);
@@ -93,10 +91,13 @@ export function createMapHandler({
     get(_key: any): any {
       ensureShallowCopy(target);
       const value = target.copy!.get(_key);
-      if (mutableFilter?.(value) || assignedSet.has(value)) {
+      if (
+        target.marker?.(value, dataTypes) === dataTypes.mutable ||
+        assignedSet.has(value)
+      ) {
         return value;
       }
-      if (isDraftable(value) && !getProxyDraft(value)) {
+      if (isDraftable(value, target) && !getProxyDraft(value)) {
         const currentDraft = createDraft({
           original: target.original.get(_key),
           parentDraft: target,
@@ -105,7 +106,7 @@ export function createMapHandler({
           inversePatches,
           finalities: target.finalities,
           proxiesMap,
-          mutableFilter,
+          marker: target.marker,
           assignedSet,
         });
         target.copy!.set(_key, currentDraft);

@@ -55,7 +55,7 @@ export function createArrayHandler({
         } else {
           target.operated.delete(index);
         }
-        if (isDraftable(value)) {
+        if (isDraftable(value, target)) {
           assignedSet.add(value);
         }
         ensureDraftValue(target, index, value);
@@ -92,7 +92,7 @@ export function createArrayHandler({
         ensureDraftValue(target, index, state[index]);
       });
       args.forEach((value) => {
-        if (isDraftable(value)) {
+        if (isDraftable(value, target)) {
           assignedSet.add(value);
         }
       });
@@ -117,7 +117,7 @@ export function createArrayHandler({
           ensureDraftValue(target, index, state[index]);
         });
       items.slice(2).forEach((value: any) => {
-        if (isDraftable(value)) {
+        if (isDraftable(value, target)) {
           assignedSet.add(value);
         }
       });

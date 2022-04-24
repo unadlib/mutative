@@ -1481,7 +1481,9 @@ describe('base', () => {
         draft.foobar.text = 'new text';
       },
       {
-        mutable: (target) => target === data.foobar,
+        mark: (target) => {
+          if (target === data.foobar) return 'mutable';
+        },
       }
     );
     expect(state).toEqual({
@@ -1506,7 +1508,9 @@ describe('base', () => {
         draft.foobar.text = 'new text';
       },
       {
-        mutable: (target) => target === data.foobar,
+        mark: (target) => {
+          if (target === data.foobar) return 'mutable';
+        },
       }
     );
     expect(state).toEqual({
@@ -1533,7 +1537,9 @@ describe('base', () => {
         draft.foobar.text = 'new text';
       },
       {
-        mutable: (target) => target === data,
+        mark: (target) => {
+          if (target === data) return 'mutable';
+        },
       }
     );
     expect(state).toEqual({
@@ -1563,7 +1569,9 @@ describe('base', () => {
         draft.foobar.text = 'new text';
       },
       {
-        mutable: (target) => target === foo,
+        mark: (target) => {
+          if (target === foo) return 'mutable';
+        },
       }
     );
     expect(state).toEqual({
@@ -1590,7 +1598,9 @@ describe('base', () => {
         draft.arr[0] = 'new text';
       },
       {
-        mutable: (target) => target === data.arr,
+        mark: (target) => {
+          if (target === data.arr) return 'mutable';
+        },
       }
     );
     expect(state).toEqual({
@@ -1618,7 +1628,9 @@ describe('base', () => {
         draft.map.get(1)!.foobar.text = 'new text';
       },
       {
-        mutable: (target) => target === foobar,
+        mark: (target) => {
+          if (target === foobar) return 'mutable';
+        },
       }
     );
     expect(state).toEqual({
@@ -1648,7 +1660,9 @@ describe('base', () => {
         draft.set.values().next().value.text = 'new text';
       },
       {
-        mutable: (target) => target === foobar,
+        mark: (target) => {
+          if (target === foobar) return 'mutable';
+        },
       }
     );
     expect(state).toEqual({
@@ -1897,5 +1911,64 @@ describe('base', () => {
     expect(state1).not.toBe(data1);
     expect(state1.foo1).not.toBe(data1.foo1);
     expect(state1.foobar1).toBe(data1.foobar1);
+  });
+
+  test('class instance', () => {
+    class Foobar {
+      foo = 'str';
+    }
+
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: new Foobar(),
+    };
+
+    const state = create(data, (draft) => {
+      draft.foo.bar = 'new str';
+      draft.foobar.foo = 'new str';
+    });
+    const foobar = new Foobar();
+    foobar.foo = 'new str';
+    expect(state).toEqual({ foo: { bar: 'new str' }, foobar });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
+  });
+
+  test('class instance with mark', () => {
+    class Foobar {
+      foo = {
+        bar: 'str',
+      };
+    }
+
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: new Foobar(),
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.foo.bar = 'new str';
+        draft.foobar.foo.bar = 'new str';
+      },
+      {
+        mark: (target, { immutable }) => {
+          if (target instanceof Foobar) return immutable;
+        },
+      }
+    );
+    const foobar = new Foobar();
+    foobar.foo.bar = 'new str';
+    expect(state).toEqual({ foo: { bar: 'new str' }, foobar });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).not.toBe(data.foobar);
+    expect(state.foobar.foo).not.toBe(data.foobar.foo);
   });
 });

@@ -1,4 +1,6 @@
-import { DraftType, Operation } from './constant';
+import { DraftType, Operation, dataTypes } from './constant';
+
+export type DataType = keyof typeof dataTypes;
 
 export interface Finalities {
   draft: (() => void)[];
@@ -17,6 +19,7 @@ export interface ProxyDraft {
   key?: string | symbol;
   setMap?: Map<object, ProxyDraft>;
   enableFreeze?: boolean;
+  marker?: Marker;
 }
 
 export type Patches = [Operation, (string | number | symbol)[], any[]][];
@@ -42,13 +45,19 @@ export type CreateResult<
   R extends void | Promise<void>
 > = R extends Promise<void> ? Promise<Result<T, O, F>> : Result<T, O, F>;
 
+export type Marker = (
+  target: any,
+  types: typeof dataTypes
+) => null | undefined | DataType;
+
 export interface Options<O extends boolean, F extends boolean> {
   enablePatches?: O;
   enableFreeze?: F;
-  mutable?: (target: any) => boolean;
+  mark?: Marker;
 }
 
-type Primitive = string | number | bigint | boolean | symbol | null | undefined;
+// Exclude `symbol`
+type Primitive = string | number | bigint | boolean | null | undefined;
 
 type ImmutableMap<K, V> = ReadonlyMap<K, Immutable<V>>;
 type ImmutableSet<T> = ReadonlySet<Immutable<T>>;

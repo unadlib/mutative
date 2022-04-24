@@ -1,5 +1,6 @@
 import type { CreateResult, Mutable, Options, Result } from './interface';
 import { draftify } from './draftify';
+import { dataTypes } from './constant';
 
 /**
  * something
@@ -10,7 +11,7 @@ export function create<
   F extends boolean = false,
   R extends void | Promise<void> = void
 >(state: T, mutate: (draft: Mutable<T>) => R, options?: Options<O, F>) {
-  if (options?.mutable?.(state)) {
+  if (options?.mark?.(state, dataTypes) === dataTypes.mutable) {
     const result = mutate(state as Mutable<T>);
     const finalization = options?.enablePatches ? [state, [], []] : state;
     if (result instanceof Promise) {

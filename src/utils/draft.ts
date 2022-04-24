@@ -1,5 +1,5 @@
-import { PROXY_DRAFT, REFERENCE } from '../constant';
-import { ProxyDraft } from '../interface';
+import { dataTypes, PROXY_DRAFT, REFERENCE } from '../constant';
+import { Marker, ProxyDraft } from '../interface';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy || proxyDraft.original;
@@ -22,14 +22,18 @@ export function getValue<T extends object>(value: T) {
   return proxyDraft.copy ?? proxyDraft.original;
 }
 
-export function isDraftable(value: any) {
+export function isDraftable<T extends { marker?: Marker } = ProxyDraft>(
+  value: any,
+  target: T
+) {
   return (
-    !!value &&
-    ((typeof value === 'object' &&
-      Object.getPrototypeOf(value) === Object.prototype) ||
-      Array.isArray(value) ||
-      value instanceof Map ||
-      value instanceof Set)
+    (!!value &&
+      ((typeof value === 'object' &&
+        Object.getPrototypeOf(value) === Object.prototype) ||
+        Array.isArray(value) ||
+        value instanceof Map ||
+        value instanceof Set)) ||
+    target.marker?.(value, dataTypes) === dataTypes.immutable
   );
 }
 

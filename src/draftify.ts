@@ -7,15 +7,16 @@ import type {
 } from './interface';
 import { createDraft, finalizeDraft } from './draft';
 import { isDraftable } from './utils';
+import { dataTypes } from './constant';
 
 export function draftify<
   T extends object,
   O extends boolean = false,
   F extends boolean = false
 >(baseState: T, options?: Options<O, F>): [T, () => Result<T, O, F>] {
-  const mutableFilter = options?.mutable;
+  const marker = options?.mark;
   const enablePatches = options?.enablePatches ?? false;
-  if (!isDraftable(baseState)) {
+  if (!isDraftable(baseState, { marker })) {
     throw new Error(
       'create() only supports plain object, array, set, and map.'
     );
@@ -40,7 +41,7 @@ export function draftify<
     inversePatches,
     finalities,
     enableFreeze: options?.enableFreeze,
-    mutableFilter,
+    marker,
     assignedSet,
   });
   return [
