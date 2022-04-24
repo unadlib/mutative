@@ -92,8 +92,8 @@ export function createMapHandler({
       ensureShallowCopy(target);
       const value = target.copy!.get(_key);
       if (
-        target.marker?.(value, dataTypes) === dataTypes.mutable ||
-        assignedSet.has(value)
+        assignedSet.has(value) ||
+        target.marker?.(value, dataTypes) === dataTypes.mutable
       ) {
         return value;
       }

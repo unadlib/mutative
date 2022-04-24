@@ -113,8 +113,8 @@ export function createSetHandler({
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value;
           if (
-            target.marker?.(original, dataTypes) === dataTypes.mutable ||
-            assignedSet.has(original)
+            assignedSet.has(original) ||
+            target.marker?.(original, dataTypes) === dataTypes.mutable
           ) {
             return {
               done: false,
@@ -157,8 +157,8 @@ export function createSetHandler({
           if (iteratorResult.done) return iteratorResult;
           const original = iteratorResult.value[0];
           if (
-            target.marker?.(original, dataTypes) === dataTypes.mutable ||
-            assignedSet.has(original)
+            assignedSet.has(original) ||
+            target.marker?.(original, dataTypes) === dataTypes.mutable
           ) {
             return {
               done: false,
