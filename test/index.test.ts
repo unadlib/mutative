@@ -1942,6 +1942,10 @@ describe('base', () => {
       foo = {
         bar: 'str',
       };
+
+      change() {
+        this.foo.bar = 'new str';
+      }
     }
 
     const data = {
@@ -1955,7 +1959,7 @@ describe('base', () => {
       data,
       (draft) => {
         draft.foo.bar = 'new str';
-        draft.foobar.foo.bar = 'new str';
+        draft.foobar.change();
       },
       {
         mark: (target, { immutable }) => {

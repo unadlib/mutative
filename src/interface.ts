@@ -63,7 +63,7 @@ type ImmutableMap<K, V> = ReadonlyMap<K, Immutable<V>>;
 type ImmutableSet<T> = ReadonlySet<Immutable<T>>;
 type ImmutableObject<T> = { readonly [K in keyof T]: Immutable<T[K]> };
 
-export type Immutable<T> = T extends Primitive
+export type Immutable<T> = T extends Primitive | ((...args: any) => any)
   ? T
   : T extends Map<infer K, infer V>
   ? ImmutableMap<K, V>
@@ -75,7 +75,7 @@ type MutableMap<K, V> = Map<K, Mutable<V>>;
 type MutableSet<T> = Set<Mutable<T>>;
 type MutableObject<T> = { -readonly [K in keyof T]: Mutable<T[K]> };
 
-export type Mutable<T> = T extends Primitive
+export type Mutable<T> = T extends Primitive | ((...args: any) => any)
   ? T
   : T extends Map<infer K, infer V>
   ? MutableMap<K, V>
