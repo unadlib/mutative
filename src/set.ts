@@ -52,7 +52,7 @@ export function createSetHandler({
       }
       const index = Array.from(result.values()).indexOf(value);
       patches?.push([Operation.Set, [index], [value]]);
-      inversePatches?.push([Operation.Delete, [index], [value]]);
+      inversePatches?.unshift([Operation.Delete, [index], [value]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -64,7 +64,7 @@ export function createSetHandler({
         target.operated.add(CLEAR);
       }
       patches?.push([Operation.Clear, [], []]);
-      inversePatches?.push([Operation.Construct, [], [state.values()]]);
+      inversePatches?.unshift([Operation.Construct, [], [state.values()]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -76,7 +76,7 @@ export function createSetHandler({
         target.operated.add(value);
       }
       patches?.push([Operation.Delete, [], [value]]);
-      inversePatches?.push([Operation.Set, [], [value]]);
+      inversePatches?.unshift([Operation.Set, [], [value]]);
       makeChange(target, patches, inversePatches);
       return result;
     },

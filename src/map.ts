@@ -59,7 +59,7 @@ export function createMapHandler({
       ensureDraftValue(target, _key, _value);
       const index = Array.from(result.keys()).indexOf(_key);
       patches?.push([Operation.Set, [index], [_key, _value]]);
-      inversePatches?.push([Operation.Delete, [index], [_key]]);
+      inversePatches?.unshift([Operation.Delete, [index], [_key]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -71,7 +71,7 @@ export function createMapHandler({
         target.operated.add(CLEAR);
       }
       patches?.push([Operation.Clear, [], []]);
-      inversePatches?.push([Operation.Construct, [], [state.entries()]]);
+      inversePatches?.unshift([Operation.Construct, [], [state.entries()]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -84,7 +84,7 @@ export function createMapHandler({
       }
       patches?.push([Operation.Delete, [], [_key]]);
       const _value = state.get(_key);
-      inversePatches?.push([Operation.Set, [], [_key, _value]]);
+      inversePatches?.unshift([Operation.Set, [], [_key, _value]]);
       makeChange(target, patches, inversePatches);
       return result;
     },

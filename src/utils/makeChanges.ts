@@ -24,8 +24,8 @@ export function makeChange(
         last[1].unshift(proxyDraft.key);
       }
       if (inversePatches) {
-        const [last] = inversePatches.slice(-1);
-        last[1].unshift(proxyDraft.key);
+        const [first] = inversePatches;
+        first[1].unshift(proxyDraft.key);
       }
       if (proxyDraft.parent.copy instanceof Map) {
         proxyDraft.parent.copy.set(proxyDraft.key, proxyDraft.proxy);

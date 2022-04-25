@@ -122,10 +122,7 @@ function createGetter({
       }
       return getDescriptor(state, key)?.value;
     }
-    if (
-      isDraftable(value, target) &&
-      !getProxyDraft(value)
-    ) {
+    if (isDraftable(value, target) && !getProxyDraft(value)) {
       if (assignedSet.has(value)) return value;
       const proxyDraft = proxiesMap.get(target.original[key]);
       if (!proxyDraft) {
@@ -188,16 +185,16 @@ function createSetter({
     if (Array.isArray(target.original)) {
       const numberKey = Number(key);
       if (!isNaN(numberKey) && numberKey >= target.original.length) {
-        inversePatches?.push([
+        inversePatches?.unshift([
           Operation.Set,
           ['length'],
           [target.original.length],
         ]);
       } else {
-        inversePatches?.push([Operation.Set, [key], [previousState]]);
+        inversePatches?.unshift([Operation.Set, [key], [previousState]]);
       }
     } else {
-      inversePatches?.push([
+      inversePatches?.unshift([
         hasOwnProperty ? Operation.Set : Operation.Delete,
         [key],
         hasOwnProperty ? [previousState] : [],
@@ -299,7 +296,7 @@ export function createDraft<T extends object>({
         target.operated.add(key);
       }
       patches?.push([Operation.Delete, [key], []]);
-      inversePatches?.push([Operation.Set, [key], [previousState]]);
+      inversePatches?.unshift([Operation.Set, [key], [previousState]]);
       makeChange(target, patches, inversePatches);
       return true;
     },

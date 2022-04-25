@@ -1,5 +1,5 @@
-import { dataTypes } from '../constant';
 import type { ProxyDraft } from '../interface';
+import { dataTypes } from '../constant';
 
 function shallowCopy(original: any, checkCopy?: (original: any) => boolean) {
   if (Array.isArray(original)) {
@@ -40,7 +40,7 @@ export function ensureShallowCopy(target: ProxyDraft) {
       : undefined
   )!;
   if (target.original instanceof Set) {
-    // for collection of changing set data
+    // for collection of updating draft Set data
     target.setMap = new Map();
   }
 }

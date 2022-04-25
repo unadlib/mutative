@@ -41,7 +41,7 @@ export function createArrayHandler({
       }
       const [last] = state.slice(-1);
       patches?.push([Operation.Pop, [], []]);
-      inversePatches?.push([Operation.Push, [], [last]]);
+      inversePatches?.unshift([Operation.Push, [], [last]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -61,7 +61,7 @@ export function createArrayHandler({
         ensureDraftValue(target, index, value);
       });
       patches?.push([Operation.Push, [], args]);
-      inversePatches?.push([Operation.Shift, [], [state.length, args.length]]);
+      inversePatches?.unshift([Operation.Shift, [], [state.length, args.length]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -77,7 +77,7 @@ export function createArrayHandler({
         }
       });
       patches?.push([Operation.Shift, [], []]);
-      inversePatches?.push([Operation.Unshift, [], [first]]);
+      inversePatches?.unshift([Operation.Unshift, [], [first]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -97,7 +97,7 @@ export function createArrayHandler({
         }
       });
       patches?.push([Operation.Unshift, [], [args]]);
-      inversePatches?.push([Operation.Splice, [], [0, args.length]]);
+      inversePatches?.unshift([Operation.Splice, [], [0, args.length]]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -122,7 +122,7 @@ export function createArrayHandler({
         }
       });
       patches?.push([Operation.Splice, [], [args]]);
-      inversePatches?.push([
+      inversePatches?.unshift([
         Operation.Splice,
         [],
         [startIndex, items.length, result],
