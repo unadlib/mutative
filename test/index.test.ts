@@ -39,13 +39,14 @@ test('enablePatches, no update', () => {
     }
   );
   expect(state).toEqual({ a: { b: { c: 1 }, arr: [] } });
+
   expect(patches).toEqual([
-    ['set', ['x'], [['__MUTATIVE__', 'a', 'b']]],
-    ['delete', ['x'], []],
+    [['object', 'set'], ['x'], [['__MUTATIVE__', 'a', 'b']]],
+    [['object', 'delete'], ['x'], []],
   ]);
   expect(inversePatches).toEqual([
-    ['set', ['x'], [['__MUTATIVE__', 'a', 'b']]],
-    ['delete', ['x'], []],
+    [['object', 'set'], ['x'], [['__MUTATIVE__', 'a', 'b']]],
+    [['object', 'delete'], ['x'], []],
   ]);
 });
 
@@ -71,20 +72,28 @@ test('enablePatches and assign with ref object', () => {
     x1: { c: 333 },
   });
   expect(patches).toEqual([
-    ['set', ['x'], [['__MUTATIVE__', 'a', 'b']]],
-    ['set', ['x1'], [['__MUTATIVE__', 'a', 'b']]],
-    ['push', ['a', 'arr'], [1]],
-    ['set', ['a', 'b', 'c'], [2]],
-    ['set', ['a', 'b', 'c'], [333]],
-    ['push', ['a', 'arr'], [2]],
+    [['object', 'set'], ['x'], [['__MUTATIVE__', 'a', 'b']]],
+    [['object', 'set'], ['x1'], [['__MUTATIVE__', 'a', 'b']]],
+    [['array', 'push'], ['a', 'arr'], [1]],
+    [['object', 'set'], ['a', 'b', 'c'], [2]],
+    [['object', 'set'], ['a', 'b', 'c'], [333]],
+    [['array', 'push'], ['a', 'arr'], [2]],
   ]);
   expect(inversePatches).toEqual([
-    ['shift', ['a', 'arr'], [2, 1]],
-    ['set', ['a', 'b', 'c'], [2]],
-    ['set', ['a', 'b', 'c'], [1]],
-    ['shift', ['a', 'arr'], [1, 1]],
-    ['delete', ['x1'], []],
-    ['delete', ['x'], []],
+    [
+      ['array', 'shift'],
+      ['a', 'arr'],
+      [2, 1],
+    ],
+    [['object', 'set'], ['a', 'b', 'c'], [2]],
+    [['object', 'set'], ['a', 'b', 'c'], [1]],
+    [
+      ['array', 'shift'],
+      ['a', 'arr'],
+      [1, 1],
+    ],
+    [['object', 'delete'], ['x1'], []],
+    [['object', 'delete'], ['x'], []],
   ]);
 });
 
@@ -113,26 +122,34 @@ test('enablePatches and assign/delete with ref object', () => {
     x1: { c: 444 },
   });
   expect(patches).toEqual([
-    ['set', ['x'], [['__MUTATIVE__', 'a', 'b']]],
-    ['set', ['x1'], [['__MUTATIVE__', 'a', 'b']]],
-    ['push', ['a', 'arr'], [1]],
-    ['set', ['a', 'b', 'c'], [2]],
-    ['set', ['a', 'b', 'c'], [333]],
-    ['delete', ['a', 'b'], []],
-    ['push', ['a', 'arr'], [2]],
-    ['set', ['a', 'b', 'c'], [444]],
-    ['set', ['a', 'b'], [{ f: 1 }]],
+    [['object', 'set'], ['x'], [['__MUTATIVE__', 'a', 'b']]],
+    [['object', 'set'], ['x1'], [['__MUTATIVE__', 'a', 'b']]],
+    [['array', 'push'], ['a', 'arr'], [1]],
+    [['object', 'set'], ['a', 'b', 'c'], [2]],
+    [['object', 'set'], ['a', 'b', 'c'], [333]],
+    [['object', 'delete'], ['a', 'b'], []],
+    [['array', 'push'], ['a', 'arr'], [2]],
+    [['object', 'set'], ['a', 'b', 'c'], [444]],
+    [['object', 'set'], ['a', 'b'], [{ f: 1 }]],
   ]);
   expect(inversePatches).toEqual([
-    ['delete', ['a', 'b'], []],
-    ['set', ['a', 'b', 'c'], [333]],
-    ['shift', ['a', 'arr'], [2, 1]],
-    ['set', ['a', 'b'], [['__MUTATIVE__', 'a', 'b']]],
-    ['set', ['a', 'b', 'c'], [2]],
-    ['set', ['a', 'b', 'c'], [1]],
-    ['shift', ['a', 'arr'], [1, 1]],
-    ['delete', ['x1'], []],
-    ['delete', ['x'], []],
+    [['object', 'delete'], ['a', 'b'], []],
+    [['object', 'set'], ['a', 'b', 'c'], [333]],
+    [
+      ['array', 'shift'],
+      ['a', 'arr'],
+      [2, 1],
+    ],
+    [['object', 'set'], ['a', 'b'], [['__MUTATIVE__', 'a', 'b']]],
+    [['object', 'set'], ['a', 'b', 'c'], [2]],
+    [['object', 'set'], ['a', 'b', 'c'], [1]],
+    [
+      ['array', 'shift'],
+      ['a', 'arr'],
+      [1, 1],
+    ],
+    [['object', 'delete'], ['x1'], []],
+    [['object', 'delete'], ['x'], []],
   ]);
 });
 

@@ -20,13 +20,16 @@ function shallowCopy(original: any, checkCopy?: (original: any) => boolean) {
     });
     return copy;
   } else if (checkCopy?.(original)) {
+    if (typeof original !== 'object') {
+      throw new Error(`Cannot make a shallow copy ${original}`);
+    }
     return Object.create(
       Object.getPrototypeOf(original),
       Object.getOwnPropertyDescriptors(original)
     );
   } else {
     throw new Error(
-      `Unsupported type: ${original}, only regular objects, arrays, Set and Map are supported`
+      `Unsupported type： ${original}, only plain objects, arrays, Set and Map are supported`
     );
   }
 }

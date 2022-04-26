@@ -1,8 +1,8 @@
-import { dataTypes, PROXY_DRAFT, REFERENCE } from '../constant';
+import { dataTypes, DraftType, PROXY_DRAFT, REFERENCE } from '../constant';
 import { Marker, ProxyDraft } from '../interface';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
-  return proxyDraft.copy || proxyDraft.original;
+  return proxyDraft.copy ?? proxyDraft.original;
 }
 
 export function isDraft(target: any) {
@@ -72,4 +72,11 @@ export function getPath(target: ProxyDraft, path: any[] = []): any[] {
   }
   path.unshift(REFERENCE);
   return path;
+}
+
+export function getType(target: any): DraftType {
+  if (target instanceof Map) return DraftType.Map;
+  if (target instanceof Set) return DraftType.Set;
+  if (Array.isArray(target)) return DraftType.Array;
+  return DraftType.Object;
 }

@@ -14,15 +14,32 @@ export const enum DraftType {
   Set = 'set',
 }
 
-export const enum Operation {
+export const enum ObjectOperation {
   Delete = 'delete',
   Set = 'set',
-  Clear = 'clear',
-  Add = 'add',
+}
+
+export const enum ArrayOperation {
   Pop = 'pop',
   Push = 'push',
   Shift = 'shift',
   Splice = 'splice',
   Unshift = 'unshift',
+  Delete = 'delete',
+  Set = 'set',
+}
+
+export const enum MapOperation {
+  Delete = 'delete',
+  Set = 'set',
+  Clear = 'clear',
   Construct = 'construct',
 }
+
+export const enum SetOperation {
+  Delete = 'delete',
+  Clear = 'clear',
+  Add = 'add',
+  Construct = 'construct',
+}
+

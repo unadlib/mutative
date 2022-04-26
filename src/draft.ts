@@ -1,6 +1,12 @@
 import type { Finalities, Patches, ProxyDraft, Marker } from './interface';
 import { createArrayHandler, mutableArrayMethods } from './array';
-import { dataTypes, DraftType, Operation, PROXY_DRAFT } from './constant';
+import {
+  ArrayOperation,
+  dataTypes,
+  DraftType,
+  ObjectOperation,
+  PROXY_DRAFT,
+} from './constant';
 import { createMapHandler, mutableMapMethods } from './map';
 import { createSetHandler, mutableSetMethods } from './set';
 import {
@@ -10,6 +16,7 @@ import {
   getDescriptor,
   getPath,
   getProxyDraft,
+  getType,
   getValue,
   has,
   isDraftable,
@@ -28,7 +35,7 @@ function createGetter({
   patches?: Patches;
   inversePatches?: Patches;
 }) {
-  return function get(target: ProxyDraft, key: string | symbol, receiver: any) {
+  return function get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
     if (target.marker) {
       const value = Reflect.get(target.original, key, receiver);
@@ -122,7 +129,7 @@ function createGetter({
       }
       return getDescriptor(state, key)?.value;
     }
-    if (isDraftable(value, target) && !getProxyDraft(value)) {
+    if (typeof key !== 'symbol' && isDraftable(value, target) && !getProxyDraft(value)) {
       if (assignedSet.has(value)) return value;
       const proxyDraft = proxiesMap.get(target.original[key]);
       if (!proxyDraft) {
@@ -181,21 +188,32 @@ function createSetter({
     if (isDraftable(value, target)) {
       assignedSet.add(value);
     }
-    patches?.push([Operation.Set, [key], [value]]);
+    patches?.push(
+      Array.isArray(target.copy)
+        ? [[DraftType.Array, ArrayOperation.Set], [key], [value]]
+        : [[DraftType.Object, ObjectOperation.Set], [key], [value]]
+    );
     if (Array.isArray(target.original)) {
       const numberKey = Number(key);
       if (!isNaN(numberKey) && numberKey >= target.original.length) {
         inversePatches?.unshift([
-          Operation.Set,
+          [DraftType.Array, ArrayOperation.Set],
           ['length'],
           [target.original.length],
         ]);
       } else {
-        inversePatches?.unshift([Operation.Set, [key], [previousState]]);
+        inversePatches?.unshift([
+          [DraftType.Array, ArrayOperation.Set],
+          [key],
+          [previousState],
+        ]);
       }
     } else {
       inversePatches?.unshift([
-        hasOwnProperty ? Operation.Set : Operation.Delete,
+        [
+          DraftType.Object,
+          hasOwnProperty ? ObjectOperation.Set : ObjectOperation.Delete,
+        ],
         [key],
         hasOwnProperty ? [previousState] : [],
       ]);
@@ -222,15 +240,14 @@ export function createDraft<T extends object>({
   proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
   parentDraft?: ProxyDraft | null;
-  key?: string | symbol;
+  key?: string | number;
   patches?: Patches;
   inversePatches?: Patches;
   enableFreeze?: boolean;
   marker?: Marker;
 }): T {
   const proxyDraft: ProxyDraft = {
-    // todo: check
-    type: DraftType.Object,
+    type: getType(original),
     finalized: false,
     operated: new Set(),
     parent: parentDraft,
@@ -284,7 +301,10 @@ export function createDraft<T extends object>({
     ) {
       throw new Error('Cannot define property on draft');
     },
-    deleteProperty(target: ProxyDraft, key: string | symbol) {
+    deleteProperty(target: ProxyDraft, key: string | number | symbol) {
+      if (typeof key === 'symbol') {
+        throw new Error(`Cannot delete property symbol of draft`);
+      }
       if (!target.copy) {
         ensureShallowCopy(target);
       }
@@ -295,8 +315,12 @@ export function createDraft<T extends object>({
       } else {
         target.operated.add(key);
       }
-      patches?.push([Operation.Delete, [key], []]);
-      inversePatches?.unshift([Operation.Set, [key], [previousState]]);
+      patches?.push([[DraftType.Object, ObjectOperation.Delete], [key], []]);
+      inversePatches?.unshift([
+        [DraftType.Object, ObjectOperation.Set],
+        [key],
+        [previousState],
+      ]);
       makeChange(target, patches, inversePatches);
       return true;
     },

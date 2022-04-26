@@ -1,4 +1,11 @@
-import { DraftType, Operation, dataTypes } from './constant';
+import {
+  DraftType,
+  dataTypes,
+  ObjectOperation,
+  ArrayOperation,
+  SetOperation,
+  MapOperation,
+} from './constant';
 
 export type DataType = keyof typeof dataTypes;
 
@@ -16,13 +23,22 @@ export interface ProxyDraft {
   proxy: ProxyDraft | null;
   finalities: Finalities;
   parent?: ProxyDraft | null;
-  key?: string | symbol;
+  key?: string | number;
   setMap?: Map<object, ProxyDraft>;
   enableFreeze?: boolean;
   marker?: Marker;
 }
 
-export type Patches = [Operation, (string | number | symbol)[], any[]][];
+export type Patches = [
+  (
+    | [DraftType.Object, ObjectOperation]
+    | [DraftType.Array, ArrayOperation]
+    | [DraftType.Set, SetOperation]
+    | [DraftType.Map, MapOperation]
+  ),
+  (string | number)[],
+  any[]
+][];
 
 export type Result<
   T extends object,

@@ -1,5 +1,5 @@
 import type { Patches, ProxyDraft } from './interface';
-import { CLEAR, dataTypes, Operation } from './constant';
+import { CLEAR, dataTypes, DraftType, MapOperation } from './constant';
 import {
   ensureDraftValue,
   ensureShallowCopy,
@@ -58,8 +58,16 @@ export function createMapHandler({
       }
       ensureDraftValue(target, _key, _value);
       const index = Array.from(result.keys()).indexOf(_key);
-      patches?.push([Operation.Set, [index], [_key, _value]]);
-      inversePatches?.unshift([Operation.Delete, [index], [_key]]);
+      patches?.push([
+        [DraftType.Map, MapOperation.Set],
+        [index],
+        [_key, _value],
+      ]);
+      inversePatches?.unshift([
+        [DraftType.Map, MapOperation.Delete],
+        [index],
+        [],
+      ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -70,21 +78,30 @@ export function createMapHandler({
       } else {
         target.operated.add(CLEAR);
       }
-      patches?.push([Operation.Clear, [], []]);
-      inversePatches?.unshift([Operation.Construct, [], [state.entries()]]);
+      patches?.push([[DraftType.Map, MapOperation.Clear], [], []]);
+      inversePatches?.unshift([
+        [DraftType.Map, MapOperation.Construct],
+        [],
+        [state.entries()],
+      ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     delete(_key: any) {
+      const index = Array.from(state.keys()).indexOf(_key);
       const result = Map.prototype.delete.call(state, _key);
       if (!target.original.has(_key)) {
         target.operated.delete(_key);
       } else {
         target.operated.add(_key);
       }
-      patches?.push([Operation.Delete, [], [_key]]);
+      patches?.push([[DraftType.Map, MapOperation.Delete], [index], []]);
       const _value = state.get(_key);
-      inversePatches?.unshift([Operation.Set, [], [_key, _value]]);
+      inversePatches?.unshift([
+        [DraftType.Map, MapOperation.Set],
+        [],
+        [_key, _value],
+      ]);
       makeChange(target, patches, inversePatches);
       return result;
     },

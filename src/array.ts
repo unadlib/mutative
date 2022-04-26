@@ -1,4 +1,4 @@
-import { Operation } from './constant';
+import { ArrayOperation, DraftType } from './constant';
 import { Patches, ProxyDraft } from './interface';
 import { ensureDraftValue, isDraftable, makeChange } from './utils';
 
@@ -40,8 +40,12 @@ export function createArrayHandler({
         target.operated.add(index);
       }
       const [last] = state.slice(-1);
-      patches?.push([Operation.Pop, [], []]);
-      inversePatches?.unshift([Operation.Push, [], [last]]);
+      patches?.push([[DraftType.Array, ArrayOperation.Pop], [], []]);
+      inversePatches?.unshift([
+        [DraftType.Array, ArrayOperation.Push],
+        [],
+        [last],
+      ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -60,8 +64,12 @@ export function createArrayHandler({
         }
         ensureDraftValue(target, index, value);
       });
-      patches?.push([Operation.Push, [], args]);
-      inversePatches?.unshift([Operation.Shift, [], [state.length, args.length]]);
+      patches?.push([[DraftType.Array, ArrayOperation.Push], [], args]);
+      inversePatches?.unshift([
+        [DraftType.Array, ArrayOperation.Shift],
+        [],
+        [state.length, args.length],
+      ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -76,8 +84,12 @@ export function createArrayHandler({
           target.operated.add(index);
         }
       });
-      patches?.push([Operation.Shift, [], []]);
-      inversePatches?.unshift([Operation.Unshift, [], [first]]);
+      patches?.push([[DraftType.Array, ArrayOperation.Shift], [], []]);
+      inversePatches?.unshift([
+        [DraftType.Array, ArrayOperation.Unshift],
+        [],
+        [first],
+      ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -96,8 +108,12 @@ export function createArrayHandler({
           assignedSet.add(value);
         }
       });
-      patches?.push([Operation.Unshift, [], [args]]);
-      inversePatches?.unshift([Operation.Splice, [], [0, args.length]]);
+      patches?.push([[DraftType.Array, ArrayOperation.Unshift], [], [args]]);
+      inversePatches?.unshift([
+        [DraftType.Array, ArrayOperation.Splice],
+        [],
+        [0, args.length],
+      ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
@@ -121,9 +137,9 @@ export function createArrayHandler({
           assignedSet.add(value);
         }
       });
-      patches?.push([Operation.Splice, [], [args]]);
+      patches?.push([[DraftType.Array, ArrayOperation.Splice], [], [args]]);
       inversePatches?.unshift([
-        Operation.Splice,
+        [DraftType.Array, ArrayOperation.Splice],
         [],
         [startIndex, items.length, result],
       ]);
