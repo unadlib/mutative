@@ -240,7 +240,7 @@ export function createDraft<T extends object>({
   finalities,
   proxiesMap,
   assignedSet,
-  enableFreeze,
+  enableAutoFreeze,
   marker,
 }: {
   original: T;
@@ -251,7 +251,7 @@ export function createDraft<T extends object>({
   key?: string | number;
   patches?: Patches;
   inversePatches?: Patches;
-  enableFreeze?: boolean;
+  enableAutoFreeze?: boolean;
   marker?: Marker;
 }): T {
   const proxyDraft: ProxyDraft = {
@@ -264,7 +264,7 @@ export function createDraft<T extends object>({
     proxy: null,
     key,
     finalities,
-    enableFreeze,
+    enableAutoFreeze,
     marker,
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
@@ -372,7 +372,7 @@ export function finalizeDraft<T>(
   for (const revoke of proxyDraft.finalities.revoke) {
     revoke();
   }
-  if (proxyDraft.enableFreeze) {
+  if (proxyDraft.enableAutoFreeze) {
     deepFreeze(state);
   }
   return [state, patches, inversePatches] as [

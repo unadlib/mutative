@@ -40,7 +40,7 @@ export function draftify<
     patches,
     inversePatches,
     finalities,
-    enableFreeze: options?.enableFreeze,
+    enableAutoFreeze: options?.enableAutoFreeze,
     marker,
     assignedSet,
   });

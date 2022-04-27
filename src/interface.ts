@@ -25,7 +25,7 @@ export interface ProxyDraft {
   parent?: ProxyDraft | null;
   key?: string | number;
   setMap?: Map<object, ProxyDraft>;
-  enableFreeze?: boolean;
+  enableAutoFreeze?: boolean;
   marker?: Marker;
 }
 
@@ -68,7 +68,7 @@ export type Marker = (
 
 export interface Options<O extends boolean, F extends boolean> {
   enablePatches?: O;
-  enableFreeze?: F;
+  enableAutoFreeze?: F;
   mark?: Marker;
 }
 

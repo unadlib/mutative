@@ -1321,7 +1321,7 @@ test('base freeze', () => {
       draft.bar.a = 2;
     },
     {
-      enableFreeze: true,
+      enableAutoFreeze: true,
     }
   );
   expect(state).toEqual({ bar: { a: 2 }, list: [{ id: 1 }, { id: 2 }] });
@@ -1353,7 +1353,7 @@ test('base freeze', () => {
       draft.bar.a = 2;
     },
     {
-      enableFreeze: false,
+      enableAutoFreeze: false,
     }
   );
   expect(() => {
@@ -1386,7 +1386,7 @@ test('base set freeze', () => {
       draft.set.delete(2);
     },
     {
-      enableFreeze: true,
+      enableAutoFreeze: true,
     }
   );
   expect(state).toEqual({
@@ -1422,7 +1422,7 @@ test('base map freeze', () => {
       draft.map.delete(2);
     },
     {
-      enableFreeze: true,
+      enableAutoFreeze: true,
     }
   );
   expect(state).toEqual({

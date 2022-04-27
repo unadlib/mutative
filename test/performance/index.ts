@@ -84,7 +84,7 @@ measure(
           draft.map[i] = i;
         },
         {
-          enableFreeze: true,
+          enableAutoFreeze: true,
         }
       );
     }
@@ -122,7 +122,7 @@ measure(
           draft.map[i] = i;
         },
         {
-          enableFreeze: true,
+          enableAutoFreeze: true,
           enablePatches: true,
         }
       );

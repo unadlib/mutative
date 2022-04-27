@@ -333,7 +333,7 @@ measure(
         }
       },
       {
-        enableFreeze: true,
+        enableAutoFreeze: true,
       }
     );
   }

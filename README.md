@@ -29,7 +29,7 @@ const baseState = {
   list: [{ text: 'todo' }],
 };
 
-const [draft, finalize] = draftify(baseState, { enableFreeze: true });
+const [draft, finalize] = draftify(baseState, { enableAutoFreeze: true });
 draft.foo = 'foobar';
 draft.list.push({ text: 'learning' });
 const state = finalize();

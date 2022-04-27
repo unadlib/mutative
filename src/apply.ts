@@ -101,7 +101,7 @@ export function apply<T extends object>(baseState: T, patches: Patches): T {
       });
     },
     {
-      enableFreeze: false,
+      enableAutoFreeze: false,
       enablePatches: false,
     }
   );
