@@ -32,9 +32,10 @@ export function apply<T extends object>(baseState: T, patches: Patches): T {
     baseState,
     (draft) => {
       patches.forEach(([[type, operation], path, args]) => {
-        const params = args.map((arg) =>
-          isPath(arg) ? getValue(draft, [...arg.slice(-1), null]) : arg
-        );
+        // TODO: implement deepClone
+        const params: any[] = args.map((arg) =>
+        isPath(arg) ? getValue(draft, [...arg.slice(-1), null]) : JSON.parse(JSON.stringify(arg))
+      );
         const [key] = path.slice(-1);
         const current = getValue(draft, path);
         if (type === DraftType.Object) {
@@ -53,7 +54,7 @@ export function apply<T extends object>(baseState: T, patches: Patches): T {
             case ArrayOperation.Shift:
             case ArrayOperation.Splice:
             case ArrayOperation.Unshift:
-              current[operation](...params);
+              current[key][operation](...params);
               return;
             case ArrayOperation.Delete:
               delete current[key];
