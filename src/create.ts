@@ -7,8 +7,8 @@ import { dataTypes } from './constant';
  */
 export function create<
   T extends object,
-  O extends boolean = false,
   F extends boolean = false,
+  O extends boolean = false,
   R extends void | Promise<void> = void
 >(state: T, mutate: (draft: Mutable<T>) => R, options?: Options<O, F>) {
   if (options?.mark?.(state, dataTypes) === dataTypes.mutable) {

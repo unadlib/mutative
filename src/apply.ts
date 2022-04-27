@@ -6,7 +6,7 @@ import {
   SetOperation,
 } from './constant';
 import { create } from './create';
-import type { Patches } from './interface';
+import type { Options, Patches } from './interface';
 import { isPath } from './utils';
 
 export function getValue(target: object, path: (string | number)[]) {
@@ -27,15 +27,24 @@ export function getValue(target: object, path: (string | number)[]) {
 /**
  * apply patches
  */
-export function apply<T extends object>(baseState: T, patches: Patches): T {
-  return create(
+export function apply<T extends object, F extends boolean = false>(
+  baseState: T,
+  patches: Patches,
+  options?: Pick<
+    Options<false, F>,
+    Exclude<keyof Options<false, F>, 'enablePatches'>
+  >
+) {
+  return create<T, F>(
     baseState,
     (draft) => {
       patches.forEach(([[type, operation], path, args]) => {
         // TODO: implement deepClone
         const params: any[] = args.map((arg) =>
-        isPath(arg) ? getValue(draft, [...arg.slice(-1), null]) : JSON.parse(JSON.stringify(arg))
-      );
+          isPath(arg)
+            ? getValue(draft, [...arg.slice(-1), null])
+            : JSON.parse(JSON.stringify(arg))
+        );
         const [key] = path.slice(-1);
         const current = getValue(draft, path);
         if (type === DraftType.Object) {
@@ -102,8 +111,8 @@ export function apply<T extends object>(baseState: T, patches: Patches): T {
       });
     },
     {
-      enableAutoFreeze: false,
       enablePatches: false,
+      ...options,
     }
   );
 }
