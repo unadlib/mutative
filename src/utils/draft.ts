@@ -74,6 +74,10 @@ export function getPath(target: ProxyDraft, path: any[] = []): any[] {
   return path;
 }
 
+export function isPath(target: any) {
+  return Array.isArray(target) && target[0] === REFERENCE;
+}
+
 export function getType(target: any): DraftType {
   if (target instanceof Map) return DraftType.Map;
   if (target instanceof Set) return DraftType.Set;

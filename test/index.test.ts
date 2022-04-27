@@ -26,6 +26,38 @@ test('object', () => {
   expect(state.foobar).toBe(data.foobar);
 });
 
+test('nothing change object with ref', () => {
+  const data = {
+    foo: {
+      bar: 'str',
+    },
+    foobar: {
+      baz: 'str',
+    },
+  };
+
+  const [state, patches, inversePatches] = create(
+    data,
+    (draft: any) => {
+      draft.foobar.foo = draft.foo;
+      draft.foo.bar = 'new str';
+      delete draft.foobar.foo;
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  expect(state).toEqual({
+    foo: { bar: 'new str' },
+    foobar: {
+      baz: 'str',
+    },
+  });
+  expect(state).not.toBe(data);
+  expect(state.foo).not.toBe(data.foo);
+  expect(state.foobar).toBe(data.foobar);
+});
+
 test('enablePatches, no update', () => {
   const x = { a: { b: { c: 1 }, arr: [] } };
   const [state, patches, inversePatches] = create(
@@ -1317,6 +1349,7 @@ test('base freeze', () => {
     state,
     (draft) => {
       draft.list.push({ id: 2 });
+      // nothing changes and It should remain frozen as it was before
       draft.bar.a = 2;
     },
     {
@@ -1332,12 +1365,13 @@ test('base freeze', () => {
     state1.list[1].id = 3;
   }).toThrowError();
   expect(() => {
+    //@ts-expect-error
+    state1.bar.a = 4;
+  }).toThrowError();
+  expect(() => {
     // just check runtime mutable
-
     // @ts-ignore
     state1.list.push({ id: 4 });
-    // @ts-ignore
-    state1.bar.a = 4;
   }).not.toThrow();
 });
 

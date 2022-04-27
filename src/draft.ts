@@ -35,7 +35,11 @@ function createGetter({
   patches?: Patches;
   inversePatches?: Patches;
 }) {
-  return function get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
+  return function get(
+    target: ProxyDraft,
+    key: string | number | symbol,
+    receiver: any
+  ) {
     if (key === PROXY_DRAFT) return target;
     if (target.marker) {
       const value = Reflect.get(target.original, key, receiver);
@@ -129,7 +133,11 @@ function createGetter({
       }
       return getDescriptor(state, key)?.value;
     }
-    if (typeof key !== 'symbol' && isDraftable(value, target) && !getProxyDraft(value)) {
+    if (
+      typeof key !== 'symbol' &&
+      isDraftable(value, target) &&
+      !getProxyDraft(value)
+    ) {
       if (assignedSet.has(value)) return value;
       const proxyDraft = proxiesMap.get(target.original[key]);
       if (!proxyDraft) {
