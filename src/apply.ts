@@ -42,7 +42,7 @@ export function apply<T extends object, F extends boolean = false>(
         // TODO: implement deepClone
         const params: any[] = args.map((arg) =>
           isPath(arg)
-            ? getValue(draft, [...arg.slice(-1), null])
+            ? getValue(draft, [...arg.slice(1), null])
             : JSON.parse(JSON.stringify(arg))
         );
         const [key] = path.slice(-1);

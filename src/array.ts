@@ -33,13 +33,13 @@ export function createArrayHandler({
   return {
     pop() {
       const index = state.length - 1;
+      const [last] = state.slice(-1);
       const result = Array.prototype.pop.apply(state);
       if (target.original[index] !== result) {
         target.operated.delete(index);
       } else {
         target.operated.add(index);
       }
-      const [last] = state.slice(-1);
       patches?.push([[DraftType.Array, ArrayOperation.Pop], [], []]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Push],
@@ -66,9 +66,9 @@ export function createArrayHandler({
       });
       patches?.push([[DraftType.Array, ArrayOperation.Push], [], args]);
       inversePatches?.unshift([
-        [DraftType.Array, ArrayOperation.Shift],
-        [],
-        [state.length, args.length],
+        [DraftType.Array, ArrayOperation.Set],
+        ['length'],
+        [originalLength],
       ]);
       makeChange(target, patches, inversePatches);
       return result;
@@ -108,7 +108,7 @@ export function createArrayHandler({
           assignedSet.add(value);
         }
       });
-      patches?.push([[DraftType.Array, ArrayOperation.Unshift], [], [args]]);
+      patches?.push([[DraftType.Array, ArrayOperation.Unshift], [], args]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Splice],
         [],
@@ -137,11 +137,11 @@ export function createArrayHandler({
           assignedSet.add(value);
         }
       });
-      patches?.push([[DraftType.Array, ArrayOperation.Splice], [], [args]]);
+      patches?.push([[DraftType.Array, ArrayOperation.Splice], [], args]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Splice],
         [],
-        [startIndex, items.length, result],
+        [startIndex, items.length, ...result],
       ]);
       makeChange(target, patches, inversePatches);
       return result;

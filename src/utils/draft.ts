@@ -65,6 +65,11 @@ export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
   }
 }
 
+export function getValueOrPath(value: any) {
+  const proxyDraft = getProxyDraft(value);
+  return proxyDraft ? getPath(proxyDraft) : value;
+}
+
 export function getPath(target: ProxyDraft, path: any[] = []): any[] {
   if (target.key) path.unshift(target.key);
   if (target.parent) {

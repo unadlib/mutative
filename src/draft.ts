@@ -18,6 +18,7 @@ import {
   getProxyDraft,
   getType,
   getValue,
+  getValueOrPath,
   has,
   isDraftable,
   latest,
@@ -133,11 +134,8 @@ function createGetter({
       }
       return getDescriptor(state, key)?.value;
     }
-    if (
-      typeof key !== 'symbol' &&
-      isDraftable(value, target) &&
-      !getProxyDraft(value)
-    ) {
+    const proxyDraft = getProxyDraft(value);
+    if (typeof key !== 'symbol' && isDraftable(value, target) && !proxyDraft) {
       if (assignedSet.has(value)) return value;
       const proxyDraft = proxiesMap.get(target.original[key]);
       if (!proxyDraft) {
@@ -166,8 +164,20 @@ function createGetter({
         if (proxyDraft.key !== key) {
           proxyDraft.key = key;
         }
+        if (proxyDraft.parent && proxyDraft.parent !== target) {
+          proxyDraft.parent = target;
+        }
         return proxyDraft.proxy;
       }
+    }
+    if (proxyDraft && typeof key !== 'symbol') {
+      if (proxyDraft.key !== key) {
+        proxyDraft.key = key;
+      }
+      if (proxyDraft.parent && proxyDraft.parent !== target) {
+        proxyDraft.parent = target;
+      }
+      return proxyDraft.proxy;
     }
     return value;
   };
@@ -185,6 +195,10 @@ function createSetter({
   return function set(target: ProxyDraft, key: string, value: any) {
     ensureShallowCopy(target);
     const previousState = target.copy![key];
+    const previousItems =
+      Array.isArray(target.copy) && key === 'length' && inversePatches
+        ? target.copy.slice(value)
+        : null;
     const hasOwnProperty = Object.hasOwnProperty.call(target.copy!, key);
     ensureDraftValue(target, key, value);
     target.copy![key] = value;
@@ -196,35 +210,44 @@ function createSetter({
     if (isDraftable(value, target)) {
       assignedSet.add(value);
     }
-    patches?.push(
-      Array.isArray(target.copy)
-        ? [[DraftType.Array, ArrayOperation.Set], [key], [value]]
-        : [[DraftType.Object, ObjectOperation.Set], [key], [value]]
-    );
-    if (Array.isArray(target.original)) {
-      const numberKey = Number(key);
-      if (!isNaN(numberKey) && numberKey >= target.original.length) {
-        inversePatches?.unshift([
-          [DraftType.Array, ArrayOperation.Set],
-          ['length'],
-          [target.original.length],
-        ]);
+    if (patches && inversePatches) {
+      if (Array.isArray(target.original)) {
+        patches.push([[DraftType.Array, ArrayOperation.Set], [key], [value]]);
+        const numberKey = Number(key);
+        if (key === 'length') {
+          inversePatches.unshift([
+            [DraftType.Array, ArrayOperation.Push],
+            [],
+            [...previousItems!],
+          ]);
+        } else if (!isNaN(numberKey) && numberKey >= target.original.length) {
+          inversePatches.unshift([
+            [DraftType.Array, ArrayOperation.Set],
+            ['length'],
+            [target.original.length],
+          ]);
+        } else {
+          inversePatches.unshift([
+            [DraftType.Array, ArrayOperation.Set],
+            [key],
+            [previousState],
+          ]);
+        }
       } else {
-        inversePatches?.unshift([
-          [DraftType.Array, ArrayOperation.Set],
+        patches.push([
+          [DraftType.Object, ObjectOperation.Set],
           [key],
-          [previousState],
+          [getValueOrPath(value)],
+        ]);
+        inversePatches.unshift([
+          [
+            DraftType.Object,
+            hasOwnProperty ? ObjectOperation.Set : ObjectOperation.Delete,
+          ],
+          [key],
+          hasOwnProperty ? [getValueOrPath(previousState)] : [],
         ]);
       }
-    } else {
-      inversePatches?.unshift([
-        [
-          DraftType.Object,
-          hasOwnProperty ? ObjectOperation.Set : ObjectOperation.Delete,
-        ],
-        [key],
-        hasOwnProperty ? [previousState] : [],
-      ]);
     }
     makeChange(target, patches, inversePatches);
     return true;
@@ -346,14 +369,14 @@ export function finalizeDraft<T>(
   patches?: Patches,
   inversePatches?: Patches
 ) {
-  patches?.forEach((item) => {
-    const result = item[2].map((value) => {
-      const proxyDraft = getProxyDraft(value);
-      if (!proxyDraft) return value;
-      return getPath(proxyDraft);
-    });
-    item[2] = result;
-  });
+  // patches?.forEach((item) => {
+  //   const result = item[2].map((value) => {
+  //     const proxyDraft = getProxyDraft(value);
+  //     if (!proxyDraft) return value;
+  //     return getPath(proxyDraft);
+  //   });
+  //   item[2] = result;
+  // });
   inversePatches?.forEach((item) => {
     const result = item[2].map((value) => {
       const proxyDraft = getProxyDraft(value);

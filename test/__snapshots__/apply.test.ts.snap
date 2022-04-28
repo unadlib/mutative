@@ -1,0 +1,873 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`array 1`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "arr",
+    ],
+    Array [
+      4,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      "arr",
+    ],
+    Array [
+      2,
+      1,
+      7,
+      8,
+      9,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "arr1",
+      "0",
+      "a",
+    ],
+    Array [
+      0,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "arr1",
+    ],
+    Array [
+      Object {
+        "a": 2,
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      "arr2",
+    ],
+    Array [
+      3,
+      4,
+      "d",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "pop",
+    ],
+    Array [
+      "arr3",
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "array",
+      "unshift",
+    ],
+    Array [
+      "arr4",
+    ],
+    Array [
+      0,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "shift",
+    ],
+    Array [
+      "arr5",
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr6",
+      "0",
+    ],
+    Array [
+      "c",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr6",
+      "2",
+    ],
+    Array [
+      "a",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr7",
+      "0",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr7",
+      "1",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr7",
+      "2",
+    ],
+    Array [
+      3,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr7",
+      "3",
+    ],
+    Array [
+      6,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr8",
+      "length",
+    ],
+    Array [
+      0,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr9",
+      "10",
+    ],
+    Array [
+      10,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "arr10",
+      "1",
+    ],
+    Array [],
+  ],
+]
+`;
+
+exports[`array 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "arr10",
+      "1",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr9",
+      "length",
+    ],
+    Array [
+      3,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "arr8",
+    ],
+    Array [
+      1,
+      2,
+      3,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr7",
+      "3",
+    ],
+    Array [
+      6,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr7",
+      "2",
+    ],
+    Array [
+      3,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr7",
+      "1",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr7",
+      "0",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr6",
+      "2",
+    ],
+    Array [
+      "c",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr6",
+      "0",
+    ],
+    Array [
+      "a",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "unshift",
+    ],
+    Array [
+      "arr5",
+    ],
+    Array [
+      "a",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      "arr4",
+    ],
+    Array [
+      0,
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "arr3",
+    ],
+    Array [
+      "c",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      "arr2",
+    ],
+    Array [
+      3,
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr1",
+      "length",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "arr1",
+      "0",
+      "a",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      "arr",
+    ],
+    Array [
+      2,
+      3,
+      3,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr",
+      "length",
+    ],
+    Array [
+      3,
+    ],
+  ],
+]
+`;
+
+exports[`enablePatches and assign with ref object 1`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "x",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "a",
+        "b",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "x1",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "a",
+        "b",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "a",
+      "arr",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      333,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "a",
+      "arr",
+    ],
+    Array [
+      2,
+    ],
+  ],
+]
+`;
+
+exports[`enablePatches and assign with ref object 2`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "a",
+      "arr",
+      "length",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "a",
+      "arr",
+      "length",
+    ],
+    Array [
+      0,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "x1",
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "x",
+    ],
+    Array [],
+  ],
+]
+`;
+
+exports[`enablePatches and assign/delete with ref object 1`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "x",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "a",
+        "b",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "x1",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "a",
+        "b",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "a",
+      "arr",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      333,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "a",
+      "b",
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "a",
+      "arr",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "x1",
+      "c",
+    ],
+    Array [
+      444,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+    ],
+    Array [
+      Object {
+        "f": 1,
+      },
+    ],
+  ],
+]
+`;
+
+exports[`enablePatches and assign/delete with ref object 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "a",
+      "b",
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "x1",
+      "c",
+    ],
+    Array [
+      333,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "a",
+      "arr",
+      "length",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "x1",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "a",
+      "arr",
+      "length",
+    ],
+    Array [
+      0,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "x1",
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "x",
+    ],
+    Array [],
+  ],
+]
+`;
