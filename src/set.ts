@@ -1,6 +1,12 @@
 import type { Patches, ProxyDraft } from './interface';
 import { CLEAR, dataTypes, DraftType, SetOperation } from './constant';
-import { getProxyDraft, isDraftable, latest, makeChange } from './utils';
+import {
+  getProxyDraft,
+  getValueOrPath,
+  isDraftable,
+  latest,
+  makeChange,
+} from './utils';
 import { createDraft } from './draft';
 
 export const mutableSetMethods = [
@@ -54,7 +60,7 @@ export function createSetHandler({
       patches?.push([
         [DraftType.Set, SetOperation.Add],
         [result.size],
-        [value],
+        [getValueOrPath(value)],
       ]);
       inversePatches?.unshift([
         [DraftType.Set, SetOperation.Delete],

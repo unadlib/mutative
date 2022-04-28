@@ -5,6 +5,7 @@ import {
   ensureShallowCopy,
   getProxyDraft,
   getValue,
+  getValueOrPath,
   isDraftable,
   latest,
   makeChange,
@@ -61,7 +62,7 @@ export function createMapHandler({
       patches?.push([
         [DraftType.Map, MapOperation.Set],
         [index],
-        [_key, _value],
+        [_key, getValueOrPath(_value)],
       ]);
       inversePatches?.unshift([
         [DraftType.Map, MapOperation.Delete],

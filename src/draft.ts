@@ -218,7 +218,7 @@ function createSetter({
           inversePatches.unshift([
             [DraftType.Array, ArrayOperation.Push],
             [],
-            [...previousItems!],
+            previousItems!,
           ]);
         } else if (!isNaN(numberKey) && numberKey >= target.original.length) {
           inversePatches.unshift([

@@ -1,6 +1,11 @@
 import { ArrayOperation, DraftType } from './constant';
 import { Patches, ProxyDraft } from './interface';
-import { ensureDraftValue, isDraftable, makeChange } from './utils';
+import {
+  ensureDraftValue,
+  getValueOrPath,
+  isDraftable,
+  makeChange,
+} from './utils';
 
 export const mutableArrayMethods = [
   // "copyWithin",
@@ -64,7 +69,11 @@ export function createArrayHandler({
         }
         ensureDraftValue(target, index, value);
       });
-      patches?.push([[DraftType.Array, ArrayOperation.Push], [], args]);
+      patches?.push([
+        [DraftType.Array, ArrayOperation.Push],
+        [],
+        args.map((value) => getValueOrPath(value)),
+      ]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Set],
         ['length'],
@@ -108,7 +117,11 @@ export function createArrayHandler({
           assignedSet.add(value);
         }
       });
-      patches?.push([[DraftType.Array, ArrayOperation.Unshift], [], args]);
+      patches?.push([
+        [DraftType.Array, ArrayOperation.Unshift],
+        [],
+        args.map((value) => getValueOrPath(value)),
+      ]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Splice],
         [],
@@ -137,7 +150,11 @@ export function createArrayHandler({
           assignedSet.add(value);
         }
       });
-      patches?.push([[DraftType.Array, ArrayOperation.Splice], [], args]);
+      patches?.push([
+        [DraftType.Array, ArrayOperation.Splice],
+        [],
+        args.map((value: any) => getValueOrPath(value)),
+      ]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Splice],
         [],
