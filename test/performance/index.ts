@@ -77,7 +77,7 @@ measure(
   () => baseState,
   (baseState: any) => {
     for (let i = 0; i < MAX; i++) {
-      const state= create(
+      const state = create(
         baseState,
         (draft) => {
           draft.arr.push(i);
@@ -115,7 +115,7 @@ measure(
   () => baseState,
   (baseState: any) => {
     for (let i = 0; i < MAX; i++) {
-      const state= create(
+      const state = create(
         baseState,
         (draft) => {
           draft.arr.push(i);
@@ -145,5 +145,115 @@ measure(
         draft.map[i] = i;
       });
     }
+  }
+);
+
+console.log('-------');
+
+measure(
+  'mutative - single without autoFreeze',
+  () => baseState,
+  (baseState: any) => {
+    const state = create(baseState, (draft) => {
+      for (let i = 0; i < MAX; i++) {
+        draft.arr.push(i);
+        draft.map[i] = i;
+      }
+    });
+  }
+);
+
+measure(
+  'immer - single without autoFreeze',
+  () => {
+    setAutoFreeze(false);
+    setUseProxies(true);
+    return baseState;
+  },
+  (baseState: any) => {
+    const state = produce(baseState, (draft: any) => {
+      for (let i = 0; i < MAX; i++) {
+        draft.arr.push(i);
+        draft.map[i] = i;
+      }
+    });
+  }
+);
+
+console.log('');
+
+measure(
+  'mutative - single - with autoFreeze',
+  () => baseState,
+  (baseState: any) => {
+    const state = create(
+      baseState,
+      (draft) => {
+        for (let i = 0; i < MAX; i++) {
+          draft.arr.push(i);
+          draft.map[i] = i;
+        }
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }
+);
+
+measure(
+  'immer - single - with autoFreeze',
+  () => {
+    setAutoFreeze(true);
+    setUseProxies(true);
+    return baseState;
+  },
+  (baseState: any) => {
+    const state = produce(baseState, (draft: any) => {
+      for (let i = 0; i < MAX; i++) {
+        draft.arr.push(i);
+        draft.map[i] = i;
+      }
+    });
+  }
+);
+
+console.log('');
+
+measure(
+  'mutative - single - with autoFreeze and patches',
+  () => baseState,
+  (baseState: any) => {
+    const state = create(
+      baseState,
+      (draft) => {
+        for (let i = 0; i < MAX; i++) {
+          draft.arr.push(i);
+          draft.map[i] = i;
+        }
+      },
+      {
+        enableAutoFreeze: true,
+        enablePatches: true,
+      }
+    );
+  }
+);
+
+measure(
+  'immer - single - with autoFreeze and patches',
+  () => {
+    setAutoFreeze(true);
+    setUseProxies(true);
+    enablePatches();
+    return baseState;
+  },
+  (baseState: any) => {
+    const state = produceWithPatches(baseState, (draft: any) => {
+      for (let i = 0; i < MAX; i++) {
+        draft.arr.push(i);
+        draft.map[i] = i;
+      }
+    });
   }
 );
