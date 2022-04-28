@@ -369,14 +369,6 @@ export function finalizeDraft<T>(
   patches?: Patches,
   inversePatches?: Patches
 ) {
-  // patches?.forEach((item) => {
-  //   const result = item[2].map((value) => {
-  //     const proxyDraft = getProxyDraft(value);
-  //     if (!proxyDraft) return value;
-  //     return getPath(proxyDraft);
-  //   });
-  //   item[2] = result;
-  // });
   inversePatches?.forEach((item) => {
     const result = item[2].map((value) => {
       const proxyDraft = getProxyDraft(value);
