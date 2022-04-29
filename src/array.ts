@@ -28,7 +28,7 @@ export function createArrayHandler({
   patches,
   inversePatches,
 }: {
-  target: ProxyDraft;
+  target: ProxyDraft<any[]>;
   key: string;
   state: any[];
   assignedSet: WeakSet<any>;

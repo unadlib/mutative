@@ -27,9 +27,14 @@ export function makeChange(
         const [first] = inversePatches;
         first[1].unshift(proxyDraft.key);
       }
-      if (proxyDraft.parent.copy instanceof Map) {
-        proxyDraft.parent.copy.set(proxyDraft.key, proxyDraft.proxy);
-      }
+      // if (proxyDraft.parent.copy instanceof Map) {
+      //   proxyDraft.parent.copy.set(proxyDraft.key, proxyDraft.proxy);
+      // }
+      // else if (proxyDraft.parent.copy instanceof Set) {
+      //   // for Set
+      // } else if (!proxyDraft.parent.operated.has(proxyDraft.key)) { // the key maybe be deleted
+      //   // proxyDraft.parent.copy![proxyDraft.key] = proxyDraft.copy;
+      // }
     }
     if (proxyDraft.parent.parent) {
       makeChange(proxyDraft.parent, patches, inversePatches);

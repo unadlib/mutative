@@ -965,3 +965,96 @@ Array [
   ],
 ]
 `;
+
+exports[`simple map 1`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      "map",
+      2,
+    ],
+    Array [
+      "b",
+      Object {
+        "bar": "str",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "map",
+      0,
+      "bar",
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "map",
+      0,
+      "bar",
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+]
+`;
+
+exports[`simple map 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "map",
+      0,
+      "bar",
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "map",
+      0,
+      "bar",
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "delete",
+    ],
+    Array [
+      "map",
+      2,
+    ],
+    Array [],
+  ],
+]
+`;

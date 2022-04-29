@@ -186,6 +186,22 @@ test('enablePatches and assign with ref object', () => {
   });
 });
 
+test('simple map', () => {
+  checkPatches(
+    {
+      map: new Map<any, any>([['a', { bar: 'str' }], ['c', { bar: 'str' }]]),
+      foobar: {
+        baz: 'str',
+      } as any,
+    },
+    (draft) => {
+      draft.map.set('b', { bar: 'str' });
+      draft.map.values().next().value.bar = 'new str';
+      draft.map.get('a').bar = 'new str';
+    }
+  );
+});
+
 
 test.skip('map', () => {
   checkPatches(

@@ -30,7 +30,7 @@ export function createSetHandler({
   patches,
   inversePatches,
 }: {
-  target: ProxyDraft;
+  target: ProxyDraft<Set<any>>;
   key: string | symbol;
   state: Set<any>;
   assignedSet: WeakSet<any>;
@@ -145,9 +145,7 @@ export function createSetHandler({
           }
           let proxyDraft = target.setMap!.get(original);
           if (isDraftable(original, target) && !proxyDraft) {
-            const key = Array.from(target.original.values())
-              .indexOf(original)
-              .toString();
+            const key = Array.from(target.original.values()).indexOf(original);
             const proxy = createDraft({
               original,
               parentDraft: target,
@@ -188,9 +186,7 @@ export function createSetHandler({
           }
           let proxyDraft = target.setMap!.get(original);
           if (isDraftable(original, target) && !proxyDraft) {
-            const key = Array.from(target.original.values())
-              .indexOf(original)
-              .toString();
+            const key = Array.from(target.original.values()).indexOf(original);
             const proxy = createDraft({
               original,
               parentDraft: target,

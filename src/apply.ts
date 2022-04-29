@@ -14,7 +14,7 @@ export function getValue(target: object, path: (string | number)[]) {
   for (let i = 0; i < path.length - 1; i++) {
     const key = `${path[i]}`;
     if (current instanceof Map) {
-      current = current.get(key);
+      current = current.get(Array.from(current.keys())[key as any]);
     } else if (current instanceof Set) {
       current = Array.from(current.values())[key as any];
     } else {

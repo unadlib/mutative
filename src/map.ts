@@ -34,7 +34,7 @@ export function createMapHandler({
   patches,
   inversePatches,
 }: {
-  target: ProxyDraft;
+  target: ProxyDraft<Map<any, any>>;
   key: string | symbol;
   state: Map<any, any>;
   assignedSet: WeakSet<any>;
@@ -120,7 +120,7 @@ export function createMapHandler({
         const currentDraft = createDraft({
           original: target.original.get(_key),
           parentDraft: target,
-          key: _key,
+          key: Array.from(target.copy!.keys()).indexOf(_key),
           patches,
           inversePatches,
           finalities: target.finalities,

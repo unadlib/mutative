@@ -14,13 +14,13 @@ export interface Finalities {
   revoke: (() => void)[];
 }
 
-export interface ProxyDraft {
+export interface ProxyDraft<T = any> {
   type: DraftType;
   operated: Set<any>;
   finalized: boolean;
-  original: any;
-  copy: Record<string | symbol, any> | null;
-  proxy: ProxyDraft | null;
+  original: T;
+  copy: T | null;
+  proxy: T | null;
   finalities: Finalities;
   parent?: ProxyDraft | null;
   key?: string | number;
