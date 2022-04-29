@@ -21,7 +21,6 @@ export function draftify<
       'create() only supports plain object, array, set, and map.'
     );
   }
-  const proxiesMap = new WeakMap<object, ProxyDraft>();
   const assignedSet = new WeakSet<any>();
   const finalities: Finalities = {
     draft: [],
@@ -35,7 +34,6 @@ export function draftify<
   }
   const draft = createDraft({
     original: baseState,
-    proxiesMap,
     parentDraft: null,
     patches,
     inversePatches,

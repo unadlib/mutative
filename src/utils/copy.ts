@@ -47,3 +47,21 @@ export function ensureShallowCopy(target: ProxyDraft) {
     target.setMap = new Map();
   }
 }
+
+// TODO: fix types
+export function deepClone<T>(target: T): T {
+  if (typeof target !== 'object') return target;
+  if (Array.isArray(target))
+    return target.map((value) => deepClone(value)) as any;
+  if (target instanceof Map)
+    return new Map(
+      Array.from(target).map(([key, value]) => [key, deepClone(value)])
+    ) as any;
+  if (target instanceof Set)
+    return new Set(Array.from(target).map((value) => deepClone(value))) as any;
+  const descriptors = Object.getOwnPropertyDescriptors(target);
+  for (const key in descriptors) {
+    descriptors[key].value = deepClone(descriptors[key].value);
+  }
+  return Object.create(Object.getPrototypeOf(target), descriptors);
+}

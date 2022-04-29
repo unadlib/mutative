@@ -26,7 +26,6 @@ export function createSetHandler({
   target,
   key,
   state,
-  proxiesMap,
   assignedSet,
   patches,
   inversePatches,
@@ -34,7 +33,6 @@ export function createSetHandler({
   target: ProxyDraft;
   key: string | symbol;
   state: Set<any>;
-  proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
@@ -157,7 +155,6 @@ export function createSetHandler({
               patches,
               inversePatches,
               finalities: target.finalities,
-              proxiesMap,
               marker: target.marker,
               assignedSet,
             });
@@ -201,7 +198,6 @@ export function createSetHandler({
               patches,
               inversePatches,
               finalities: target.finalities,
-              proxiesMap,
               marker: target.marker,
               assignedSet,
             });

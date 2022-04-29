@@ -1,4 +1,4 @@
-export * from './ensureShallowCopy';
+export * from './copy';
 export * from './makeChanges';
 export * from './deepFreeze';
 export * from './draft';

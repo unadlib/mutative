@@ -30,7 +30,6 @@ export function createMapHandler({
   target,
   key,
   state,
-  proxiesMap,
   assignedSet,
   patches,
   inversePatches,
@@ -38,7 +37,6 @@ export function createMapHandler({
   target: ProxyDraft;
   key: string | symbol;
   state: Map<any, any>;
-  proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
@@ -48,6 +46,8 @@ export function createMapHandler({
   }
   const proxyProto = {
     set(_key: any, _value: any) {
+      const hasKey = state.has(_key);
+      const oldValue = state.get(_key);
       const result = Map.prototype.set.call(state, _key, _value);
       if (target.original.has(_key) && target.original.get(_key) === _value) {
         target.operated.delete(_key);
@@ -65,31 +65,33 @@ export function createMapHandler({
         [_key, getValueOrPath(_value)],
       ]);
       inversePatches?.unshift([
-        [DraftType.Map, MapOperation.Delete],
+        [DraftType.Map, hasKey ? MapOperation.Set : MapOperation.Delete],
         [index],
-        [],
+        hasKey ? [_key, oldValue] : [],
       ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     clear() {
+      const oldState = Array.from(state);
       const result = Map.prototype.clear.call(state);
       if (!target.original.size) {
         target.operated.delete(CLEAR);
       } else {
         target.operated.add(CLEAR);
       }
-      patches?.push([[DraftType.Map, MapOperation.Clear], [], []]);
+      patches?.push([[DraftType.Map, MapOperation.Clear], [-1], []]);
       inversePatches?.unshift([
         [DraftType.Map, MapOperation.Construct],
-        [],
-        [state.entries()],
+        [-1],
+        oldState,
       ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     delete(_key: any) {
       const index = Array.from(state.keys()).indexOf(_key);
+      const _value = state.get(_key);
       const result = Map.prototype.delete.call(state, _key);
       if (!target.original.has(_key)) {
         target.operated.delete(_key);
@@ -97,10 +99,9 @@ export function createMapHandler({
         target.operated.add(_key);
       }
       patches?.push([[DraftType.Map, MapOperation.Delete], [index], []]);
-      const _value = state.get(_key);
       inversePatches?.unshift([
         [DraftType.Map, MapOperation.Set],
-        [],
+        [-1],
         [_key, _value],
       ]);
       makeChange(target, patches, inversePatches);
@@ -123,7 +124,6 @@ export function createMapHandler({
           patches,
           inversePatches,
           finalities: target.finalities,
-          proxiesMap,
           marker: target.marker,
           assignedSet,
         });

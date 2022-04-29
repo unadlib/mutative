@@ -871,3 +871,97 @@ Array [
   ],
 ]
 `;
+
+exports[`map 1`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      "map3",
+      0,
+    ],
+    Array [
+      "a",
+      Array [
+        "__MUTATIVE__",
+        "foobar",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar",
+      "baz",
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "foobar",
+    ],
+    Array [],
+  ],
+]
+`;
+
+exports[`map 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "foobar",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar",
+      "baz",
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      "map3",
+      0,
+    ],
+    Array [
+      "a",
+      Object {
+        "bar": "str",
+      },
+    ],
+  ],
+]
+`;

@@ -26,12 +26,10 @@ import {
 } from './utils';
 
 function createGetter({
-  proxiesMap,
   assignedSet,
   patches,
   inversePatches,
 }: {
-  proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
   patches?: Patches;
   inversePatches?: Patches;
@@ -111,7 +109,6 @@ function createGetter({
           target,
           key,
           state,
-          proxiesMap,
           assignedSet,
           patches,
           inversePatches,
@@ -126,7 +123,6 @@ function createGetter({
           target,
           key,
           state,
-          proxiesMap,
           assignedSet,
           patches,
           inversePatches,
@@ -137,39 +133,29 @@ function createGetter({
     const proxyDraft = getProxyDraft(value);
     if (typeof key !== 'symbol' && isDraftable(value, target) && !proxyDraft) {
       if (assignedSet.has(value)) return value;
-      const proxyDraft = proxiesMap.get(target.original[key]);
-      if (!proxyDraft) {
-        target.copy![key] = createDraft({
-          original: target.original[key],
-          parentDraft: target,
-          key,
-          patches,
-          inversePatches,
-          finalities: target.finalities,
-          proxiesMap,
-          marker: target.marker,
-          assignedSet,
-        });
-        target.finalities.draft.unshift(() => {
-          const proxyDraft = getProxyDraft(target.copy![key]);
-          if (proxyDraft) {
-            target.copy![key] =
-              proxyDraft.operated.size > 0
-                ? getValue(target.copy![key])
-                : proxyDraft.original;
-          }
-        });
-        return target.copy![key];
-      } else {
-        if (proxyDraft.key !== key) {
-          proxyDraft.key = key;
+      target.copy![key] = createDraft({
+        original: target.original[key],
+        parentDraft: target,
+        key,
+        patches,
+        inversePatches,
+        finalities: target.finalities,
+        marker: target.marker,
+        assignedSet,
+      });
+      target.finalities.draft.unshift(() => {
+        const proxyDraft = getProxyDraft(target.copy![key]);
+        if (proxyDraft) {
+          target.copy![key] =
+            proxyDraft.operated.size > 0
+              ? getValue(target.copy![key])
+              : proxyDraft.original;
         }
-        if (proxyDraft.parent && proxyDraft.parent !== target) {
-          proxyDraft.parent = target;
-        }
-        return proxyDraft.proxy;
-      }
+      });
+      return target.copy![key];
     }
+    // TODO: check
+    // handling for assignment draft
     if (proxyDraft && typeof key !== 'symbol') {
       if (proxyDraft.key !== key) {
         proxyDraft.key = key;
@@ -261,14 +247,12 @@ export function createDraft<T extends object>({
   patches,
   inversePatches,
   finalities,
-  proxiesMap,
   assignedSet,
   enableAutoFreeze,
   marker,
 }: {
   original: T;
   finalities: Finalities;
-  proxiesMap: WeakMap<object, ProxyDraft>;
   assignedSet: WeakSet<any>;
   parentDraft?: ProxyDraft | null;
   key?: string | number;
@@ -294,7 +278,6 @@ export function createDraft<T extends object>({
     get: createGetter({
       patches,
       inversePatches,
-      proxiesMap,
       assignedSet,
     }),
     set: createSetter({
@@ -358,9 +341,6 @@ export function createDraft<T extends object>({
   });
   finalities.revoke.unshift(revoke);
   proxyDraft.proxy = proxy;
-  if (original) {
-    proxiesMap.set(original, proxyDraft);
-  }
   return proxy;
 }
 

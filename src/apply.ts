@@ -7,7 +7,7 @@ import {
 } from './constant';
 import { create } from './create';
 import type { Options, Patches } from './interface';
-import { isPath } from './utils';
+import { deepClone, isPath } from './utils';
 
 export function getValue(target: object, path: (string | number)[]) {
   let current: any = target;
@@ -39,11 +39,10 @@ export function apply<T extends object, F extends boolean = false>(
     baseState,
     (draft) => {
       patches.forEach(([[type, operation], path, args]) => {
-        // TODO: implement deepClone
         const params: any[] = args.map((arg) =>
           isPath(arg)
             ? getValue(draft, [...arg.slice(1), null])
-            : JSON.parse(JSON.stringify(arg))
+            : deepClone(arg)
         );
         const [key] = path.slice(-1);
         const current = getValue(draft, path);

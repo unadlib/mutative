@@ -4,6 +4,7 @@ const readonlyDescriptors = {
   configurable: false,
 };
 
+// TODO: refactor for better performance
 export function deepFreeze(target: any) {
   if (Object.isFrozen(target)) return;
   if (target instanceof Map) {
