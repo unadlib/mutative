@@ -3,6 +3,7 @@ import { CLEAR, dataTypes, DraftType, MapOperation } from './constant';
 import {
   ensureDraftValue,
   ensureShallowCopy,
+  getPath,
   getProxyDraft,
   getValue,
   getValueOrPath,
@@ -64,6 +65,17 @@ export function createMapHandler({
         [index],
         [_key, getValueOrPath(_value)],
       ]);
+
+      const proxyDraft = getProxyDraft(_value);
+      if (proxyDraft) {
+        if (proxyDraft.key !== index) {
+          proxyDraft.key = index;
+        }
+        if (proxyDraft.parent && proxyDraft.parent !== target) {
+          proxyDraft.parent = target;
+        }
+      }
+
       inversePatches?.unshift([
         [DraftType.Map, hasKey ? MapOperation.Set : MapOperation.Delete],
         [index],

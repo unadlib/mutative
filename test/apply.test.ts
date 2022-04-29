@@ -1,7 +1,6 @@
 import { create, apply } from '../src';
 import { deepClone } from '../src/utils';
 
-
 function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
   const [state, patches, inversePatches] = create(data as any, fn, {
     enablePatches: true,
@@ -13,8 +12,8 @@ function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
   expect(inversePatches).toMatchSnapshot();
   const prevState = apply(state, inversePatches);
   expect(prevState).toEqual(data);
-  // const nextState = apply(data as any, patches);
-  // expect(nextState).toEqual(state);
+  const nextState = apply(data as any, patches);
+  expect(nextState).toEqual(state);
 }
 
 test('object', () => {
@@ -186,10 +185,29 @@ test('enablePatches and assign with ref object', () => {
   });
 });
 
+test('enablePatches and assign with ref array', () => {
+  checkPatches(
+    { a: { b: { c: 1 } }, arr0: [{ a: 1 }], arr1: [{ a: 1 }] },
+    (draft: any) => {
+      draft.arr0.push(draft.a.b);
+      draft.arr0.push(draft.arr1);
+      draft.a.b.c = 2;
+      draft.a.b.c = 333;
+      delete draft.a.b;
+      draft.arr1[0].a = 222;
+      draft.arr0[1].a = 333;
+      draft.arr0[2].a = 444;
+    }
+  );
+});
+
 test('simple map', () => {
   checkPatches(
     {
-      map: new Map<any, any>([['a', { bar: 'str' }], ['c', { bar: 'str' }]]),
+      map: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
       foobar: {
         baz: 'str',
       } as any,
@@ -202,26 +220,58 @@ test('simple map', () => {
   );
 });
 
-
-test.skip('map', () => {
+test('map', () => {
   checkPatches(
     {
-      map: new Map<any, any>([['a', { bar: 'str' }], ['c', { bar: 'str' }]]),
-      map1: new Map<any, any>([['a', { bar: 'str' }], ['c', { bar: 'str' }]]),
-      map2: new Map<any, any>([['a', { bar: 'str' }], ['c', { bar: 'str' }]]),
-      map3: new Map<any, any>([['a', { bar: 'str' }], ['c', { bar: 'str' }]]),
+      map: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
+      map1: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
+      map2: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
+      map3: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
       foobar: {
         baz: 'str',
       } as any,
     },
     (draft) => {
-      // draft.map.set('b', { bar: 'str' });
-      // draft.map.values().next().value.bar = 'new str';
-      // draft.map1.clear();
-      // draft.map2.delete('c');
-      draft.map3.set('a', draft.foobar);
+      draft.map.set('b', { bar: 'str' });
+      draft.map.values().next().value.bar = 'new str';
+      draft.map1.clear();
+      draft.map3.set('a', draft.map2.get('c'));
+      draft.map2.get('c').bar = 'new str';
+      draft.map2.delete('c');
+    }
+  );
+});
+
+
+test.skip('object with delete', () => {
+  checkPatches(
+    {
+      foobar: {
+        baz: 'str',
+      } as any,
+    },
+    (draft) => {
       draft.foobar.baz = 'new str';
+      const a = draft.foobar;
       delete draft.foobar;
+
+      a.baz = 'new str1';
+      // @ts-ignore
+      draft.foobar1 = a;
+      // @ts-ignore
+      draft.foobar1.baz = 'new str2';
     }
   );
 });

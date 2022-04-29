@@ -77,7 +77,7 @@ test('enablePatches, no update', () => {
     [['object', 'delete'], ['x'], []],
   ]);
   expect(inversePatches).toEqual([
-    [['object', 'set'], ['x'], [['__MUTATIVE__', 'a', 'b']]],
+    [['object', 'set'], ['x'], [{ c: 1 }]],
     [['object', 'delete'], ['x'], []],
   ]);
 });

@@ -24,6 +24,7 @@ import {
   latest,
   makeChange,
 } from './utils';
+import { current } from './current';
 
 function createGetter({
   assignedSet,
@@ -333,7 +334,7 @@ export function createDraft<T extends object>({
       inversePatches?.unshift([
         [DraftType.Object, ObjectOperation.Set],
         [key],
-        [previousState],
+        [getProxyDraft(previousState) ? current(previousState) : previousState],
       ]);
       makeChange(target, patches, inversePatches);
       return true;
@@ -357,7 +358,7 @@ export function finalizeDraft<T>(
     });
     item[2] = result;
   });
-  const proxyDraft: ProxyDraft = getProxyDraft(result as any)!;
+  const proxyDraft = getProxyDraft(result as any)!;
   for (const finalize of proxyDraft.finalities.draft) {
     finalize();
   }

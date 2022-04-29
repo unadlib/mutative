@@ -71,7 +71,8 @@ export function getValueOrPath(value: any) {
 }
 
 export function getPath(target: ProxyDraft, path: any[] = []): any[] {
-  if (target.key) path.unshift(target.key);
+  if (!target) return path;
+  if (typeof target.key !== 'undefined') path.unshift(target.key);
   if (target.parent) {
     return getPath(target.parent, path);
   }

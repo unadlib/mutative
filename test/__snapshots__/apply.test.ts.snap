@@ -449,6 +449,237 @@ Array [
 ]
 `;
 
+exports[`enablePatches and assign with ref array 1`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "arr0",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "a",
+        "b",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      "arr0",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "arr1",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      333,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "a",
+      "b",
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "arr1",
+      "0",
+      "a",
+    ],
+    Array [
+      222,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "arr0",
+      "1",
+      "a",
+    ],
+    Array [
+      333,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr0",
+      "2",
+      "a",
+    ],
+    Array [
+      444,
+    ],
+  ],
+]
+`;
+
+exports[`enablePatches and assign with ref array 2`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr0",
+      "2",
+      "a",
+    ],
+    Array [
+      undefined,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "arr0",
+      "1",
+      "a",
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "arr1",
+      "0",
+      "a",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+    ],
+    Array [
+      Object {
+        "c": 333,
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "a",
+      "b",
+      "c",
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr0",
+      "length",
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      "arr0",
+      "length",
+    ],
+    Array [
+      1,
+    ],
+  ],
+]
+`;
+
 exports[`enablePatches and assign with ref object 1`] = `
 Array [
   Array [
@@ -801,10 +1032,9 @@ Array [
       "b",
     ],
     Array [
-      Array [
-        "__MUTATIVE__",
-        "x1",
-      ],
+      Object {
+        "c": 333,
+      },
     ],
   ],
   Array [
@@ -880,6 +1110,47 @@ Array [
       "set",
     ],
     Array [
+      "map",
+      2,
+    ],
+    Array [
+      "b",
+      Object {
+        "bar": "str",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "map",
+      0,
+      "bar",
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "clear",
+    ],
+    Array [
+      "map1",
+      -1,
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
       "map3",
       0,
     ],
@@ -887,7 +1158,8 @@ Array [
       "a",
       Array [
         "__MUTATIVE__",
-        "foobar",
+        "map2",
+        1,
       ],
     ],
   ],
@@ -897,8 +1169,9 @@ Array [
       "set",
     ],
     Array [
-      "foobar",
-      "baz",
+      "map3",
+      0,
+      "bar",
     ],
     Array [
       "new str",
@@ -906,11 +1179,12 @@ Array [
   ],
   Array [
     Array [
-      "object",
+      "map",
       "delete",
     ],
     Array [
-      "foobar",
+      "map2",
+      1,
     ],
     Array [],
   ],
@@ -921,16 +1195,19 @@ exports[`map 2`] = `
 Array [
   Array [
     Array [
-      "object",
+      "map",
       "set",
     ],
     Array [
-      "foobar",
+      "map2",
+      -1,
     ],
     Array [
+      "c",
       Array [
         "__MUTATIVE__",
-        "foobar",
+        "map3",
+        0,
       ],
     ],
   ],
@@ -940,8 +1217,9 @@ Array [
       "set",
     ],
     Array [
-      "foobar",
-      "baz",
+      "map3",
+      0,
+      "bar",
     ],
     Array [
       "str",
@@ -962,6 +1240,193 @@ Array [
         "bar": "str",
       },
     ],
+  ],
+  Array [
+    Array [
+      "map",
+      "construct",
+    ],
+    Array [
+      "map1",
+      -1,
+    ],
+    Array [
+      Array [
+        "a",
+        Object {
+          "bar": "str",
+        },
+      ],
+      Array [
+        "c",
+        Object {
+          "bar": "str",
+        },
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "map",
+      0,
+      "bar",
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "delete",
+    ],
+    Array [
+      "map",
+      2,
+    ],
+    Array [],
+  ],
+]
+`;
+
+exports[`object with delete 1`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar",
+      "baz",
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar",
+      "baz",
+    ],
+    Array [
+      "new str1",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar1",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "foobar",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar1",
+      "baz",
+    ],
+    Array [
+      "new str2",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "foobar",
+    ],
+    Array [],
+  ],
+]
+`;
+
+exports[`object with delete 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar1",
+      "baz",
+    ],
+    Array [
+      "new str1",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar",
+      "baz",
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar",
+    ],
+    Array [
+      Array [
+        "__MUTATIVE__",
+        "foobar1",
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      "foobar",
+      "baz",
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      "foobar1",
+    ],
+    Array [],
   ],
 ]
 `;
