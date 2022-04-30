@@ -10,6 +10,7 @@ import {
 import { createMapHandler, mutableMapMethods } from './map';
 import { createSetHandler, mutableSetMethods } from './set';
 import {
+  adjustParentDraft,
   deepFreeze,
   ensureDraftValue,
   ensureShallowCopy,
@@ -158,12 +159,11 @@ function createGetter({
     // TODO: check
     // handling for assignment draft
     if (proxyDraft && typeof key !== 'symbol') {
-      if (proxyDraft.key !== key) {
-        proxyDraft.key = key;
-      }
-      if (proxyDraft.parent && proxyDraft.parent !== target) {
-        proxyDraft.parent = target;
-      }
+      adjustParentDraft({
+        current: value,
+        parent: target,
+        key,
+      });
       return proxyDraft.proxy;
     }
     return value;

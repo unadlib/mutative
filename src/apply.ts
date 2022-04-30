@@ -46,6 +46,7 @@ export function apply<T extends object, F extends boolean = false>(
         );
         const [key] = path.slice(-1);
         const current = getValue(draft, path);
+        if (typeof current === 'undefined') return;
         if (type === DraftType.Object) {
           switch (operation) {
             case ObjectOperation.Delete:

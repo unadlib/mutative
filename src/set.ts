@@ -1,6 +1,7 @@
 import type { Patches, ProxyDraft } from './interface';
 import { CLEAR, dataTypes, DraftType, SetOperation } from './constant';
 import {
+  adjustParentDraft,
   getProxyDraft,
   getValueOrPath,
   isDraftable,
@@ -55,6 +56,13 @@ export function createSetHandler({
       if (isDraftable(value, target)) {
         assignedSet.add(value);
       }
+
+      const index = Array.from(result.values()).indexOf(value);
+      adjustParentDraft({
+        current: value,
+        parent: target,
+        key: index,
+      });
       patches?.push([
         [DraftType.Set, SetOperation.Add],
         [result.size],
@@ -86,14 +94,18 @@ export function createSetHandler({
       return result;
     },
     delete(value: any) {
-      const oldIndex = Array.from(state.values()).indexOf(value);
-      const result = Set.prototype.delete.call(state, value);
+      const deleteValue = getProxyDraft(value)
+        ? getProxyDraft(value)?.original
+        : value;
+      const oldIndex = Array.from(state.values()).indexOf(deleteValue);
+      const result = Set.prototype.delete.call(state, deleteValue);
+      if (target.setMap!.has(value)) target.setMap!.delete(value);
       if (!target.original.has(value)) {
         target.operated.delete(value);
       } else {
         target.operated.add(value);
       }
-      patches?.push([[DraftType.Set, SetOperation.Delete], [state.size], []]);
+      patches?.push([[DraftType.Set, SetOperation.Delete], [oldIndex], []]);
       inversePatches?.unshift([
         [DraftType.Set, SetOperation.Add],
         [oldIndex],

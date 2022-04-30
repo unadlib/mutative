@@ -1,4 +1,5 @@
 import { dataTypes, DraftType, PROXY_DRAFT, REFERENCE } from '../constant';
+import { current } from '../current';
 import { Marker, ProxyDraft } from '../interface';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
@@ -67,6 +68,11 @@ export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
 
 export function getValueOrPath(value: any) {
   const proxyDraft = getProxyDraft(value);
+  // todo: support map and set
+  // @ts-ignore
+  if (proxyDraft && !(proxyDraft.key in proxyDraft.parent.copy)) {
+    return current(value);
+  }
   return proxyDraft ? getPath(proxyDraft) : value;
 }
 
@@ -89,4 +95,24 @@ export function getType(target: any): DraftType {
   if (target instanceof Set) return DraftType.Set;
   if (Array.isArray(target)) return DraftType.Array;
   return DraftType.Object;
+}
+
+export function adjustParentDraft({
+  current,
+  parent,
+  key,
+}: {
+  current: any;
+  parent: ProxyDraft;
+  key: string | number;
+}) {
+  const proxyDraft = getProxyDraft(current);
+  if (proxyDraft) {
+    if (proxyDraft.key !== key) {
+      proxyDraft.key = key;
+    }
+    if (proxyDraft.parent && proxyDraft.parent !== parent) {
+      proxyDraft.parent = parent;
+    }
+  }
 }
