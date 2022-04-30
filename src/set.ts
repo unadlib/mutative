@@ -43,7 +43,9 @@ export function createSetHandler({
   }
   const proxyProto = {
     add(value: any) {
-      const oldIndex = Array.from(state.values()).indexOf(value);
+      const oldIndex = inversePatches
+        ? Array.from(state.values()).indexOf(value)
+        : null;
       const result = Set.prototype.add.call(state, value);
       if (
         target.original.has(value) &&
@@ -56,28 +58,29 @@ export function createSetHandler({
       if (isDraftable(value, target)) {
         assignedSet.add(value);
       }
-
-      const index = Array.from(result.values()).indexOf(value);
-      adjustParentDraft({
-        current: value,
-        parent: target,
-        key: index,
-      });
-      patches?.push([
-        [DraftType.Set, SetOperation.Add],
-        [result.size],
-        [getValueOrPath(value)],
-      ]);
-      inversePatches?.unshift([
-        [DraftType.Set, SetOperation.Delete],
-        [oldIndex],
-        [],
-      ]);
+      if (patches && inversePatches) {
+        const index = Array.from(result.values()).indexOf(value);
+        adjustParentDraft({
+          current: value,
+          parent: target,
+          key: index,
+        });
+        patches?.push([
+          [DraftType.Set, SetOperation.Add],
+          [result.size],
+          [getValueOrPath(value)],
+        ]);
+        inversePatches?.unshift([
+          [DraftType.Set, SetOperation.Delete],
+          [oldIndex!],
+          [],
+        ]);
+      }
       makeChange(target, patches, inversePatches);
       return result;
     },
     clear() {
-      const oldValues = Array.from(state.values());
+      const oldValues = inversePatches ? Array.from(state.values()) : null;
       const result = Set.prototype.clear.call(state);
       if (!target.original.size) {
         target.operated.delete(CLEAR);
@@ -97,7 +100,10 @@ export function createSetHandler({
       const deleteValue = getProxyDraft(value)
         ? getProxyDraft(value)?.original
         : value;
-      const oldIndex = Array.from(state.values()).indexOf(deleteValue);
+      const oldIndex =
+        patches && inversePatches
+          ? Array.from(state.values()).indexOf(deleteValue)
+          : null;
       const result = Set.prototype.delete.call(state, deleteValue);
       if (target.setMap!.has(value)) target.setMap!.delete(value);
       if (!target.original.has(value)) {
@@ -105,10 +111,10 @@ export function createSetHandler({
       } else {
         target.operated.add(value);
       }
-      patches?.push([[DraftType.Set, SetOperation.Delete], [oldIndex], []]);
+      patches?.push([[DraftType.Set, SetOperation.Delete], [oldIndex!], []]);
       inversePatches?.unshift([
         [DraftType.Set, SetOperation.Add],
-        [oldIndex],
+        [oldIndex!],
         [value],
       ]);
       makeChange(target, patches, inversePatches);

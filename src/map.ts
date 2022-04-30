@@ -48,8 +48,8 @@ export function createMapHandler({
   }
   const proxyProto = {
     set(_key: any, _value: any) {
-      const hasKey = state.has(_key);
-      const oldValue = state.get(_key);
+      const hasKey = inversePatches ? state.has(_key) : null;
+      const oldValue = inversePatches ? state.get(_key) : null;
       const result = Map.prototype.set.call(state, _key, _value);
       if (target.original.has(_key) && target.original.get(_key) === _value) {
         target.operated.delete(_key);
@@ -60,27 +60,29 @@ export function createMapHandler({
         assignedSet.add(_value);
       }
       ensureDraftValue(target, _key, _value);
-      const index = Array.from(result.keys()).indexOf(_key);
-      adjustParentDraft({
-        current: _value,
-        parent: target,
-        key: index,
-      });
-      patches?.push([
-        [DraftType.Map, MapOperation.Set],
-        [index],
-        [_key, getValueOrPath(_value)],
-      ]);
-      inversePatches?.unshift([
-        [DraftType.Map, hasKey ? MapOperation.Set : MapOperation.Delete],
-        [index],
-        hasKey ? [_key, oldValue] : [],
-      ]);
+      if (patches && inversePatches) {
+        const index = Array.from(result.keys()).indexOf(_key);
+        adjustParentDraft({
+          current: _value,
+          parent: target,
+          key: index,
+        });
+        patches?.push([
+          [DraftType.Map, MapOperation.Set],
+          [index],
+          [_key, getValueOrPath(_value)],
+        ]);
+        inversePatches?.unshift([
+          [DraftType.Map, hasKey ? MapOperation.Set : MapOperation.Delete],
+          [index],
+          hasKey ? [_key, oldValue] : [],
+        ]);
+      }
       makeChange(target, patches, inversePatches);
       return result;
     },
     clear() {
-      const oldState = Array.from(state);
+      const oldState = inversePatches ? Array.from(state) : null;
       const result = Map.prototype.clear.call(state);
       if (!target.original.size) {
         target.operated.delete(CLEAR);
@@ -91,21 +93,21 @@ export function createMapHandler({
       inversePatches?.unshift([
         [DraftType.Map, MapOperation.Construct],
         [-1],
-        oldState,
+        oldState!,
       ]);
       makeChange(target, patches, inversePatches);
       return result;
     },
     delete(_key: any) {
-      const index = Array.from(state.keys()).indexOf(_key);
-      const _value = state.get(_key);
+      const index = patches ? Array.from(state.keys()).indexOf(_key) : null;
+      const _value = inversePatches ? state.get(_key) : null;
       const result = Map.prototype.delete.call(state, _key);
       if (!target.original.has(_key)) {
         target.operated.delete(_key);
       } else {
         target.operated.add(_key);
       }
-      patches?.push([[DraftType.Map, MapOperation.Delete], [index], []]);
+      patches?.push([[DraftType.Map, MapOperation.Delete], [index!], []]);
       inversePatches?.unshift([
         [DraftType.Map, MapOperation.Set],
         [-1],

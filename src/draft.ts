@@ -181,12 +181,17 @@ function createSetter({
 }) {
   return function set(target: ProxyDraft, key: string, value: any) {
     ensureShallowCopy(target);
-    const previousState = target.copy![key];
-    const previousItems =
-      Array.isArray(target.copy) && key === 'length' && inversePatches
-        ? target.copy.slice(value)
-        : null;
-    const hasOwnProperty = Object.hasOwnProperty.call(target.copy!, key);
+    let previousState: any;
+    let previousItems: any[] | null;
+    let hasOwnProperty = false;
+    if (patches && inversePatches) {
+      previousState = target.copy![key];
+      previousItems =
+        Array.isArray(target.copy) && key === 'length' && inversePatches
+          ? target.copy.slice(value)
+          : null;
+      hasOwnProperty = Object.hasOwnProperty.call(target.copy!, key);
+    }
     ensureDraftValue(target, key, value);
     target.copy![key] = value;
     if (value === target.original[key]) {
@@ -323,7 +328,7 @@ export function createDraft<T extends object>({
       if (!target.copy) {
         ensureShallowCopy(target);
       }
-      const previousState = target.copy![key];
+      const previousState = inversePatches ? target.copy![key] : null;
       delete target.copy![key];
       if (!Object.hasOwnProperty.call(target.original, key)) {
         target.operated.delete(key);

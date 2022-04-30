@@ -38,7 +38,7 @@ export function createArrayHandler({
   return {
     pop() {
       const index = state.length - 1;
-      const [last] = state.slice(-1);
+      const [last] = patches ? state.slice(-1) : [];
       const result = Array.prototype.pop.apply(state);
       if (target.original[index] !== result) {
         target.operated.delete(index);
@@ -83,7 +83,7 @@ export function createArrayHandler({
       return result;
     },
     shift() {
-      const [first] = state;
+      const [first] = inversePatches ? state : [];
       const oldState = Array.prototype.concat.call(state);
       const result = Array.prototype.shift.apply(state);
       oldState.forEach((_, index) => {
