@@ -212,6 +212,32 @@ test('simple array', () => {
   );
 });
 
+test('array', () => {
+  checkPatches(
+    {
+      arr0: ([{ bar: 'str0' }, { bar: 'str0' }]),
+      arr1: ([{ bar: 'str1' }, { bar: 'str1' }]),
+      arr2: ([{ bar: 'str1' }, { bar: 'str1' }]),
+      arr3: ([{ bar: 'str1' }, { bar: 'str1' }]),
+      arr4: ([{ bar: 'str1' }, { bar: 'str1' }]),
+      arr5: ([{ bar: 'str1' }, { bar: 'str1' }]),
+      foobar: {
+        baz: 'str',
+      } as any,
+    },
+    (draft) => {
+      draft.arr0.push({ bar: 'str' });
+      draft.arr0.unshift({ bar: 'str' });
+      draft.arr2.push(draft.arr1[0]);
+      draft.arr2[2].bar = 'new str111';
+      draft.arr1.shift();
+      draft.arr3.length = 1;
+      draft.arr4.length = 0;
+      draft.arr2.splice(1, 4);
+    }
+  );
+});
+
 test('simple map', () => {
   checkPatches(
     {
