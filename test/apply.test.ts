@@ -78,14 +78,14 @@ test('object assign ref', () => {
   expect(state).not.toBe(data);
   expect(state.foo).not.toBe(data.foo);
   expect(state.foobar).not.toBe(data.foobar);
-  // expect(patches).toEqual([
-  //   [['object', 'set'], ['foobar', 'foo'], [['__MUTATIVE__', 'foo']]],
-  //   [['object', 'set'], ['foo', 'bar'], ['new str']],
-  // ]);
-  // expect(inversePatches).toEqual([
-  //   [['object', 'set'], ['foo', 'bar'], ['str']],
-  //   [['object', 'delete'], ['foobar', 'foo'], []],
-  // ]);
+  expect(patches).toEqual([
+    [['object', 'set'], [['foobar', 'foo']], [[['__MUTATIVE__', 'foo']]]],
+    [['object', 'set'], [['foo', 'bar']], ['new str']],
+  ]);
+  expect(inversePatches).toEqual([
+    [['object', 'set'], [['foo', 'bar']], ['str']],
+    [['object', 'delete'], [['foobar', 'foo']], []],
+  ]);
   const prevState = apply(state, inversePatches);
   expect(prevState).toEqual(data);
   const nextState = apply(prevState, patches);
