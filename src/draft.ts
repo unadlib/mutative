@@ -156,8 +156,6 @@ function createGetter({
       });
       return target.copy![key];
     }
-    // TODO: check
-    // handling for assignment draft
     if (proxyDraft && typeof key !== 'symbol') {
       adjustParentDraft({
         current: value,
@@ -204,31 +202,31 @@ function createSetter({
     }
     if (patches && inversePatches) {
       if (Array.isArray(target.original)) {
-        patches.push([[DraftType.Array, ArrayOperation.Set], [key], [value]]);
+        patches.push([[DraftType.Array, ArrayOperation.Set], [[key]], [value]]);
         const numberKey = Number(key);
         if (key === 'length') {
           inversePatches.unshift([
             [DraftType.Array, ArrayOperation.Push],
-            [],
+            [[]],
             previousItems!,
           ]);
         } else if (!isNaN(numberKey) && numberKey >= target.original.length) {
           inversePatches.unshift([
             [DraftType.Array, ArrayOperation.Set],
-            ['length'],
+            [['length']],
             [target.original.length],
           ]);
         } else {
           inversePatches.unshift([
             [DraftType.Array, ArrayOperation.Set],
-            [key],
+            [[key]],
             [previousState],
           ]);
         }
       } else {
         patches.push([
           [DraftType.Object, ObjectOperation.Set],
-          [key],
+          [[key]],
           [getValueOrPath(value)],
         ]);
         inversePatches.unshift([
@@ -236,12 +234,24 @@ function createSetter({
             DraftType.Object,
             hasOwnProperty ? ObjectOperation.Set : ObjectOperation.Delete,
           ],
-          [key],
+          [[key]],
           hasOwnProperty ? [getValueOrPath(previousState)] : [],
         ]);
       }
     }
-    makeChange(target, patches, inversePatches);
+    const paths = makeChange(target, [[]]);
+    if (patches) {
+      patches.slice(-1)[0][1] = paths.map((path) => [
+        ...path,
+        ...patches.slice(-1)[0][1][0],
+      ]);
+    }
+    if (inversePatches) {
+      inversePatches[0][1] = paths.map((path) => [
+        ...path,
+        ...inversePatches[0][1][0],
+      ]);
+    }
     return true;
   };
 }
@@ -271,11 +281,10 @@ export function createDraft<T extends object>({
     type: getType(original),
     finalized: false,
     operated: new Set(),
-    parent: parentDraft,
+    parents: parentDraft ? new Map([[key, parentDraft]]) : new Map(),
     original,
     copy: null,
     proxy: null,
-    key,
     finalities,
     enableAutoFreeze,
     marker,
@@ -335,13 +344,25 @@ export function createDraft<T extends object>({
       } else {
         target.operated.add(key);
       }
-      patches?.push([[DraftType.Object, ObjectOperation.Delete], [key], []]);
+      patches?.push([[DraftType.Object, ObjectOperation.Delete], [[key]], []]);
       inversePatches?.unshift([
         [DraftType.Object, ObjectOperation.Set],
-        [key],
+        [[key]],
         [getProxyDraft(previousState) ? current(previousState) : previousState],
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return true;
     },
   });

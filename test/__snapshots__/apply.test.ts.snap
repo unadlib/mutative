@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`array 1`] = `
+exports[`array case1 1`] = `
 Array [
   Array [
     Array [
@@ -8,7 +8,9 @@ Array [
       "push",
     ],
     Array [
-      "arr",
+      Array [
+        "arr",
+      ],
     ],
     Array [
       4,
@@ -20,7 +22,9 @@ Array [
       "splice",
     ],
     Array [
-      "arr",
+      Array [
+        "arr",
+      ],
     ],
     Array [
       2,
@@ -36,9 +40,11 @@ Array [
       "set",
     ],
     Array [
-      "arr1",
-      "0",
-      "a",
+      Array [
+        "arr1",
+        "0",
+        "a",
+      ],
     ],
     Array [
       0,
@@ -50,7 +56,9 @@ Array [
       "push",
     ],
     Array [
-      "arr1",
+      Array [
+        "arr1",
+      ],
     ],
     Array [
       Object {
@@ -64,7 +72,9 @@ Array [
       "splice",
     ],
     Array [
-      "arr2",
+      Array [
+        "arr2",
+      ],
     ],
     Array [
       3,
@@ -78,7 +88,9 @@ Array [
       "pop",
     ],
     Array [
-      "arr3",
+      Array [
+        "arr3",
+      ],
     ],
     Array [],
   ],
@@ -88,7 +100,9 @@ Array [
       "unshift",
     ],
     Array [
-      "arr4",
+      Array [
+        "arr4",
+      ],
     ],
     Array [
       0,
@@ -100,7 +114,9 @@ Array [
       "shift",
     ],
     Array [
-      "arr5",
+      Array [
+        "arr5",
+      ],
     ],
     Array [],
   ],
@@ -110,8 +126,10 @@ Array [
       "set",
     ],
     Array [
-      "arr6",
-      "0",
+      Array [
+        "arr6",
+        "0",
+      ],
     ],
     Array [
       "c",
@@ -123,8 +141,10 @@ Array [
       "set",
     ],
     Array [
-      "arr6",
-      "2",
+      Array [
+        "arr6",
+        "2",
+      ],
     ],
     Array [
       "a",
@@ -136,8 +156,10 @@ Array [
       "set",
     ],
     Array [
-      "arr7",
-      "0",
+      Array [
+        "arr7",
+        "0",
+      ],
     ],
     Array [
       1,
@@ -149,8 +171,10 @@ Array [
       "set",
     ],
     Array [
-      "arr7",
-      "1",
+      Array [
+        "arr7",
+        "1",
+      ],
     ],
     Array [
       2,
@@ -162,8 +186,10 @@ Array [
       "set",
     ],
     Array [
-      "arr7",
-      "2",
+      Array [
+        "arr7",
+        "2",
+      ],
     ],
     Array [
       3,
@@ -175,8 +201,10 @@ Array [
       "set",
     ],
     Array [
-      "arr7",
-      "3",
+      Array [
+        "arr7",
+        "3",
+      ],
     ],
     Array [
       6,
@@ -188,8 +216,10 @@ Array [
       "set",
     ],
     Array [
-      "arr8",
-      "length",
+      Array [
+        "arr8",
+        "length",
+      ],
     ],
     Array [
       0,
@@ -201,8 +231,10 @@ Array [
       "set",
     ],
     Array [
-      "arr9",
-      "10",
+      Array [
+        "arr9",
+        "10",
+      ],
     ],
     Array [
       10,
@@ -214,15 +246,278 @@ Array [
       "delete",
     ],
     Array [
-      "arr10",
-      "1",
+      Array [
+        "arr10",
+        "1",
+      ],
     ],
     Array [],
   ],
 ]
 `;
 
-exports[`array 2`] = `
+exports[`array case1 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr10",
+        "1",
+      ],
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr9",
+        "length",
+      ],
+    ],
+    Array [
+      3,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [
+        "arr8",
+      ],
+    ],
+    Array [
+      1,
+      2,
+      3,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr7",
+        "3",
+      ],
+    ],
+    Array [
+      6,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr7",
+        "2",
+      ],
+    ],
+    Array [
+      3,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr7",
+        "1",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr7",
+        "0",
+      ],
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr6",
+        "2",
+      ],
+    ],
+    Array [
+      "c",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr6",
+        "0",
+      ],
+    ],
+    Array [
+      "a",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "unshift",
+    ],
+    Array [
+      Array [
+        "arr5",
+      ],
+    ],
+    Array [
+      "a",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      Array [
+        "arr4",
+      ],
+    ],
+    Array [
+      0,
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [
+        "arr3",
+      ],
+    ],
+    Array [
+      "c",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      Array [
+        "arr2",
+      ],
+    ],
+    Array [
+      3,
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr1",
+        "length",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr1",
+        "0",
+        "a",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      Array [
+        "arr",
+      ],
+    ],
+    Array [
+      2,
+      3,
+      3,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr",
+        "length",
+      ],
+    ],
+    Array [
+      3,
+    ],
+  ],
+]
+`;
+
+exports[`array case2 1`] = `
 Array [
   Array [
     Array [
@@ -230,7 +525,9 @@ Array [
       "push",
     ],
     Array [
-      "arr0",
+      Array [
+        "arr0",
+      ],
     ],
     Array [
       Object {
@@ -244,7 +541,9 @@ Array [
       "unshift",
     ],
     Array [
-      "arr0",
+      Array [
+        "arr0",
+      ],
     ],
     Array [
       Object {
@@ -258,13 +557,17 @@ Array [
       "push",
     ],
     Array [
-      "arr2",
+      Array [
+        "arr2",
+      ],
     ],
     Array [
       Array [
-        "__MUTATIVE__",
-        "arr1",
-        "0",
+        Array [
+          "__MUTATIVE__",
+          "arr1",
+          "0",
+        ],
       ],
     ],
   ],
@@ -274,9 +577,16 @@ Array [
       "set",
     ],
     Array [
-      "arr2",
-      "2",
-      "bar",
+      Array [
+        "arr1",
+        "0",
+        "bar",
+      ],
+      Array [
+        "arr2",
+        "2",
+        "bar",
+      ],
     ],
     Array [
       "new str111",
@@ -288,7 +598,9 @@ Array [
       "shift",
     ],
     Array [
-      "arr1",
+      Array [
+        "arr1",
+      ],
     ],
     Array [],
   ],
@@ -298,8 +610,10 @@ Array [
       "set",
     ],
     Array [
-      "arr3",
-      "length",
+      Array [
+        "arr3",
+        "length",
+      ],
     ],
     Array [
       1,
@@ -311,8 +625,10 @@ Array [
       "set",
     ],
     Array [
-      "arr4",
-      "length",
+      Array [
+        "arr4",
+        "length",
+      ],
     ],
     Array [
       0,
@@ -324,11 +640,174 @@ Array [
       "splice",
     ],
     Array [
-      "arr2",
+      Array [
+        "arr2",
+      ],
     ],
     Array [
       1,
       4,
+    ],
+  ],
+]
+`;
+
+exports[`array case2 2`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      Array [
+        "arr2",
+      ],
+    ],
+    Array [
+      1,
+      0,
+      Object {
+        "bar": "str1",
+      },
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "arr1",
+          "0",
+        ],
+        Array [
+          "__MUTATIVE__",
+          "arr2",
+          "2",
+        ],
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [
+        "arr4",
+      ],
+    ],
+    Array [
+      Object {
+        "bar": "str1",
+      },
+      Object {
+        "bar": "str1",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [
+        "arr3",
+      ],
+    ],
+    Array [
+      Object {
+        "bar": "str1",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "unshift",
+    ],
+    Array [
+      Array [
+        "arr1",
+      ],
+    ],
+    Array [
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "arr1",
+          "0",
+        ],
+        Array [
+          "__MUTATIVE__",
+          "arr2",
+          "2",
+        ],
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr1",
+        "0",
+        "bar",
+      ],
+      Array [
+        "arr2",
+        "2",
+        "bar",
+      ],
+    ],
+    Array [
+      "str1",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr2",
+        "length",
+      ],
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      Array [
+        "arr0",
+      ],
+    ],
+    Array [
+      0,
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr0",
+        "length",
+      ],
+    ],
+    Array [
+      2,
     ],
   ],
 ]
@@ -342,13 +821,17 @@ Array [
       "push",
     ],
     Array [
-      "arr0",
+      Array [
+        "arr0",
+      ],
     ],
     Array [
       Array [
-        "__MUTATIVE__",
-        "a",
-        "b",
+        Array [
+          "__MUTATIVE__",
+          "a",
+          "b",
+        ],
       ],
     ],
   ],
@@ -358,12 +841,16 @@ Array [
       "push",
     ],
     Array [
-      "arr0",
+      Array [
+        "arr0",
+      ],
     ],
     Array [
       Array [
-        "__MUTATIVE__",
-        "arr1",
+        Array [
+          "__MUTATIVE__",
+          "arr1",
+        ],
       ],
     ],
   ],
@@ -373,9 +860,11 @@ Array [
       "set",
     ],
     Array [
-      "a",
-      "b",
-      "c",
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
     ],
     Array [
       2,
@@ -387,9 +876,11 @@ Array [
       "set",
     ],
     Array [
-      "a",
-      "b",
-      "c",
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
     ],
     Array [
       333,
@@ -401,8 +892,10 @@ Array [
       "delete",
     ],
     Array [
-      "a",
-      "b",
+      Array [
+        "a",
+        "b",
+      ],
     ],
     Array [],
   ],
@@ -412,9 +905,11 @@ Array [
       "set",
     ],
     Array [
-      "arr1",
-      "0",
-      "a",
+      Array [
+        "arr1",
+        "0",
+        "a",
+      ],
     ],
     Array [
       222,
@@ -426,9 +921,16 @@ Array [
       "set",
     ],
     Array [
-      "arr0",
-      "1",
-      "a",
+      Array [
+        "a",
+        "b",
+        "a",
+      ],
+      Array [
+        "arr0",
+        "1",
+        "a",
+      ],
     ],
     Array [
       333,
@@ -440,12 +942,157 @@ Array [
       "set",
     ],
     Array [
-      "arr0",
-      "2",
-      "a",
+      Array [
+        "arr1",
+        "a",
+      ],
+      Array [
+        "arr0",
+        "2",
+        "a",
+      ],
     ],
     Array [
       444,
+    ],
+  ],
+]
+`;
+
+exports[`enablePatches and assign with ref array 2`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr1",
+        "a",
+      ],
+      Array [
+        "arr0",
+        "2",
+        "a",
+      ],
+    ],
+    Array [
+      undefined,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+        "a",
+      ],
+      Array [
+        "arr0",
+        "1",
+        "a",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr1",
+        "0",
+        "a",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+      ],
+    ],
+    Array [
+      Object {
+        "c": 333,
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr0",
+        "length",
+      ],
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr0",
+        "length",
+      ],
+    ],
+    Array [
+      1,
     ],
   ],
 ]
@@ -459,13 +1106,17 @@ Array [
       "set",
     ],
     Array [
-      "x",
+      Array [
+        "x",
+      ],
     ],
     Array [
       Array [
-        "__MUTATIVE__",
-        "a",
-        "b",
+        Array [
+          "__MUTATIVE__",
+          "a",
+          "b",
+        ],
       ],
     ],
   ],
@@ -475,13 +1126,17 @@ Array [
       "set",
     ],
     Array [
-      "x1",
+      Array [
+        "x1",
+      ],
     ],
     Array [
       Array [
-        "__MUTATIVE__",
-        "a",
-        "b",
+        Array [
+          "__MUTATIVE__",
+          "a",
+          "b",
+        ],
       ],
     ],
   ],
@@ -491,8 +1146,10 @@ Array [
       "push",
     ],
     Array [
-      "a",
-      "arr",
+      Array [
+        "a",
+        "arr",
+      ],
     ],
     Array [
       1,
@@ -504,9 +1161,11 @@ Array [
       "set",
     ],
     Array [
-      "a",
-      "b",
-      "c",
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
     ],
     Array [
       2,
@@ -518,9 +1177,11 @@ Array [
       "set",
     ],
     Array [
-      "a",
-      "b",
-      "c",
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
     ],
     Array [
       333,
@@ -532,12 +1193,107 @@ Array [
       "push",
     ],
     Array [
-      "a",
-      "arr",
+      Array [
+        "a",
+        "arr",
+      ],
     ],
     Array [
       2,
     ],
+  ],
+]
+`;
+
+exports[`enablePatches and assign with ref object 2`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "arr",
+        "length",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "arr",
+        "length",
+      ],
+    ],
+    Array [
+      0,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "x1",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "x",
+      ],
+    ],
+    Array [],
   ],
 ]
 `;
@@ -550,13 +1306,17 @@ Array [
       "set",
     ],
     Array [
-      "x",
+      Array [
+        "x",
+      ],
     ],
     Array [
       Array [
-        "__MUTATIVE__",
-        "a",
-        "b",
+        Array [
+          "__MUTATIVE__",
+          "a",
+          "b",
+        ],
       ],
     ],
   ],
@@ -566,13 +1326,17 @@ Array [
       "set",
     ],
     Array [
-      "x1",
+      Array [
+        "x1",
+      ],
     ],
     Array [
       Array [
-        "__MUTATIVE__",
-        "a",
-        "b",
+        Array [
+          "__MUTATIVE__",
+          "a",
+          "b",
+        ],
       ],
     ],
   ],
@@ -582,8 +1346,10 @@ Array [
       "push",
     ],
     Array [
-      "a",
-      "arr",
+      Array [
+        "a",
+        "arr",
+      ],
     ],
     Array [
       1,
@@ -595,9 +1361,11 @@ Array [
       "set",
     ],
     Array [
-      "a",
-      "b",
-      "c",
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
     ],
     Array [
       2,
@@ -609,9 +1377,11 @@ Array [
       "set",
     ],
     Array [
-      "a",
-      "b",
-      "c",
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
     ],
     Array [
       333,
@@ -623,8 +1393,10 @@ Array [
       "delete",
     ],
     Array [
-      "a",
-      "b",
+      Array [
+        "a",
+        "b",
+      ],
     ],
     Array [],
   ],
@@ -634,8 +1406,10 @@ Array [
       "push",
     ],
     Array [
-      "a",
-      "arr",
+      Array [
+        "a",
+        "arr",
+      ],
     ],
     Array [
       2,
@@ -647,8 +1421,15 @@ Array [
       "set",
     ],
     Array [
-      "x1",
-      "c",
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
+      Array [
+        "x1",
+        "c",
+      ],
     ],
     Array [
       444,
@@ -660,14 +1441,159 @@ Array [
       "set",
     ],
     Array [
-      "a",
-      "b",
+      Array [
+        "a",
+        "b",
+      ],
     ],
     Array [
       Object {
         "f": 1,
       },
     ],
+  ],
+]
+`;
+
+exports[`enablePatches and assign/delete with ref object 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
+      Array [
+        "x1",
+        "c",
+      ],
+    ],
+    Array [
+      333,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "arr",
+        "length",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+      ],
+    ],
+    Array [
+      Object {
+        "c": 333,
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "b",
+        "c",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "a",
+        "arr",
+        "length",
+      ],
+    ],
+    Array [
+      0,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "x1",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "x",
+      ],
+    ],
+    Array [],
   ],
 ]
 `;
@@ -680,8 +1606,10 @@ Array [
       "set",
     ],
     Array [
-      "map",
-      2,
+      Array [
+        "map",
+        2,
+      ],
     ],
     Array [
       "b",
@@ -696,9 +1624,11 @@ Array [
       "set",
     ],
     Array [
-      "map",
-      0,
-      "bar",
+      Array [
+        "map",
+        0,
+        "bar",
+      ],
     ],
     Array [
       "new str",
@@ -710,8 +1640,10 @@ Array [
       "clear",
     ],
     Array [
-      "map1",
-      -1,
+      Array [
+        "map1",
+        -1,
+      ],
     ],
     Array [],
   ],
@@ -721,14 +1653,25 @@ Array [
       "set",
     ],
     Array [
-      "map3",
-      0,
+      Array [
+        "map3",
+        0,
+      ],
     ],
     Array [
       "a",
-      Object {
-        "bar": "str",
-      },
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "map2",
+          1,
+        ],
+        Array [
+          "__MUTATIVE__",
+          "map3",
+          0,
+        ],
+      ],
     ],
   ],
   Array [
@@ -737,9 +1680,16 @@ Array [
       "set",
     ],
     Array [
-      "map3",
-      0,
-      "bar",
+      Array [
+        "map2",
+        1,
+        "bar",
+      ],
+      Array [
+        "map3",
+        0,
+        "bar",
+      ],
     ],
     Array [
       "new str",
@@ -751,8 +1701,203 @@ Array [
       "delete",
     ],
     Array [
-      "map2",
-      1,
+      Array [
+        "map2",
+        1,
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "map4",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "delete",
+    ],
+    Array [
+      Array [
+        "map4",
+        0,
+      ],
+    ],
+    Array [],
+  ],
+]
+`;
+
+exports[`map 2`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      Array [
+        "map4",
+        -1,
+      ],
+    ],
+    Array [
+      "a",
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "map4",
+          0,
+        ],
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "map4",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      Array [
+        "map2",
+        -1,
+      ],
+    ],
+    Array [
+      "c",
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "map2",
+          1,
+        ],
+        Array [
+          "__MUTATIVE__",
+          "map3",
+          0,
+        ],
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "map2",
+        1,
+        "bar",
+      ],
+      Array [
+        "map3",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      Array [
+        "map3",
+        0,
+      ],
+    ],
+    Array [
+      "a",
+      Object {
+        "bar": "str",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "construct",
+    ],
+    Array [
+      Array [
+        "map1",
+        -1,
+      ],
+    ],
+    Array [
+      Array [
+        "a",
+        Object {
+          "bar": "str",
+        },
+      ],
+      Array [
+        "c",
+        Object {
+          "bar": "str",
+        },
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "map",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "delete",
+    ],
+    Array [
+      Array [
+        "map",
+        2,
+      ],
     ],
     Array [],
   ],
@@ -767,8 +1912,10 @@ Array [
       "set",
     ],
     Array [
-      "foobar",
-      "baz",
+      Array [
+        "foobar",
+        "baz",
+      ],
     ],
     Array [
       "new str",
@@ -780,7 +1927,9 @@ Array [
       "delete",
     ],
     Array [
-      "foobar",
+      Array [
+        "foobar",
+      ],
     ],
     Array [],
   ],
@@ -790,8 +1939,10 @@ Array [
       "set",
     ],
     Array [
-      "foobar",
-      "baz",
+      Array [
+        "foobar",
+        "baz",
+      ],
     ],
     Array [
       "new str1",
@@ -803,7 +1954,9 @@ Array [
       "set",
     ],
     Array [
-      "foobar1",
+      Array [
+        "foobar1",
+      ],
     ],
     Array [
       Object {
@@ -817,11 +1970,99 @@ Array [
       "set",
     ],
     Array [
-      "foobar1",
-      "baz",
+      Array [
+        "foobar",
+        "baz",
+      ],
+      Array [
+        "foobar1",
+        "baz",
+      ],
     ],
     Array [
       "new str2",
+    ],
+  ],
+]
+`;
+
+exports[`object with delete 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "baz",
+      ],
+      Array [
+        "foobar1",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str1",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "foobar1",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "baz",
+      ],
+    ],
+    Array [
+      "str",
     ],
   ],
 ]
@@ -835,8 +2076,10 @@ Array [
       "add",
     ],
     Array [
-      "set",
-      3,
+      Array [
+        "set",
+        3,
+      ],
     ],
     Array [
       Object {
@@ -850,9 +2093,11 @@ Array [
       "set",
     ],
     Array [
-      "set",
-      0,
-      "bar",
+      Array [
+        "set",
+        0,
+        "bar",
+      ],
     ],
     Array [
       "new str0",
@@ -864,8 +2109,10 @@ Array [
       "clear",
     ],
     Array [
-      "set1",
-      -1,
+      Array [
+        "set1",
+        -1,
+      ],
     ],
     Array [],
   ],
@@ -875,13 +2122,24 @@ Array [
       "add",
     ],
     Array [
-      "set3",
-      3,
+      Array [
+        "set3",
+        3,
+      ],
     ],
     Array [
-      Object {
-        "bar": "new str0",
-      },
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "set",
+          0,
+        ],
+        Array [
+          "__MUTATIVE__",
+          "set3",
+          2,
+        ],
+      ],
     ],
   ],
   Array [
@@ -890,9 +2148,16 @@ Array [
       "set",
     ],
     Array [
-      "set3",
-      2,
-      "bar",
+      Array [
+        "set",
+        0,
+        "bar",
+      ],
+      Array [
+        "set3",
+        2,
+        "bar",
+      ],
     ],
     Array [
       "new str1",
@@ -904,8 +2169,126 @@ Array [
       "delete",
     ],
     Array [
+      Array [
+        "set",
+        0,
+      ],
+    ],
+    Array [],
+  ],
+]
+`;
+
+exports[`set 2`] = `
+Array [
+  Array [
+    Array [
       "set",
-      0,
+      "add",
+    ],
+    Array [
+      Array [
+        "set",
+        0,
+      ],
+    ],
+    Array [
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "set",
+          0,
+        ],
+        Array [
+          "__MUTATIVE__",
+          "set3",
+          2,
+        ],
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "set",
+        0,
+        "bar",
+      ],
+      Array [
+        "set3",
+        2,
+        "bar",
+      ],
+    ],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "set",
+      "delete",
+    ],
+    Array [
+      Array [
+        "set3",
+        2,
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "set",
+      "construct",
+    ],
+    Array [
+      Array [
+        "set1",
+        -1,
+      ],
+    ],
+    Array [
+      Array [
+        Object {
+          "bar": "str",
+        },
+        Object {
+          "bar": "str",
+        },
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "set",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "str1111",
+    ],
+  ],
+  Array [
+    Array [
+      "set",
+      "delete",
+    ],
+    Array [
+      Array [
+        "set",
+        2,
+      ],
     ],
     Array [],
   ],
@@ -920,24 +2303,36 @@ Array [
       "push",
     ],
     Array [
-      "arr0",
+      Array [
+        "arr0",
+      ],
     ],
     Array [
       Array [
-        "__MUTATIVE__",
-        "arr1",
+        Array [
+          "__MUTATIVE__",
+          "arr1",
+          "0",
+        ],
       ],
     ],
   ],
   Array [
     Array [
-      "array",
+      "object",
       "set",
     ],
     Array [
-      "arr0",
-      "1",
-      "a",
+      Array [
+        "arr1",
+        "0",
+        "a",
+      ],
+      Array [
+        "arr0",
+        "1",
+        "a",
+      ],
     ],
     Array [
       2,
@@ -949,9 +2344,77 @@ Array [
       "pop",
     ],
     Array [
-      "arr0",
+      Array [
+        "arr0",
+      ],
     ],
     Array [],
+  ],
+]
+`;
+
+exports[`simple array 2`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [
+        "arr0",
+      ],
+    ],
+    Array [
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "arr1",
+          "0",
+        ],
+        Array [
+          "__MUTATIVE__",
+          "arr0",
+          "1",
+        ],
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr1",
+        "0",
+        "a",
+      ],
+      Array [
+        "arr0",
+        "1",
+        "a",
+      ],
+    ],
+    Array [
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr0",
+        "length",
+      ],
+    ],
+    Array [
+      1,
+    ],
   ],
 ]
 `;
@@ -964,8 +2427,10 @@ Array [
       "set",
     ],
     Array [
-      "map",
-      2,
+      Array [
+        "map",
+        2,
+      ],
     ],
     Array [
       "b",
@@ -980,9 +2445,11 @@ Array [
       "set",
     ],
     Array [
-      "map",
-      0,
-      "bar",
+      Array [
+        "map",
+        0,
+        "bar",
+      ],
     ],
     Array [
       "new str",
@@ -994,13 +2461,65 @@ Array [
       "set",
     ],
     Array [
-      "map",
-      0,
-      "bar",
+      Array [
+        "map",
+        0,
+        "bar",
+      ],
     ],
     Array [
       "new str",
     ],
+  ],
+]
+`;
+
+exports[`simple map 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "map",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "map",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "delete",
+    ],
+    Array [
+      Array [
+        "map",
+        2,
+      ],
+    ],
+    Array [],
   ],
 ]
 `;
@@ -1013,8 +2532,10 @@ Array [
       "add",
     ],
     Array [
-      "set",
-      3,
+      Array [
+        "set",
+        3,
+      ],
     ],
     Array [
       Object {
@@ -1028,9 +2549,11 @@ Array [
       "set",
     ],
     Array [
-      "set",
-      0,
-      "bar",
+      Array [
+        "set",
+        0,
+        "bar",
+      ],
     ],
     Array [
       "new str0",
@@ -1042,13 +2565,65 @@ Array [
       "set",
     ],
     Array [
-      "set",
-      1,
-      "bar",
+      Array [
+        "set",
+        1,
+        "bar",
+      ],
     ],
     Array [
       "new str1",
     ],
+  ],
+]
+`;
+
+exports[`simple set 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "set",
+        1,
+        "bar",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "set",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "set",
+      "delete",
+    ],
+    Array [
+      Array [
+        "set",
+        2,
+      ],
+    ],
+    Array [],
   ],
 ]
 `;

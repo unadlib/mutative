@@ -68,26 +68,44 @@ export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
 
 export function getValueOrPath(value: any) {
   const proxyDraft = getProxyDraft(value);
-  // todo: support map and set
-  // @ts-ignore
-  if (proxyDraft && !(proxyDraft.key in proxyDraft.parent.copy)) {
+  if (
+    proxyDraft &&
+    !Array.from(proxyDraft.parents).some(([key, parent]) => {
+      if (parent.copy instanceof Set || parent.copy instanceof Map) {
+        return parent.copy.size >= key;
+      }
+      return key in parent.copy;
+    })
+  ) {
     return current(value);
   }
   return proxyDraft ? getPath(proxyDraft) : value;
 }
 
-export function getPath(target: ProxyDraft, path: any[] = []): any[] {
-  if (!target) return path;
-  if (typeof target.key !== 'undefined') path.unshift(target.key);
-  if (target.parent) {
-    return getPath(target.parent, path);
-  }
-  path.unshift(REFERENCE);
-  return path;
+export function getPath(target: ProxyDraft, path: any[] = [[]]): any[] {
+  const paths: any[][] = [];
+  if (!target) return [[]];
+  target.parents.forEach((parent, key) => {
+    if (parent.parents.size > 0) {
+      paths.push(
+        ...getPath(
+          parent,
+          path.map((i) => [key, ...i])
+        )
+      );
+    } else {
+      paths.push(...path.map((i) => [REFERENCE, key, ...i]));
+    }
+  });
+  return paths;
 }
 
 export function isPath(target: any) {
-  return Array.isArray(target) && target[0] === REFERENCE;
+  return (
+    Array.isArray(target) &&
+    Array.isArray(target[0]) &&
+    target[0][0] === REFERENCE
+  );
 }
 
 export function getType(target: any): DraftType {
@@ -108,11 +126,6 @@ export function adjustParentDraft({
 }) {
   const proxyDraft = getProxyDraft(current);
   if (proxyDraft) {
-    if (proxyDraft.key !== key) {
-      proxyDraft.key = key;
-    }
-    if (proxyDraft.parent && proxyDraft.parent !== parent) {
-      proxyDraft.parent = parent;
-    }
+    proxyDraft.parents.set(key, parent);
   }
 }

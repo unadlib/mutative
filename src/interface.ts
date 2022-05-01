@@ -22,8 +22,7 @@ export interface ProxyDraft<T = any> {
   copy: T | null;
   proxy: T | null;
   finalities: Finalities;
-  parent?: ProxyDraft | null;
-  key?: string | number;
+  parents: Map<string | number, ProxyDraft>;
   setMap?: Map<object, ProxyDraft>;
   enableAutoFreeze?: boolean;
   marker?: Marker;
@@ -36,7 +35,7 @@ export type Patches = [
     | [DraftType.Set, SetOperation]
     | [DraftType.Map, MapOperation]
   ),
-  (string | number)[],
+  (string | number)[][],
   any[]
 ][];
 

@@ -69,16 +69,28 @@ export function createMapHandler({
         });
         patches?.push([
           [DraftType.Map, MapOperation.Set],
-          [index],
+          [[index]],
           [_key, getValueOrPath(_value)],
         ]);
         inversePatches?.unshift([
           [DraftType.Map, hasKey ? MapOperation.Set : MapOperation.Delete],
-          [index],
+          [[index]],
           hasKey ? [_key, oldValue] : [],
         ]);
       }
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
     clear() {
@@ -89,13 +101,25 @@ export function createMapHandler({
       } else {
         target.operated.add(CLEAR);
       }
-      patches?.push([[DraftType.Map, MapOperation.Clear], [-1], []]);
+      patches?.push([[DraftType.Map, MapOperation.Clear], [[-1]], []]);
       inversePatches?.unshift([
         [DraftType.Map, MapOperation.Construct],
-        [-1],
+        [[-1]],
         oldState!,
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
     delete(_key: any) {
@@ -107,13 +131,25 @@ export function createMapHandler({
       } else {
         target.operated.add(_key);
       }
-      patches?.push([[DraftType.Map, MapOperation.Delete], [index!], []]);
+      patches?.push([[DraftType.Map, MapOperation.Delete], [[index!]], []]);
       inversePatches?.unshift([
         [DraftType.Map, MapOperation.Set],
-        [-1],
+        [[-1]],
         [_key, _value],
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
     get(_key: any): any {

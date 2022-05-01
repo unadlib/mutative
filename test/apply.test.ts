@@ -9,7 +9,7 @@ function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
   fn(mutatedResult);
   expect(state).toEqual(mutatedResult);
   expect(patches).toMatchSnapshot();
-  // expect(inversePatches).toMatchSnapshot();
+  expect(inversePatches).toMatchSnapshot();
   // const prevState = apply(state, inversePatches);
   // expect(prevState).toEqual(data);
   const nextState = apply(data as any, patches);
@@ -78,14 +78,14 @@ test('object assign ref', () => {
   expect(state).not.toBe(data);
   expect(state.foo).not.toBe(data.foo);
   expect(state.foobar).not.toBe(data.foobar);
-  expect(patches).toEqual([
-    [['object', 'set'], ['foobar', 'foo'], [['__MUTATIVE__', 'foo']]],
-    [['object', 'set'], ['foo', 'bar'], ['new str']],
-  ]);
-  expect(inversePatches).toEqual([
-    [['object', 'set'], ['foo', 'bar'], ['str']],
-    [['object', 'delete'], ['foobar', 'foo'], []],
-  ]);
+  // expect(patches).toEqual([
+  //   [['object', 'set'], ['foobar', 'foo'], [['__MUTATIVE__', 'foo']]],
+  //   [['object', 'set'], ['foo', 'bar'], ['new str']],
+  // ]);
+  // expect(inversePatches).toEqual([
+  //   [['object', 'set'], ['foo', 'bar'], ['str']],
+  //   [['object', 'delete'], ['foobar', 'foo'], []],
+  // ]);
   const prevState = apply(state, inversePatches);
   expect(prevState).toEqual(data);
   const nextState = apply(prevState, patches);
@@ -116,48 +116,12 @@ test('patches mutate', () => {
       enablePatches: true,
     }
   );
-  expect(patches1).toEqual([[['object', 'set'], ['items'], [[]]]]);
-  expect(patches2).toEqual([[['array', 'push'], ['items'], [2]]]);
+  // expect(patches1).toEqual([[['object', 'set'], ['items'], [[]]]]);
+  // expect(patches2).toEqual([[['array', 'push'], ['items'], [2]]]);
   const lastState1 = apply(state, [...patches1, ...patches2]);
-  expect(patches1).toEqual([[['object', 'set'], ['items'], [[]]]]);
-  expect(patches2).toEqual([[['array', 'push'], ['items'], [2]]]);
+  // expect(patches1).toEqual([[['object', 'set'], ['items'], [[]]]]);
+  // expect(patches2).toEqual([[['array', 'push'], ['items'], [2]]]);
   expect(lastState1).toEqual(lastState);
-});
-
-test('array', () => {
-  checkPatches(
-    {
-      arr: [1, 2, 3],
-      arr1: [{ a: 1 }],
-      arr2: ['a', 'b', 'c'],
-      arr3: ['a', 'b', 'c'],
-      arr4: [1, 2, 3],
-      arr5: ['a', 'b', 'c'],
-      arr6: ['a', 'b', 'c'],
-      arr7: [2, 1, 3, 6],
-      arr8: [1, 2, 3],
-      arr9: [1, 2, 3],
-      arr10: [1, 2],
-      foobar: {
-        baz: 'str',
-      },
-    },
-    (draft) => {
-      draft.arr.push(4);
-      draft.arr.splice(2, 1, 7, 8, 9);
-      draft.arr1[0].a = 0;
-      draft.arr1.push({ a: 2 });
-      draft.arr2.splice(3, 4, 'd');
-      draft.arr3.pop();
-      draft.arr4.unshift(0);
-      draft.arr5.shift();
-      draft.arr6.reverse();
-      draft.arr7.sort();
-      draft.arr8.length = 0;
-      draft.arr9[10] = 10;
-      delete draft.arr10[1];
-    }
-  );
 });
 
 test('enablePatches and assign/delete with ref object', () => {
@@ -205,22 +169,59 @@ test('simple array', () => {
   checkPatches(
     { a: { b: { c: 1 } }, arr0: [{ a: 1 }], arr1: [{ a: 1 }] },
     (draft: any) => {
-      draft.arr0.push(draft.arr1);
+      const a = draft.arr1[0];
+      draft.arr0.push(a);
       draft.arr0.slice(-1)[0].a = 2;
       draft.arr0.pop();
     }
   );
 });
 
-test('array', () => {
+test('array case1', () => {
   checkPatches(
     {
-      arr0: ([{ bar: 'str0' }, { bar: 'str0' }]),
-      arr1: ([{ bar: 'str1' }, { bar: 'str1' }]),
-      arr2: ([{ bar: 'str1' }, { bar: 'str1' }]),
-      arr3: ([{ bar: 'str1' }, { bar: 'str1' }]),
-      arr4: ([{ bar: 'str1' }, { bar: 'str1' }]),
-      arr5: ([{ bar: 'str1' }, { bar: 'str1' }]),
+      arr: [1, 2, 3],
+      arr1: [{ a: 1 }],
+      arr2: ['a', 'b', 'c'],
+      arr3: ['a', 'b', 'c'],
+      arr4: [1, 2, 3],
+      arr5: ['a', 'b', 'c'],
+      arr6: ['a', 'b', 'c'],
+      arr7: [2, 1, 3, 6],
+      arr8: [1, 2, 3],
+      arr9: [1, 2, 3],
+      arr10: [1, 2],
+      foobar: {
+        baz: 'str',
+      },
+    },
+    (draft) => {
+      draft.arr.push(4);
+      draft.arr.splice(2, 1, 7, 8, 9);
+      draft.arr1[0].a = 0;
+      draft.arr1.push({ a: 2 });
+      draft.arr2.splice(3, 4, 'd');
+      draft.arr3.pop();
+      draft.arr4.unshift(0);
+      draft.arr5.shift();
+      draft.arr6.reverse();
+      draft.arr7.sort();
+      draft.arr8.length = 0;
+      draft.arr9[10] = 10;
+      delete draft.arr10[1];
+    }
+  );
+});
+
+test('array case2', () => {
+  checkPatches(
+    {
+      arr0: [{ bar: 'str0' }, { bar: 'str0' }],
+      arr1: [{ bar: 'str1' }, { bar: 'str1' }],
+      arr2: [{ bar: 'str1' }, { bar: 'str1' }],
+      arr3: [{ bar: 'str1' }, { bar: 'str1' }],
+      arr4: [{ bar: 'str1' }, { bar: 'str1' }],
+      arr5: [{ bar: 'str1' }, { bar: 'str1' }],
       foobar: {
         baz: 'str',
       } as any,
@@ -276,6 +277,10 @@ test('map', () => {
         ['a', { bar: 'str' }],
         ['c', { bar: 'str' }],
       ]),
+      map4: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
       foobar: {
         baz: 'str',
       } as any,
@@ -287,6 +292,8 @@ test('map', () => {
       draft.map3.set('a', draft.map2.get('c'));
       draft.map2.get('c').bar = 'new str';
       draft.map2.delete('c');
+      draft.map4.get('a').bar = 'new str';
+      draft.map4.delete('a');
     }
   );
 });

@@ -7,7 +7,6 @@ import type {
 } from './interface';
 import { createDraft, finalizeDraft } from './draft';
 import { isDraftable } from './utils';
-import { dataTypes } from './constant';
 
 export function draftify<
   T extends object,

@@ -1,43 +1,34 @@
 import type { ProxyDraft, Patches } from '../interface';
 import { ensureShallowCopy } from './copy';
 
-export function makeChange(
-  proxyDraft: ProxyDraft,
-  patches?: Patches,
-  inversePatches?: Patches
-) {
-  if (proxyDraft.parent) {
+export function makeChange(proxyDraft: ProxyDraft, path: any[]) {
+  const paths: any[][] = [];
+  proxyDraft.parents.forEach((parent, key) => {
     if (!proxyDraft.operated.size) {
-      proxyDraft.parent.operated.delete(proxyDraft.key);
-    } else if (
-      typeof proxyDraft.key !== 'undefined' &&
-      proxyDraft.key !== null
-    ) {
-      proxyDraft.parent.operated.add(proxyDraft.key);
+      parent.operated.delete(key);
+    } else if (typeof key !== 'undefined' && key !== null) {
+      parent.operated.add(
+        parent.copy instanceof Map || parent.copy instanceof Set
+          ? Array.from(parent.copy.keys())[key as any]
+          : key
+      );
     } else {
       //
     }
-    ensureShallowCopy(proxyDraft.parent);
-    if (typeof proxyDraft.key !== 'undefined' && proxyDraft.key !== null) {
-      if (patches) {
-        const [last] = patches.slice(-1);
-        last[1].unshift(proxyDraft.key);
-      }
-      if (inversePatches) {
-        const [first] = inversePatches;
-        first[1].unshift(proxyDraft.key);
-      }
-      // if (proxyDraft.parent.copy instanceof Map) {
-      //   proxyDraft.parent.copy.set(proxyDraft.key, proxyDraft.proxy);
-      // }
-      // else if (proxyDraft.parent.copy instanceof Set) {
-      //   // for Set
-      // } else if (!proxyDraft.parent.operated.has(proxyDraft.key)) { // the key maybe be deleted
-      //   // proxyDraft.parent.copy![proxyDraft.key] = proxyDraft.copy;
-      // }
+    ensureShallowCopy(parent);
+    if (parent.parents.size > 0) {
+      paths.push(
+        ...makeChange(
+          parent,
+          path.map((i) => [key, ...i])
+        )
+      );
+    } else {
+      paths.push(...path.map((i) => [key, ...i]));
     }
-    if (proxyDraft.parent.parent) {
-      makeChange(proxyDraft.parent, patches, inversePatches);
-    }
+  });
+  if (!proxyDraft.parents.size) {
+    return [[]];
   }
+  return paths;
 }

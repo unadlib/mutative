@@ -59,11 +59,12 @@ test('nothing change object with ref', () => {
 });
 
 test('enablePatches, no update', () => {
-  const x = { a: { b: { c: 1 }, arr: [] } };
+  const data = { a: { b: { c: 1 }, arr: [] } };
   const [state, patches, inversePatches] = create(
-    x,
+    data,
     (draft: any) => {
       draft.x = draft.a.b;
+      // draft.x.c = 2;
       delete draft.x;
     },
     {
@@ -71,14 +72,14 @@ test('enablePatches, no update', () => {
     }
   );
   expect(state).toEqual({ a: { b: { c: 1 }, arr: [] } });
-
+  expect(state).toBe(data);
   expect(patches).toEqual([
-    [['object', 'set'], ['x'], [['__MUTATIVE__', 'a', 'b']]],
-    [['object', 'delete'], ['x'], []],
+    [['object', 'set'], [['x']], [[['__MUTATIVE__', 'a', 'b']]]],
+    [['object', 'delete'], [['x']], []],
   ]);
   expect(inversePatches).toEqual([
-    [['object', 'set'], ['x'], [{ c: 1 }]],
-    [['object', 'delete'], ['x'], []],
+    [['object', 'set'], [['x']], [{ c: 1 }]],
+    [['object', 'delete'], [['x']], []],
   ]);
 });
 

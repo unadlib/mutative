@@ -45,13 +45,25 @@ export function createArrayHandler({
       } else {
         target.operated.add(index);
       }
-      patches?.push([[DraftType.Array, ArrayOperation.Pop], [], []]);
+      patches?.push([[DraftType.Array, ArrayOperation.Pop], [[]], []]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Push],
-        [],
+        [[]],
         [last],
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
     push(...args: any[]) {
@@ -71,15 +83,27 @@ export function createArrayHandler({
       });
       patches?.push([
         [DraftType.Array, ArrayOperation.Push],
-        [],
+        [[]],
         args.map((value) => getValueOrPath(value)),
       ]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Set],
-        ['length'],
+        [['length']],
         [originalLength],
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
     shift() {
@@ -93,13 +117,25 @@ export function createArrayHandler({
           target.operated.add(index);
         }
       });
-      patches?.push([[DraftType.Array, ArrayOperation.Shift], [], []]);
+      patches?.push([[DraftType.Array, ArrayOperation.Shift], [[]], []]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Unshift],
-        [],
+        [[]],
         [first],
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
     unshift(...args: any[]) {
@@ -119,7 +155,7 @@ export function createArrayHandler({
       });
       patches?.push([
         [DraftType.Array, ArrayOperation.Unshift],
-        [],
+        [[]],
         args.map((value) => getValueOrPath(value)),
       ]);
       inversePatches?.unshift([
@@ -127,7 +163,19 @@ export function createArrayHandler({
         [],
         [0, args.length],
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1],
+        ]);
+      }
       return result;
     },
     splice(...args: any) {
@@ -152,15 +200,27 @@ export function createArrayHandler({
       });
       patches?.push([
         [DraftType.Array, ArrayOperation.Splice],
-        [],
+        [[]],
         args.map((value: any) => getValueOrPath(value)),
       ]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Splice],
-        [],
+        [[]],
         [startIndex, items.length, ...result],
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
   }[key];

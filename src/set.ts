@@ -43,9 +43,6 @@ export function createSetHandler({
   }
   const proxyProto = {
     add(value: any) {
-      const oldIndex = inversePatches
-        ? Array.from(state.values()).indexOf(value)
-        : null;
       const result = Set.prototype.add.call(state, value);
       if (
         target.original.has(value) &&
@@ -67,16 +64,28 @@ export function createSetHandler({
         });
         patches?.push([
           [DraftType.Set, SetOperation.Add],
-          [result.size],
+          [[result.size]],
           [getValueOrPath(value)],
         ]);
         inversePatches?.unshift([
           [DraftType.Set, SetOperation.Delete],
-          [oldIndex!],
+          [[index]],
           [],
         ]);
       }
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
     clear() {
@@ -87,13 +96,25 @@ export function createSetHandler({
       } else {
         target.operated.add(CLEAR);
       }
-      patches?.push([[DraftType.Set, SetOperation.Clear], [-1], []]);
+      patches?.push([[DraftType.Set, SetOperation.Clear], [[-1]], []]);
       inversePatches?.unshift([
         [DraftType.Set, SetOperation.Construct],
-        [-1],
+        [[-1]],
         [oldValues],
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
     delete(value: any) {
@@ -111,13 +132,25 @@ export function createSetHandler({
       } else {
         target.operated.add(value);
       }
-      patches?.push([[DraftType.Set, SetOperation.Delete], [oldIndex!], []]);
+      patches?.push([[DraftType.Set, SetOperation.Delete], [[oldIndex!]], []]);
       inversePatches?.unshift([
         [DraftType.Set, SetOperation.Add],
-        [oldIndex!],
+        [[oldIndex!]],
         [value],
       ]);
-      makeChange(target, patches, inversePatches);
+      const paths = makeChange(target, [[]]);
+      if (patches) {
+        patches.slice(-1)[0][1] = paths.map((path) => [
+          ...path,
+          ...patches.slice(-1)[0][1][0],
+        ]);
+      }
+      if (inversePatches) {
+        inversePatches[0][1] = paths.map((path) => [
+          ...path,
+          ...inversePatches[0][1][0],
+        ]);
+      }
       return result;
     },
     has(value: any): boolean {
