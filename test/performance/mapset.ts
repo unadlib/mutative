@@ -222,6 +222,45 @@ measure(
 console.log('');
 
 measure(
+  'mutative - single - with patches',
+  () => baseState,
+  (baseState: BaseState) => {
+    const state = create(
+      baseState,
+      (draft) => {
+        for (let i = 0; i < MAX; i++) {
+          draft.set.add({ [i]: i });
+          draft.map.set({ [i]: i }, { [i]: i });
+        }
+      },
+      {
+        enablePatches: true,
+      }
+    );
+  }
+);
+
+measure(
+  'immer - single - with patches',
+  () => {
+    setAutoFreeze(false);
+    setUseProxies(true);
+    enablePatches();
+    return baseState;
+  },
+  (baseState: BaseState) => {
+    const state = produceWithPatches(baseState, (draft) => {
+      for (let i = 0; i < MAX; i++) {
+        draft.set.add({ [i]: i });
+        draft.map.set({ [i]: i }, { [i]: i });
+      }
+    });
+  }
+);
+
+console.log('');
+
+measure(
   'mutative - single - with autoFreeze and patches',
   () => baseState,
   (baseState: BaseState) => {
