@@ -829,27 +829,15 @@ Array [
       Array [
         Array [
           "__MUTATIVE__",
-          "a",
-          "b",
+          "arr1",
+          "0",
         ],
       ],
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "arr0",
-      ],
-    ],
-    Array [
       Array [
         Array [
           "__MUTATIVE__",
-          "arr1",
+          "a",
+          "b",
         ],
       ],
     ],
@@ -922,8 +910,8 @@ Array [
     ],
     Array [
       Array [
-        "a",
-        "b",
+        "arr1",
+        "0",
         "a",
       ],
       Array [
@@ -938,12 +926,13 @@ Array [
   ],
   Array [
     Array [
-      "array",
+      "object",
       "set",
     ],
     Array [
       Array [
-        "arr1",
+        "a",
+        "b",
         "a",
       ],
       Array [
@@ -956,6 +945,21 @@ Array [
       444,
     ],
   ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      Array [
+        "arr0",
+      ],
+    ],
+    Array [
+      0,
+      2,
+    ],
+  ],
 ]
 `;
 
@@ -964,21 +968,31 @@ Array [
   Array [
     Array [
       "array",
-      "set",
+      "splice",
     ],
     Array [
-      Array [
-        "arr1",
-        "a",
-      ],
       Array [
         "arr0",
-        "2",
-        "a",
       ],
     ],
     Array [
-      undefined,
+      0,
+      0,
+      Object {
+        "a": 1,
+      },
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "arr1",
+          "0",
+        ],
+        Array [
+          "__MUTATIVE__",
+          "arr0",
+          "1",
+        ],
+      ],
     ],
   ],
   Array [
@@ -994,11 +1008,32 @@ Array [
       ],
       Array [
         "arr0",
-        "1",
+        "2",
         "a",
       ],
     ],
     Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "arr1",
+        "0",
+        "a",
+      ],
+      Array [
+        "arr0",
+        "1",
+        "a",
+      ],
+    ],
+    Array [
+      222,
+    ],
   ],
   Array [
     Array [
@@ -1063,21 +1098,6 @@ Array [
     ],
     Array [
       1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr0",
-        "length",
-      ],
-    ],
-    Array [
-      2,
     ],
   ],
   Array [

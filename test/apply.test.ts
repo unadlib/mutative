@@ -153,14 +153,14 @@ test('enablePatches and assign with ref array', () => {
   checkPatches(
     { a: { b: { c: 1 } }, arr0: [{ a: 1 }], arr1: [{ a: 1 }] },
     (draft: any) => {
-      draft.arr0.push(draft.a.b);
-      draft.arr0.push(draft.arr1);
+      draft.arr0.push(draft.arr1[0], draft.a.b);
       draft.a.b.c = 2;
       draft.a.b.c = 333;
       delete draft.a.b;
       draft.arr1[0].a = 222;
       draft.arr0[1].a = 333;
       draft.arr0[2].a = 444;
+      draft.arr0.splice(0, 2)
     }
   );
 });

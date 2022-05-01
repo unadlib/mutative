@@ -25,7 +25,6 @@ export const enum ArrayOperation {
   Shift = 'shift',
   Splice = 'splice',
   Unshift = 'unshift',
-  Delete = 'delete',
   Set = 'set',
 }
 
