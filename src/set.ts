@@ -4,11 +4,13 @@ import {
   adjustParentDraft,
   getProxyDraft,
   getValueOrPath,
+  isDraft,
   isDraftable,
   latest,
   makeChange,
 } from './utils';
 import { createDraft } from './draft';
+import { current } from './current';
 
 export const mutableSetMethods = [
   'has',
@@ -121,11 +123,13 @@ export function createSetHandler({
       const deleteValue = getProxyDraft(value)
         ? getProxyDraft(value)?.original
         : value;
+      const deleteTarget =
+        !state.has(deleteValue) && isDraft(value) ? value : deleteValue;
       const oldIndex =
         patches && inversePatches
-          ? Array.from(state.values()).indexOf(deleteValue)
+          ? Array.from(state.values()).indexOf(deleteTarget)
           : null;
-      const result = Set.prototype.delete.call(state, deleteValue);
+      const result = Set.prototype.delete.call(state, deleteTarget);
       if (target.setMap!.has(value)) target.setMap!.delete(value);
       if (!target.original.has(value)) {
         target.operated.delete(value);
@@ -136,7 +140,7 @@ export function createSetHandler({
       inversePatches?.unshift([
         [DraftType.Set, SetOperation.Add],
         [[oldIndex!]],
-        [value],
+        [current(value)],
       ]);
       const paths = makeChange(target, [[]]);
       if (patches) {

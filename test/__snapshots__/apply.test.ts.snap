@@ -1721,7 +1721,7 @@ Array [
       ],
     ],
     Array [
-      "new str",
+      "new str_a",
     ],
   ],
   Array [
@@ -1750,18 +1750,14 @@ Array [
     Array [
       Array [
         "map4",
-        -1,
+        0,
       ],
     ],
     Array [
       "a",
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "map4",
-          0,
-        ],
-      ],
+      Object {
+        "bar": "new str_a",
+      },
     ],
   ],
   Array [
@@ -1777,7 +1773,7 @@ Array [
       ],
     ],
     Array [
-      "str",
+      "str_a",
     ],
   ],
   Array [
@@ -1788,23 +1784,14 @@ Array [
     Array [
       Array [
         "map2",
-        -1,
+        1,
       ],
     ],
     Array [
       "c",
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "map2",
-          1,
-        ],
-        Array [
-          "__MUTATIVE__",
-          "map3",
-          0,
-        ],
-      ],
+      Object {
+        "bar": "new str",
+      },
     ],
   ],
   Array [
@@ -2176,6 +2163,35 @@ Array [
     ],
     Array [],
   ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "set4",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "new str_a",
+    ],
+  ],
+  Array [
+    Array [
+      "set",
+      "delete",
+    ],
+    Array [
+      Array [
+        "set4",
+        0,
+      ],
+    ],
+    Array [],
+  ],
 ]
 `;
 
@@ -2188,23 +2204,47 @@ Array [
     ],
     Array [
       Array [
+        "set4",
+        0,
+      ],
+    ],
+    Array [
+      Object {
+        "bar": "new str_a",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "set4",
+        0,
+        "bar",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "set",
+      "add",
+    ],
+    Array [
+      Array [
         "set",
         0,
       ],
     ],
     Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "set",
-          0,
-        ],
-        Array [
-          "__MUTATIVE__",
-          "set3",
-          2,
-        ],
-      ],
+      Object {
+        "bar": "new str1",
+      },
     ],
   ],
   Array [

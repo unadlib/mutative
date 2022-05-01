@@ -10,8 +10,8 @@ function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
   expect(state).toEqual(mutatedResult);
   expect(patches).toMatchSnapshot();
   expect(inversePatches).toMatchSnapshot();
-  // const prevState = apply(state, inversePatches);
-  // expect(prevState).toEqual(data);
+  const prevState = apply(state, inversePatches);
+  expect(prevState).toEqual(data);
   const nextState = apply(data as any, patches);
   expect(nextState).toEqual(state);
 }
@@ -116,11 +116,11 @@ test('patches mutate', () => {
       enablePatches: true,
     }
   );
-  // expect(patches1).toEqual([[['object', 'set'], ['items'], [[]]]]);
-  // expect(patches2).toEqual([[['array', 'push'], ['items'], [2]]]);
+  expect(patches1).toEqual([[['object', 'set'], [['items']], [[]]]]);
+  expect(patches2).toEqual([[['array', 'push'], [['items']], [2]]]);
   const lastState1 = apply(state, [...patches1, ...patches2]);
-  // expect(patches1).toEqual([[['object', 'set'], ['items'], [[]]]]);
-  // expect(patches2).toEqual([[['array', 'push'], ['items'], [2]]]);
+  expect(patches1).toEqual([[['object', 'set'], [['items']], [[]]]]);
+  expect(patches2).toEqual([[['array', 'push'], [['items']], [2]]]);
   expect(lastState1).toEqual(lastState);
 });
 
@@ -278,8 +278,8 @@ test('map', () => {
         ['c', { bar: 'str' }],
       ]),
       map4: new Map<any, any>([
-        ['a', { bar: 'str' }],
-        ['c', { bar: 'str' }],
+        ['a', { bar: 'str_a' }],
+        ['c', { bar: 'str_c' }],
       ]),
       foobar: {
         baz: 'str',
@@ -292,7 +292,7 @@ test('map', () => {
       draft.map3.set('a', draft.map2.get('c'));
       draft.map2.get('c').bar = 'new str';
       draft.map2.delete('c');
-      draft.map4.get('a').bar = 'new str';
+      draft.map4.get('a').bar = 'new str_a';
       draft.map4.delete('a');
     }
   );
@@ -321,6 +321,7 @@ test('set', () => {
       set1: new Set([{ bar: 'str' }, { bar: 'str' }]),
       set2: new Set([{ bar: 'str' }, { bar: 'str' }]),
       set3: new Set([{ bar: 'str' }, { bar: 'str' }]),
+      set4: new Set([{ bar: 'str' }, { bar: 'str' }]),
       foobar: {
         baz: 'str',
       } as any,
@@ -333,6 +334,9 @@ test('set', () => {
       draft.set3.add(a);
       a.bar = 'new str1';
       draft.set.delete(a);
+      const x = draft.set4.values().next().value;
+      x.bar = 'new str_a';
+      draft.set4.delete(x);
     }
   );
 });

@@ -13,6 +13,7 @@ import {
   makeChange,
 } from './utils';
 import { createDraft } from './draft';
+import { current } from './current';
 
 export const mutableMapMethods = [
   'get',
@@ -134,8 +135,8 @@ export function createMapHandler({
       patches?.push([[DraftType.Map, MapOperation.Delete], [[index!]], []]);
       inversePatches?.unshift([
         [DraftType.Map, MapOperation.Set],
-        [[-1]],
-        [_key, _value],
+        [[index!]],
+        [_key, current(_value)],
       ]);
       const paths = makeChange(target, [[]]);
       if (patches) {

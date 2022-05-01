@@ -20,6 +20,7 @@ import {
   getType,
   getValue,
   getValueOrPath,
+  getValueWithPath,
   has,
   isDraftable,
   latest,
@@ -377,12 +378,12 @@ export function finalizeDraft<T>(
   inversePatches?: Patches
 ) {
   inversePatches?.forEach((item) => {
-    const result = item[2].map((value) => {
+    item[2] = item[2].map((value) => {
       const proxyDraft = getProxyDraft(value);
       if (!proxyDraft) return value;
-      return getPath(proxyDraft);
+      const path = getPath(proxyDraft);
+      return path;
     });
-    item[2] = result;
   });
   const proxyDraft = getProxyDraft(result as any)!;
   for (const finalize of proxyDraft.finalities.draft) {

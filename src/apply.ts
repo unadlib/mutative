@@ -1,3 +1,4 @@
+import type { Options, Patches } from './interface';
 import {
   ArrayOperation,
   DraftType,
@@ -6,23 +7,7 @@ import {
   SetOperation,
 } from './constant';
 import { create } from './create';
-import type { Options, Patches } from './interface';
-import { deepClone, isPath } from './utils';
-
-export function getValue(target: object, path: (string | number)[]) {
-  let current: any = target;
-  for (let i = 0; i < path.length - 1; i++) {
-    const key = `${path[i]}`;
-    if (current instanceof Map) {
-      current = current.get(Array.from(current.keys())[key as any]);
-    } else if (current instanceof Set) {
-      current = Array.from(current.values())[key as any];
-    } else {
-      current = current[key];
-    }
-  }
-  return current;
-}
+import { deepClone, getProxyDraft, getValueWithPath, isPath } from './utils';
 
 /**
  * apply patches
@@ -41,12 +26,12 @@ export function apply<T extends object, F extends boolean = false>(
       patches.forEach(([[type, operation], paths, args]) => {
         const params: any[] = args.map((arg) =>
           isPath(arg)
-            ? getValue(draft, [...arg[0].slice(1), null])
+            ? getValueWithPath(draft, [...arg[0].slice(1), null])
             : deepClone(arg)
         );
         for (const path of paths) {
           const [key] = path.slice(-1);
-          const current = getValue(draft, path);
+          const current = getValueWithPath(draft, path);
           if (typeof current === 'undefined') continue;
           if (type === DraftType.Object) {
             switch (operation) {
@@ -81,7 +66,8 @@ export function apply<T extends object, F extends boolean = false>(
               case MapOperation.Set:
                 if (current.size > key) {
                   const values: any[][] = Array.from(current.entries());
-                  values.splice(key as number, 1, params);
+                  const deleteCount = current.has(params[0]) ? 1 : 0;
+                  values.splice(key as number, deleteCount, params);
                   current.clear();
                   for (const value of values) {
                     current.set(...value);
@@ -101,7 +87,11 @@ export function apply<T extends object, F extends boolean = false>(
           } else if (type === DraftType.Set) {
             switch (operation) {
               case SetOperation.Delete:
-                current.delete(Array.from(current.values())[key as any]);
+                current.delete(
+                  Array.from(getProxyDraft(current)?.copy ?? current)[
+                    key as number
+                  ]
+                );
                 return;
               case SetOperation.Add:
                 if (current.size > key) {
@@ -120,7 +110,7 @@ export function apply<T extends object, F extends boolean = false>(
                 return;
               case SetOperation.Construct:
                 current.clear();
-                params.forEach((value) => current.add(value));
+                params[0].forEach((value: any) => current.add(value));
                 return;
             }
           }
