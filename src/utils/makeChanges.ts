@@ -4,14 +4,14 @@ import { ensureShallowCopy } from './copy';
 export function makeChange(proxyDraft: ProxyDraft, path: any[]) {
   const paths: any[][] = [];
   proxyDraft.parents.forEach((parent, key) => {
+    const currentKey =
+      parent.copy instanceof Map || parent.copy instanceof Set
+        ? Array.from(parent.copy.keys())[key as any]
+        : key;
     if (!proxyDraft.operated.size) {
-      parent.operated.delete(key);
+      parent.operated.delete(currentKey);
     } else if (typeof key !== 'undefined' && key !== null) {
-      parent.operated.add(
-        parent.copy instanceof Map || parent.copy instanceof Set
-          ? Array.from(parent.copy.keys())[key as any]
-          : key
-      );
+      parent.operated.add(currentKey);
     } else {
       //
     }
