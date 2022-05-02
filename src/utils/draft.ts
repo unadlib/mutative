@@ -1,6 +1,6 @@
 import { dataTypes, DraftType, PROXY_DRAFT, REFERENCE } from '../constant';
 import { current } from '../current';
-import { Marker, ProxyDraft } from '../interface';
+import { Hook, ProxyDraft } from '../interface';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
@@ -23,7 +23,7 @@ export function getValue<T extends object>(value: T) {
   return proxyDraft.copy ?? proxyDraft.original;
 }
 
-export function isDraftable<T extends { marker?: Marker } = ProxyDraft>(
+export function isDraftable<T extends { hook?: Hook } = ProxyDraft>(
   value: any,
   target: T
 ) {
@@ -34,7 +34,7 @@ export function isDraftable<T extends { marker?: Marker } = ProxyDraft>(
         Array.isArray(value) ||
         value instanceof Map ||
         value instanceof Set)) ||
-    target.marker?.(value, dataTypes) === dataTypes.immutable
+    target.hook?.(value, dataTypes) === dataTypes.immutable
   );
 }
 

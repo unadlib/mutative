@@ -13,9 +13,9 @@ export function draftify<
   O extends boolean = false,
   F extends boolean = false
 >(baseState: T, options?: Options<O, F>): [T, () => Result<T, O, F>] {
-  const marker = options?.mark;
+  const hook = options?.hook;
   const enablePatches = options?.enablePatches ?? false;
-  if (!isDraftable(baseState, { marker })) {
+  if (!isDraftable(baseState, { hook })) {
     throw new Error(
       'create() only supports plain object, array, set, and map.'
     );
@@ -38,7 +38,7 @@ export function draftify<
     inversePatches,
     finalities,
     enableAutoFreeze: options?.enableAutoFreeze,
-    marker,
+    hook,
     assignedSet,
   });
   return [

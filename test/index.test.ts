@@ -1429,7 +1429,7 @@ test('only mutable object', () => {
       draft.foobar.text = 'new text';
     },
     {
-      mark: (target) => {
+      hook: (target) => {
         if (target === data.foobar) return 'mutable';
       },
     }
@@ -1456,7 +1456,7 @@ test('object with mutable', () => {
       draft.foobar.text = 'new text';
     },
     {
-      mark: (target) => {
+      hook: (target) => {
         if (target === data.foobar) return 'mutable';
       },
     }
@@ -1485,7 +1485,7 @@ test('object with root value mutable', () => {
       draft.foobar.text = 'new text';
     },
     {
-      mark: (target) => {
+      hook: (target) => {
         if (target === data) return 'mutable';
       },
     }
@@ -1517,7 +1517,7 @@ test('object with deep value mutable', () => {
       draft.foobar.text = 'new text';
     },
     {
-      mark: (target) => {
+      hook: (target) => {
         if (target === foo) return 'mutable';
       },
     }
@@ -1546,7 +1546,7 @@ test('array with mutable', () => {
       draft.arr[0] = 'new text';
     },
     {
-      mark: (target) => {
+      hook: (target) => {
         if (target === data.arr) return 'mutable';
       },
     }
@@ -1576,7 +1576,7 @@ test('map with mutable', () => {
       draft.map.get(1)!.foobar.text = 'new text';
     },
     {
-      mark: (target) => {
+      hook: (target) => {
         if (target === foobar) return 'mutable';
       },
     }
@@ -1608,7 +1608,7 @@ test('set with mutable', () => {
       draft.set.values().next().value.text = 'new text';
     },
     {
-      mark: (target) => {
+      hook: (target) => {
         if (target === foobar) return 'mutable';
       },
     }
@@ -1885,7 +1885,7 @@ test('class instance', () => {
   expect(state.foobar).toBe(data.foobar);
 });
 
-test('class instance with mark', () => {
+test('class instance with hook', () => {
   class Foobar {
     foo = {
       bar: 'str',
@@ -1910,7 +1910,7 @@ test('class instance with mark', () => {
       draft.foobar.change();
     },
     {
-      mark: (target, { immutable }) => {
+      hook: (target, { immutable }) => {
         if (target instanceof Foobar) return immutable;
       },
     }

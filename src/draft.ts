@@ -1,4 +1,4 @@
-import type { Finalities, Patches, ProxyDraft, Marker } from './interface';
+import type { Finalities, Patches, ProxyDraft, Hook } from './interface';
 import { createArrayHandler, mutableArrayMethods } from './array';
 import {
   ArrayOperation,
@@ -43,9 +43,9 @@ function createGetter({
     receiver: any
   ) {
     if (key === PROXY_DRAFT) return target;
-    if (target.marker) {
+    if (target.hook) {
       const value = Reflect.get(target.original, key, receiver);
-      if (target.marker(value, dataTypes) === dataTypes.mutable) {
+      if (target.hook(value, dataTypes) === dataTypes.mutable) {
         return value;
       }
     }
@@ -143,7 +143,7 @@ function createGetter({
         patches,
         inversePatches,
         finalities: target.finalities,
-        marker: target.marker,
+        hook: target.hook,
         assignedSet,
       });
       target.finalities.draft.unshift(() => {
@@ -266,7 +266,7 @@ export function createDraft<T extends object>({
   finalities,
   assignedSet,
   enableAutoFreeze,
-  marker,
+  hook,
 }: {
   original: T;
   finalities: Finalities;
@@ -276,7 +276,7 @@ export function createDraft<T extends object>({
   patches?: Patches;
   inversePatches?: Patches;
   enableAutoFreeze?: boolean;
-  marker?: Marker;
+  hook?: Hook;
 }): T {
   const proxyDraft: ProxyDraft = {
     type: getType(original),
@@ -288,7 +288,7 @@ export function createDraft<T extends object>({
     proxy: null,
     finalities,
     enableAutoFreeze,
-    marker,
+    hook,
   };
   const { proxy, revoke } = Proxy.revocable<any>(proxyDraft, {
     get: createGetter({

@@ -1,18 +1,19 @@
 import { create, apply } from '../src';
 import { deepClone } from '../src/utils';
 
-function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
+function checkPatches<T>(data: T, fn: (checkPatches: T) => void, hook?: (...arg: any) => any) {
   const [state, patches, inversePatches] = create(data as any, fn, {
     enablePatches: true,
+    hook,
   }) as any;
   const mutatedResult = deepClone(data);
   fn(mutatedResult);
   expect(state).toEqual(mutatedResult);
   expect(patches).toMatchSnapshot();
   expect(inversePatches).toMatchSnapshot();
-  const prevState = apply(state, inversePatches);
+  const prevState = apply(deepClone(state), inversePatches, { hook });
   expect(prevState).toEqual(data);
-  const nextState = apply(data as any, patches);
+  const nextState = apply(deepClone(data) as any, patches, { hook });
   expect(nextState).toEqual(state);
 }
 
@@ -160,7 +161,7 @@ test('enablePatches and assign with ref array', () => {
       draft.arr1[0].a = 222;
       draft.arr0[1].a = 333;
       draft.arr0[2].a = 444;
-      draft.arr0.splice(0, 2)
+      draft.arr0.splice(0, 2);
     }
   );
 });
@@ -359,5 +360,25 @@ test('object with delete', () => {
       // @ts-ignore
       draft.foobar1.baz = 'new str2';
     }
+  );
+});
+
+test('object with class', () => {
+  class Bar {
+    foo = 'str';
+  }
+
+  checkPatches(
+    {
+      foobar: {
+        baz: 'str',
+        bar: new Bar(),
+      },
+    },
+    (draft) => {
+      draft.foobar.baz = 'new str';
+      draft.foobar.bar.foo = 'new str';
+    },
+    (target: any) => (target instanceof Bar ? 'immutable' : undefined)
   );
 });

@@ -158,7 +158,7 @@ export function createMapHandler({
       const value = target.copy!.get(_key);
       if (
         assignedSet.has(value) ||
-        target.marker?.(value, dataTypes) === dataTypes.mutable
+        target.hook?.(value, dataTypes) === dataTypes.mutable
       ) {
         return value;
       }
@@ -170,7 +170,7 @@ export function createMapHandler({
           patches,
           inversePatches,
           finalities: target.finalities,
-          marker: target.marker,
+          hook: target.hook,
           assignedSet,
         });
         target.copy!.set(_key, currentDraft);

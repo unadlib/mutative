@@ -1911,6 +1911,78 @@ Array [
 ]
 `;
 
+exports[`object with class 1`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "bar",
+        "foo",
+      ],
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+]
+`;
+
+exports[`object with class 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "bar",
+        "foo",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "baz",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+]
+`;
+
 exports[`object with delete 1`] = `
 Array [
   Array [

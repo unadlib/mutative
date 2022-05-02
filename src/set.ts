@@ -191,7 +191,7 @@ export function createSetHandler({
           const original = iteratorResult.value;
           if (
             assignedSet.has(original) ||
-            target.marker?.(original, dataTypes) === dataTypes.mutable
+            target.hook?.(original, dataTypes) === dataTypes.mutable
           ) {
             return {
               done: false,
@@ -208,7 +208,7 @@ export function createSetHandler({
               patches,
               inversePatches,
               finalities: target.finalities,
-              marker: target.marker,
+              hook: target.hook,
               assignedSet,
             });
             proxyDraft = getProxyDraft(proxy)!;
@@ -232,7 +232,7 @@ export function createSetHandler({
           const original = iteratorResult.value[0];
           if (
             assignedSet.has(original) ||
-            target.marker?.(original, dataTypes) === dataTypes.mutable
+            target.hook?.(original, dataTypes) === dataTypes.mutable
           ) {
             return {
               done: false,
@@ -249,7 +249,7 @@ export function createSetHandler({
               patches,
               inversePatches,
               finalities: target.finalities,
-              marker: target.marker,
+              hook: target.hook,
               assignedSet,
             });
             proxyDraft = getProxyDraft(proxy)!;

@@ -11,7 +11,7 @@ export function create<
   O extends boolean = false,
   R extends void | Promise<void> = void
 >(state: T, mutate: (draft: Mutable<T>) => R, options?: Options<O, F>) {
-  if (options?.mark?.(state, dataTypes) === dataTypes.mutable) {
+  if (options?.hook?.(state, dataTypes) === dataTypes.mutable) {
     const result = mutate(state as Mutable<T>);
     const finalization = options?.enablePatches ? [state, [], []] : state;
     if (result instanceof Promise) {

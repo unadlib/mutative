@@ -41,9 +41,9 @@ export function ensureShallowCopy(target: ProxyDraft) {
     ? target.original
     : shallowCopy(
         target.original,
-        target.marker
+        target.hook
           ? () =>
-              target.marker!(target.original, dataTypes) === dataTypes.immutable
+              target.hook!(target.original, dataTypes) === dataTypes.immutable
           : undefined
       )!;
   if (target.original instanceof Set) {

@@ -25,7 +25,7 @@ export interface ProxyDraft<T = any> {
   parents: Map<string | number, ProxyDraft>;
   setMap?: Map<object, ProxyDraft>;
   enableAutoFreeze?: boolean;
-  marker?: Marker;
+  hook?: Hook;
 }
 
 export type Patches = [
@@ -60,7 +60,7 @@ export type CreateResult<
   R extends void | Promise<void>
 > = R extends Promise<void> ? Promise<Result<T, O, F>> : Result<T, O, F>;
 
-export type Marker = (
+export type Hook = (
   target: any,
   types: typeof dataTypes
 ) => null | undefined | DataType;
@@ -68,7 +68,7 @@ export type Marker = (
 export interface Options<O extends boolean, F extends boolean> {
   enablePatches?: O;
   enableAutoFreeze?: F;
-  mark?: Marker;
+  hook?: Hook;
 }
 
 // Exclude `symbol`
