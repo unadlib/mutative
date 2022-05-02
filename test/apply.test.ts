@@ -1,7 +1,11 @@
 import { create, apply } from '../src';
 import { deepClone } from '../src/utils';
 
-function checkPatches<T>(data: T, fn: (checkPatches: T) => void, hook?: (...arg: any) => any) {
+function checkPatches<T>(
+  data: T,
+  fn: (checkPatches: T) => void,
+  hook?: (...arg: any) => any
+) {
   const [state, patches, inversePatches] = create(data as any, fn, {
     enablePatches: true,
     hook,
@@ -380,5 +384,29 @@ test('object with class', () => {
       draft.foobar.bar.foo = 'new str';
     },
     (target: any) => (target instanceof Bar ? 'immutable' : undefined)
+  );
+});
+
+test('object with ref', () => {
+  const f = {
+    baz: 'str',
+  };
+  checkPatches(
+    {
+      foobar: f as any,
+      f,
+    },
+    (draft) => {
+      draft.foobar.baz = 'new str';
+      const a = draft.foobar;
+      delete draft.foobar;
+      draft.f.baz = 'new str0';
+      a.baz = 'new str1';
+      // @ts-ignore
+      draft.foobar1 = a;
+      // @ts-ignore
+      draft.foobar1.baz = 'new str2';
+      draft.f.baz = 'new str3';
+    }
   );
 });
