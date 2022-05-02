@@ -16,20 +16,28 @@ export function getDescriptor(
   }
 }
 
-const objectConstructorString = Object.prototype.constructor.toString();
-
+// For best performance and just support modern browsers
 export function isPlainObject(target: any): boolean {
-  if (!target || typeof target !== 'object') return false;
-  const prototype = Object.getPrototypeOf(target);
-  if (prototype === null) {
-    return true;
-  }
-  const constructor =
-    Object.hasOwnProperty.call(prototype, 'constructor') &&
-    prototype.constructor;
   return (
-    constructor === Object ||
-    (typeof constructor == 'function' &&
-      Function.toString.call(constructor) === objectConstructorString)
+    typeof target === 'object' &&
+    Object.getPrototypeOf(target) === Object.prototype
   );
 }
+
+// const objectConstructorString = Object.prototype.constructor.toString();
+
+// export function isPlainObject(target: any): boolean {
+//   if (!target || typeof target !== 'object') return false;
+//   const prototype = Object.getPrototypeOf(target);
+//   if (prototype === null) {
+//     return true;
+//   }
+//   const constructor =
+//     Object.hasOwnProperty.call(prototype, 'constructor') &&
+//     prototype.constructor;
+//   return (
+//     constructor === Object ||
+//     (typeof constructor == 'function' &&
+//       Function.toString.call(constructor) === objectConstructorString)
+//   );
+// }

@@ -4,27 +4,23 @@ const readonlyDescriptors = {
   configurable: false,
 };
 
-// TODO: refactor for better performance
+function isFrozenOrPrimitive(target: any) {
+  return (
+    typeof target !== 'object' ||
+    target === null ||
+    target === undefined ||
+    Object.isFrozen(target)
+  );
+}
+
 export function deepFreeze(target: any) {
   if (Object.isFrozen(target)) return;
   if (target instanceof Map) {
     for (const [key, value] of target) {
-      if (
-        !(
-          typeof key !== 'object' ||
-          key === null ||
-          key === undefined ||
-          Object.isFrozen(key)
-        )
-      ) {
+      if (!isFrozenOrPrimitive(key)) {
         deepFreeze(key);
       }
-      if (
-        typeof value !== 'object' ||
-        value === null ||
-        value === undefined ||
-        Object.isFrozen(value)
-      ) {
+      if (isFrozenOrPrimitive(value)) {
         continue;
       }
       deepFreeze(value);
@@ -51,12 +47,7 @@ export function deepFreeze(target: any) {
     });
   } else if (target instanceof Set) {
     for (const value of target) {
-      if (
-        typeof value !== 'object' ||
-        value === null ||
-        value === undefined ||
-        Object.isFrozen(value)
-      ) {
+      if (isFrozenOrPrimitive(value)) {
         continue;
       }
       deepFreeze(value);
@@ -83,25 +74,13 @@ export function deepFreeze(target: any) {
     });
   } else if (Array.isArray(target)) {
     for (const value of target) {
-      if (
-        typeof value !== 'object' ||
-        value === null ||
-        value === undefined ||
-        Object.isFrozen(value)
-      )
-        return;
+      if (isFrozenOrPrimitive(value)) return;
       deepFreeze(value);
     }
   } else {
     Object.getOwnPropertyNames(target).forEach((name) => {
       const value = target[name];
-      if (
-        typeof value !== 'object' ||
-        value === null ||
-        value === undefined ||
-        Object.isFrozen(value)
-      )
-        return;
+      if (isFrozenOrPrimitive(value)) return;
       deepFreeze(value);
     });
   }
