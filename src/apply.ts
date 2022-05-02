@@ -60,7 +60,7 @@ export function apply<T extends object, F extends boolean = false>(
             } else if (type === DraftType.Map) {
               switch (operation) {
                 case MapOperation.Delete:
-                  current.delete(Array.from(current.keys())[key as any]);
+                  current.delete(Array.from(current.keys())[key as number]);
                   return;
                 case MapOperation.Set:
                   if (current.size > key) {

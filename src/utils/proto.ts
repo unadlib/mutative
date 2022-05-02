@@ -15,3 +15,21 @@ export function getDescriptor(
     }
   }
 }
+
+const objectConstructorString = Object.prototype.constructor.toString();
+
+export function isPlainObject(target: any): boolean {
+  if (!target || typeof target !== 'object') return false;
+  const prototype = Object.getPrototypeOf(target);
+  if (prototype === null) {
+    return true;
+  }
+  const constructor =
+    Object.hasOwnProperty.call(prototype, 'constructor') &&
+    prototype.constructor;
+  return (
+    constructor === Object ||
+    (typeof constructor == 'function' &&
+      Function.toString.call(constructor) === objectConstructorString)
+  );
+}

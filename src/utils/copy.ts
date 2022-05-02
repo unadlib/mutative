@@ -1,6 +1,7 @@
 import type { ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { isDraft } from './draft';
+import { isPlainObject } from './proto';
 
 function shallowCopy(original: any, checkCopy?: (original: any) => boolean) {
   if (Array.isArray(original)) {
@@ -9,10 +10,7 @@ function shallowCopy(original: any, checkCopy?: (original: any) => boolean) {
     return new Set(original.values());
   } else if (original instanceof Map) {
     return new Map(original.entries());
-  } else if (
-    typeof original === 'object' &&
-    Object.getPrototypeOf(original) === Object.prototype
-  ) {
+  } else if (isPlainObject(original)) {
     // For best performance with shallow copies,
     // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));`.
     const copy: Record<string | symbol, any> = {};
@@ -52,17 +50,24 @@ export function ensureShallowCopy(target: ProxyDraft) {
   }
 }
 
-// TODO: fix types
-export function deepClone<T>(target: T): T {
+declare global {
+  // The global structuredClone() method creates a deep clone of a given value using the structured clone algorithm.
+  // https://developer.mozilla.org/en-US/docs/Web/API/structuredClone
+  function structuredClone<T>(target: T): T;
+}
+
+export function deepClone<T extends unknown>(target: T): T {
   if (typeof target !== 'object') return target;
+  if (typeof globalThis?.structuredClone === 'function')
+    return globalThis.structuredClone(target);
   if (Array.isArray(target))
-    return target.map((value) => deepClone(value)) as any;
+    return target.map((value) => deepClone(value)) as T;
   if (target instanceof Map)
     return new Map(
       Array.from(target).map(([key, value]) => [key, deepClone(value)])
-    ) as any;
+    ) as T;
   if (target instanceof Set)
-    return new Set(Array.from(target).map((value) => deepClone(value))) as any;
+    return new Set(Array.from(target).map((value) => deepClone(value))) as T;
   const descriptors = Object.getOwnPropertyDescriptors(target);
   for (const key in descriptors) {
     descriptors[key].value = deepClone(descriptors[key].value);

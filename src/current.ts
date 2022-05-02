@@ -1,4 +1,4 @@
-import { getProxyDraft } from './utils';
+import { getProxyDraft, isPlainObject } from './utils';
 
 export function current<T extends object>(target: T): any {
   const proxyDraft = getProxyDraft(target);
@@ -28,10 +28,7 @@ export function current<T extends object>(target: T): any {
         elements.push([key, getProxyDraft(value) ? current(value) : value]);
       });
       return new Map(elements);
-    } else if (
-      typeof proxyDraft.copy === 'object' &&
-      Object.getPrototypeOf(proxyDraft.copy) === Object.prototype
-    ) {
+    } else if (isPlainObject(proxyDraft.copy)) {
       // For best performance with shallow copies,
       // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));`.
       const copy: Record<string | symbol, any> = {};

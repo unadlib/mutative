@@ -372,7 +372,7 @@ export function createDraft<T extends object>({
   return proxy;
 }
 
-export function finalizeDraft<T>(
+export function finalizeDraft<T extends object>(
   result: T,
   patches?: Patches,
   inversePatches?: Patches
@@ -385,7 +385,7 @@ export function finalizeDraft<T>(
       return path;
     });
   });
-  const proxyDraft = getProxyDraft(result as any)!;
+  const proxyDraft = getProxyDraft(result)!;
   for (const finalize of proxyDraft.finalities.draft) {
     finalize();
   }

@@ -6,7 +6,7 @@ export function makeChange(proxyDraft: ProxyDraft, path: any[]) {
   proxyDraft.parents.forEach((parent, key) => {
     const currentKey =
       parent.copy instanceof Map || parent.copy instanceof Set
-        ? Array.from(parent.copy.keys())[key as any]
+        ? Array.from(parent.copy.keys())[key as number]
         : key;
     if (!proxyDraft.operated.size) {
       parent.operated.delete(currentKey);

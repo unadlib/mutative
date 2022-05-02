@@ -1,6 +1,7 @@
 import { dataTypes, DraftType, PROXY_DRAFT, REFERENCE } from '../constant';
 import { current } from '../current';
 import { Hook, ProxyDraft } from '../interface';
+import { isPlainObject } from './proto';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
@@ -29,8 +30,7 @@ export function isDraftable<T extends { hook?: Hook } = ProxyDraft>(
 ) {
   return (
     (!!value &&
-      ((typeof value === 'object' &&
-        Object.getPrototypeOf(value) === Object.prototype) ||
+      (isPlainObject(value) ||
         Array.isArray(value) ||
         value instanceof Map ||
         value instanceof Set)) ||
@@ -135,9 +135,9 @@ export function getValueWithPath(target: object, path: (string | number)[]) {
   for (let i = 0; i < path.length - 1; i++) {
     const key = `${path[i]}`;
     if (current instanceof Map) {
-      current = current.get(Array.from(current.keys())[key as any]);
+      current = current.get(Array.from(current.keys())[Number(key)]);
     } else if (current instanceof Set) {
-      current = Array.from(current.values())[key as any];
+      current = Array.from(current.values())[Number(key)];
     } else {
       current = current[key];
     }
