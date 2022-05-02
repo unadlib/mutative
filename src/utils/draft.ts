@@ -1,6 +1,6 @@
 import { dataTypes, DraftType, PROXY_DRAFT, REFERENCE } from '../constant';
 import { current } from '../current';
-import { Hook, ProxyDraft } from '../interface';
+import { Hook, Patches, ProxyDraft } from '../interface';
 import { isPlainObject } from './proto';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
@@ -143,4 +143,19 @@ export function getValueWithPath(target: object, path: (string | number)[]) {
     }
   }
   return current;
+}
+
+export function appendPaths(
+  paths: any[][],
+  patches: Patches,
+  inversePatches: Patches
+) {
+  patches.slice(-1)[0][1] = paths.map((path) => [
+    ...path,
+    ...patches.slice(-1)[0][1][0],
+  ]);
+  inversePatches[0][1] = paths.map((path) => [
+    ...path,
+    ...inversePatches[0][1][0],
+  ]);
 }

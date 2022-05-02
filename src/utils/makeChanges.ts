@@ -1,8 +1,8 @@
 import type { ProxyDraft, Patches } from '../interface';
 import { ensureShallowCopy } from './copy';
 
-export function makeChange(proxyDraft: ProxyDraft, path: any[]) {
-  const paths: any[][] = [];
+export function makeChange(proxyDraft: ProxyDraft, path?: any[]) {
+  const paths: any[][] | null = path ? [] : null;
   proxyDraft.parents.forEach((parent, key) => {
     const currentKey =
       parent.copy instanceof Map || parent.copy instanceof Set
@@ -17,14 +17,15 @@ export function makeChange(proxyDraft: ProxyDraft, path: any[]) {
     }
     ensureShallowCopy(parent);
     if (parent.parents.size > 0) {
-      paths.push(
-        ...makeChange(
-          parent,
-          path.map((i) => [key, ...i])
-        )
+      const _paths = makeChange(
+        parent,
+        path?.map((i) => [key, ...i])
+      );
+      paths?.push(
+        ..._paths!
       );
     } else {
-      paths.push(...path.map((i) => [key, ...i]));
+      paths?.push(...path!.map((i) => [key, ...i]));
     }
   });
   if (!proxyDraft.parents.size) {

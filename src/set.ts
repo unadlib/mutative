@@ -2,6 +2,7 @@ import type { Patches, ProxyDraft } from './interface';
 import { CLEAR, dataTypes, DraftType, SetOperation } from './constant';
 import {
   adjustParentDraft,
+  appendPaths,
   getProxyDraft,
   getValueOrPath,
   isDraft,
@@ -75,18 +76,9 @@ export function createSetHandler({
           [],
         ]);
       }
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },
@@ -104,18 +96,9 @@ export function createSetHandler({
         [[-1]],
         [oldValues],
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },
@@ -142,18 +125,9 @@ export function createSetHandler({
         [[oldIndex!]],
         [current(value)],
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },

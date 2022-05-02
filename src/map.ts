@@ -2,6 +2,7 @@ import type { Patches, ProxyDraft } from './interface';
 import { CLEAR, dataTypes, DraftType, MapOperation } from './constant';
 import {
   adjustParentDraft,
+  appendPaths,
   ensureDraftValue,
   ensureShallowCopy,
   getPath,
@@ -79,18 +80,9 @@ export function createMapHandler({
           hasKey ? [_key, oldValue] : [],
         ]);
       }
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },
@@ -108,18 +100,9 @@ export function createMapHandler({
         [[-1]],
         oldState!,
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },
@@ -138,18 +121,9 @@ export function createMapHandler({
         [[index!]],
         [_key, current(_value)],
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },

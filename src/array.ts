@@ -1,6 +1,7 @@
 import { ArrayOperation, DraftType } from './constant';
 import { Patches, ProxyDraft } from './interface';
 import {
+  appendPaths,
   ensureDraftValue,
   getValueOrPath,
   isDraftable,
@@ -51,18 +52,9 @@ export function createArrayHandler({
         [[]],
         [last],
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },
@@ -91,18 +83,9 @@ export function createArrayHandler({
         [['length']],
         [originalLength],
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },
@@ -123,18 +106,9 @@ export function createArrayHandler({
         [[]],
         [first],
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },
@@ -160,21 +134,12 @@ export function createArrayHandler({
       ]);
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Splice],
-        [],
+        [[]],
         [0, args.length],
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },
@@ -208,18 +173,9 @@ export function createArrayHandler({
         [[]],
         [startIndex, items.length, ...result],
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return result;
     },

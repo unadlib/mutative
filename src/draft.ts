@@ -11,6 +11,7 @@ import { createMapHandler, mutableMapMethods } from './map';
 import { createSetHandler, mutableSetMethods } from './set';
 import {
   adjustParentDraft,
+  appendPaths,
   deepFreeze,
   ensureDraftValue,
   ensureShallowCopy,
@@ -240,18 +241,9 @@ function createSetter({
         ]);
       }
     }
-    const paths = makeChange(target, [[]]);
-    if (patches) {
-      patches.slice(-1)[0][1] = paths.map((path) => [
-        ...path,
-        ...patches.slice(-1)[0][1][0],
-      ]);
-    }
-    if (inversePatches) {
-      inversePatches[0][1] = paths.map((path) => [
-        ...path,
-        ...inversePatches[0][1][0],
-      ]);
+    const paths = makeChange(target, patches && inversePatches && [[]]);
+    if (patches && inversePatches) {
+      appendPaths(paths!, patches, inversePatches);
     }
     return true;
   };
@@ -351,18 +343,9 @@ export function createDraft<T extends object>({
         [[key]],
         [getProxyDraft(previousState) ? current(previousState) : previousState],
       ]);
-      const paths = makeChange(target, [[]]);
-      if (patches) {
-        patches.slice(-1)[0][1] = paths.map((path) => [
-          ...path,
-          ...patches.slice(-1)[0][1][0],
-        ]);
-      }
-      if (inversePatches) {
-        inversePatches[0][1] = paths.map((path) => [
-          ...path,
-          ...inversePatches[0][1][0],
-        ]);
+      const paths = makeChange(target, patches && inversePatches && [[]]);
+      if (patches && inversePatches) {
+        appendPaths(paths!, patches, inversePatches);
       }
       return true;
     },
