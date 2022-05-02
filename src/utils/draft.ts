@@ -115,7 +115,7 @@ export function getType(target: any): DraftType {
   return DraftType.Object;
 }
 
-export function adjustParentDraft({
+export function appendParentDraft({
   current,
   parent,
   key,

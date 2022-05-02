@@ -1,11 +1,10 @@
 import type { Patches, ProxyDraft } from './interface';
 import { CLEAR, dataTypes, DraftType, MapOperation } from './constant';
 import {
-  adjustParentDraft,
+  appendParentDraft,
   appendPaths,
   ensureDraftValue,
   ensureShallowCopy,
-  getPath,
   getProxyDraft,
   getValue,
   getValueOrPath,
@@ -64,7 +63,7 @@ export function createMapHandler({
       ensureDraftValue(target, _key, _value);
       if (patches && inversePatches) {
         const index = Array.from(result.keys()).indexOf(_key);
-        adjustParentDraft({
+        appendParentDraft({
           current: _value,
           parent: target,
           key: index,

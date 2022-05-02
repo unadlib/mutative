@@ -8,9 +8,9 @@ import {
   PROXY_DRAFT,
 } from './constant';
 import { createMapHandler, mutableMapMethods } from './map';
-import { createSetHandler, mutableSetMethods } from './set';
+import { createSetHandler, handleSet, mutableSetMethods } from './set';
 import {
-  adjustParentDraft,
+  appendParentDraft,
   appendPaths,
   deepFreeze,
   ensureDraftValue,
@@ -21,7 +21,6 @@ import {
   getType,
   getValue,
   getValueOrPath,
-  getValueWithPath,
   has,
   isDraftable,
   latest,
@@ -50,40 +49,9 @@ function createGetter({
         return value;
       }
     }
+    // In the first execution of getter adding `Set` finality func to the target
     if (target.original instanceof Set && !target.copy) {
-      target.finalities.draft.unshift(() => {
-        if (target.finalized) return;
-        target.finalized = true;
-        // For `Set` type, we must ensure that all values should be added to the assigned set.
-        if (target.copy instanceof Set && target.operated.size > 0) {
-          const iterator = Array.from(target.copy);
-          target.copy.clear();
-          for (const item of iterator) {
-            // Similar to the execution of `ensureDraftValue()`, we must ensure the value from Draft
-            const proxyDraft = getProxyDraft(item);
-            if (proxyDraft) {
-              const value = proxyDraft.copy ?? proxyDraft.original;
-              target.copy.add(value);
-            } else if (typeof item === 'object') {
-              const proxyDraft = target.setMap?.get(item);
-              if (proxyDraft) {
-                const value =
-                  proxyDraft.operated.size > 0
-                    ? proxyDraft.copy
-                    : proxyDraft.original;
-                target.copy.add(value);
-              } else {
-                target.copy.add(item);
-              }
-            } else {
-              target.copy.add(item);
-            }
-          }
-        } else {
-          // todo: check
-          // target.parent.copy![target.key!] = target.original;
-        }
-      });
+      handleSet(target);
     }
     ensureShallowCopy(target);
     const state = target.copy!;
@@ -159,7 +127,7 @@ function createGetter({
       return target.copy![key];
     }
     if (proxyDraft && typeof key !== 'symbol') {
-      adjustParentDraft({
+      appendParentDraft({
         current: value,
         parent: target,
         key,

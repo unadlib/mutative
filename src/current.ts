@@ -1,6 +1,6 @@
 import { getProxyDraft, isPlainObject } from './utils';
 
-export function current<T extends object>(target: T): any {
+export function current<T extends object>(target: T): T {
   const proxyDraft = getProxyDraft(target);
   if (proxyDraft) {
     if (!proxyDraft.copy) return proxyDraft.original;
@@ -11,7 +11,7 @@ export function current<T extends object>(target: T): any {
           value[index] = current(item);
         }
       });
-      return value;
+      return value as T;
     } else if (proxyDraft.copy instanceof Set) {
       const elements: any[] = [];
       proxyDraft.copy.forEach((item) => {
@@ -21,13 +21,13 @@ export function current<T extends object>(target: T): any {
         }
         elements.push(getProxyDraft(value) ? current(value) : value);
       });
-      return new Set(elements);
+      return new Set(elements) as T;
     } else if (proxyDraft.copy instanceof Map) {
       const elements: [any, any][] = [];
       proxyDraft.copy.forEach((value, key) => {
         elements.push([key, getProxyDraft(value) ? current(value) : value]);
       });
-      return new Map(elements);
+      return new Map(elements) as T;
     } else if (isPlainObject(proxyDraft.copy)) {
       // For best performance with shallow copies,
       // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));`.
@@ -37,7 +37,7 @@ export function current<T extends object>(target: T): any {
         const value = draftCopy[key];
         copy![key] = getProxyDraft(value) ? current(value) : value;
       });
-      return copy;
+      return copy as T;
     } else {
       throw new Error(
         `Unsupported type: ${proxyDraft.copy}, only regular objects, arrays, Set and Map are supported`

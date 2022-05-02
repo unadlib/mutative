@@ -2,7 +2,6 @@ import type {
   Finalities,
   Options,
   Patches,
-  ProxyDraft,
   Result,
 } from './interface';
 import { createDraft, finalizeDraft } from './draft';

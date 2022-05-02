@@ -1,7 +1,7 @@
 import type { Patches, ProxyDraft } from './interface';
 import { CLEAR, dataTypes, DraftType, SetOperation } from './constant';
 import {
-  adjustParentDraft,
+  appendParentDraft,
   appendPaths,
   getProxyDraft,
   getValueOrPath,
@@ -25,6 +25,40 @@ export const mutableSetMethods = [
   'keys',
   Symbol.iterator,
 ];
+
+export function handleSet(target: ProxyDraft) {
+  target.finalities.draft.unshift(() => {
+    if (target.finalized) return;
+    target.finalized = true;
+    // For `Set` type, we must ensure that all values should be added to the assigned set.
+    if (target.copy instanceof Set && target.operated.size > 0) {
+      const iterator = Array.from(target.copy);
+      // keep the order of values
+      target.copy.clear();
+      for (const item of iterator) {
+        // Similar to the execution of `ensureDraftValue()`, we must ensure the value from Draft
+        const proxyDraft = getProxyDraft(item);
+        if (proxyDraft) {
+          const value = proxyDraft.copy ?? proxyDraft.original;
+          target.copy.add(value);
+        } else if (typeof item === 'object') {
+          const proxyDraft = target.setMap?.get(item);
+          if (proxyDraft) {
+            const value =
+              proxyDraft.operated.size > 0
+                ? proxyDraft.copy
+                : proxyDraft.original;
+            target.copy.add(value);
+          } else {
+            target.copy.add(item);
+          }
+        } else {
+          target.copy.add(item);
+        }
+      }
+    }
+  });
+}
 
 export function createSetHandler({
   target,
@@ -60,7 +94,7 @@ export function createSetHandler({
       }
       if (patches && inversePatches) {
         const index = Array.from(result.values()).indexOf(value);
-        adjustParentDraft({
+        appendParentDraft({
           current: value,
           parent: target,
           key: index,
