@@ -66,8 +66,17 @@ export type Hook = (
 ) => null | undefined | DataType;
 
 export interface Options<O extends boolean, F extends boolean> {
+  /**
+   * If `true`, it will return the value with the patches
+   */
   enablePatches?: O;
+  /**
+   * If `true`, it will return the value that was frozen
+   */
   enableAutoFreeze?: F;
+  /**
+   * Hook function to determine whether the class instance is immutable or whether the immutable value is converted to mutable
+   */
   hook?: Hook;
 }
 

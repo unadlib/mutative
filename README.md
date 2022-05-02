@@ -90,6 +90,7 @@ const state = create(baseState, (draft) => {
 });
 ```
 
+- `isDraft()`
 - `Mutable<T>`
 - `Immutable<T>`
 - `Patches`
