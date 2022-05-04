@@ -120,8 +120,8 @@ export function apply<T extends object, F extends boolean = false>(
       });
     },
     {
-      enablePatches: false,
       ...options,
+      enablePatches: false,
     }
   );
 }

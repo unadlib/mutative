@@ -19,13 +19,13 @@ export function current<T extends object>(target: T): T {
         if (proxyDraft.setMap!.has(item)) {
           value = proxyDraft.setMap!.get(item)!.proxy;
         }
-        elements.push(getProxyDraft(value) ? current(value) : value);
+        elements.push(current(value));
       });
       return new Set(elements) as T;
     } else if (proxyDraft.copy instanceof Map) {
       const elements: [any, any][] = [];
       proxyDraft.copy.forEach((value, key) => {
-        elements.push([key, getProxyDraft(value) ? current(value) : value]);
+        elements.push([key, current(value)]);
       });
       return new Map(elements) as T;
     } else if (isPlainObject(proxyDraft.copy)) {
@@ -35,7 +35,7 @@ export function current<T extends object>(target: T): T {
       const draftCopy = proxyDraft.copy;
       Object.keys(draftCopy).forEach((key) => {
         const value = draftCopy[key];
-        copy![key] = getProxyDraft(value) ? current(value) : value;
+        copy![key] = current(value);
       });
       return copy as T;
     } else {

@@ -18,10 +18,7 @@ export function getProxyDraft<T extends object>(value: T): ProxyDraft | null {
 
 export function getValue<T extends object>(value: T) {
   const proxyDraft = getProxyDraft(value);
-  if (!proxyDraft) {
-    return value;
-  }
-  return proxyDraft.copy ?? proxyDraft.original;
+  return !proxyDraft ? value : latest(proxyDraft);
 }
 
 export function isDraftable<T extends { hook?: Hook } = ProxyDraft>(
@@ -52,14 +49,14 @@ export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
           const value = target.copy.get(key);
           const proxyDraft = getProxyDraft(value);
           if (proxyDraft) {
-            target.copy.set(key, proxyDraft.copy ?? proxyDraft.original);
+            target.copy.set(key, latest(proxyDraft));
           }
           return;
         }
         const value = target.copy[key];
         const proxyDraft = getProxyDraft(value);
         if (proxyDraft) {
-          target.copy[key] = proxyDraft.copy ?? proxyDraft.original;
+          target.copy[key] = latest(proxyDraft);
         }
       }
     });

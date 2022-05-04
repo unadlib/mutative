@@ -39,7 +39,7 @@ export function handleSet(target: ProxyDraft) {
         // Similar to the execution of `ensureDraftValue()`, we must ensure the value from Draft
         const proxyDraft = getProxyDraft(item);
         if (proxyDraft) {
-          const value = proxyDraft.copy ?? proxyDraft.original;
+          const value = latest(proxyDraft);
           target.copy.add(value);
         } else if (typeof item === 'object') {
           const proxyDraft = target.setMap?.get(item);

@@ -309,7 +309,7 @@ export function createDraft<T extends object>({
       inversePatches?.unshift([
         [DraftType.Object, ObjectOperation.Set],
         [[key]],
-        [getProxyDraft(previousState) ? current(previousState) : previousState],
+        [current(previousState)],
       ]);
       const paths = makeChange(target, patches && inversePatches && [[]]);
       if (patches && inversePatches) {
