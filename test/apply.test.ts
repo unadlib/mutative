@@ -522,7 +522,7 @@ test('array length with ref', () => {
   );
 });
 
-test.only('array setter with ref', () => {
+test('array setter with ref', () => {
   const f = {
     baz: 'str',
   } as any;
