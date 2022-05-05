@@ -1,8 +1,10 @@
 import { ArrayOperation, DraftType } from './constant';
+import { current } from './current';
 import { Patches, ProxyDraft } from './interface';
 import {
   appendPaths,
   ensureDraftValue,
+  getValue,
   getValueOrPath,
   isDraftable,
   makeChange,
@@ -41,7 +43,7 @@ export function createArrayHandler({
       const index = state.length - 1;
       const [last] = patches ? state.slice(-1) : [];
       const result = Array.prototype.pop.apply(state);
-      if (target.original[index] !== result) {
+      if (target.original[index] !== getValue(result)) {
         target.operated.delete(index);
       } else {
         target.operated.add(index);
@@ -50,7 +52,7 @@ export function createArrayHandler({
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Push],
         [[]],
-        [last],
+        [current(last)],
       ]);
       const paths = makeChange(target, patches && inversePatches && [[]]);
       if (patches && inversePatches) {
@@ -94,7 +96,7 @@ export function createArrayHandler({
       const oldState = Array.prototype.concat.call(state);
       const result = Array.prototype.shift.apply(state);
       oldState.forEach((_, index) => {
-        if (target.original[index] === state[index]) {
+        if (target.original[index] === getValue(state[index])) {
           target.operated.delete(index);
         } else {
           target.operated.add(index);
@@ -104,7 +106,7 @@ export function createArrayHandler({
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Unshift],
         [[]],
-        [first],
+        [current(first)],
       ]);
       const paths = makeChange(target, patches && inversePatches && [[]]);
       if (patches && inversePatches) {
@@ -115,7 +117,7 @@ export function createArrayHandler({
     unshift(...args: any[]) {
       const result = Array.prototype.unshift.apply(state, args);
       state.forEach((_, index) => {
-        if (target.original[index] === state[index]) {
+        if (target.original[index] === getValue(state[index])) {
           target.operated.delete(index);
         } else {
           target.operated.add(index);
@@ -151,7 +153,7 @@ export function createArrayHandler({
         .slice(startIndex)
         .forEach((_, _index) => {
           const index = _index + startIndex;
-          if (target.original[index] === state[index]) {
+          if (target.original[index] === getValue(state[index]) ) {
             target.operated.delete(index);
           } else {
             target.operated.add(index);
@@ -171,7 +173,7 @@ export function createArrayHandler({
       inversePatches?.unshift([
         [DraftType.Array, ArrayOperation.Splice],
         [[]],
-        [startIndex, items.length, ...result],
+        [startIndex, items.length, ...result.map((i) => current(i))],
       ]);
       const paths = makeChange(target, patches && inversePatches && [[]]);
       if (patches && inversePatches) {

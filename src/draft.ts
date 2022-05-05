@@ -22,6 +22,7 @@ import {
   getValue,
   getValueOrPath,
   has,
+  isDraft,
   isDraftable,
   latest,
   makeChange,
@@ -162,7 +163,7 @@ function createSetter({
     }
     ensureDraftValue(target, key, value);
     target.copy![key] = value;
-    if (value === target.original[key]) {
+    if (target.original[key] === getValue(value)) {
       target.operated.delete(key);
     } else {
       target.operated.add(key);
@@ -172,13 +173,17 @@ function createSetter({
     }
     if (patches && inversePatches) {
       if (Array.isArray(target.original)) {
-        patches.push([[DraftType.Array, ArrayOperation.Set], [[key]], [value]]);
+        patches.push([
+          [DraftType.Array, ArrayOperation.Set],
+          [[key]],
+          [getValueOrPath(value)],
+        ]);
         const numberKey = Number(key);
         if (key === 'length') {
           inversePatches.unshift([
             [DraftType.Array, ArrayOperation.Push],
             [[]],
-            previousItems!,
+            previousItems!.map((i) => current(i)),
           ]);
         } else if (!isNaN(numberKey) && numberKey >= target.original.length) {
           inversePatches.unshift([
@@ -190,7 +195,7 @@ function createSetter({
           inversePatches.unshift([
             [DraftType.Array, ArrayOperation.Set],
             [[key]],
-            [previousState],
+            [current(previousState)],
           ]);
         }
       } else {
@@ -238,6 +243,16 @@ export function createDraft<T extends object>({
   enableAutoFreeze?: boolean;
   hook?: Hook;
 }): T {
+  if (isDraft(original)) {
+    const proxyDraft = getProxyDraft(original)!;
+    if (proxyDraft.finalities === finalities) {
+      if (key && parentDraft)
+        getProxyDraft(original)!.parents.set(key!, parentDraft);
+      return original;
+    } else {
+      throw new Error(`Cannot create a draft of other draft`);
+    }
+  }
   const proxyDraft: ProxyDraft = {
     type: getType(original),
     finalized: false,

@@ -670,18 +670,9 @@ Array [
       Object {
         "bar": "str1",
       },
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "arr1",
-          "0",
-        ],
-        Array [
-          "__MUTATIVE__",
-          "arr2",
-          "2",
-        ],
-      ],
+      Object {
+        "bar": "new str111",
+      },
     ],
   ],
   Array [
@@ -730,18 +721,9 @@ Array [
       ],
     ],
     Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "arr1",
-          "0",
-        ],
-        Array [
-          "__MUTATIVE__",
-          "arr2",
-          "2",
-        ],
-      ],
+      Object {
+        "bar": "new str111",
+      },
     ],
   ],
   Array [
@@ -808,6 +790,808 @@ Array [
     ],
     Array [
       2,
+    ],
+  ],
+]
+`;
+
+exports[`array length with ref 1`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "length",
+      ],
+    ],
+    Array [
+      0,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str0",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`array length with ref 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "str",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`array pop with ref 1`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "pop",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str0",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`array pop with ref 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "str",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`array setter with ref 1`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "0",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "foobar",
+          "0",
+        ],
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "0",
+      ],
+    ],
+    Array [
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "bar",
+        ],
+      ],
+    ],
+  ],
+]
+`;
+
+exports[`array setter with ref 2`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "0",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str0",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "0",
+        "baz",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+]
+`;
+
+exports[`array shift with ref 1`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "shift",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str0",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`array shift with ref 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "unshift",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "str",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`array splice with ref 1`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [
+      0,
+      1,
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str0",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`array splice with ref 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [
+      0,
+      0,
+      Object {
+        "baz": "str",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`array with ref 1`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "pop",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "new str1",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar1",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str1",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar1",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str2",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str3",
+    ],
+  ],
+]
+`;
+
+exports[`array with ref 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar1",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str1",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "foobar1",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+        "baz",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "str",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "baz",
+      ],
+    ],
+    Array [
+      undefined,
+    ],
+  ],
+]
+`;
+
+exports[`array with ref 3`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [
+        "foobar",
+      ],
+    ],
+    Array [
+      Object {},
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "f",
+        ],
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+        "baz",
+      ],
+    ],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [],
+  ],
+]
+`;
+
+exports[`array with ref 4`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str0",
+      },
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+        "baz",
+      ],
+    ],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "length",
+      ],
+    ],
+    Array [
+      0,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "baz",
+      ],
+    ],
+    Array [
+      undefined,
     ],
   ],
 ]
@@ -931,11 +1715,6 @@ Array [
     ],
     Array [
       Array [
-        "a",
-        "b",
-        "a",
-      ],
-      Array [
         "arr0",
         "2",
         "a",
@@ -981,18 +1760,9 @@ Array [
       Object {
         "a": 1,
       },
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "arr1",
-          "0",
-        ],
-        Array [
-          "__MUTATIVE__",
-          "arr0",
-          "1",
-        ],
-      ],
+      Object {
+        "a": 333,
+      },
     ],
   ],
   Array [
@@ -1001,11 +1771,6 @@ Array [
       "delete",
     ],
     Array [
-      Array [
-        "a",
-        "b",
-        "a",
-      ],
       Array [
         "arr0",
         "2",
@@ -1442,11 +2207,6 @@ Array [
     ],
     Array [
       Array [
-        "a",
-        "b",
-        "c",
-      ],
-      Array [
         "x1",
         "c",
       ],
@@ -1496,11 +2256,6 @@ Array [
       "set",
     ],
     Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
       Array [
         "x1",
         "c",
@@ -1911,6 +2666,101 @@ Array [
 ]
 `;
 
+exports[`object setter with ref 1`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "f",
+      ],
+    ],
+    Array [
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "bar",
+        ],
+      ],
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str0",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`object setter with ref 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        "f",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "str",
+      },
+    ],
+  ],
+]
+`;
+
 exports[`object with class 1`] = `
 Array [
   Array [
@@ -2017,12 +2867,7 @@ Array [
       "object",
       "set",
     ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
+    Array [],
     Array [
       "new str1",
     ],
@@ -2050,10 +2895,6 @@ Array [
     ],
     Array [
       Array [
-        "foobar",
-        "baz",
-      ],
-      Array [
         "foobar1",
         "baz",
       ],
@@ -2073,10 +2914,6 @@ Array [
       "set",
     ],
     Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
       Array [
         "foobar1",
         "baz",
@@ -2103,12 +2940,7 @@ Array [
       "object",
       "set",
     ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
+    Array [],
     Array [
       "new str",
     ],
@@ -2196,12 +3028,7 @@ Array [
       "object",
       "set",
     ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
+    Array [],
     Array [
       "new str1",
     ],
@@ -2228,10 +3055,6 @@ Array [
       "set",
     ],
     Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
       Array [
         "foobar1",
         "baz",
@@ -2283,10 +3106,6 @@ Array [
     ],
     Array [
       Array [
-        "foobar",
-        "baz",
-      ],
-      Array [
         "foobar1",
         "baz",
       ],
@@ -2312,12 +3131,7 @@ Array [
       "object",
       "set",
     ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
+    Array [],
     Array [
       "new str",
     ],
@@ -2722,18 +3536,9 @@ Array [
       ],
     ],
     Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "arr1",
-          "0",
-        ],
-        Array [
-          "__MUTATIVE__",
-          "arr0",
-          "1",
-        ],
-      ],
+      Object {
+        "a": 2,
+      },
     ],
   ],
   Array [

@@ -71,7 +71,7 @@ export function getValueOrPath(value: any) {
       if (parent.copy instanceof Set || parent.copy instanceof Map) {
         return parent.copy.size >= key;
       }
-      return key in parent.copy;
+      return parent.copy[key] === value;
     })
   ) {
     return current(value);

@@ -410,3 +410,154 @@ test('object with ref', () => {
     }
   );
 });
+
+test('array with ref', () => {
+  const f = {
+    baz: 'str',
+  };
+  checkPatches(
+    {
+      foobar: [f] as any,
+      f,
+    },
+    (draft) => {
+      draft.foobar.baz = 'new str';
+      const a = draft.foobar[0];
+      draft.foobar.pop();
+      draft.f.baz = 'new str0';
+      a.baz = 'new str1';
+      // @ts-ignore
+      draft.foobar1 = a;
+      // @ts-ignore
+      draft.foobar1.baz = 'new str2';
+      draft.f.baz = 'new str3';
+    }
+  );
+});
+
+test('array with ref', () => {
+  const f = {
+    baz: 'str',
+  } as any;
+  checkPatches(
+    {
+      foobar: [] as any,
+      f,
+    },
+    (draft) => {
+      draft.foobar.baz = 'new str';
+      const f = draft.f;
+      draft.foobar.push({}, f);
+      f.baz = 'new str0';
+      delete draft.f;
+    }
+  );
+});
+
+test('array pop with ref', () => {
+  const f = {
+    baz: 'str',
+  } as any;
+  checkPatches(
+    {
+      foobar: [f] as any,
+    },
+    (draft: any) => {
+      const f = draft.foobar[0];
+      draft.foobar.pop();
+      f.baz = 'new str0';
+      draft.f = f;
+    }
+  );
+});
+
+test('array shift with ref', () => {
+  const f = {
+    baz: 'str',
+  } as any;
+  checkPatches(
+    {
+      foobar: [f] as any,
+    },
+    (draft: any) => {
+      const f = draft.foobar[0];
+      draft.foobar.shift();
+      f.baz = 'new str0';
+      draft.f = f;
+    }
+  );
+});
+
+test('array splice with ref', () => {
+  const f = {
+    baz: 'str',
+  } as any;
+  checkPatches(
+    {
+      foobar: [f] as any,
+    },
+    (draft: any) => {
+      const f = draft.foobar[0];
+      draft.foobar.splice(0, 1);
+      f.baz = 'new str0';
+      draft.f = f;
+    }
+  );
+});
+
+test('array length with ref', () => {
+  const f = {
+    baz: 'str',
+  } as any;
+  checkPatches(
+    {
+      foobar: [f] as any,
+    },
+    (draft: any) => {
+      const f = draft.foobar[0];
+      draft.foobar.length = 0;
+      f.baz = 'new str0';
+      draft.f = f;
+    }
+  );
+});
+
+test.only('array setter with ref', () => {
+  const f = {
+    baz: 'str',
+  } as any;
+  checkPatches(
+    {
+      foobar: [f] as any,
+      bar: {
+        baz: 'str',
+      }
+    },
+    (draft: any) => {
+      const f = draft.foobar[0];
+      f.baz = 'new str0';
+      draft.f = f;
+      draft.foobar[0] = draft.bar;
+    }
+  );
+});
+
+test('object setter with ref', () => {
+  const f = {
+    baz: 'str',
+  } as any;
+  checkPatches(
+    {
+      foobar: { f } as any,
+      bar: {
+        baz: 'str',
+      }
+    },
+    (draft: any) => {
+      const { f } = draft.foobar;
+      draft.foobar.f = draft.bar;
+      f.baz = 'new str0';
+      draft.f = f;
+    }
+  );
+});
