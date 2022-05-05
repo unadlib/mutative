@@ -974,42 +974,6 @@ exports[`array setter with ref 1`] = `
 Array [
   Array [
     Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "0",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "foobar",
-          "0",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
       "array",
       "set",
     ],
@@ -1028,20 +992,24 @@ Array [
       ],
     ],
   ],
-]
-`;
-
-exports[`array setter with ref 2`] = `
-Array [
   Array [
     Array [
-      "array",
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
       "set",
     ],
     Array [
       Array [
-        "foobar",
-        "0",
+        "f",
       ],
     ],
     Array [
@@ -1050,6 +1018,11 @@ Array [
       },
     ],
   ],
+]
+`;
+
+exports[`array setter with ref 2`] = `
+Array [
   Array [
     Array [
       "object",
@@ -1067,15 +1040,26 @@ Array [
       "object",
       "set",
     ],
+    Array [],
+    Array [
+      "str",
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
     Array [
       Array [
         "foobar",
         "0",
-        "baz",
       ],
     ],
     Array [
-      "str",
+      Object {
+        "baz": "str",
+      },
     ],
   ],
 ]
@@ -2666,6 +2650,95 @@ Array [
 ]
 `;
 
+exports[`map with ref 1`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "delete",
+    ],
+    Array [
+      Array [
+        "foobar",
+        0,
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str0",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`map with ref 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "str0",
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      Array [
+        "foobar",
+        0,
+      ],
+    ],
+    Array [
+      "a",
+      Object {
+        "baz": "str0",
+      },
+    ],
+  ],
+]
+`;
+
 exports[`object setter with ref 1`] = `
 Array [
   Array [
@@ -3461,6 +3534,94 @@ Array [
       ],
     ],
     Array [],
+  ],
+]
+`;
+
+exports[`set with ref 1`] = `
+Array [
+  Array [
+    Array [
+      "set",
+      "delete",
+    ],
+    Array [
+      Array [
+        "foobar",
+        0,
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "new str0",
+    ],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "new str0",
+      },
+    ],
+  ],
+]
+`;
+
+exports[`set with ref 2`] = `
+Array [
+  Array [
+    Array [
+      "object",
+      "delete",
+    ],
+    Array [
+      Array [
+        "f",
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "object",
+      "set",
+    ],
+    Array [],
+    Array [
+      "str0",
+    ],
+  ],
+  Array [
+    Array [
+      "set",
+      "add",
+    ],
+    Array [
+      Array [
+        "foobar",
+        0,
+      ],
+    ],
+    Array [
+      Object {
+        "baz": "str0",
+      },
+    ],
   ],
 ]
 `;

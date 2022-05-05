@@ -1,20 +1,11 @@
 import type { ProxyDraft, Patches } from '../interface';
 import { ensureShallowCopy } from './copy';
+import { getEntryFromParent } from './draft';
 
 export function makeChange(proxyDraft: ProxyDraft, path?: any[]) {
   const paths: any[][] | null = path ? [] : null;
   proxyDraft.parents.forEach((parent, key) => {
-    const currentKey =
-      parent.copy instanceof Map || parent.copy instanceof Set
-        ? Array.from(parent.copy.keys())[key as number]
-        : key;
-    // for set a diff draft
-    const currentValue =
-      parent.copy instanceof Map
-        ? parent.copy.get(currentKey)
-        : parent.copy instanceof Set
-        ? parent.setMap!.get(currentKey)?.proxy ?? currentKey
-        : parent.copy[key];
+    const [currentKey, currentValue] = getEntryFromParent(parent, key);
     if (currentValue !== proxyDraft.proxy) {
       return;
     }

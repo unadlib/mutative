@@ -495,6 +495,9 @@ test('array splice with ref', () => {
   checkPatches(
     {
       foobar: [f] as any,
+      bar: {
+        baz: 'str',
+      },
     },
     (draft: any) => {
       const f = draft.foobar[0];
@@ -531,13 +534,13 @@ test('array setter with ref', () => {
       foobar: [f] as any,
       bar: {
         baz: 'str',
-      }
+      },
     },
     (draft: any) => {
       const f = draft.foobar[0];
+      draft.foobar[0] = draft.bar;
       f.baz = 'new str0';
       draft.f = f;
-      draft.foobar[0] = draft.bar;
     }
   );
 });
@@ -551,11 +554,50 @@ test('object setter with ref', () => {
       foobar: { f } as any,
       bar: {
         baz: 'str',
-      }
+      },
     },
     (draft: any) => {
       const { f } = draft.foobar;
       draft.foobar.f = draft.bar;
+      f.baz = 'new str0';
+      draft.f = f;
+    }
+  );
+});
+
+test('set with ref', () => {
+  checkPatches(
+    {
+      foobar: new Set<any>([
+        {
+          baz: 'str0',
+        },
+      ]),
+    },
+    (draft: any) => {
+      const f = draft.foobar.values().next().value;
+      draft.foobar.delete(f);
+      f.baz = 'new str0';
+      draft.f = f;
+    }
+  );
+});
+
+test('map with ref', () => {
+  checkPatches(
+    {
+      foobar: new Map<any, any>([
+        [
+          'a',
+          {
+            baz: 'str0',
+          },
+        ],
+      ]),
+    },
+    (draft: any) => {
+      const f = draft.foobar.values().next().value;
+      draft.foobar.delete('a');
       f.baz = 'new str0';
       draft.f = f;
     }

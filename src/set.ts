@@ -147,11 +147,11 @@ export function createSetHandler({
           ? Array.from(state.values()).indexOf(deleteTarget)
           : null;
       const result = Set.prototype.delete.call(state, deleteTarget);
-      if (target.setMap!.has(value)) target.setMap!.delete(value);
-      if (!target.original.has(value)) {
-        target.operated.delete(value);
+      if (target.setMap!.has(deleteTarget)) target.setMap!.delete(deleteTarget);
+      if (!target.original.has(deleteTarget)) {
+        target.operated.delete(deleteTarget);
       } else {
-        target.operated.add(value);
+        target.operated.add(deleteTarget);
       }
       patches?.push([[DraftType.Set, SetOperation.Delete], [[oldIndex!]], []]);
       inversePatches?.unshift([

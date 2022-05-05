@@ -63,15 +63,27 @@ export function ensureDraftValue(target: ProxyDraft, key: any, value: any) {
   }
 }
 
+export function getEntryFromParent(parent: ProxyDraft, key: any) {
+  const currentKey =
+    parent.copy instanceof Map || parent.copy instanceof Set
+      ? Array.from(parent.copy.keys())[key as number]
+      : key;
+  const currentValue =
+    parent.copy instanceof Map
+      ? parent.copy.get(currentKey)
+      : parent.copy instanceof Set
+      ? parent.setMap!.get(currentKey)?.proxy ?? currentKey
+      : parent.copy[key];
+  return [currentKey, currentValue];
+}
+
 export function getValueOrPath(value: any) {
   const proxyDraft = getProxyDraft(value);
   if (
     proxyDraft &&
     !Array.from(proxyDraft.parents).some(([key, parent]) => {
-      if (parent.copy instanceof Set || parent.copy instanceof Map) {
-        return parent.copy.size >= key;
-      }
-      return parent.copy[key] === value;
+      const [_, currentValue] = getEntryFromParent(parent, key);
+      return currentValue === value;
     })
   ) {
     return current(value);
