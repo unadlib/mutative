@@ -140,6 +140,7 @@ export function createSetHandler({
       const deleteValue = getProxyDraft(value)
         ? getProxyDraft(value)?.original
         : value;
+      // should be ensure that the value is in the set
       const deleteTarget =
         !state.has(deleteValue) && isDraft(value) ? value : deleteValue;
       const oldIndex =

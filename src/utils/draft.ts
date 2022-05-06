@@ -11,9 +11,9 @@ export function isDraft(target: any) {
   return !!getProxyDraft(target);
 }
 
-export function getProxyDraft<T extends object>(value: T): ProxyDraft | null {
+export function getProxyDraft<T>(value: T): ProxyDraft | null {
   if (typeof value !== 'object') return null;
-  return (value as { [PROXY_DRAFT]: any })[PROXY_DRAFT];
+  return (value as any as { [PROXY_DRAFT]: any })[PROXY_DRAFT];
 }
 
 export function getValue<T extends object>(value: T) {
