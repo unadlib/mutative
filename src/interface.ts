@@ -67,11 +67,11 @@ export type Hook = (
 
 export interface Options<O extends boolean, F extends boolean> {
   /**
-   * If `true`, it will return the value with the patches
+   * If enablePatches is `true`, it will return the value with the patches
    */
   enablePatches?: O;
   /**
-   * If `true`, it will return the value that was frozen
+   * If enableAutoFreeze is `true`, the generated state will be frozen
    */
   enableAutoFreeze?: F;
   /**

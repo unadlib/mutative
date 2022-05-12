@@ -10,7 +10,28 @@ import { create } from './create';
 import { deepClone, getProxyDraft, getValueWithPath, isPath } from './utils';
 
 /**
- * apply patches
+ * `apply(baseState, patches)` to create the next state
+ *
+ * ## Example
+ *
+ * ```ts
+ * import { create, apply } from '../index';
+ *
+ * const baseState = { foo: { bar: 'str' }, arr: [] };
+ * const [state, patches] = create(
+ *   baseState,
+ *   (draft) => {
+ *     draft.foo.bar = 'str2';
+ *   },
+ *   { enablePatches: true }
+ * );
+ *
+ * expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+ * expect(state).toEqual(apply(baseState, patches));
+ *
+ * expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+ * expect(state).toEqual(apply(baseState, patches));
+ * ```
  */
 export function apply<T extends object, F extends boolean = false>(
   baseState: T,
