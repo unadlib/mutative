@@ -11,10 +11,8 @@ export function makeChange(proxyDraft: ProxyDraft, path?: any[]) {
     }
     if (!proxyDraft.operated.size) {
       parent.operated.delete(currentKey);
-    } else if (typeof key !== 'undefined' && key !== null) {
-      parent.operated.add(currentKey);
     } else {
-      //
+      parent.operated.add(currentKey);
     }
     ensureShallowCopy(parent);
     if (parent.parents.size > 0) {
