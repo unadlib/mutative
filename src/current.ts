@@ -57,7 +57,7 @@ export function current<T extends object>(target: T): T {
       return copy as T;
     } else {
       throw new Error(
-        `Unsupported type: ${proxyDraft.copy}, only regular objects, arrays, Set and Map are supported`
+        `Unsupported type: ${proxyDraft.copy}, only plain objects, arrays, Set and Map are supported`
       );
     }
   }

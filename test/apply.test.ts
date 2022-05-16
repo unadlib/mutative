@@ -3,7 +3,8 @@ import { deepClone } from '../src/utils';
 
 function checkPatches<T>(
   data: T,
-  fn: (checkPatches: T) => void,
+  // todo: fix type
+  fn: (checkPatches: any) => void,
   hook?: (...arg: any) => any
 ) {
   const [state, patches, inversePatches] = create(data as any, fn, {
@@ -314,6 +315,7 @@ test('simple set', () => {
     (draft) => {
       draft.set.add({ bar: 'str1' });
       draft.set.values().next().value.bar = 'new str0';
+      // @ts-ignore
       Array.from(draft.set.keys())[1].bar = 'new str1';
     }
   );
@@ -602,4 +604,509 @@ test('map with ref', () => {
       draft.f = f;
     }
   );
+});
+
+// from immer test case
+
+test('simple assignment - 1', () => {
+  checkPatches({ x: 3 }, (d) => {
+    d.x++;
+  });
+});
+
+test('simple assignment - 2', () => {
+  checkPatches({ x: { y: 4 } }, (d) => {
+    d.x.y++;
+  });
+});
+
+test('simple assignment - 3', () => {
+  checkPatches({ x: [{ y: 4 }] }, (d) => {
+    d.x[0].y++;
+  });
+});
+
+test('simple assignment - 4', () => {
+  checkPatches(new Map([['x', { y: 4 }]]), (d) => {
+    d.get('x').y++;
+  });
+});
+
+test('simple assignment - 5', () => {
+  checkPatches({ x: new Map([['y', 4]]) }, (d) => {
+    d.x.set('y', 5);
+  });
+});
+
+// todo: fix
+test.skip('simple assignment - 6', () => {
+  checkPatches(new Map([['x', 1]]), (d) => {
+    // Map.prototype.set should return the Map itself
+    const res = d.set('x', 2);
+    res.set('y', 3);
+  });
+});
+
+// todo: fix
+test.skip('simple assignment - 7', () => {
+  const key1 = { prop: 'val1' };
+  const key2 = { prop: 'val2' };
+  checkPatches({ x: new Map([[key1, 4]]) }, (d) => {
+    d.x.set(key1, 5);
+    d.x.set(key2, 6);
+  });
+});
+
+test('delete 1', () => {
+  checkPatches({ x: { y: 4 } }, (d) => {
+    delete d.x;
+  });
+});
+
+test('delete 2', () => {
+  checkPatches(new Map([['x', 1]]), (d) => {
+    d.delete('x');
+  });
+});
+
+test('delete 3', () => {
+  checkPatches({ x: new Map([['y', 1]]) }, (d) => {
+    d.x.delete('y');
+  });
+});
+
+test('delete 5', () => {
+  const key1 = { prop: 'val1' };
+  const key2 = { prop: 'val2' };
+  checkPatches(
+    {
+      x: new Map([
+        [key1, 1],
+        [key2, 2],
+      ]),
+    },
+    (d) => {
+      d.x.delete(key1);
+      d.x.delete(key2);
+    }
+  );
+});
+
+// todo: fix
+test.skip('delete 6', () => {
+  checkPatches(new Set(['x', 1]), (d) => {
+    d.delete('x');
+  });
+});
+
+// todo: fix
+test.skip('delete 7', () => {
+  checkPatches({ x: new Set(['y', 1]) }, (d) => {
+    d.x.delete('y');
+  });
+});
+
+describe('renaming properties', () => {
+  test('nested object (no changes)', () => {
+    checkPatches({ a: { b: 1 } }, (d) => {
+      // @ts-ignore
+      d.x = d.a;
+      delete d.a;
+    });
+  });
+
+  test('nested change in object', () => {
+    checkPatches(
+      {
+        a: { b: 1 },
+      },
+      (d) => {
+        d.a.b++;
+      }
+    );
+  });
+
+  test('nested change in map', () => {
+    checkPatches(new Map([['a', new Map([['b', 1]])]]), (d) => {
+      d.get('a').set('b', 2);
+    });
+  });
+
+  test('nested change in array', () => {
+    checkPatches([[{ b: 1 }]], (d) => {
+      d[0][0].b++;
+    });
+  });
+
+  test('nested map (no changes)', () => {
+    checkPatches(new Map([['a', new Map([['b', 1]])]]), (d) => {
+      d.set('x', d.get('a'));
+      d.delete('a');
+    });
+  });
+
+  test('nested object (with changes)', () => {
+    checkPatches({ a: { b: 1, c: 1 } }, (d) => {
+      let a = d.a;
+      a.b = 2; // change
+      delete a.c; // delete
+      // @ts-ignore
+      a.y = 2; // add
+
+      // rename
+      // @ts-ignore
+      d.x = a;
+      delete d.a;
+    });
+  });
+
+  test('nested map (with changes)', () => {
+    checkPatches(
+      new Map([
+        [
+          'a',
+          new Map([
+            ['b', 1],
+            ['c', 1],
+          ]),
+        ],
+      ]),
+      (d) => {
+        let a = d.get('a');
+        a.set('b', 2); // change
+        a.delete('c'); // delete
+        a.set('y', 2); // add
+
+        // rename
+        d.set('x', a);
+        d.delete('a');
+      }
+    );
+  });
+
+  test('deeply nested object (with changes)', () => {
+    checkPatches({ a: { b: { c: 1, d: 1 } } }, (d) => {
+      let b = d.a.b;
+      b.c = 2; // change
+      delete b.d; // delete
+      // @ts-ignore
+      b.y = 2; // add
+
+      // rename
+      // @ts-ignore
+      d.a.x = b;
+      delete d.a.b;
+    });
+  });
+
+  test('deeply nested map (with changes)', () => {
+    checkPatches(
+      new Map([
+        [
+          'a',
+          new Map([
+            [
+              'b',
+              new Map([
+                ['c', 1],
+                ['d', 1],
+              ]),
+            ],
+          ]),
+        ],
+      ]),
+      (d) => {
+        let b = d.get('a').get('b');
+        b.set('c', 2); // change
+        b.delete('d'); // delete
+        b.set('y', 2); // add
+
+        // rename
+        d.get('a').set('x', b);
+        d.get('a').delete('b');
+      }
+    );
+  });
+});
+
+test('minimum amount of changes', () => {
+  checkPatches({ x: 3, y: { a: 4 }, z: 3 }, (d) => {
+    d.y.a = 4;
+    // @ts-ignore
+    d.y.b = 5;
+    Object.assign(d, { x: 4, y: { a: 2 } });
+  });
+});
+
+test('arrays - prepend', () => {
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x.unshift(4);
+  });
+});
+
+test('arrays - multiple prepend', () => {
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x.unshift(4);
+    d.x.unshift(5);
+    // 4,5,1,2,3
+  });
+});
+
+test('arrays - splice middle', () => {
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x.splice(1, 1);
+  });
+});
+
+// todo: fix
+test.skip('arrays - multiple splice', () => {
+  checkPatches([0, 1, 2, 3, 4, 5, 0], (d) => {
+    d.splice(4, 2, 3);
+    // [0,1,2,3,3,0]
+    d.splice(1, 2, 3);
+    // [0,3,3,3,0]
+    expect(d.slice()).toEqual([0, 3, 3, 3, 0]);
+  });
+});
+
+test('arrays - modify and shrink', () => {
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x[0] = 4;
+    d.x.length = 2;
+    // [0, 2]
+  });
+});
+
+test('arrays - prepend then splice middle', () => {
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x.unshift(4);
+    d.x.splice(2, 1);
+    // 4, 1, 3
+  });
+});
+
+test('arrays - splice middle then prepend', () => {
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x.splice(1, 1);
+    d.x.unshift(4);
+    // [4, 1, 3]
+  });
+});
+
+test('arrays - truncate', () => {
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x.length -= 2;
+  });
+});
+
+test('arrays - pop twice', () => {
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x.pop();
+    d.x.pop();
+  });
+});
+
+test('arrays - push multiple', () => {
+  // These patches were more optimal pre immer 7, but not always correct
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x.push(4, 5);
+  });
+});
+
+test('arrays - splice (expand)', () => {
+  // These patches were more optimal pre immer 7, but not always correct
+  checkPatches({ x: [1, 2, 3] }, (d) => {
+    d.x.splice(1, 1, 4, 5, 6); // [1,4,5,6,3]
+  });
+});
+
+test('arrays - splice (shrink)', () => {
+  // These patches were more optimal pre immer 7, but not always correct
+  checkPatches({ x: [1, 2, 3, 4, 5] }, (d) => {
+    d.x.splice(1, 3, 6); // [1, 6, 5]
+  });
+});
+
+test('arrays - delete', () => {
+  checkPatches(
+    {
+      x: [
+        { a: 1, b: 2 },
+        { c: 3, d: 4 },
+      ],
+    },
+    (d) => {
+      delete d.x[1].c;
+    }
+  );
+});
+
+test('sets - add - 1', () => {
+  checkPatches(new Set([1]), (d) => {
+    d.add(2);
+  });
+});
+
+test('sets - add, delete, add - 1', () => {
+  checkPatches(new Set([1]), (d) => {
+    d.add(2);
+    d.delete(2);
+    d.add(2);
+  });
+});
+
+// todo: fix
+test.skip('sets - add, delete, add - 2', () => {
+  checkPatches(new Set([2, 1]), (d) => {
+    d.add(2);
+    d.delete(2);
+    d.add(2);
+  });
+});
+
+test('sets - mutate - 1', () => {
+  const findById = (set: any, id: any) => {
+    for (const item of set) {
+      if (item.id === id) return item;
+    }
+  };
+  checkPatches(
+    new Set([
+      { id: 1, val: 'We' },
+      { id: 2, val: 'will' },
+    ]),
+    (d) => {
+      const obj1 = findById(d, 1);
+      const obj2 = findById(d, 2);
+      obj1.val = 'rock';
+      obj2.val = 'you';
+    }
+  );
+});
+
+// todo: fix
+test.skip('arrays - splice should should result in remove op.', () => {
+  // These patches were more optimal pre immer 7, but not always correct
+  checkPatches([1, 2], (d) => {
+    d.splice(1, 1);
+  });
+});
+
+test('arrays - NESTED splice should should result in remove op.', () => {
+  // These patches were more optimal pre immer 7, but not always correct
+  checkPatches({ a: { b: { c: [1, 2] } } }, (d) => {
+    d.a.b.c.splice(1, 1);
+  });
+});
+
+test('same value replacement - 1', () => {
+  checkPatches({ x: { y: 3 } }, (d) => {
+    const a = d.x;
+    d.x = a;
+  });
+});
+
+// todo: fix
+test.skip('same value replacement - 2', () => {
+  checkPatches({ x: { y: 3 } }, (d) => {
+    const a = d.x;
+    // @ts-ignore
+    d.x = 4;
+    d.x = a;
+  });
+});
+
+test('same value replacement - 3', () => {
+  checkPatches({ x: 3 }, (d) => {
+    d.x = 3;
+  });
+});
+
+test('same value replacement - 4', () => {
+  checkPatches({ x: 3 }, (d) => {
+    d.x = 4;
+    d.x = 3;
+  });
+});
+
+test('same value replacement - 5', () => {
+  checkPatches(new Map([['x', 3]]), (d) => {
+    d.set('x', 4);
+    d.set('x', 3);
+  });
+});
+
+// todo: fix
+test.skip('same value replacement - 6', () => {
+  checkPatches(new Set(['x', 3]), (d) => {
+    d.delete('x');
+    d.add('x');
+  });
+});
+
+test('simple delete', () => {
+  checkPatches({ x: 2 }, (d) => {
+    delete d.x;
+  });
+});
+
+test('change then delete property', () => {
+  checkPatches(
+    {
+      x: 1,
+    },
+    (d) => {
+      d.x = 2;
+      delete d.x;
+    }
+  );
+});
+
+test('#468', () => {
+  const item = { id: 1 };
+  const state = [item];
+  checkPatches(state, (draft) => {
+    draft[0].id = 2;
+    draft[1] = item;
+  });
+});
+
+test('#648 assigning object to itself should not change patches', () => {
+  const input = {
+    obj: {
+      value: 200,
+    },
+  };
+  checkPatches(input, (draft) => {
+    draft.obj.value = 1;
+    draft.obj = draft.obj;
+  });
+});
+
+test('#876 Ensure empty patch set for atomic set+delete on Map', () => {
+  {
+    checkPatches(new Map([['foo', 'baz']]), (draft) => {
+      draft.set('foo', 'bar');
+      draft.delete('foo');
+    });
+  }
+
+  {
+    checkPatches(new Map(), (draft) => {
+      draft.set('foo', 'bar');
+      draft.delete('foo');
+    });
+  }
+});
+
+test('#879 delete item from array', () => {
+  checkPatches([1, 2, 3], (draft) => {
+    delete draft[1];
+  });
+});
+
+test('#879 delete item from array - 2', () => {
+  checkPatches([1, 2, 3], (draft) => {
+    delete draft[2];
+  });
 });
