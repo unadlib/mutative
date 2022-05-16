@@ -1,3 +1,4 @@
+import { produce } from 'immer';
 import { create, isDraft } from '../src';
 
 describe('base', () => {
@@ -1452,6 +1453,7 @@ describe('class instance ', () => {
     expect(state.foobar).not.toBe(data.foobar);
     expect(state.foobar.foo).not.toBe(data.foobar.foo);
   });
+  // TODO: add test for class inherit instance
 });
 
 test('object case2', () => {
@@ -1467,7 +1469,7 @@ test('object case2', () => {
   expect(state.x === state.a.b).toBeTruthy();
 });
 
-test('object case3', () => {
+test('cross case1', () => {
   const d = { e: 1 };
   const baseState = { a: { c: { e: 2 }, b: { c: { d } } }, f: { d } };
   const state = create(baseState, (draft) => {
@@ -1489,7 +1491,7 @@ test('object case3', () => {
   expect(state.x).toBe(state.a.c);
 });
 
-test('nothing change object with ref', () => {
+test('cross case2', () => {
   const data = {
     foo: {
       bar: 'str',
@@ -1513,30 +1515,4 @@ test('nothing change object with ref', () => {
   expect(state).not.toBe(data);
   expect(state.foo).not.toBe(data.foo);
   expect(state.foobar).toBe(data.foobar);
-});
-
-test('performance', () => {
-  const baseState: any = {};
-  Array(10 ** 5)
-    .fill(1)
-    .forEach((_, i) => {
-      baseState[i] = { i };
-    });
-  console.time();
-  create(baseState, (draft) => {
-    draft[0].c = { i: 0 };
-  });
-  console.timeEnd();
-});
-
-test('performance 100k', () => {
-  const a = Array(10 ** 5)
-    .fill(1)
-    .map((_, i) => ({ [i]: i }));
-  console.time('performance 100k');
-  create({ b: { c: 2 }, a }, (draft) => {
-    draft.b.c = 3;
-    draft.a.push({ '1': 1 });
-  });
-  console.timeEnd('performance 100k');
 });
