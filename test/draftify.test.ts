@@ -1,4 +1,4 @@
-import { draftify } from '../src';
+import { current, draftify } from '../src';
 
 describe('draftify', () => {
   const getBaseState = () => ({
@@ -126,5 +126,47 @@ describe('draftify', () => {
     draft.baz.text = 'baz';
     const state = finalize();
     expect(state).toBe(baseState);
+  });
+
+  test('multiple drafts with draftify', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      } as any,
+      foobar: {},
+    };
+    const data1 = {
+      foo1: {
+        bar1: 'str1',
+      },
+      foobar1: {},
+    };
+
+    const [draft, finalize] = draftify(data);
+    const [draft1, finalize1] = draftify(data1);
+    draft.foo.bar = 'new str';
+    draft1.foo1.bar1 = 'new str1';
+    draft.foo.b = current(draft1.foo1);
+    const state = finalize();
+    draft1.foo1.bar1 = 'new str2';
+    const state1 = finalize1();
+    expect(state).toEqual({
+      foo: { bar: 'new str', b: { bar1: 'new str1' } },
+      foobar: {},
+    });
+    expect(state.foo.b).not.toBe(state1.foo1);
+    expect(state1).toEqual({
+      foo1: {
+        bar1: 'new str2',
+      },
+      foobar1: {},
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
+
+    expect(state1).not.toBe(data1);
+    expect(state1.foo1).not.toBe(data1.foo1);
+    expect(state1.foobar1).toBe(data1.foobar1);
   });
 });
