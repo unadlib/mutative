@@ -114,7 +114,7 @@ export function createSetHandler({
       if (patches && inversePatches) {
         appendPaths(paths!, patches, inversePatches);
       }
-      return result;
+      return target.proxy;
     },
     clear() {
       const oldValues = inversePatches ? Array.from(state.values()) : null;

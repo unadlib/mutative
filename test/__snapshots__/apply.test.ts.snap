@@ -7098,6 +7098,73 @@ Array [
 ]
 `;
 
+exports[`simple assignment - 6 1`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      "x",
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      Array [
+        1,
+      ],
+    ],
+    Array [
+      "y",
+      3,
+    ],
+  ],
+]
+`;
+
+exports[`simple assignment - 6 2`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "delete",
+    ],
+    Array [
+      Array [
+        1,
+      ],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "map",
+      "set",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      "x",
+      1,
+    ],
+  ],
+]
+`;
+
 exports[`simple assignment - 7 1`] = `
 Array [
   Array [

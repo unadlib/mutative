@@ -638,8 +638,7 @@ test('simple assignment - 5', () => {
   });
 });
 
-// todo: fix
-test.skip('simple assignment - 6', () => {
+test('simple assignment - 6', () => {
   checkPatches(new Map([['x', 1]]), (d) => {
     // Map.prototype.set should return the Map itself
     const res = d.set('x', 2);

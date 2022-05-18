@@ -83,7 +83,7 @@ export function createMapHandler({
       if (patches && inversePatches) {
         appendPaths(paths!, patches, inversePatches);
       }
-      return result;
+      return target.proxy;
     },
     clear() {
       const oldState = inversePatches ? Array.from(state) : null;
