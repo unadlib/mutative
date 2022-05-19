@@ -32,6 +32,7 @@ export const enum MapOperation {
   Delete = 'delete',
   Set = 'set',
   Clear = 'clear',
+  Replace = 'replace',
   Construct = 'construct',
 }
 
@@ -39,6 +40,7 @@ export const enum SetOperation {
   Delete = 'delete',
   Clear = 'clear',
   Add = 'add',
+  Append = 'append',
   Construct = 'construct',
 }
 

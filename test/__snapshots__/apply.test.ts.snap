@@ -153,7 +153,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -200,7 +200,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -2981,7 +2981,7 @@ Array [
   Array [
     Array [
       "set",
-      "add",
+      "append",
     ],
     Array [
       Array [
@@ -3018,7 +3018,7 @@ Array [
   Array [
     Array [
       "set",
-      "add",
+      "append",
     ],
     Array [
       Array [
@@ -3861,7 +3861,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -4029,7 +4029,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -4844,7 +4844,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -5000,7 +5000,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -5231,7 +5231,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -5252,7 +5252,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -5388,7 +5388,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -5533,7 +5533,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -5826,12 +5826,12 @@ exports[`same value replacement - 2 1`] = `
 Array [
   Array [
     Array [
-      "object",
+      "array",
       "set",
     ],
     Array [
       Array [
-        "x",
+        "1",
       ],
     ],
     Array [
@@ -5840,19 +5840,19 @@ Array [
   ],
   Array [
     Array [
-      "object",
+      "array",
       "set",
     ],
     Array [
       Array [
-        "x",
+        "1",
       ],
     ],
     Array [
       Array [
         Array [
           "__MUTATIVE__",
-          "x",
+          "1",
         ],
       ],
     ],
@@ -5864,12 +5864,12 @@ exports[`same value replacement - 2 2`] = `
 Array [
   Array [
     Array [
-      "object",
+      "array",
       "set",
     ],
     Array [
       Array [
-        "x",
+        "1",
       ],
     ],
     Array [
@@ -5878,18 +5878,171 @@ Array [
   ],
   Array [
     Array [
-      "object",
+      "array",
       "set",
     ],
     Array [
       Array [
-        "x",
+        "1",
       ],
     ],
     Array [
       Object {
-        "y": 3,
+        "x": 1,
       },
+    ],
+  ],
+]
+`;
+
+exports[`same value replacement - 2 3`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "1",
+      ],
+    ],
+    Array [
+      4,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "1",
+      ],
+    ],
+    Array [
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "1",
+        ],
+      ],
+    ],
+  ],
+]
+`;
+
+exports[`same value replacement - 2 4`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "1",
+      ],
+    ],
+    Array [
+      4,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "1",
+      ],
+    ],
+    Array [
+      Object {
+        "x": 1,
+      },
+    ],
+  ],
+]
+`;
+
+exports[`same value replacement - 2 5`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "replace",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      1,
+      4,
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "replace",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      1,
+      Array [
+        Array [
+          "__MUTATIVE__",
+          0,
+        ],
+      ],
+    ],
+  ],
+]
+`;
+
+exports[`same value replacement - 2 6`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "replace",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      1,
+      4,
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "replace",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      1,
+      Array [
+        Array [
+          "__MUTATIVE__",
+          0,
+        ],
+      ],
     ],
   ],
 ]
@@ -6004,7 +6157,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -6019,7 +6172,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -6039,7 +6192,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -6054,7 +6207,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -6117,7 +6270,7 @@ Array [
   Array [
     Array [
       "set",
-      "add",
+      "append",
     ],
     Array [
       Array [
@@ -6126,6 +6279,151 @@ Array [
     ],
     Array [
       "x",
+    ],
+  ],
+]
+`;
+
+exports[`same value replacement(array) - 2 1`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "pop",
+    ],
+    Array [
+      Array [],
+    ],
+    Array [],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [],
+    ],
+    Array [
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "2",
+        ],
+      ],
+    ],
+  ],
+]
+`;
+
+exports[`same value replacement(array) - 2 2`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "set",
+    ],
+    Array [
+      Array [
+        "length",
+      ],
+    ],
+    Array [
+      2,
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [],
+    ],
+    Array [
+      Object {
+        "x": 1,
+      },
+    ],
+  ],
+]
+`;
+
+exports[`same value replacement(map) - 2 1`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "replace",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      1,
+      4,
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "replace",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      1,
+      Array [
+        Array [
+          "__MUTATIVE__",
+          0,
+        ],
+      ],
+    ],
+  ],
+]
+`;
+
+exports[`same value replacement(map) - 2 2`] = `
+Array [
+  Array [
+    Array [
+      "map",
+      "replace",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      1,
+      4,
+    ],
+  ],
+  Array [
+    Array [
+      "map",
+      "replace",
+    ],
+    Array [
+      Array [
+        0,
+      ],
+    ],
+    Array [
+      1,
+      Array [
+        Array [
+          "__MUTATIVE__",
+          0,
+        ],
+      ],
     ],
   ],
 ]
@@ -6276,7 +6574,7 @@ Array [
   Array [
     Array [
       "set",
-      "add",
+      "append",
     ],
     Array [
       Array [
@@ -6309,7 +6607,7 @@ Array [
   Array [
     Array [
       "set",
-      "add",
+      "append",
     ],
     Array [
       Array [
@@ -6482,7 +6780,7 @@ Array [
   Array [
     Array [
       "set",
-      "add",
+      "append",
     ],
     Array [
       Array [
@@ -6597,7 +6895,7 @@ Array [
   Array [
     Array [
       "set",
-      "add",
+      "append",
     ],
     Array [
       Array [
@@ -6625,20 +6923,6 @@ Array [
 
 exports[`sets - add, delete, add - 2 1`] = `
 Array [
-  Array [
-    Array [
-      "set",
-      "add",
-    ],
-    Array [
-      Array [
-        2,
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
   Array [
     Array [
       "set",
@@ -6685,7 +6969,7 @@ Array [
   Array [
     Array [
       "set",
-      "add",
+      "append",
     ],
     Array [
       Array [
@@ -6695,18 +6979,6 @@ Array [
     Array [
       2,
     ],
-  ],
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
   ],
 ]
 `;
@@ -7061,7 +7333,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -7082,7 +7354,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -7103,7 +7375,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -7150,7 +7422,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -7170,7 +7442,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [
@@ -7224,7 +7496,7 @@ Array [
   Array [
     Array [
       "map",
-      "set",
+      "replace",
     ],
     Array [
       Array [

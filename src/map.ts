@@ -69,12 +69,12 @@ export function createMapHandler({
           key: index,
         });
         patches?.push([
-          [DraftType.Map, MapOperation.Set],
+          [DraftType.Map, hasKey ? MapOperation.Replace : MapOperation.Set],
           [[index]],
           [_key, getValueOrPath(_value)],
         ]);
         inversePatches?.unshift([
-          [DraftType.Map, hasKey ? MapOperation.Set : MapOperation.Delete],
+          [DraftType.Map, hasKey ? MapOperation.Replace : MapOperation.Delete],
           [[index]],
           hasKey ? [_key, oldValue] : [],
         ]);

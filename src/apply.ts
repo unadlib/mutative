@@ -84,9 +84,9 @@ export function apply<T extends object, F extends boolean = false>(
                   current.delete(Array.from(current.keys())[key as number]);
                   return;
                 case MapOperation.Set:
-                  if (current.size > key) {
+                  // `params[0]` has been deep cloned
+                  if (current.size > key && typeof params[0] !== 'object') {
                     const values: any[][] = Array.from(current.entries());
-                    // replace or add with new value
                     const deleteCount = current.has(params[0]) ? 1 : 0;
                     values.splice(key as number, deleteCount, params);
                     current.clear();
@@ -95,6 +95,15 @@ export function apply<T extends object, F extends boolean = false>(
                     }
                   } else {
                     current.set(...params);
+                  }
+                  return;
+                case MapOperation.Replace:
+                  const values: any[][] = Array.from(current.entries());
+                  // replace or add with new value
+                  values.splice(key as number, 1, params);
+                  current.clear();
+                  for (const value of values) {
+                    current.set(...value);
                   }
                   return;
                 case MapOperation.Clear:
@@ -113,16 +122,15 @@ export function apply<T extends object, F extends boolean = false>(
                   );
                   return;
                 case SetOperation.Add:
-                  if (current.size > key) {
-                    // it should be kept in order
-                    const values = Array.from(current.values());
-                    values.splice(key as number, 0, params[0]);
-                    current.clear();
-                    for (const value of values) {
-                      current.add(value);
-                    }
-                  } else {
-                    current.add(params[0]);
+                  current.add(params[0]);
+                  return;
+                case SetOperation.Append:
+                  // it should be kept in order
+                  const values = Array.from(current.values());
+                  values.splice(key as number, 0, params[0]);
+                  current.clear();
+                  for (const value of values) {
+                    current.add(value);
                   }
                   return;
                 case SetOperation.Clear:

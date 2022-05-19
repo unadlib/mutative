@@ -80,6 +80,7 @@ export function createSetHandler({
   }
   const proxyProto = {
     add(value: any) {
+      const hasValue = this.has(value);
       const result = Set.prototype.add.call(state, value);
       if (
         target.original.has(value) &&
@@ -92,7 +93,8 @@ export function createSetHandler({
       if (isDraftable(value, target)) {
         assignedSet.add(value);
       }
-      if (patches && inversePatches) {
+      // set same value and ignore patches record
+      if (patches && inversePatches && !hasValue) {
         const index = Array.from(result.values()).indexOf(value);
         appendParentDraft({
           current: value,
@@ -111,7 +113,7 @@ export function createSetHandler({
         ]);
       }
       const paths = makeChange(target, patches && inversePatches && [[]]);
-      if (patches && inversePatches) {
+      if (patches && inversePatches && !hasValue) {
         appendPaths(paths!, patches, inversePatches);
       }
       return target.proxy;
@@ -156,7 +158,7 @@ export function createSetHandler({
       }
       patches?.push([[DraftType.Set, SetOperation.Delete], [[oldIndex!]], []]);
       inversePatches?.unshift([
-        [DraftType.Set, SetOperation.Add],
+        [DraftType.Set, SetOperation.Append],
         [[oldIndex!]],
         [current(value)],
       ]);
@@ -223,7 +225,8 @@ export function createSetHandler({
             proxyDraft = getProxyDraft(proxy)!;
             target.setMap!.set(original, proxyDraft);
           }
-          const value = proxyDraft?.proxy;
+          // if the original value is  undraftable, use the original value.
+          const value = proxyDraft?.proxy ?? original;
           return {
             done: false,
             value,

@@ -646,8 +646,7 @@ test('simple assignment - 6', () => {
   });
 });
 
-// todo: fix
-test.skip('simple assignment - 7', () => {
+test('simple assignment - 7', () => {
   const key1 = { prop: 'val1' };
   const key2 = { prop: 'val2' };
   checkPatches({ x: new Map([[key1, 4]]) }, (d) => {
@@ -691,15 +690,13 @@ test('delete 5', () => {
   );
 });
 
-// todo: fix
-test.skip('delete 6', () => {
+test('delete 6', () => {
   checkPatches(new Set(['x', 1]), (d) => {
     d.delete('x');
   });
 });
 
-// todo: fix
-test.skip('delete 7', () => {
+test('delete 7', () => {
   checkPatches({ x: new Set(['y', 1]) }, (d) => {
     d.x.delete('y');
   });
@@ -954,8 +951,7 @@ test('sets - add, delete, add - 1', () => {
   });
 });
 
-// todo: fix
-test.skip('sets - add, delete, add - 2', () => {
+test('sets - add, delete, add - 2', () => {
   checkPatches(new Set([2, 1]), (d) => {
     d.add(2);
     d.delete(2);
@@ -1007,12 +1003,55 @@ test('same value replacement - 1', () => {
 
 // todo: fix
 test.skip('same value replacement - 2', () => {
-  checkPatches({ x: { y: 3 } }, (d) => {
-    const a = d.x;
+  checkPatches([1, { x: 1 }, 3], (d) => {
+    const a = d[1];
     // @ts-ignore
-    d.x = 4;
-    d.x = a;
+    d[1] = 4;
+    d[1] = a;
   });
+});
+// todo: fix
+test.skip('same value replacement(array) - 2', () => {
+  checkPatches([1, { x: 1 }, 3], (d) => {
+    const a = d[1];
+    // @ts-ignore
+    d[1] = 4;
+    d[1] = a;
+  });
+});
+// todo: fix
+test.skip('same value replacement(array) - 2', () => {
+  checkPatches([1, 2, { x: 1 }], (d) => {
+    const a = d[2];
+    // @ts-ignore
+    d.pop();
+    d.push(a);
+  });
+});
+// todo: fix
+test.skip('same value replacement(set) - 2', () => {
+  checkPatches(new Set([1, 2, {}]), (d) => {
+    const [a] = Array.from(d.keys()).slice(-1);
+    // @ts-ignore
+    d.delete(a);
+    d.add(a);
+  });
+});
+// todo: fix
+test.skip('same value replacement(map) - 2', () => {
+  checkPatches(
+    new Map([
+      [1, { x: 1 }],
+      [2, { x: 1 }],
+      [3, { x: 1 }],
+    ]),
+    (d) => {
+      const a = d.get(1);
+      // @ts-ignore
+      d.set(1, 4);
+      d.set(1, a);
+    }
+  );
 });
 
 test('same value replacement - 3', () => {
@@ -1035,8 +1074,7 @@ test('same value replacement - 5', () => {
   });
 });
 
-// todo: fix
-test.skip('same value replacement - 6', () => {
+test('same value replacement - 6', () => {
   checkPatches(new Set(['x', 3]), (d) => {
     d.delete('x');
     d.add('x');
