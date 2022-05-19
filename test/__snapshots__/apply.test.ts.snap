@@ -5835,27 +5835,23 @@ Array [
       ],
     ],
     Array [
-      4,
+      Array [
+        Array [
+          "__MUTATIVE__",
+          "2",
+        ],
+      ],
     ],
   ],
   Array [
     Array [
       "array",
-      "set",
+      "pop",
     ],
     Array [
-      Array [
-        "1",
-      ],
+      Array [],
     ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "1",
-        ],
-      ],
-    ],
+    Array [],
   ],
 ]
 `;
@@ -5865,15 +5861,13 @@ Array [
   Array [
     Array [
       "array",
-      "set",
+      "push",
     ],
     Array [
-      Array [
-        "1",
-      ],
+      Array [],
     ],
     Array [
-      4,
+      Object {},
     ],
   ],
   Array [
@@ -5890,159 +5884,6 @@ Array [
       Object {
         "x": 1,
       },
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 2 3`] = `
-Array [
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "1",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "1",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "1",
-        ],
-      ],
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 2 4`] = `
-Array [
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "1",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "1",
-      ],
-    ],
-    Array [
-      Object {
-        "x": 1,
-      },
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 2 5`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      1,
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      1,
-      Array [
-        Array [
-          "__MUTATIVE__",
-          0,
-        ],
-      ],
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 2 6`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      1,
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      1,
-      Array [
-        Array [
-          "__MUTATIVE__",
-          0,
-        ],
-      ],
     ],
   ],
 ]
@@ -6705,6 +6546,63 @@ Array [
       ],
     ],
     Array [],
+  ],
+]
+`;
+
+exports[`set value and pop the value (array) - 2 1`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "unshift",
+    ],
+    Array [
+      Array [],
+    ],
+    Array [
+      Object {},
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "pop",
+    ],
+    Array [
+      Array [],
+    ],
+    Array [],
+  ],
+]
+`;
+
+exports[`set value and pop the value (array) - 2 2`] = `
+Array [
+  Array [
+    Array [
+      "array",
+      "push",
+    ],
+    Array [
+      Array [],
+    ],
+    Array [
+      Object {},
+    ],
+  ],
+  Array [
+    Array [
+      "array",
+      "splice",
+    ],
+    Array [
+      Array [],
+    ],
+    Array [
+      0,
+      1,
+    ],
   ],
 ]
 `;

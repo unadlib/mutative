@@ -1011,6 +1011,14 @@ test.skip('same value replacement - 2', () => {
   });
 });
 // todo: fix
+test.skip('set value and pop the value (array) - 2', () => {
+  checkPatches([1, { x: 1 }, {}], (d) => {
+    // @ts-ignore
+    d.unshift(d[2]);
+    d.pop();
+  });
+});
+// todo: fix
 test.skip('same value replacement(array) - 2', () => {
   checkPatches([1, { x: 1 }, 3], (d) => {
     const a = d[1];
