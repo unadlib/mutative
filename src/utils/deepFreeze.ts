@@ -4,23 +4,27 @@ const readonlyDescriptors = {
   configurable: false,
 };
 
-function isFrozenOrPrimitive(target: any) {
-  return (
-    typeof target !== 'object' ||
-    target === null ||
-    target === undefined ||
-    Object.isFrozen(target)
-  );
-}
-
+// TODO: refactor for better performance
 export function deepFreeze(target: any) {
   if (Object.isFrozen(target)) return;
   if (target instanceof Map) {
     for (const [key, value] of target) {
-      if (!isFrozenOrPrimitive(key)) {
+      if (
+        !(
+          typeof key !== 'object' ||
+          key === null ||
+          key === undefined ||
+          Object.isFrozen(key)
+        )
+      ) {
         deepFreeze(key);
       }
-      if (isFrozenOrPrimitive(value)) {
+      if (
+        typeof value !== 'object' ||
+        value === null ||
+        value === undefined ||
+        Object.isFrozen(value)
+      ) {
         continue;
       }
       deepFreeze(value);
@@ -47,7 +51,12 @@ export function deepFreeze(target: any) {
     });
   } else if (target instanceof Set) {
     for (const value of target) {
-      if (isFrozenOrPrimitive(value)) {
+      if (
+        typeof value !== 'object' ||
+        value === null ||
+        value === undefined ||
+        Object.isFrozen(value)
+      ) {
         continue;
       }
       deepFreeze(value);
@@ -74,13 +83,25 @@ export function deepFreeze(target: any) {
     });
   } else if (Array.isArray(target)) {
     for (const value of target) {
-      if (isFrozenOrPrimitive(value)) return;
+      if (
+        typeof value !== 'object' ||
+        value === null ||
+        value === undefined ||
+        Object.isFrozen(value)
+      )
+        return;
       deepFreeze(value);
     }
   } else {
     Object.getOwnPropertyNames(target).forEach((name) => {
       const value = target[name];
-      if (isFrozenOrPrimitive(value)) return;
+      if (
+        typeof value !== 'object' ||
+        value === null ||
+        value === undefined ||
+        Object.isFrozen(value)
+      )
+        return;
       deepFreeze(value);
     });
   }

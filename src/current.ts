@@ -1,23 +1,6 @@
-import { getProxyDraft, isPlainObject } from './utils';
+import { getProxyDraft } from './utils';
 
-/**
- * `current(draft)` to get current state
- *
- * ## Example
- *
- * ```ts
- * import { create, current } from '../index';
- *
- * const baseState = { foo: { bar: 'str' }, arr: [] };
- * const state = create(
- *   baseState,
- *   (draft) => {
- *     draft.foo.bar = 'str2';
- *     expect(current(draft.foo)).toEqual({ bar: 'str2' });
- *   },
- * );
- */
-export function current<T extends object>(target: T): T {
+export function current<T extends object>(target: T): any {
   const proxyDraft = getProxyDraft(target);
   if (proxyDraft) {
     if (!proxyDraft.copy) return proxyDraft.original;
@@ -28,7 +11,7 @@ export function current<T extends object>(target: T): T {
           value[index] = current(item);
         }
       });
-      return value as T;
+      return value;
     } else if (proxyDraft.copy instanceof Set) {
       const elements: any[] = [];
       proxyDraft.copy.forEach((item) => {
@@ -36,28 +19,31 @@ export function current<T extends object>(target: T): T {
         if (proxyDraft.setMap!.has(item)) {
           value = proxyDraft.setMap!.get(item)!.proxy;
         }
-        elements.push(current(value));
+        elements.push(getProxyDraft(value) ? current(value) : value);
       });
-      return new Set(elements) as T;
+      return new Set(elements);
     } else if (proxyDraft.copy instanceof Map) {
       const elements: [any, any][] = [];
       proxyDraft.copy.forEach((value, key) => {
-        elements.push([key, current(value)]);
+        elements.push([key, getProxyDraft(value) ? current(value) : value]);
       });
-      return new Map(elements) as T;
-    } else if (isPlainObject(proxyDraft.copy)) {
+      return new Map(elements);
+    } else if (
+      typeof proxyDraft.copy === 'object' &&
+      Object.getPrototypeOf(proxyDraft.copy) === Object.prototype
+    ) {
       // For best performance with shallow copies,
       // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));`.
       const copy: Record<string | symbol, any> = {};
       const draftCopy = proxyDraft.copy;
       Object.keys(draftCopy).forEach((key) => {
         const value = draftCopy[key];
-        copy![key] = current(value);
+        copy![key] = getProxyDraft(value) ? current(value) : value;
       });
-      return copy as T;
+      return copy;
     } else {
       throw new Error(
-        `Unsupported type: ${proxyDraft.copy}, only plain objects, arrays, Set and Map are supported`
+        `Unsupported type: ${proxyDraft.copy}, only regular objects, arrays, Set and Map are supported`
       );
     }
   }

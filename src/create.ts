@@ -3,26 +3,7 @@ import { draftify } from './draftify';
 import { dataTypes } from './constant';
 
 /**
- * `create(baseState, callback, options)` to create the next state
- *
- * ## Example
- *
- * ```ts
- * import { create } from '../index';
- *
- * const baseState = { foo: { bar: 'str' }, arr: [] };
- * const state = create(
- *   baseState,
- *   (draft) => {
- *     draft.foo.bar = 'str2';
- *   },
- * );
- *
- * expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
- * expect(state).not.toBe(baseState);
- * expect(state.foo).not.toBe(baseState.foo);
- * expect(state.arr).toBe(baseState.arr);
- * ```
+ * something
  */
 export function create<
   T extends object,
@@ -30,7 +11,7 @@ export function create<
   O extends boolean = false,
   R extends void | Promise<void> = void
 >(state: T, mutate: (draft: Mutable<T>) => R, options?: Options<O, F>) {
-  if (options?.hook?.(state, dataTypes) === dataTypes.mutable) {
+  if (options?.mark?.(state, dataTypes) === dataTypes.mutable) {
     const result = mutate(state as Mutable<T>);
     const finalization = options?.enablePatches ? [state, [], []] : state;
     if (result instanceof Promise) {

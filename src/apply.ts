@@ -1,156 +1,84 @@
-import type { Options, Patches } from './interface';
-import {
-  ArrayOperation,
-  DraftType,
-  MapOperation,
-  ObjectOperation,
-  SetOperation,
-} from './constant';
+import { DraftType, Operation } from './constant';
+import { Patches } from './interface';
+import { deepClone, getType } from './utils';
 import { create } from './create';
-import { deepClone, getProxyDraft, getValueWithPath, isPath } from './utils';
 
-/**
- * `apply(baseState, patches)` to create the next state
- *
- * ## Example
- *
- * ```ts
- * import { create, apply } from '../index';
- *
- * const baseState = { foo: { bar: 'str' }, arr: [] };
- * const [state, patches] = create(
- *   baseState,
- *   (draft) => {
- *     draft.foo.bar = 'str2';
- *   },
- *   { enablePatches: true }
- * );
- *
- * expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
- * expect(state).toEqual(apply(baseState, patches));
- *
- * expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
- * expect(state).toEqual(apply(baseState, patches));
- * ```
- */
-export function apply<T extends object, F extends boolean = false>(
-  baseState: T,
-  patches: Patches,
-  options?: Pick<
-    Options<false, F>,
-    Exclude<keyof Options<false, F>, 'enablePatches'>
-  >
-) {
-  return create<T, F>(
-    baseState,
-    (draft) => {
-      patches.forEach(([[type, operation], paths, args]) => {
-        const params: any[] = args.map(
-          (arg) =>
-            isPath(arg)
-              ? getValueWithPath(draft, [...arg[0].slice(1), null])
-              : deepClone(arg) // keep immutable for patches value
-        );
-        for (const path of paths) {
-          try {
-            const [key] = path.slice(-1);
-            const current = getValueWithPath(draft, path);
-            if (typeof current === 'undefined') continue;
-            if (type === DraftType.Object) {
-              switch (operation) {
-                case ObjectOperation.Delete:
-                  delete current[key];
-                  return;
-                case ObjectOperation.Set:
-                  current[key] = params[0];
-                  return;
-              }
-            } else if (type === DraftType.Array) {
-              switch (operation) {
-                case ArrayOperation.Pop:
-                case ArrayOperation.Push:
-                case ArrayOperation.Shift:
-                case ArrayOperation.Splice:
-                case ArrayOperation.Unshift:
-                  current[key][operation](...params);
-                  return;
-                case ArrayOperation.Set:
-                  current[key] = params[0];
-                  return;
-              }
-            } else if (type === DraftType.Map) {
-              switch (operation) {
-                case MapOperation.Delete:
-                  current.delete(Array.from(current.keys())[key as number]);
-                  return;
-                case MapOperation.Set:
-                  // `params[0]` has been deep cloned
-                  if (current.size > key && typeof params[0] !== 'object') {
-                    const values: any[][] = Array.from(current.entries());
-                    const deleteCount = current.has(params[0]) ? 1 : 0;
-                    values.splice(key as number, deleteCount, params);
-                    current.clear();
-                    for (const value of values) {
-                      current.set(...value);
-                    }
-                  } else {
-                    current.set(...params);
-                  }
-                  return;
-                case MapOperation.Replace:
-                  const values: any[][] = Array.from(current.entries());
-                  // replace or add with new value
-                  values.splice(key as number, 1, params);
-                  current.clear();
-                  for (const value of values) {
-                    current.set(...value);
-                  }
-                  return;
-                case MapOperation.Clear:
-                  current.clear();
-                  return;
-                case MapOperation.Construct:
-                  current.clear();
-                  params.forEach(([key, value]) => current.set(key, value));
-                  return;
-              }
-            } else if (type === DraftType.Set) {
-              switch (operation) {
-                case SetOperation.Delete:
-                  current.delete(
-                    Array.from(getProxyDraft(current)!.copy)[key as number]
-                  );
-                  return;
-                case SetOperation.Add:
-                  current.add(params[0]);
-                  return;
-                case SetOperation.Append:
-                  // it should be kept in order
-                  const values = Array.from(current.values());
-                  values.splice(key as number, 0, params[0]);
-                  current.clear();
-                  for (const value of values) {
-                    current.add(value);
-                  }
-                  return;
-                case SetOperation.Clear:
-                  current.clear();
-                  return;
-                case SetOperation.Construct:
-                  current.clear();
-                  params[0].forEach((value: any) => current.add(value));
-                  return;
-              }
-            }
-          } catch (e) {
-            // ignore some patches error for shared structures
-          }
+export function apply<T extends object>(state: T, patches: Patches): T {
+  return create<T>(state, (draft: any) => {
+    patches.forEach((patch) => {
+      const { path, op } = patch;
+      let base: any = draft;
+      for (let index = 0; index < path.length - 1; index++) {
+        const parentType = getType(base);
+        const key = String(path[index]);
+        if (
+          ((parentType === DraftType.Object ||
+            parentType === DraftType.Array) &&
+            (key === '__proto__' || key === 'constructor')) ||
+          (typeof base === 'function' && key === 'prototype')
+        ) {
+          throw new Error(
+            `Patching reserved attributes like __proto__, prototype and constructor is not allowed.`
+          );
         }
-      });
-    },
-    {
-      ...options,
-      enablePatches: false,
-    }
-  );
+        base = base[key];
+        // TODO: refactor
+        // base = get(base, p);
+        if (typeof base !== 'object') {
+          throw new Error(`Cannot apply patch at '${path.join('/')}'.`);
+        }
+      }
+
+      const type = getType(base);
+      // ensure the original patch is not modified.
+      const value = deepClone(patch.value);
+      const key = path[path.length - 1];
+      switch (op) {
+        case Operation.Replace:
+          switch (type) {
+            case DraftType.Map:
+              return base.set(key, value);
+            case DraftType.Set:
+              throw new Error(`Cannot apply replace patch to set.`);
+            default:
+              return (base[key] = value);
+          }
+        case Operation.Add:
+          switch (type) {
+            case DraftType.Array:
+              return key === '-'
+                ? base.push(value)
+                : base.splice(key as any, 0, value);
+            case DraftType.Map:
+              return base.set(key, value);
+            case DraftType.Set:
+              return base.add(value);
+            default:
+              return (base[key] = value);
+          }
+        case Operation.Remove:
+          switch (type) {
+            case DraftType.Array:
+              return base.splice(key as any, 1);
+            case DraftType.Map:
+              return base.delete(key);
+            case DraftType.Set:
+              return base.delete(patch.value);
+            default:
+              return delete base[key];
+          }
+        case Operation.Clear:
+          switch (type) {
+            case DraftType.Map:
+              return base.delete(key);
+            case DraftType.Set:
+              return base.delete(patch.value);
+            default:
+              throw new Error(`Only apply clear patches to Set or Map.`);
+          }
+        default:
+          throw new Error(`Unsupported patch operation: ${op}`);
+      }
+    });
+  });
 }

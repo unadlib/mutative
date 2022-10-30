@@ -2,7657 +2,2768 @@
 
 exports[`#468 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "0",
+      "id",
     ],
-    Array [
-      Array [
-        "0",
-        "id",
-      ],
+    "value": 2,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      1,
     ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "1",
-      ],
-    ],
-    Array [
-      Object {
-        "id": 1,
-      },
-    ],
-  ],
+    "value": Object {
+      "id": 1,
+    },
+  },
 ]
 `;
 
 exports[`#468 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "0",
+      "id",
     ],
-    Array [
-      Array [
-        "length",
-      ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "length",
     ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "0",
-        "id",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
+    "value": 1,
+  },
 ]
 `;
 
 exports[`#648 assigning object to itself should not change patches 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "obj",
+      "value",
     ],
-    Array [
-      Array [
-        "obj",
-        "value",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "obj",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "obj",
-        ],
-      ],
-    ],
-  ],
+    "value": 1,
+  },
 ]
 `;
 
 exports[`#648 assigning object to itself should not change patches 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "obj",
+      "value",
     ],
-    Array [
-      Array [
-        "obj",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "obj",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "obj",
-        "value",
-      ],
-    ],
-    Array [
-      200,
-    ],
-  ],
-]
-`;
-
-exports[`#876 Ensure empty patch set for atomic set+delete on Map 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "foo",
-      "bar",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`#876 Ensure empty patch set for atomic set+delete on Map 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "foo",
-      "bar",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "foo",
-      "baz",
-    ],
-  ],
-]
-`;
-
-exports[`#876 Ensure empty patch set for atomic set+delete on Map 3`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "foo",
-      "bar",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`#876 Ensure empty patch set for atomic set+delete on Map 4`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "foo",
-      "bar",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
-  ],
+    "value": 200,
+  },
 ]
 `;
 
 exports[`#879 delete item from array - 2 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "replace",
+    "path": Array [
+      2,
     ],
-    Array [
-      Array [
-        "2",
-      ],
-    ],
-    Array [],
-  ],
+    "value": undefined,
+  },
 ]
 `;
 
 exports[`#879 delete item from array - 2 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      2,
     ],
-    Array [
-      Array [
-        "2",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`#879 delete item from array 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "replace",
+    "path": Array [
+      1,
     ],
-    Array [
-      Array [
-        "1",
-      ],
-    ],
-    Array [],
-  ],
+    "value": undefined,
+  },
 ]
 `;
 
 exports[`#879 delete item from array 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      1,
     ],
-    Array [
-      Array [
-        "1",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
+    "value": 2,
+  },
 ]
 `;
 
-exports[`array case1 1`] = `
+exports[`array 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "push",
+  Object {
+    "op": "add",
+    "path": Array [
+      0,
     ],
-    Array [
-      Array [
-        "arr",
-      ],
+    "value": "new str",
+  },
+]
+`;
+
+exports[`array 2`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "length",
     ],
-    Array [
+    "value": 0,
+  },
+]
+`;
+
+exports[`array 3`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr10",
+      1,
+    ],
+    "value": undefined,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr9",
+      3,
+    ],
+    "value": undefined,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr9",
       4,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
+    "value": undefined,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr9",
+      5,
     ],
-    Array [
-      Array [
-        "arr",
-      ],
+    "value": undefined,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr9",
+      6,
     ],
-    Array [
-      2,
-      1,
+    "value": undefined,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr9",
       7,
+    ],
+    "value": undefined,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr9",
       8,
+    ],
+    "value": undefined,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr9",
       9,
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "a",
-      ],
-    ],
-    Array [
-      0,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "arr1",
-      ],
-    ],
-    Array [
-      Object {
-        "a": 2,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "arr2",
-      ],
-    ],
-    Array [
-      3,
-      4,
-      "d",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "pop",
-    ],
-    Array [
-      Array [
-        "arr3",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "array",
-      "unshift",
-    ],
-    Array [
-      Array [
-        "arr4",
-      ],
-    ],
-    Array [
-      0,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "shift",
-    ],
-    Array [
-      Array [
-        "arr5",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr6",
-        "0",
-      ],
-    ],
-    Array [
-      "c",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr6",
-        "2",
-      ],
-    ],
-    Array [
-      "a",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr7",
-        "0",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr7",
-        "1",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr7",
-        "2",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr7",
-        "3",
-      ],
-    ],
-    Array [
-      6,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr8",
-        "length",
-      ],
-    ],
-    Array [
-      0,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr9",
-        "10",
-      ],
-    ],
-    Array [
+    "value": undefined,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr9",
       10,
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "arr10",
-        "1",
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`array case1 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr10",
-        "1",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr9",
-        "length",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "arr8",
-      ],
-    ],
-    Array [
-      1,
-      2,
-      3,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr7",
-        "3",
-      ],
-    ],
-    Array [
-      6,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr7",
-        "2",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr7",
-        "1",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr7",
-        "0",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr6",
-        "2",
-      ],
-    ],
-    Array [
-      "c",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr6",
-        "0",
-      ],
-    ],
-    Array [
-      "a",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "unshift",
-    ],
-    Array [
-      Array [
-        "arr5",
-      ],
-    ],
-    Array [
-      "a",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "arr4",
-      ],
-    ],
-    Array [
-      0,
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "arr3",
-      ],
-    ],
-    Array [
-      "c",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "arr2",
-      ],
-    ],
-    Array [
-      3,
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "length",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "a",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "arr",
-      ],
-    ],
-    Array [
-      2,
-      3,
-      3,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr",
-        "length",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
-]
-`;
-
-exports[`array case2 1`] = `
-Array [
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "arr0",
-      ],
-    ],
-    Array [
-      Object {
-        "bar": "str",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "unshift",
-    ],
-    Array [
-      Array [
-        "arr0",
-      ],
-    ],
-    Array [
-      Object {
-        "bar": "str",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "arr2",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "arr1",
-          "0",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "bar",
-      ],
-      Array [
-        "arr2",
-        "2",
-        "bar",
-      ],
-    ],
-    Array [
-      "new str111",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "shift",
-    ],
-    Array [
-      Array [
-        "arr1",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr3",
-        "length",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr4",
-        "length",
-      ],
-    ],
-    Array [
+    "value": 10,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr8",
+      "length",
+    ],
+    "value": 0,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr7",
       0,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "arr2",
-      ],
-    ],
-    Array [
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr7",
       1,
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr6",
+      0,
+    ],
+    "value": "c",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr6",
+      2,
+    ],
+    "value": "a",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr5",
+      0,
+    ],
+    "value": "b",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr5",
+      1,
+    ],
+    "value": "c",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr5",
+      "length",
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr4",
+      0,
+    ],
+    "value": 0,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr4",
+      1,
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr4",
+      2,
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr4",
+      3,
+    ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr3",
+      "length",
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr2",
+      3,
+    ],
+    "value": "d",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      "0",
+      "a",
+    ],
+    "value": 0,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr1",
+      1,
+    ],
+    "value": Object {
+      "a": 2,
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr",
+      2,
+    ],
+    "value": 7,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr",
+      3,
+    ],
+    "value": 8,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr",
       4,
     ],
-  ],
+    "value": 9,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr",
+      5,
+    ],
+    "value": 4,
+  },
 ]
 `;
 
-exports[`array case2 2`] = `
+exports[`array 4`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "arr2",
-      ],
-    ],
-    Array [
-      1,
-      0,
-      Object {
-        "bar": "str1",
-      },
-      Object {
-        "bar": "new str111",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "arr4",
-      ],
-    ],
-    Array [
-      Object {
-        "bar": "str1",
-      },
-      Object {
-        "bar": "str1",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "arr3",
-      ],
-    ],
-    Array [
-      Object {
-        "bar": "str1",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "unshift",
-    ],
-    Array [
-      Array [
-        "arr1",
-      ],
-    ],
-    Array [
-      Object {
-        "bar": "new str111",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "bar",
-      ],
-      Array [
-        "arr2",
-        "2",
-        "bar",
-      ],
-    ],
-    Array [
-      "str1",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr2",
-        "length",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "arr0",
-      ],
-    ],
-    Array [
-      0,
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr10",
       1,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr9",
+      "length",
     ],
-    Array [
-      Array [
-        "arr0",
-        "length",
-      ],
+    "value": 3,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr8",
+      0,
     ],
-    Array [
+    "value": 1,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr8",
+      1,
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr8",
       2,
     ],
-  ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr7",
+      0,
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr7",
+      1,
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr6",
+      0,
+    ],
+    "value": "a",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr6",
+      2,
+    ],
+    "value": "c",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr5",
+      0,
+    ],
+    "value": "a",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr5",
+      1,
+    ],
+    "value": "b",
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr5",
+      2,
+    ],
+    "value": "c",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr4",
+      0,
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr4",
+      1,
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr4",
+      2,
+    ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr4",
+      "length",
+    ],
+    "value": 3,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr3",
+      2,
+    ],
+    "value": "c",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr2",
+      "length",
+    ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      "0",
+      "a",
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      "length",
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr",
+      2,
+    ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr",
+      "length",
+    ],
+    "value": 3,
+  },
+]
+`;
+
+exports[`array 5`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr4",
+      "length",
+    ],
+    "value": 0,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr3",
+      "length",
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      0,
+    ],
+    "value": Object {
+      "bar": "str1",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      "length",
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr2",
+      "length",
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr0",
+      0,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr0",
+      1,
+    ],
+    "value": Object {
+      "bar": "str0",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr0",
+      2,
+    ],
+    "value": Object {
+      "bar": "str0",
+    },
+  },
+]
+`;
+
+exports[`array 6`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr4",
+      0,
+    ],
+    "value": Object {
+      "bar": "str1",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr4",
+      1,
+    ],
+    "value": Object {
+      "bar": "str1",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr3",
+      1,
+    ],
+    "value": Object {
+      "bar": "str1",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      0,
+    ],
+    "value": Object {
+      "bar": "str1",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr1",
+      1,
+    ],
+    "value": Object {
+      "bar": "str1",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr2",
+      1,
+    ],
+    "value": Object {
+      "bar": "str1",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr0",
+      0,
+    ],
+    "value": Object {
+      "bar": "str0",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr0",
+      1,
+    ],
+    "value": Object {
+      "bar": "str0",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr0",
+      "length",
+    ],
+    "value": 2,
+  },
 ]
 `;
 
 exports[`array length with ref 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "set",
+  Object {
+    "op": "add",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        "foobar",
-        "length",
-      ],
+    "value": Object {
+      "baz": "new str0",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "length",
     ],
-    Array [
-      0,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str0",
-      },
-    ],
-  ],
+    "value": 0,
+  },
 ]
 `;
 
 exports[`array length with ref 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "remove",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        "f",
-      ],
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
+      0,
     ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "str",
-      },
-    ],
-  ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
 ]
 `;
 
 exports[`array pop with ref 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "pop",
+  Object {
+    "op": "add",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        "foobar",
-      ],
+    "value": Object {
+      "baz": "new str0",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "length",
     ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str0",
-      },
-    ],
-  ],
+    "value": 0,
+  },
 ]
 `;
 
 exports[`array pop with ref 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "remove",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        "f",
-      ],
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
+      0,
     ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "str",
-      },
-    ],
-  ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
 ]
 `;
 
 exports[`array setter with ref 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      0,
     ],
-    Array [
-      Array [
-        "foobar",
-        "0",
-      ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "bar",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str0",
-      },
-    ],
-  ],
+    "value": Object {
+      "baz": "new str0",
+    },
+  },
 ]
 `;
 
 exports[`array setter with ref 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      0,
     ],
-    Array [
-      Array [
-        "f",
-      ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "f",
     ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "0",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "str",
-      },
-    ],
-  ],
+  },
 ]
 `;
 
 exports[`array shift with ref 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "shift",
+  Object {
+    "op": "add",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        "foobar",
-      ],
+    "value": Object {
+      "baz": "new str0",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "length",
     ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str0",
-      },
-    ],
-  ],
+    "value": 0,
+  },
 ]
 `;
 
 exports[`array shift with ref 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "remove",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        "f",
-      ],
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
+      0,
     ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "unshift",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "str",
-      },
-    ],
-  ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
 ]
 `;
 
 exports[`array splice with ref 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
+  Object {
+    "op": "add",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        "foobar",
-      ],
+    "value": Object {
+      "baz": "new str0",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "length",
     ],
-    Array [
-      0,
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str0",
-      },
-    ],
-  ],
+    "value": 0,
+  },
 ]
 `;
 
 exports[`array splice with ref 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "remove",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
       0,
-      0,
-      Object {
-        "baz": "str",
-      },
     ],
-  ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
 ]
 `;
 
 exports[`array with ref 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "f",
+      "baz",
     ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
+    "value": "new str3",
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar1",
     ],
-    Array [
-      "new str",
+    "value": Object {
+      "baz": "new str2",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "length",
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "pop",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str1",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar1",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str1",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar1",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str2",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str3",
-    ],
-  ],
+    "value": 0,
+  },
 ]
 `;
 
 exports[`array with ref 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "f",
+      "baz",
     ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
+    "value": "str",
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foobar1",
     ],
-    Array [
-      "new str0",
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
+      0,
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar1",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str1",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "foobar1",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "str",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
-    Array [
-      undefined,
-    ],
-  ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
 ]
 `;
 
 exports[`array with ref 3`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "set",
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
+      0,
     ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
+    "value": Object {},
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
+      1,
     ],
-    Array [
-      "new str",
+    "value": Object {
+      "baz": "new str0",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "f",
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [
-      Object {},
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "f",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [],
-  ],
+  },
 ]
 `;
 
 exports[`array with ref 4`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "length",
     ],
-    Array [
-      Array [
-        "f",
-      ],
+    "value": 0,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Object {
-        "baz": "new str0",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "length",
-      ],
-    ],
-    Array [
-      0,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
-    Array [
-      undefined,
-    ],
-  ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
 ]
 `;
 
 exports[`arrays - NESTED splice should should result in remove op. 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "a",
+      "b",
+      "c",
+      "length",
     ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      1,
-      1,
-    ],
-  ],
+    "value": 1,
+  },
 ]
 `;
 
 exports[`arrays - NESTED splice should should result in remove op. 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
+      "b",
+      "c",
       1,
-      0,
-      2,
     ],
-  ],
+    "value": 2,
+  },
 ]
 `;
 
 exports[`arrays - delete 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x",
+      "1",
+      "c",
     ],
-    Array [
-      Array [
-        "x",
-        "1",
-        "c",
-      ],
-    ],
-    Array [],
-  ],
+  },
 ]
 `;
 
 exports[`arrays - delete 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
+      "1",
+      "c",
     ],
-    Array [
-      Array [
-        "x",
-        "1",
-        "c",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - modify and shrink 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      0,
     ],
-    Array [
-      Array [
-        "x",
-        "0",
-      ],
+    "value": 4,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "length",
     ],
-    Array [
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-        "length",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
+    "value": 2,
+  },
 ]
 `;
 
 exports[`arrays - modify and shrink 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "push",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      0,
     ],
-    Array [
-      Array [
-        "x",
-      ],
+    "value": 1,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
+      2,
     ],
-    Array [
-      3,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-        "0",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - multiple prepend 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "unshift",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      0,
     ],
-    Array [
-      Array [
-        "x",
-      ],
+    "value": 5,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      1,
     ],
-    Array [
+    "value": 4,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      2,
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
+      3,
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
       4,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "unshift",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      5,
-    ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - multiple prepend 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       0,
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      2,
     ],
-    Array [
-      Array [
-        "x",
-      ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "length",
     ],
-    Array [
-      0,
-      1,
-    ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - multiple splice 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [
-      4,
-      2,
-      3,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
       1,
-      2,
-      3,
     ],
-  ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      2,
+    ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      4,
+    ],
+    "value": 0,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "length",
+    ],
+    "value": 5,
+  },
 ]
 `;
 
 exports[`arrays - multiple splice 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
+  Object {
+    "op": "replace",
+    "path": Array [
+      1,
     ],
-    Array [
-      Array [],
-    ],
-    Array [
-      1,
-      1,
-      1,
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
       2,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
       4,
-      1,
-      4,
+    ],
+    "value": 4,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
       5,
     ],
-  ],
+    "value": 5,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      6,
+    ],
+    "value": 0,
+  },
 ]
 `;
 
 exports[`arrays - pop twice 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "pop",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "length",
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "array",
-      "pop",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [],
-  ],
+    "value": 1,
+  },
 ]
 `;
 
 exports[`arrays - pop twice 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "push",
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
+      1,
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+    "value": 2,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
       2,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - prepend 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "unshift",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      0,
     ],
-    Array [
-      Array [
-        "x",
-      ],
+    "value": 4,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      1,
     ],
-    Array [
-      4,
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      2,
     ],
-  ],
+    "value": 2,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
+      3,
+    ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - prepend 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       0,
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
     ],
-  ],
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      2,
+    ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "length",
+    ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - prepend then splice middle 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "unshift",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      0,
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      2,
+    "value": 4,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
     ],
-  ],
+    "value": 1,
+  },
 ]
 `;
 
 exports[`arrays - prepend then splice middle 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      2,
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       0,
-      2,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      0,
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
     ],
-  ],
+    "value": 2,
+  },
 ]
 `;
 
 exports[`arrays - push multiple 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "push",
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
+      3,
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+    "value": 4,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
       4,
-      5,
     ],
-  ],
+    "value": 5,
+  },
 ]
 `;
 
 exports[`arrays - push multiple 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "length",
     ],
-    Array [
-      Array [
-        "x",
-        "length",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - splice (expand) 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
-      1,
+    ],
+    "value": 4,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      2,
+    ],
+    "value": 5,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
+      3,
+    ],
+    "value": 6,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
       4,
-      5,
-      6,
     ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - splice (expand) 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
-      3,
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       2,
     ],
-  ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "length",
+    ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - splice (shrink) 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
-      3,
-      6,
     ],
-  ],
+    "value": 6,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      2,
+    ],
+    "value": 5,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "length",
+    ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - splice (shrink) 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
-      1,
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       2,
+    ],
+    "value": 3,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
       3,
+    ],
+    "value": 4,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
       4,
     ],
-  ],
+    "value": 5,
+  },
 ]
 `;
 
 exports[`arrays - splice middle 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      1,
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
     ],
-  ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "length",
+    ],
+    "value": 2,
+  },
 ]
 `;
 
 exports[`arrays - splice middle 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
-      0,
+    ],
+    "value": 2,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
       2,
     ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`arrays - splice middle then prepend 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      0,
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+    "value": 4,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
-      1,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "unshift",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
+    "value": 1,
+  },
 ]
 `;
 
 exports[`arrays - splice middle then prepend 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       0,
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
       1,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      1,
-      0,
-      2,
-    ],
-  ],
+    "value": 2,
+  },
 ]
 `;
 
 exports[`arrays - splice should should result in remove op. 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "length",
     ],
-    Array [
-      Array [],
-    ],
-    Array [
-      1,
-      1,
-    ],
-  ],
+    "value": 1,
+  },
 ]
 `;
 
 exports[`arrays - splice should should result in remove op. 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [
+  Object {
+    "op": "add",
+    "path": Array [
       1,
-      0,
-      2,
     ],
-  ],
+    "value": 2,
+  },
 ]
 `;
 
 exports[`arrays - truncate 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "length",
     ],
-    Array [
-      Array [
-        "x",
-        "length",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
+    "value": 1,
+  },
 ]
 `;
 
 exports[`arrays - truncate 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "push",
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
+      1,
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
+    "value": 2,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
       2,
-      3,
     ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`change then delete property 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [],
-  ],
+  },
 ]
 `;
 
 exports[`change then delete property 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "x",
-      ],
+    "value": 1,
+  },
+]
+`;
+
+exports[`deeply nested object (with changes) 1`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
+      "x",
     ],
-    Array [
-      2,
+    "value": Object {
+      "c": 2,
+      "y": 2,
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "a",
+      "b",
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
+  },
+]
+`;
+
+exports[`deeply nested object (with changes) 2`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "a",
+      "x",
     ],
-    Array [
-      Array [
-        "x",
-      ],
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
+      "b",
     ],
-    Array [
-      1,
-    ],
-  ],
+    "value": Object {
+      "c": 1,
+      "d": 1,
+    },
+  },
 ]
 `;
 
 exports[`delete 1 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [],
-  ],
+  },
 ]
 `;
 
 exports[`delete 1 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      Object {
-        "y": 4,
-      },
-    ],
-  ],
-]
-`;
-
-exports[`delete 2 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`delete 2 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "x",
-      1,
-    ],
-  ],
-]
-`;
-
-exports[`delete 3 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`delete 3 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [
-      "y",
-      1,
-    ],
-  ],
-]
-`;
-
-exports[`delete 5 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`delete 5 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [
-      Object {
-        "prop": "val2",
-      },
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [
-      Object {
-        "prop": "val1",
-      },
-      1,
-    ],
-  ],
-]
-`;
-
-exports[`delete 6 1`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`delete 6 2`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "append",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
+  Object {
+    "op": "add",
+    "path": Array [
       "x",
     ],
-  ],
-]
-`;
-
-exports[`delete 7 1`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`delete 7 2`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "append",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [
-      "y",
-    ],
-  ],
+    "value": Object {
+      "y": 4,
+    },
+  },
 ]
 `;
 
 exports[`enablePatches and assign with ref array 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "push",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      "0",
+      "a",
     ],
-    Array [
-      Array [
-        "arr0",
-      ],
+    "value": 444,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr0",
+      1,
     ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "arr1",
-          "0",
-        ],
-      ],
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "a",
-          "b",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
+    "value": Object {
+      "a": 333,
+      "c": 333,
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "arr0",
       2,
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
+    "value": Array [
+      Object {
+        "a": 444,
+      },
     ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "a",
+      "b",
     ],
-    Array [
-      333,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "a",
-      ],
-    ],
-    Array [
-      222,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "a",
-      ],
-      Array [
-        "arr0",
-        "1",
-        "a",
-      ],
-    ],
-    Array [
-      333,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr0",
-        "2",
-        "a",
-      ],
-    ],
-    Array [
-      444,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [
-        "arr0",
-      ],
-    ],
-    Array [
-      0,
-      2,
-    ],
-  ],
+  },
 ]
 `;
 
 exports[`enablePatches and assign with ref array 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "splice",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      "0",
+      "a",
     ],
-    Array [
-      Array [
-        "arr0",
-      ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr0",
+      "length",
     ],
-    Array [
-      0,
-      0,
-      Object {
-        "a": 1,
-      },
-      Object {
-        "a": 333,
-      },
+    "value": 1,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
+      "b",
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "arr0",
-        "2",
-        "a",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "a",
-      ],
-      Array [
-        "arr0",
-        "1",
-        "a",
-      ],
-    ],
-    Array [
-      222,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "a",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [
-      Object {
-        "c": 333,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr0",
-        "length",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
+    "value": Object {
+      "c": 1,
+    },
+  },
 ]
 `;
 
 exports[`enablePatches and assign with ref object 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
+      "arr",
+      0,
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "a",
-          "b",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x1",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "a",
-          "b",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "a",
-        "arr",
-      ],
-    ],
-    Array [
+    "value": 1,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
+      "arr",
       1,
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "a",
+      "b",
+      "c",
     ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
+    "value": 333,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
     ],
-    Array [
-      2,
+    "value": Object {
+      "c": 333,
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x1",
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      333,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "a",
-        "arr",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
+    "value": Object {
+      "c": 333,
+    },
+  },
 ]
 `;
 
 exports[`enablePatches and assign with ref object 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "a",
+      "arr",
+      "length",
     ],
-    Array [
-      Array [
-        "a",
-        "arr",
-        "length",
-      ],
+    "value": 0,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "a",
+      "b",
+      "c",
     ],
-    Array [
-      1,
+    "value": 1,
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x",
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x1",
     ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "arr",
-        "length",
-      ],
-    ],
-    Array [
-      0,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x1",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [],
-  ],
+  },
 ]
 `;
 
 exports[`enablePatches and assign/delete with ref object 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "x",
-      ],
+    "value": Object {
+      "c": 444,
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "x1",
     ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "a",
-          "b",
-        ],
-      ],
+    "value": Object {
+      "c": 444,
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
+      "arr",
+      0,
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x1",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "a",
-          "b",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "a",
-        "arr",
-      ],
-    ],
-    Array [
+    "value": 1,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
+      "arr",
       1,
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
+    "value": 2,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "a",
+      "b",
     ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      333,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [
-        "a",
-        "arr",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x1",
-        "c",
-      ],
-    ],
-    Array [
-      444,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [
-      Object {
-        "f": 1,
-      },
-    ],
-  ],
+    "value": Object {
+      "f": 1,
+    },
+  },
 ]
 `;
 
 exports[`enablePatches and assign/delete with ref object 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x1",
     ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "a",
+      "arr",
+      "length",
     ],
-    Array [
-      Array [
-        "x1",
-        "c",
-      ],
-    ],
-    Array [
-      333,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "arr",
-        "length",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [
-      Object {
-        "c": 333,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "arr",
-        "length",
-      ],
-    ],
-    Array [
-      0,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x1",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`map 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        "map",
-        2,
-      ],
-    ],
-    Array [
+    "value": 0,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "a",
       "b",
-      Object {
-        "bar": "str",
-      },
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "clear",
-    ],
-    Array [
-      Array [
-        "map1",
-        -1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        "map3",
-        0,
-      ],
-    ],
-    Array [
-      "a",
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "map2",
-          1,
-        ],
-        Array [
-          "__MUTATIVE__",
-          "map3",
-          0,
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map2",
-        1,
-        "bar",
-      ],
-      Array [
-        "map3",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        "map2",
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map4",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str_a",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        "map4",
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`map 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        "map4",
-        0,
-      ],
-    ],
-    Array [
-      "a",
-      Object {
-        "bar": "new str_a",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map4",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "str_a",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        "map2",
-        1,
-      ],
-    ],
-    Array [
-      "c",
-      Object {
-        "bar": "new str",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map2",
-        1,
-        "bar",
-      ],
-      Array [
-        "map3",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        "map3",
-        0,
-      ],
-    ],
-    Array [
-      "a",
-      Object {
-        "bar": "str",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "construct",
-    ],
-    Array [
-      Array [
-        "map1",
-        -1,
-      ],
-    ],
-    Array [
-      Array [
-        "a",
-        Object {
-          "bar": "str",
-        },
-      ],
-      Array [
-        "c",
-        Object {
-          "bar": "str",
-        },
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        "map",
-        2,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`map with ref 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        "foobar",
-        0,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str0",
-      },
-    ],
-  ],
-]
-`;
-
-exports[`map with ref 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "str0",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        0,
-      ],
-    ],
-    Array [
-      "a",
-      Object {
-        "baz": "str0",
-      },
-    ],
-  ],
+    "value": Object {
+      "c": 1,
+    },
+  },
 ]
 `;
 
 exports[`minimum amount of changes 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "y",
-        "a",
-      ],
+    "value": 4,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "y",
     ],
-    Array [
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "y",
-        "b",
-      ],
-    ],
-    Array [
-      5,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "y",
-      ],
-    ],
-    Array [
-      Object {
-        "a": 2,
-      },
-    ],
-  ],
+    "value": Object {
+      "a": 2,
+    },
+  },
 ]
 `;
 
 exports[`minimum amount of changes 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "y",
-      ],
+    "value": 3,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "y",
     ],
-    Array [
-      Object {
-        "a": 4,
-        "b": 5,
-      },
+    "value": Object {
+      "a": 4,
+    },
+  },
+]
+`;
+
+exports[`nested change in array 1`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "0",
+      "0",
+      "b",
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
+    "value": 2,
+  },
+]
+`;
+
+exports[`nested change in array 2`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "0",
+      "0",
+      "b",
     ],
-    Array [
-      Array [
-        "x",
-      ],
+    "value": 1,
+  },
+]
+`;
+
+exports[`nested change in object 1`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "a",
+      "b",
     ],
-    Array [
-      3,
+    "value": 2,
+  },
+]
+`;
+
+exports[`nested change in object 2`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "a",
+      "b",
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
+    "value": 1,
+  },
+]
+`;
+
+exports[`nested object (no changes) 1`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "y",
-        "b",
-      ],
+    "value": Object {
+      "b": 1,
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "a",
     ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
+  },
+]
+`;
+
+exports[`nested object (no changes) 2`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "y",
-        "a",
-      ],
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
     ],
-    Array [
-      4,
+    "value": Object {
+      "b": 1,
+    },
+  },
+]
+`;
+
+exports[`nested object (with changes) 1`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
     ],
-  ],
+    "value": Object {
+      "b": 2,
+      "y": 2,
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "a",
+    ],
+  },
+]
+`;
+
+exports[`nested object (with changes) 2`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x",
+    ],
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "a",
+    ],
+    "value": Object {
+      "b": 1,
+      "c": 1,
+    },
+  },
+]
+`;
+
+exports[`object - assign ref 1`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+    ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foo",
+      "bar1",
+    ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
+]
+`;
+
+exports[`object - assign ref 2`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+    ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foo",
+      "bar1",
+    ],
+  },
+]
+`;
+
+exports[`object 1`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foo",
+      "bar",
+    ],
+    "value": "new str",
+  },
+]
+`;
+
+exports[`object 2`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foo",
+      "bar",
+    ],
+    "value": "str",
+  },
+]
+`;
+
+exports[`object assign ref 1`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foo",
+      "bar",
+    ],
+    "value": "new str",
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
+      "foo",
+    ],
+    "value": Object {
+      "bar": "new str",
+    },
+  },
+]
+`;
+
+exports[`object assign ref 2`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foo",
+      "bar",
+    ],
+    "value": "str",
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foobar",
+      "foo",
+    ],
+  },
+]
+`;
+
+exports[`object delete key 1`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foo",
+      "bar",
+    ],
+  },
+]
+`;
+
+exports[`object delete key 2`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "foo",
+      "bar",
+    ],
+    "value": "str",
+  },
 ]
 `;
 
 exports[`object setter with ref 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "f",
     ],
-    Array [
-      Array [
-        "foobar",
-        "f",
-      ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "f",
     ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "bar",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str0",
-      },
-    ],
-  ],
+    "value": Object {
+      "baz": "new str0",
+    },
+  },
 ]
 `;
 
 exports[`object setter with ref 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "f",
     ],
-    Array [
-      Array [
-        "f",
-      ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "f",
     ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "f",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "str",
-      },
-    ],
-  ],
-]
-`;
-
-exports[`object with class 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "bar",
-        "foo",
-      ],
-    ],
-    Array [
-      "new str",
-    ],
-  ],
-]
-`;
-
-exports[`object with class 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "bar",
-        "foo",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-]
-`;
-
-exports[`object with delete 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str1",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar1",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str1",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar1",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str2",
-    ],
-  ],
-]
-`;
-
-exports[`object with delete 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar1",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str1",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "foobar1",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
+  },
 ]
 `;
 
 exports[`object with ref 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "f",
+      "baz",
     ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
+    "value": "new str3",
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foobar",
     ],
-    Array [
-      "new str",
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar1",
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str1",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar1",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str1",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar1",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str2",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str3",
-    ],
-  ],
+    "value": Object {
+      "baz": "new str2",
+    },
+  },
 ]
 `;
 
 exports[`object with ref 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "f",
+      "baz",
     ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
+    "value": "str",
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
     ],
-    Array [
-      "new str0",
+    "value": Object {
+      "baz": "str",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foobar1",
     ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar1",
-        "baz",
-      ],
-    ],
-    Array [
-      "new str1",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "foobar1",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-        "baz",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "foobar",
-        "baz",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
+  },
 ]
 `;
 
-exports[`renaming properties deeply nested map (with changes) 1`] = `
+exports[`patches mutate 1`] = `
 Array [
-  Array [
-    Array [
-      "map",
-      "replace",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "items",
     ],
-    Array [
-      Array [
-        0,
-        0,
-        0,
-      ],
-    ],
-    Array [
-      "c",
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-        1,
-      ],
-    ],
-    Array [
-      "y",
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-        1,
-      ],
-    ],
-    Array [
-      "x",
-      Array [
-        Array [
-          "__MUTATIVE__",
-          0,
-          0,
-        ],
-        Array [
-          "__MUTATIVE__",
-          0,
-          1,
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-      ],
-    ],
-    Array [],
-  ],
+    "value": Array [],
+  },
 ]
 `;
 
-exports[`renaming properties deeply nested map (with changes) 2`] = `
+exports[`patches mutate 2`] = `
 Array [
-  Array [
-    Array [
-      "map",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "items",
     ],
-    Array [
-      Array [
-        0,
-        0,
-      ],
-    ],
-    Array [
-      "b",
-      Map {
-        "c" => 2,
-        "y" => 2,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-        1,
-      ],
-    ],
-    Array [
-      "d",
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-        0,
-      ],
-    ],
-    Array [
-      "c",
-      1,
-    ],
-  ],
+    "value": Array [],
+  },
 ]
 `;
 
-exports[`renaming properties deeply nested object (with changes) 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "d",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "y",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "x",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "a",
-          "b",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
+exports[`same value replacement - 1 1`] = `Array []`;
 
-exports[`renaming properties deeply nested object (with changes) 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [
-      Object {
-        "c": 2,
-        "y": 2,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-        "x",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "y",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "d",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-        "c",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-]
-`;
+exports[`same value replacement - 1 2`] = `Array []`;
 
-exports[`renaming properties nested change in array 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "0",
-        "0",
-        "b",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-]
-`;
+exports[`same value replacement - 2 1`] = `Array []`;
 
-exports[`renaming properties nested change in array 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "0",
-        "0",
-        "b",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-]
-`;
+exports[`same value replacement - 2 2`] = `Array []`;
 
-exports[`renaming properties nested change in map 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-      ],
-    ],
-    Array [
-      "b",
-      2,
-    ],
-  ],
-]
-`;
+exports[`same value replacement - 3 1`] = `Array []`;
 
-exports[`renaming properties nested change in map 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-      ],
-    ],
-    Array [
-      "b",
-      1,
-    ],
-  ],
-]
-`;
+exports[`same value replacement - 3 2`] = `Array []`;
 
-exports[`renaming properties nested change in object 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-]
-`;
+exports[`same value replacement - 4 1`] = `Array []`;
 
-exports[`renaming properties nested change in object 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-]
-`;
+exports[`same value replacement - 4 2`] = `Array []`;
 
-exports[`renaming properties nested map (no changes) 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [
-      "x",
-      Array [
-        Array [
-          "__MUTATIVE__",
-          0,
-        ],
-        Array [
-          "__MUTATIVE__",
-          1,
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
+exports[`same value replacement - 4 3`] = `Array []`;
 
-exports[`renaming properties nested map (no changes) 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "a",
-      Map {
-        "b" => 1,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
+exports[`same value replacement - 4 4`] = `Array []`;
 
-exports[`renaming properties nested map (with changes) 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-      ],
-    ],
-    Array [
-      "b",
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-        1,
-      ],
-    ],
-    Array [
-      "y",
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [
-      "x",
-      Array [
-        Array [
-          "__MUTATIVE__",
-          0,
-        ],
-        Array [
-          "__MUTATIVE__",
-          1,
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
+exports[`same value replacement(array) - 2 1`] = `Array []`;
 
-exports[`renaming properties nested map (with changes) 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "a",
-      Map {
-        "b" => 2,
-        "y" => 2,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-        1,
-      ],
-    ],
-    Array [
-      "c",
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-        0,
-      ],
-    ],
-    Array [
-      "b",
-      1,
-    ],
-  ],
-]
-`;
+exports[`same value replacement(array) - 2 2`] = `Array []`;
 
-exports[`renaming properties nested object (no changes) 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "a",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
+exports[`same value replacement(array) - 2 3`] = `Array []`;
 
-exports[`renaming properties nested object (no changes) 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-      ],
-    ],
-    Array [
-      Object {
-        "b": 1,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`renaming properties nested object (with changes) 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-        "c",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "y",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "a",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`renaming properties nested object (with changes) 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-      ],
-    ],
-    Array [
-      Object {
-        "b": 2,
-        "y": 2,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "a",
-        "y",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "c",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "a",
-        "b",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 1 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "x",
-        ],
-      ],
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 1 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "x",
-        ],
-      ],
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 2 1`] = `
-Array [
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "1",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "2",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "pop",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`same value replacement - 2 2`] = `
-Array [
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [
-      Object {},
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "1",
-      ],
-    ],
-    Array [
-      Object {
-        "x": 1,
-      },
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 3 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 3 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 4 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 4 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 5 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "x",
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "x",
-      3,
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 5 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "x",
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "x",
-      3,
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 6 1`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "set",
-      "add",
-    ],
-    Array [
-      Array [
-        2,
-      ],
-    ],
-    Array [
-      "x",
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement - 6 2`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "set",
-      "append",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "x",
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement(array) - 2 1`] = `
-Array [
-  Array [
-    Array [
-      "array",
-      "pop",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "2",
-        ],
-      ],
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement(array) - 2 2`] = `
-Array [
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "length",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [
-      Object {
-        "x": 1,
-      },
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement(map) - 2 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      1,
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      1,
-      Array [
-        Array [
-          "__MUTATIVE__",
-          0,
-        ],
-      ],
-    ],
-  ],
-]
-`;
-
-exports[`same value replacement(map) - 2 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      1,
-      4,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      1,
-      Array [
-        Array [
-          "__MUTATIVE__",
-          0,
-        ],
-      ],
-    ],
-  ],
-]
-`;
-
-exports[`set 1`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "add",
-    ],
-    Array [
-      Array [
-        "set",
-        3,
-      ],
-    ],
-    Array [
-      Object {
-        "bar": "str",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "clear",
-    ],
-    Array [
-      Array [
-        "set1",
-        -1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "set",
-      "add",
-    ],
-    Array [
-      Array [
-        "set3",
-        3,
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "set",
-          0,
-        ],
-        Array [
-          "__MUTATIVE__",
-          "set3",
-          2,
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set",
-        0,
-        "bar",
-      ],
-      Array [
-        "set3",
-        2,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str1",
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        "set",
-        0,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set4",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str_a",
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        "set4",
-        0,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`set 2`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "append",
-    ],
-    Array [
-      Array [
-        "set4",
-        0,
-      ],
-    ],
-    Array [
-      Object {
-        "bar": "new str_a",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set4",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "append",
-    ],
-    Array [
-      Array [
-        "set",
-        0,
-      ],
-    ],
-    Array [
-      Object {
-        "bar": "new str1",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set",
-        0,
-        "bar",
-      ],
-      Array [
-        "set3",
-        2,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        "set3",
-        2,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "set",
-      "construct",
-    ],
-    Array [
-      Array [
-        "set1",
-        -1,
-      ],
-    ],
-    Array [
-      Array [
-        Object {
-          "bar": "str",
-        },
-        Object {
-          "bar": "str",
-        },
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "str1111",
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        "set",
-        2,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
+exports[`same value replacement(array) - 2 4`] = `Array []`;
 
 exports[`set value and pop the value (array) - 2 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "unshift",
+  Object {
+    "op": "replace",
+    "path": Array [
+      0,
     ],
-    Array [
-      Array [],
+    "value": Object {},
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      1,
     ],
-    Array [
-      Object {},
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      2,
     ],
-  ],
-  Array [
-    Array [
-      "array",
-      "pop",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [],
-  ],
+    "value": Object {
+      "x": 1,
+    },
+  },
 ]
 `;
 
 exports[`set value and pop the value (array) - 2 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "push",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [
-      Object {},
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "splice",
-    ],
-    Array [
-      Array [],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
       0,
+    ],
+    "value": 1,
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
       1,
     ],
-  ],
-]
-`;
-
-exports[`set with ref 1`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        "foobar",
-        0,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "new str0",
-      },
-    ],
-  ],
-]
-`;
-
-exports[`set with ref 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "delete",
-    ],
-    Array [
-      Array [
-        "f",
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [],
-    Array [
-      "str0",
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "append",
-    ],
-    Array [
-      Array [
-        "foobar",
-        0,
-      ],
-    ],
-    Array [
-      Object {
-        "baz": "str0",
-      },
-    ],
-  ],
-]
-`;
-
-exports[`sets - add - 1 1`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "add",
-    ],
-    Array [
-      Array [
-        2,
-      ],
-    ],
-    Array [
+    "value": Object {
+      "x": 1,
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
       2,
     ],
-  ],
-]
-`;
-
-exports[`sets - add - 1 2`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`sets - add, delete, add - 1 1`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "add",
-    ],
-    Array [
-      Array [
-        2,
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "set",
-      "add",
-    ],
-    Array [
-      Array [
-        2,
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-]
-`;
-
-exports[`sets - add, delete, add - 1 2`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "set",
-      "append",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`sets - add, delete, add - 2 1`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "set",
-      "add",
-    ],
-    Array [
-      Array [
-        2,
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-]
-`;
-
-exports[`sets - add, delete, add - 2 2`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "set",
-      "append",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-]
-`;
-
-exports[`sets - mutate - 1 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-        "val",
-      ],
-    ],
-    Array [
-      "rock",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        1,
-        "val",
-      ],
-    ],
-    Array [
-      "you",
-    ],
-  ],
-]
-`;
-
-exports[`sets - mutate - 1 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        1,
-        "val",
-      ],
-    ],
-    Array [
-      "will",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-        "val",
-      ],
-    ],
-    Array [
-      "We",
-    ],
-  ],
+    "value": Object {},
+  },
 ]
 `;
 
 exports[`simple array 1`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "push",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      "0",
+      "a",
     ],
-    Array [
-      Array [
-        "arr0",
-      ],
-    ],
-    Array [
-      Array [
-        Array [
-          "__MUTATIVE__",
-          "arr1",
-          "0",
-        ],
-      ],
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "a",
-      ],
-      Array [
-        "arr0",
-        "1",
-        "a",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "pop",
-    ],
-    Array [
-      Array [
-        "arr0",
-      ],
-    ],
-    Array [],
-  ],
+    "value": 2,
+  },
 ]
 `;
 
 exports[`simple array 2`] = `
 Array [
-  Array [
-    Array [
-      "array",
-      "push",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "arr1",
+      "0",
+      "a",
     ],
-    Array [
-      Array [
-        "arr0",
-      ],
-    ],
-    Array [
-      Object {
-        "a": 2,
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr1",
-        "0",
-        "a",
-      ],
-      Array [
-        "arr0",
-        "1",
-        "a",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
-  Array [
-    Array [
-      "array",
-      "set",
-    ],
-    Array [
-      Array [
-        "arr0",
-        "length",
-      ],
-    ],
-    Array [
-      1,
-    ],
-  ],
+    "value": 1,
+  },
 ]
 `;
 
 exports[`simple assignment - 1 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
+    "value": 4,
+  },
 ]
 `;
 
 exports[`simple assignment - 1 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      3,
-    ],
-  ],
+    "value": 3,
+  },
 ]
 `;
 
 exports[`simple assignment - 2 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "y",
     ],
-    Array [
-      Array [
-        "x",
-        "y",
-      ],
-    ],
-    Array [
-      5,
-    ],
-  ],
+    "value": 5,
+  },
 ]
 `;
 
 exports[`simple assignment - 2 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "y",
     ],
-    Array [
-      Array [
-        "x",
-        "y",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
+    "value": 4,
+  },
 ]
 `;
 
 exports[`simple assignment - 3 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "replace",
+    "path": Array [
+      "x",
+      "0",
+      "y",
     ],
-    Array [
-      Array [
-        "x",
-        "0",
-        "y",
-      ],
-    ],
-    Array [
-      5,
-    ],
-  ],
+    "value": 5,
+  },
 ]
 `;
 
 exports[`simple assignment - 3 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-        "0",
-        "y",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
-]
-`;
-
-exports[`simple assignment - 4 1`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-        "y",
-      ],
-    ],
-    Array [
-      5,
-    ],
-  ],
-]
-`;
-
-exports[`simple assignment - 4 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        0,
-        "y",
-      ],
-    ],
-    Array [
-      4,
-    ],
-  ],
-]
-`;
-
-exports[`simple assignment - 5 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [
-      "y",
-      5,
-    ],
-  ],
-]
-`;
-
-exports[`simple assignment - 5 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [
-      "y",
-      4,
-    ],
-  ],
-]
-`;
-
-exports[`simple assignment - 6 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
+  Object {
+    "op": "replace",
+    "path": Array [
       "x",
-      2,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [
+      "0",
       "y",
-      3,
     ],
-  ],
-]
-`;
-
-exports[`simple assignment - 6 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        0,
-      ],
-    ],
-    Array [
-      "x",
-      1,
-    ],
-  ],
-]
-`;
-
-exports[`simple assignment - 7 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [
-      Object {
-        "prop": "val1",
-      },
-      5,
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        "x",
-        1,
-      ],
-    ],
-    Array [
-      Object {
-        "prop": "val2",
-      },
-      6,
-    ],
-  ],
-]
-`;
-
-exports[`simple assignment - 7 2`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        "x",
-        1,
-      ],
-    ],
-    Array [],
-  ],
-  Array [
-    Array [
-      "map",
-      "replace",
-    ],
-    Array [
-      Array [
-        "x",
-        0,
-      ],
-    ],
-    Array [
-      Object {
-        "prop": "val1",
-      },
-      4,
-    ],
-  ],
+    "value": 4,
+  },
 ]
 `;
 
 exports[`simple delete 1`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "delete",
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [],
-  ],
+  },
 ]
 `;
 
 exports[`simple delete 2`] = `
 Array [
-  Array [
-    Array [
-      "object",
-      "set",
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
     ],
-    Array [
-      Array [
-        "x",
-      ],
-    ],
-    Array [
-      2,
-    ],
-  ],
-]
-`;
-
-exports[`simple map 1`] = `
-Array [
-  Array [
-    Array [
-      "map",
-      "set",
-    ],
-    Array [
-      Array [
-        "map",
-        2,
-      ],
-    ],
-    Array [
-      "b",
-      Object {
-        "bar": "str",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str",
-    ],
-  ],
-]
-`;
-
-exports[`simple map 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "map",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "map",
-      "delete",
-    ],
-    Array [
-      Array [
-        "map",
-        2,
-      ],
-    ],
-    Array [],
-  ],
-]
-`;
-
-exports[`simple set 1`] = `
-Array [
-  Array [
-    Array [
-      "set",
-      "add",
-    ],
-    Array [
-      Array [
-        "set",
-        3,
-      ],
-    ],
-    Array [
-      Object {
-        "bar": "str1",
-      },
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str0",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set",
-        1,
-        "bar",
-      ],
-    ],
-    Array [
-      "new str1",
-    ],
-  ],
-]
-`;
-
-exports[`simple set 2`] = `
-Array [
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set",
-        1,
-        "bar",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "object",
-      "set",
-    ],
-    Array [
-      Array [
-        "set",
-        0,
-        "bar",
-      ],
-    ],
-    Array [
-      "str",
-    ],
-  ],
-  Array [
-    Array [
-      "set",
-      "delete",
-    ],
-    Array [
-      Array [
-        "set",
-        2,
-      ],
-    ],
-    Array [],
-  ],
+    "value": 2,
+  },
 ]
 `;

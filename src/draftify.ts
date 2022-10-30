@@ -1,43 +1,20 @@
-import type {
-  Finalities,
-  Options,
-  Patches,
-  Result,
-} from './interface';
+import type { Finalities, Options, Patches, Result } from './interface';
 import { createDraft, finalizeDraft } from './draft';
-import { isDraftable } from './utils';
+import { getProxyDraft, isDraftable } from './utils';
+import { finalizePatches } from './patches';
 
-/**
- * `draftify(baseState, options)` to create the state draft
- *
- * ## Example
- *
- * ```ts
- * import { draftify } from '../index';
- *
- * const baseState = { foo: { bar: 'str' }, arr: [] };
- * const [draft, finalize] = draftify(baseState);
- * draft.foo.bar = 'str2';
- * const state = finalize();
- *
- * expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
- * expect(state).not.toBe(baseState);
- * expect(state.foo).not.toBe(baseState.foo);
- * expect(state.arr).toBe(baseState.arr);
- */
 export function draftify<
   T extends object,
   O extends boolean = false,
   F extends boolean = false
 >(baseState: T, options?: Options<O, F>): [T, () => Result<T, O, F>] {
-  const hook = options?.hook;
+  const marker = options?.mark;
   const enablePatches = options?.enablePatches ?? false;
-  if (!isDraftable(baseState, { hook })) {
+  if (!isDraftable(baseState, { marker })) {
     throw new Error(
       'create() only supports plain object, array, set, and map.'
     );
   }
-  const assignedSet = new WeakSet<any>();
   const finalities: Finalities = {
     draft: [],
     revoke: [],
@@ -51,12 +28,13 @@ export function draftify<
   const draft = createDraft({
     original: baseState,
     parentDraft: null,
-    patches,
-    inversePatches,
     finalities,
     enableAutoFreeze: options?.enableAutoFreeze,
-    hook,
-    assignedSet,
+    marker,
+  });
+  const target = getProxyDraft(draft)!;
+  target.finalities.draft.unshift((patches, inversePatches) => {
+    finalizePatches(target, patches, inversePatches);
   });
   return [
     draft,

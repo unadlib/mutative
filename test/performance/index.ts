@@ -221,44 +221,6 @@ measure(
 console.log('');
 
 measure(
-  'mutative - single - with enablePatches',
-  () => baseState,
-  (baseState: any) => {
-    const state = create(
-      baseState,
-      (draft) => {
-        for (let i = 0; i < MAX; i++) {
-          draft.arr.push(i);
-          draft.map[i] = i;
-        }
-      },
-      {
-        enablePatches: true,
-      }
-    );
-  }
-);
-
-measure(
-  'immer - single - with enablePatches',
-  () => {
-    setAutoFreeze(false);
-    setUseProxies(true);
-    return baseState;
-  },
-  (baseState: any) => {
-    const state = produceWithPatches(baseState, (draft: any) => {
-      for (let i = 0; i < MAX; i++) {
-        draft.arr.push(i);
-        draft.map[i] = i;
-      }
-    });
-  }
-);
-
-console.log('');
-
-measure(
   'mutative - single - with autoFreeze and patches',
   () => baseState,
   (baseState: any) => {
