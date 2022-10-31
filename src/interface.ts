@@ -1,10 +1,4 @@
-import {
-  DraftType,
-  dataTypes,
-  Operation,
-  SetOperation,
-  MapOperation,
-} from './constant';
+import { DraftType, dataTypes, Operation } from './constant';
 
 export type DataType = keyof typeof dataTypes;
 
@@ -31,7 +25,7 @@ export interface ProxyDraft<T = any> {
 }
 
 export type Patches = {
-  op: Operation | SetOperation | MapOperation;
+  op: Operation;
   path: (string | number)[];
   value?: any;
 }[];

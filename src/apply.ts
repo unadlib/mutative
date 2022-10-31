@@ -67,15 +67,6 @@ export function apply<T extends object>(state: T, patches: Patches): T {
             default:
               return delete base[key];
           }
-        case Operation.Clear:
-          switch (type) {
-            case DraftType.Map:
-              return base.delete(key);
-            case DraftType.Set:
-              return base.delete(patch.value);
-            default:
-              throw new Error(`Only apply clear patches to Set or Map.`);
-          }
         default:
           throw new Error(`Unsupported patch operation: ${op}`);
       }
