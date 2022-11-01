@@ -38,7 +38,6 @@ test('no update object with NaN', () => {
   expect(state).toBe(data);
 });
 
-
 test('check array options error', () => {
   const data = [1, 2, 3];
   expect(() => {
@@ -383,7 +382,7 @@ test('no update 2 items for array with shift and unshift', () => {
 //   expect(state).toBe(data);
 // });
 
-test.skip('no update for map', () => {
+test('update for map', () => {
   const data = {
     map: new Map([
       [1, { a: { b: 1 } }],
@@ -397,10 +396,11 @@ test.skip('no update for map', () => {
     draft.map.set(4, {} as any);
     draft.map.delete(4);
   });
-  expect(state).toBe(data);
+  expect(state).not.toBe(data);
+  expect(state).toEqual(data);
 });
 
-test.skip('no update for map', () => {
+test('no update for map', () => {
   const data = {
     map: new Map([
       [1, { a: { b: 1 } }],
@@ -411,8 +411,9 @@ test.skip('no update for map', () => {
   };
 
   const state = create(data, (draft) => {
-    draft.map.get(1)!.a.b = 2;
     draft.map.get(1)!.a.b = 1;
+    draft.map.get(2)!.a.b = 2;
+    draft.map.set(3, draft.map.get(3)!);
   });
   expect(state).toBe(data);
 });
