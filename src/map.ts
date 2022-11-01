@@ -10,7 +10,6 @@ import {
   latest,
   markChanged,
   markSetValue,
-  set,
 } from './utils';
 
 export const mapHandler = {
@@ -123,4 +122,4 @@ export const mapHandler = {
   },
 };
 
-export const mapHandlerKeys = Object.keys(mapHandler);
+export const mapHandlerKeys = [...Object.keys(mapHandler), iteratorSymbol];

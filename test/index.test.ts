@@ -1342,7 +1342,7 @@ test('base map freeze', () => {
   }).toThrowError();
 });
 
-test.skip('base map with deep object', () => {
+test('base map with deep object', () => {
   const a = { a: 1 };
   const b = {};
   const data = {
