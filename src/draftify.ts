@@ -32,10 +32,6 @@ export function draftify<
     enableAutoFreeze: options?.enableAutoFreeze,
     marker,
   });
-  const target = getProxyDraft(draft)!;
-  target.finalities.draft.unshift((patches, inversePatches) => {
-    finalizePatches(target, patches, inversePatches);
-  });
   return [
     draft,
     () => {

@@ -52,21 +52,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         finalities: target.finalities,
         marker: target.marker,
       });
-      const oldProxyDraft = getProxyDraft(target.copy![key]);
-      target.finalities.draft.unshift((patches, inversePatches) => {
-        const proxyDraft = getProxyDraft(target.copy![key]);
-        if (proxyDraft) {
-          finalizePatches(proxyDraft, patches, inversePatches);
-          // assign the updated value to the copy object
-          target.copy![key] = proxyDraft.operated
-            ? getValue(target.copy![key])
-            : proxyDraft.original;
-        }
-        // !case: handle the deleted key
-        oldProxyDraft?.callbacks?.forEach((callback) => {
-          callback(patches, inversePatches);
-        });
-      });
       return target.copy![key];
     }
     return value;
@@ -209,6 +194,30 @@ export function createDraft<T extends object>({
   );
   finalities.revoke.unshift(revoke);
   proxyDraft.proxy = proxy;
+  if (parentDraft) {
+    const target = parentDraft;
+    const oldProxyDraft = getProxyDraft(proxy);
+    target.finalities.draft.unshift((patches, inversePatches) => {
+      const proxyDraft = getProxyDraft(target.copy![key!]);
+      if (proxyDraft) {
+        finalizePatches(proxyDraft, patches, inversePatches);
+        // assign the updated value to the copy object
+        target.copy![key!] = proxyDraft.operated
+          ? getValue(target.copy![key!])
+          : proxyDraft.original;
+      }
+      // !case: handle the deleted key
+      oldProxyDraft?.callbacks?.forEach((callback) => {
+        callback(patches, inversePatches);
+      });
+    });
+  } else {
+    // !case: handle the root draft
+    const target = getProxyDraft(proxy)!;
+    target.finalities.draft.unshift((patches, inversePatches) => {
+      finalizePatches(target, patches, inversePatches);
+    });
+  }
   return proxy;
 }
 
