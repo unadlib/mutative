@@ -1,7 +1,6 @@
 import type { Finalities, Patches, ProxyDraft, Marker } from './interface';
 import { dataTypes, DraftType, PROXY_DRAFT } from './constant';
-// import { createMapHandler, mutableMapMethods } from './map';
-// import { createSetHandler, mutableSetMethods } from './set';
+import { mapHandler, mapHandlerKeys } from './map';
 import {
   deepFreeze,
   ensureShallowCopy,
@@ -13,10 +12,13 @@ import {
   isEqual,
   isDraftable,
   latest,
-  makeChange,
+  markChanged,
   peek,
+  get,
+  set,
+  markSetValue,
 } from './utils';
-import { finalizePatches } from './patches';
+import { finalizePatches } from './patch';
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
@@ -28,6 +30,17 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       }
     }
     const source = latest(target);
+    if (source instanceof Map && mapHandlerKeys.includes(key as any)) {
+      if (key === 'size') {
+        return Object.getOwnPropertyDescriptor(mapHandler, 'size')!.get!.call(
+          target.proxy
+        );
+      }
+      const handle = mapHandler[key as keyof typeof mapHandler];
+      if (handle) {
+        return handle.bind(target.proxy);
+      }
+    }
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
       return desc
@@ -38,7 +51,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         : undefined;
     }
     const value = source[key];
-
     if (target.finalized || !isDraftable(value, target)) {
       return value;
     }
@@ -87,20 +99,10 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     )
       return true;
     ensureShallowCopy(target);
-    makeChange(target);
+    markChanged(target);
     target.copy![key] = value;
     target.assignedMap.set(key, true);
-    const proxyDraft = getProxyDraft(value);
-    if (proxyDraft) {
-      // !case: assign the draft value
-      proxyDraft.callbacks = proxyDraft.callbacks ?? [];
-      proxyDraft.callbacks.push((patches, inversePatches) => {
-        if (isEqual(target.copy![key], value)) {
-          finalizePatches(target, patches, inversePatches);
-          target.copy![key] = proxyDraft.copy ?? proxyDraft.original;
-        }
-      });
-    }
+    markSetValue(target, key, value);
     return true;
   },
   has(target: ProxyDraft, key: string | symbol) {
@@ -110,28 +112,28 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     return Reflect.ownKeys(latest(target));
   },
   getOwnPropertyDescriptor(target: ProxyDraft, key: string | symbol) {
-    const owner = latest(target);
-    const descriptor = Reflect.getOwnPropertyDescriptor(owner, key);
+    const source = latest(target);
+    const descriptor = Reflect.getOwnPropertyDescriptor(source, key);
     if (!descriptor) return descriptor;
     return {
       writable: true,
       configurable: target.type !== DraftType.Array || key !== 'length',
       enumerable: descriptor.enumerable,
-      value: owner[key],
+      value: source[key],
     };
   },
   getPrototypeOf(target: ProxyDraft) {
     return Reflect.getPrototypeOf(target.original);
   },
   setPrototypeOf(target: ProxyDraft, value: object | null) {
-    throw new Error('Cannot `setPrototypeOf()` on a draft');
+    throw new Error('Cannot call `setPrototypeOf()` on drafts');
   },
   defineProperty(
     target: ProxyDraft,
     key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
-    throw new Error('Cannot `defineProperty()` on a draft');
+    throw new Error('Cannot call `defineProperty()` on drafts');
   },
   deleteProperty(target: ProxyDraft, key: string | symbol) {
     if (target.type === DraftType.Array) {
@@ -141,21 +143,21 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       // !case: delete an existing key
       target.assignedMap.set(key, false);
       ensureShallowCopy(target);
-      makeChange(target);
+      markChanged(target);
     } else {
       // The original non-existent key has been deleted
       target.assignedMap.delete(key);
     }
-    const proxyDraft = getProxyDraft(target.copy[key]);
+    // const proxyDraft = getProxyDraft(target.copy[key]);
     if (target.copy) delete target.copy[key];
-    if (proxyDraft) {
-      // !case: handle delete a draft
-      target.finalities.draft.unshift((patches, inversePatches) => {
-        proxyDraft.callbacks?.forEach((callback) => {
-          callback(patches, inversePatches);
-        });
-      });
-    }
+    // if (proxyDraft) {
+    //   // !case: handle delete a draft
+    //   target.finalities.draft.unshift((patches, inversePatches) => {
+    //     proxyDraft.callbacks?.forEach((callback) => {
+    //       callback(patches, inversePatches);
+    //     });
+    //   });
+    // }
     return true;
   },
 };
@@ -198,13 +200,14 @@ export function createDraft<T extends object>({
     const target = parentDraft;
     const oldProxyDraft = getProxyDraft(proxy);
     target.finalities.draft.unshift((patches, inversePatches) => {
-      const proxyDraft = getProxyDraft(target.copy![key!]);
+      const proxyDraft = getProxyDraft(get(target.copy, key!));
       if (proxyDraft) {
         finalizePatches(proxyDraft, patches, inversePatches);
         // assign the updated value to the copy object
-        target.copy![key!] = proxyDraft.operated
-          ? getValue(target.copy![key!])
+        const updatedValue = proxyDraft.operated
+          ? getValue(get(target.copy, key!))
           : proxyDraft.original;
+        set(target.copy, key!, updatedValue);
       }
       // !case: handle the deleted key
       oldProxyDraft?.callbacks?.forEach((callback) => {

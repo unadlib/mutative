@@ -1,6 +1,6 @@
 import type { Patches, ProxyDraft } from './interface';
 import { DraftType, Operation } from './constant';
-import { cloneIfNeeded, getPath, has, isEqual } from './utils';
+import { cloneIfNeeded, get, getPath, has, isEqual } from './utils';
 
 export function finalizePatches(
   target: ProxyDraft,
@@ -74,9 +74,8 @@ function generatePatchesFromAssigned(
 ) {
   const { original, copy } = proxyState;
   proxyState.assignedMap.forEach((assignedValue, key) => {
-    // TODO: handle map/set get value
-    const originalValue = original[key];
-    const value = cloneIfNeeded(copy![key]);
+    const originalValue = get(original, key);
+    const value = cloneIfNeeded(get(copy, key));
     const op = !assignedValue
       ? Operation.Remove
       : has(original, key)

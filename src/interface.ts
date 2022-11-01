@@ -1,4 +1,8 @@
-import { DraftType, dataTypes, Operation } from './constant';
+import {
+  DraftType,
+  dataTypes,
+  Operation,
+} from './constant';
 
 export type DataType = keyof typeof dataTypes;
 

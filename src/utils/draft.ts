@@ -10,7 +10,7 @@ export function isDraft(target: any) {
   return !!getProxyDraft(target);
 }
 
-export function getProxyDraft<T extends object>(value: T): ProxyDraft | null {
+export function getProxyDraft<T extends any>(value: T): ProxyDraft | null {
   if (typeof value !== 'object') return null;
   return (value as { [PROXY_DRAFT]: any })?.[PROXY_DRAFT];
 }
@@ -35,7 +35,10 @@ export function isDraftable<T extends { marker?: Marker } = ProxyDraft>(
   );
 }
 
-export function getPath(target: ProxyDraft, path: any[] = []): (string | number)[] {
+export function getPath(
+  target: ProxyDraft,
+  path: any[] = []
+): (string | number)[] {
   if (!target) return path;
   if (typeof target.key !== 'undefined') path.unshift(target.key);
   if (target.parent) {
@@ -50,6 +53,18 @@ export function getType(target: any) {
   if (target instanceof Set) return DraftType.Set;
   if (Array.isArray(target)) return DraftType.Array;
   return DraftType.Object;
+}
+
+export function get(target: any, key: PropertyKey) {
+  return getType(target) === DraftType.Map ? target.get(key) : target[key];
+}
+
+export function set(target: any, key: PropertyKey, value: any) {
+  if (getType(target) === DraftType.Map) {
+    target.set(key, value);
+  } else {
+    target[key] = value;
+  }
 }
 
 export function peek(draft: any, prop: PropertyKey) {

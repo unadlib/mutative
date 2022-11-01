@@ -383,51 +383,51 @@ test('no update 2 items for array with shift and unshift', () => {
 //   expect(state).toBe(data);
 // });
 
-// test('no update for map', () => {
-//   const data = {
-//     map: new Map([
-//       [1, { a: { b: 1 } }],
-//       [2, { a: { b: 2 } }],
-//       [3, { a: { b: 3 } }],
-//     ]),
-//     foo: 'bar',
-//   };
+test.skip('no update for map', () => {
+  const data = {
+    map: new Map([
+      [1, { a: { b: 1 } }],
+      [2, { a: { b: 2 } }],
+      [3, { a: { b: 3 } }],
+    ]),
+    foo: 'bar',
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.map.set(4, {} as any);
-//     draft.map.delete(4);
-//   });
-//   expect(state).toBe(data);
-// });
+  const state = create(data, (draft) => {
+    draft.map.set(4, {} as any);
+    draft.map.delete(4);
+  });
+  expect(state).toBe(data);
+});
 
-// test('no update for map', () => {
-//   const data = {
-//     map: new Map([
-//       [1, { a: { b: 1 } }],
-//       [2, { a: { b: 2 } }],
-//       [3, { a: { b: 3 } }],
-//     ]),
-//     foo: 'bar',
-//   };
+test.skip('no update for map', () => {
+  const data = {
+    map: new Map([
+      [1, { a: { b: 1 } }],
+      [2, { a: { b: 2 } }],
+      [3, { a: { b: 3 } }],
+    ]),
+    foo: 'bar',
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.map.get(1)!.a.b = 2;
-//     draft.map.get(1)!.a.b = 1;
-//   });
-//   expect(state).toBe(data);
-// });
+  const state = create(data, (draft) => {
+    draft.map.get(1)!.a.b = 2;
+    draft.map.get(1)!.a.b = 1;
+  });
+  expect(state).toBe(data);
+});
 
-// test('update for map', () => {
-//   const data = {
-//     map: new Map(),
-//     foo: 'bar',
-//   };
+test('update for map', () => {
+  const data = {
+    map: new Map(),
+    foo: 'bar',
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.map.set(1, undefined);
-//   });
-//   expect(state).not.toBe(data);
-// });
+  const state = create(data, (draft) => {
+    draft.map.set(1, undefined);
+  });
+  expect(state).not.toBe(data);
+});
 
 // test('update for set', () => {
 //   const data = {
@@ -835,31 +835,31 @@ test('base object set ref object2', () => {
 //   expect(Array.from(state.set).slice(-1)[0]).toBe(state.b);
 // });
 
-// test('base map set ref', () => {
-//   const data = {
-//     map: new Map<any, any>([['a', 1]]),
-//     b: { x: 1 },
-//   };
+test('base map set ref', () => {
+  const data = {
+    map: new Map<any, any>([['a', 1]]),
+    b: { x: 1 },
+  };
 
-//   const state = create(
-//     data,
-//     (draft) => {
-//       draft.map.set('b', draft.b);
-//       draft.b.x = 2;
-//     },
-//     {
-//       enablePatches: false,
-//     }
-//   );
-//   expect(state).toEqual({
-//     map: new Map<any, any>([
-//       ['a', 1],
-//       ['b', { x: 2 }],
-//     ]),
-//     b: { x: 2 },
-//   });
-//   expect(state.map.get('b')).toBe(state.b);
-// });
+  const state = create(
+    data,
+    (draft) => {
+      draft.map.set('b', draft.b);
+      draft.b.x = 2;
+    },
+    {
+      enablePatches: false,
+    }
+  );
+  expect(state).toEqual({
+    map: new Map<any, any>([
+      ['a', 1],
+      ['b', { x: 2 }],
+    ]),
+    b: { x: 2 },
+  });
+  expect(state.map.get('b')).toBe(state.b);
+});
 
 test('base array push', () => {
   const data = {
@@ -1128,80 +1128,80 @@ test('base array copyWithin 4', () => {
 //   expect(state.set).not.toBe(data.set);
 // });
 
-// test('base map set', () => {
-//   const data = {
-//     bar: {},
-//     map: new Map([
-//       [1, 1],
-//       [2, 2],
-//       [3, 3],
-//     ]),
-//   };
+test('base map set', () => {
+  const data = {
+    bar: {},
+    map: new Map([
+      [1, 1],
+      [2, 2],
+      [3, 3],
+    ]),
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.map.set(4, 4);
-//   });
-//   expect(state).toEqual({
-//     bar: {},
-//     map: new Map([
-//       [1, 1],
-//       [2, 2],
-//       [3, 3],
-//       [4, 4],
-//     ]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.bar).toBe(data.bar);
-//   expect(state.map).not.toBe(data.map);
-// });
+  const state = create(data, (draft) => {
+    draft.map.set(4, 4);
+  });
+  expect(state).toEqual({
+    bar: {},
+    map: new Map([
+      [1, 1],
+      [2, 2],
+      [3, 3],
+      [4, 4],
+    ]),
+  });
+  expect(state).not.toBe(data);
+  expect(state.bar).toBe(data.bar);
+  expect(state.map).not.toBe(data.map);
+});
 
-// test('base map clear', () => {
-//   const data = {
-//     bar: {},
-//     map: new Map([
-//       [1, 1],
-//       [2, 2],
-//       [3, 3],
-//     ]),
-//   };
+test('base map clear', () => {
+  const data = {
+    bar: {},
+    map: new Map([
+      [1, 1],
+      [2, 2],
+      [3, 3],
+    ]),
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.map.clear();
-//   });
-//   expect(state).toEqual({
-//     bar: {},
-//     map: new Map(),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.bar).toBe(data.bar);
-//   expect(state.map).not.toBe(data.map);
-// });
+  const state = create(data, (draft) => {
+    draft.map.clear();
+  });
+  expect(state).toEqual({
+    bar: {},
+    map: new Map(),
+  });
+  expect(state).not.toBe(data);
+  expect(state.bar).toBe(data.bar);
+  expect(state.map).not.toBe(data.map);
+});
 
-// test('base map delete', () => {
-//   const data = {
-//     bar: { a: 1 },
-//     map: new Map([
-//       [1, 1],
-//       [2, 2],
-//       [3, 3],
-//     ]),
-//   };
+test('base map delete', () => {
+  const data = {
+    bar: { a: 1 },
+    map: new Map([
+      [1, 1],
+      [2, 2],
+      [3, 3],
+    ]),
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.bar.a;
-//     draft.map.delete(2);
-//   });
-//   expect(state).toEqual({
-//     bar: { a: 1 },
-//     map: new Map([
-//       [1, 1],
-//       [3, 3],
-//     ]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.bar).toBe(data.bar);
-//   expect(state.map).not.toBe(data.map);
-// });
+  const state = create(data, (draft) => {
+    draft.bar.a;
+    draft.map.delete(2);
+  });
+  expect(state).toEqual({
+    bar: { a: 1 },
+    map: new Map([
+      [1, 1],
+      [3, 3],
+    ]),
+  });
+  expect(state).not.toBe(data);
+  expect(state.bar).toBe(data.bar);
+  expect(state.map).not.toBe(data.map);
+});
 
 test('base freeze', () => {
   const data = {
@@ -1302,80 +1302,80 @@ test('base freeze', () => {
 //   }).toThrowError();
 // });
 
-// test('base map freeze', () => {
-//   const data = {
-//     map: new Map([
-//       [1, 1],
-//       [2, 2],
-//       [3, 3],
-//     ]),
-//   };
+test('base map freeze', () => {
+  const data = {
+    map: new Map([
+      [1, 1],
+      [2, 2],
+      [3, 3],
+    ]),
+  };
 
-//   const state = create(
-//     data,
-//     (draft) => {
-//       draft.map.delete(2);
-//     },
-//     {
-//       enableAutoFreeze: true,
-//     }
-//   );
-//   expect(state).toEqual({
-//     map: new Map([
-//       [1, 1],
-//       [3, 3],
-//     ]),
-//   });
+  const state = create(
+    data,
+    (draft) => {
+      draft.map.delete(2);
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+  expect(state).toEqual({
+    map: new Map([
+      [1, 1],
+      [3, 3],
+    ]),
+  });
 
-//   expect(() => {
-//     // @ts-expect-error
-//     state.map.set(4, 4);
-//   }).toThrowError();
-//   expect(() => {
-//     // @ts-expect-error
-//     state.map.delete(1);
-//   }).toThrowError();
-//   expect(() => {
-//     // @ts-expect-error
-//     state.map.clear();
-//   }).toThrowError();
-// });
+  expect(() => {
+    // @ts-expect-error
+    state.map.set(4, 4);
+  }).toThrowError();
+  expect(() => {
+    // @ts-expect-error
+    state.map.delete(1);
+  }).toThrowError();
+  expect(() => {
+    // @ts-expect-error
+    state.map.clear();
+  }).toThrowError();
+});
 
-// test('base map with deep object', () => {
-//   const a = { a: 1 };
-//   const b = {};
-//   const data = {
-//     bar: {},
-//     map: new Map([
-//       [a, {}],
-//       [b, {}],
-//       [{}, {}],
-//     ]),
-//   };
+test.skip('base map with deep object', () => {
+  const a = { a: 1 };
+  const b = {};
+  const data = {
+    bar: {},
+    map: new Map([
+      [a, {}],
+      [b, {}],
+      [{}, {}],
+    ]),
+  };
 
-//   const state = create(data, (draft) => {
-//     // @ts-ignore
-//     draft.map.values().next().value.x = 1;
-//     for (const [key, item] of draft.map) {
-//       // @ts-ignore
-//       if (item.x === 1) {
-//         // @ts-ignore
-//         item.c = 2;
-//       }
-//     }
-//   });
-//   expect(state).toEqual({
-//     bar: {},
-//     map: new Map([
-//       [a, { x: 1, c: 2 }],
-//       [b, {}],
-//       [{}, {}],
-//     ]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect([...state.map.values()][0]).not.toBe([...data.map.values()][0]);
-//   expect([...state.map.values()][1]).toBe([...data.map.values()][1]);
-// });
+  const state = create(data, (draft) => {
+    // @ts-ignore
+    draft.map.values().next().value.x = 1;
+    for (const [key, item] of draft.map) {
+      // @ts-ignore
+      if (item.x === 1) {
+        // @ts-ignore
+        item.c = 2;
+      }
+    }
+  });
+  expect(state).toEqual({
+    bar: {},
+    map: new Map([
+      [a, { x: 1, c: 2 }],
+      [b, {}],
+      [{}, {}],
+    ]),
+  });
+  expect(state).not.toBe(data);
+  expect([...state.map.values()][0]).not.toBe([...data.map.values()][0]);
+  expect([...state.map.values()][1]).toBe([...data.map.values()][1]);
+});
 
 // test('base set deep object', () => {
 //   const a = { a: 1 };
@@ -1557,37 +1557,37 @@ test('array with mutable', () => {
   expect(state.arr).toBe(data.arr);
 });
 
-// test('map with mutable', () => {
-//   const foobar = {} as any;
-//   const data = {
-//     foo: {
-//       bar: 'str',
-//     },
-//     map: new Map([[1, { foobar }]]),
-//   };
+test('map with mutable', () => {
+  const foobar = {} as any;
+  const data = {
+    foo: {
+      bar: 'str',
+    },
+    map: new Map([[1, { foobar }]]),
+  };
 
-//   const state = create(
-//     data,
-//     (draft) => {
-//       draft.foo.bar = 'new str';
-//       draft.map.get(1)!.foobar.text = 'new text';
-//     },
-//     {
-//       mark: (target) => {
-//         if (target === foobar) return 'mutable';
-//       },
-//     }
-//   );
-//   expect(state).toEqual({
-//     foo: {
-//       bar: 'new str',
-//     },
-//     map: new Map([[1, { foobar: { text: 'new text' } }]]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.foo).not.toBe(data.foo);
-//   expect(state.map.get(1)!.foobar).toBe(foobar);
-// });
+  const state = create(
+    data,
+    (draft) => {
+      draft.foo.bar = 'new str';
+      draft.map.get(1)!.foobar.text = 'new text';
+    },
+    {
+      mark: (target) => {
+        if (target === foobar) return 'mutable';
+      },
+    }
+  );
+  expect(state).toEqual({
+    foo: {
+      bar: 'new str',
+    },
+    map: new Map([[1, { foobar: { text: 'new text' } }]]),
+  });
+  expect(state).not.toBe(data);
+  expect(state.foo).not.toBe(data.foo);
+  expect(state.map.get(1)!.foobar).toBe(foobar);
+});
 
 // test('set with mutable', () => {
 //   const foobar = {} as any;
@@ -1716,29 +1716,29 @@ test('array changes with mutable data', () => {
 //   expect([...state.set.values()][0]).toBe(foobar);
 // });
 
-// test('map changes with mutable data', () => {
-//   const foobar = {};
-//   const data = {
-//     foo: {
-//       bar: 'str',
-//     },
-//     map: new Map([[1, {} as any]]),
-//   };
+test('map changes with mutable data', () => {
+  const foobar = {};
+  const data = {
+    foo: {
+      bar: 'str',
+    },
+    map: new Map([[1, {} as any]]),
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.map.delete(1);
-//     draft.map.set(1, foobar);
-//     draft.map.get(1).text = 'new text';
-//   });
-//   expect(state).toEqual({
-//     foo: { bar: 'str' },
-//     map: new Map([[1, { text: 'new text' }]]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.foo).toBe(data.foo);
-//   expect(state.map.get(1)).not.toBe(data.map.get(1));
-//   expect(state.map.get(1)).toBe(foobar);
-// });
+  const state = create(data, (draft) => {
+    draft.map.delete(1);
+    draft.map.set(1, foobar);
+    draft.map.get(1).text = 'new text';
+  });
+  expect(state).toEqual({
+    foo: { bar: 'str' },
+    map: new Map([[1, { text: 'new text' }]]),
+  });
+  expect(state).not.toBe(data);
+  expect(state.foo).toBe(data.foo);
+  expect(state.map.get(1)).not.toBe(data.map.get(1));
+  expect(state.map.get(1)).toBe(foobar);
+});
 
 test('object changes with class instance', () => {
   class Foobar {

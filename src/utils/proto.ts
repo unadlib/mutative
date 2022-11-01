@@ -1,5 +1,7 @@
 export function has(target: object, property: PropertyKey): boolean {
-  return Object.prototype.hasOwnProperty.call(target, property);
+  return target instanceof Map
+    ? target.has(property)
+    : Object.prototype.hasOwnProperty.call(target, property);
 }
 
 export function getDescriptor(

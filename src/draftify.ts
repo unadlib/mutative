@@ -1,7 +1,7 @@
 import type { Finalities, Options, Patches, Result } from './interface';
 import { createDraft, finalizeDraft } from './draft';
 import { getProxyDraft, isDraftable } from './utils';
-import { finalizePatches } from './patches';
+import { finalizePatches } from './patch';
 
 export function draftify<
   T extends object,

@@ -17,12 +17,9 @@ function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
 }
 
 test('array', () => {
-  checkPatches(
-    [] as string[],
-    (draft) => {
-      draft.push('new str');
-    }
-  );
+  checkPatches([] as string[], (draft) => {
+    draft.push('new str');
+  });
 });
 
 test('object', () => {
@@ -220,58 +217,58 @@ test('array', () => {
   );
 });
 
-// test('simple map', () => {
-//   checkPatches(
-//     {
-//       map: new Map<any, any>([
-//         ['a', { bar: 'str' }],
-//         ['c', { bar: 'str' }],
-//       ]),
-//       foobar: {
-//         baz: 'str',
-//       } as any,
-//     },
-//     (draft) => {
-//       draft.map.set('b', { bar: 'str' });
-//       draft.map.values().next().value.bar = 'new str';
-//       draft.map.get('a').bar = 'new str';
-//     }
-//   );
-// });
+test('simple map', () => {
+  checkPatches(
+    {
+      map: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
+      foobar: {
+        baz: 'str',
+      } as any,
+    },
+    (draft) => {
+      draft.map.set('b', { bar: 'str' });
+      draft.map.values().next().value.bar = 'new str';
+      draft.map.get('a').bar = 'new str';
+    }
+  );
+});
 
-// test('map', () => {
-//   checkPatches(
-//     {
-//       map: new Map<any, any>([
-//         ['a', { bar: 'str' }],
-//         ['c', { bar: 'str' }],
-//       ]),
-//       map1: new Map<any, any>([
-//         ['a', { bar: 'str' }],
-//         ['c', { bar: 'str' }],
-//       ]),
-//       map2: new Map<any, any>([
-//         ['a', { bar: 'str' }],
-//         ['c', { bar: 'str' }],
-//       ]),
-//       map3: new Map<any, any>([
-//         ['a', { bar: 'str' }],
-//         ['c', { bar: 'str' }],
-//       ]),
-//       foobar: {
-//         baz: 'str',
-//       } as any,
-//     },
-//     (draft) => {
-//       draft.map.set('b', { bar: 'str' });
-//       draft.map.values().next().value.bar = 'new str';
-//       draft.map1.clear();
-//       draft.map3.set('a', draft.map2.get('c'));
-//       draft.map2.get('c').bar = 'new str';
-//       draft.map2.delete('c');
-//     }
-//   );
-// });
+test('map', () => {
+  checkPatches(
+    {
+      map: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
+      map1: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
+      map2: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
+      map3: new Map<any, any>([
+        ['a', { bar: 'str' }],
+        ['c', { bar: 'str' }],
+      ]),
+      foobar: {
+        baz: 'str',
+      } as any,
+    },
+    (draft) => {
+      draft.map.set('b', { bar: 'str' });
+      draft.map.values().next().value.bar = 'new str';
+      draft.map1.clear();
+      draft.map3.set('a', draft.map2.get('c'));
+      draft.map2.get('c').bar = 'new str';
+      draft.map2.delete('c');
+    }
+  );
+});
 
 // test('simple set', () => {
 //   checkPatches(
@@ -548,28 +545,26 @@ test('object setter with ref', () => {
 //   );
 // });
 
-// test('map with ref', () => {
-//   checkPatches(
-//     {
-//       foobar: new Map<any, any>([
-//         [
-//           'a',
-//           {
-//             baz: 'str0',
-//           },
-//         ],
-//       ]),
-//     },
-//     (draft: any) => {
-//       const f = draft.foobar.values().next().value;
-//       draft.foobar.delete('a');
-//       f.baz = 'new str0';
-//       draft.f = f;
-//     }
-//   );
-// });
-
-// // from immer test case
+test('map with ref', () => {
+  checkPatches(
+    {
+      foobar: new Map<any, any>([
+        [
+          'a',
+          {
+            baz: 'str0',
+          },
+        ],
+      ]),
+    },
+    (draft: any) => {
+      const f = draft.foobar.values().next().value;
+      draft.foobar.delete('a');
+      f.baz = 'new str0';
+      draft.f = f;
+    }
+  );
+});
 
 test('simple assignment - 1', () => {
   checkPatches({ x: 3 }, (d) => {
@@ -589,34 +584,35 @@ test('simple assignment - 3', () => {
   });
 });
 
-// test('simple assignment - 4', () => {
-//   checkPatches(new Map([['x', { y: 4 }]]), (d) => {
-//     d.get('x').y++;
-//   });
-// });
+test('simple assignment - 4', () => {
+  checkPatches(new Map([['x', { y: 4 }]]), (d) => {
+    // @ts-ignore
+    d.get('x').y++;
+  });
+});
 
-// test('simple assignment - 5', () => {
-//   checkPatches({ x: new Map([['y', 4]]) }, (d) => {
-//     d.x.set('y', 5);
-//   });
-// });
+test('simple assignment - 5', () => {
+  checkPatches({ x: new Map([['y', 4]]) }, (d) => {
+    d.x.set('y', 5);
+  });
+});
 
-// test('simple assignment - 6', () => {
-//   checkPatches(new Map([['x', 1]]), (d) => {
-//     // Map.prototype.set should return the Map itself
-//     const res = d.set('x', 2);
-//     res.set('y', 3);
-//   });
-// });
+test('simple assignment - 6', () => {
+  checkPatches(new Map([['x', 1]]), (d) => {
+    // Map.prototype.set should return the Map itself
+    const res = d.set('x', 2);
+    res.set('y', 3);
+  });
+});
 
-// test('simple assignment - 7', () => {
-//   const key1 = { prop: 'val1' };
-//   const key2 = { prop: 'val2' };
-//   checkPatches({ x: new Map([[key1, 4]]) }, (d) => {
-//     d.x.set(key1, 5);
-//     d.x.set(key2, 6);
-//   });
-// });
+test('simple assignment - 7', () => {
+  const key1 = { prop: 'val1' };
+  const key2 = { prop: 'val2' };
+  checkPatches({ x: new Map([[key1, 4]]) }, (d) => {
+    d.x.set(key1, 5);
+    d.x.set(key2, 6);
+  });
+});
 
 test('delete 1', () => {
   checkPatches({ x: { y: 4 } }, (d) => {
@@ -625,34 +621,34 @@ test('delete 1', () => {
   });
 });
 
-// test('delete 2', () => {
-//   checkPatches(new Map([['x', 1]]), (d) => {
-//     d.delete('x');
-//   });
-// });
+test('delete 2', () => {
+  checkPatches(new Map([['x', 1]]), (d) => {
+    d.delete('x');
+  });
+});
 
-// test('delete 3', () => {
-//   checkPatches({ x: new Map([['y', 1]]) }, (d) => {
-//     d.x.delete('y');
-//   });
-// });
+test('delete 3', () => {
+  checkPatches({ x: new Map([['y', 1]]) }, (d) => {
+    d.x.delete('y');
+  });
+});
 
-// test('delete 5', () => {
-//   const key1 = { prop: 'val1' };
-//   const key2 = { prop: 'val2' };
-//   checkPatches(
-//     {
-//       x: new Map([
-//         [key1, 1],
-//         [key2, 2],
-//       ]),
-//     },
-//     (d) => {
-//       d.x.delete(key1);
-//       d.x.delete(key2);
-//     }
-//   );
-// });
+test('delete 5', () => {
+  const key1 = { prop: 'val1' };
+  const key2 = { prop: 'val2' };
+  checkPatches(
+    {
+      x: new Map([
+        [key1, 1],
+        [key2, 2],
+      ]),
+    },
+    (d) => {
+      d.x.delete(key1);
+      d.x.delete(key2);
+    }
+  );
+});
 
 // test('delete 6', () => {
 //   checkPatches(new Set(['x', 1]), (d) => {
@@ -687,11 +683,12 @@ test('nested change in object', () => {
   );
 });
 
-//   test('nested change in map', () => {
-//     checkPatches(new Map([['a', new Map([['b', 1]])]]), (d) => {
-//       d.get('a').set('b', 2);
-//     });
-//   });
+test('nested change in map', () => {
+  checkPatches(new Map([['a', new Map([['b', 1]])]]), (d) => {
+    // @ts-ignore
+    d.get('a').set('b', 2);
+  });
+});
 
 test('nested change in array', () => {
   checkPatches([[{ b: 1 }]], (d) => {
@@ -699,12 +696,13 @@ test('nested change in array', () => {
   });
 });
 
-//   test('nested map (no changes)', () => {
-//     checkPatches(new Map([['a', new Map([['b', 1]])]]), (d) => {
-//       d.set('x', d.get('a'));
-//       d.delete('a');
-//     });
-//   });
+test('nested map (no changes)', () => {
+  checkPatches(new Map([['a', new Map([['b', 1]])]]), (d) => {
+    // @ts-ignore
+    d.set('x', d.get('a'));
+    d.delete('a');
+  });
+});
 
 test('nested object (with changes)', () => {
   checkPatches({ a: { b: 1, c: 1 } }, (d) => {
@@ -723,29 +721,29 @@ test('nested object (with changes)', () => {
   });
 });
 
-//   test('nested map (with changes)', () => {
-//     checkPatches(
-//       new Map([
-//         [
-//           'a',
-//           new Map([
-//             ['b', 1],
-//             ['c', 1],
-//           ]),
-//         ],
-//       ]),
-//       (d) => {
-//         let a = d.get('a');
-//         a.set('b', 2); // change
-//         a.delete('c'); // delete
-//         a.set('y', 2); // add
+test('nested map (with changes)', () => {
+  checkPatches(
+    new Map([
+      [
+        'a',
+        new Map([
+          ['b', 1],
+          ['c', 1],
+        ]),
+      ],
+    ]),
+    (d) => {
+      let a = d.get('a') as any;
+      a.set('b', 2); // change
+      a.delete('c'); // delete
+      a.set('y', 2); // add
 
-//         // rename
-//         d.set('x', a);
-//         d.delete('a');
-//       }
-//     );
-//   });
+      // rename
+      d.set('x', a);
+      d.delete('a');
+    }
+  );
+});
 
 test('deeply nested object (with changes)', () => {
   checkPatches({ a: { b: { c: 1, d: 1 } } }, (d) => {
@@ -764,35 +762,34 @@ test('deeply nested object (with changes)', () => {
   });
 });
 
-//   test('deeply nested map (with changes)', () => {
-//     checkPatches(
-//       new Map([
-//         [
-//           'a',
-//           new Map([
-//             [
-//               'b',
-//               new Map([
-//                 ['c', 1],
-//                 ['d', 1],
-//               ]),
-//             ],
-//           ]),
-//         ],
-//       ]),
-//       (d) => {
-//         let b = d.get('a').get('b');
-//         b.set('c', 2); // change
-//         b.delete('d'); // delete
-//         b.set('y', 2); // add
+test('deeply nested map (with changes)', () => {
+  checkPatches(
+    new Map([
+      [
+        'a',
+        new Map([
+          [
+            'b',
+            new Map([
+              ['c', 1],
+              ['d', 1],
+            ]),
+          ],
+        ]),
+      ],
+    ]),
+    (d) => {
+      let b = (d.get('a') as any).get('b') as any;
+      b.set('c', 2); // change
+      b.delete('d'); // delete
+      b.set('y', 2); // add
 
-//         // rename
-//         d.get('a').set('x', b);
-//         d.get('a').delete('b');
-//       }
-//     );
-//   });
-// });
+      // rename
+      d.get('a')!.set('x', b);
+      d.get('a')!.delete('b');
+    }
+  );
+});
 
 test('minimum amount of changes', () => {
   checkPatches({ x: 3, y: { a: 4 }, z: 3 }, (d) => {
@@ -1014,21 +1011,22 @@ test('same value replacement(array) - 2', () => {
 //   });
 // });
 // // todo: fix
-// test.skip('same value replacement(map) - 2', () => {
-//   checkPatches(
-//     new Map([
-//       [1, { x: 1 }],
-//       [2, { x: 1 }],
-//       [3, { x: 1 }],
-//     ]),
-//     (d) => {
-//       const a = d.get(1);
-//       // @ts-ignore
-//       d.set(1, 4);
-//       d.set(1, a);
-//     }
-//   );
-// });
+test('same value replacement(map) - 2', () => {
+  checkPatches(
+    new Map([
+      [1, { x: 1 }],
+      [2, { x: 1 }],
+      [3, { x: 1 }],
+    ]),
+    (d) => {
+      const a = d.get(1);
+      // @ts-ignore
+      d.set(1, 4);
+      // @ts-ignore
+      d.set(1, a);
+    }
+  );
+});
 
 test('same value replacement - 3', () => {
   checkPatches({ x: 3 }, (d) => {
@@ -1050,12 +1048,12 @@ test('same value replacement - 4', () => {
   });
 });
 
-// test('same value replacement - 5', () => {
-//   checkPatches(new Map([['x', 3]]), (d) => {
-//     d.set('x', 4);
-//     d.set('x', 3);
-//   });
-// });
+test('same value replacement - 5', () => {
+  checkPatches(new Map([['x', 3]]), (d) => {
+    d.set('x', 4);
+    d.set('x', 3);
+  });
+});
 
 // test('same value replacement - 6', () => {
 //   checkPatches(new Set(['x', 3]), (d) => {
@@ -1105,21 +1103,21 @@ test('#648 assigning object to itself should not change patches', () => {
   });
 });
 
-// test('#876 Ensure empty patch set for atomic set+delete on Map', () => {
-//   {
-//     checkPatches(new Map([['foo', 'baz']]), (draft) => {
-//       draft.set('foo', 'bar');
-//       draft.delete('foo');
-//     });
-//   }
+test('#876 Ensure empty patch set for atomic set+delete on Map', () => {
+  {
+    checkPatches(new Map([['foo', 'baz']]), (draft) => {
+      draft.set('foo', 'bar');
+      draft.delete('foo');
+    });
+  }
 
-//   {
-//     checkPatches(new Map(), (draft) => {
-//       draft.set('foo', 'bar');
-//       draft.delete('foo');
-//     });
-//   }
-// });
+  {
+    checkPatches(new Map(), (draft) => {
+      draft.set('foo', 'bar');
+      draft.delete('foo');
+    });
+  }
+});
 
 test('#879 delete item from array', () => {
   checkPatches([1, 2, 3], (draft) => {

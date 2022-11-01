@@ -1,6 +1,6 @@
+import type { Patches } from './interface';
 import { DraftType, Operation } from './constant';
-import { Patches } from './interface';
-import { deepClone, getType } from './utils';
+import { deepClone, get, getType } from './utils';
 import { create } from './create';
 
 export function apply<T extends object>(state: T, patches: Patches): T {
@@ -21,9 +21,7 @@ export function apply<T extends object>(state: T, patches: Patches): T {
             `Patching reserved attributes like __proto__, prototype and constructor is not allowed.`
           );
         }
-        base = base[key];
-        // TODO: refactor
-        // base = get(base, p);
+        base = get(base, key);
         if (typeof base !== 'object') {
           throw new Error(`Cannot apply patch at '${path.join('/')}'.`);
         }
@@ -68,7 +66,7 @@ export function apply<T extends object>(state: T, patches: Patches): T {
               return delete base[key];
           }
         default:
-          throw new Error(`Unsupported patch operation: ${op}`);
+          throw new Error(`Unsupported patch operation: ${op}.`);
       }
     });
   });

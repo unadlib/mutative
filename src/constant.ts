@@ -1,6 +1,9 @@
 // Not using `Symbol()` just for 3rd party access the draft
 export const PROXY_DRAFT = Symbol.for('__MUTATIVE_PROXY_DRAFT__');
 
+export const iteratorSymbol: typeof Symbol.iterator =
+  (typeof Symbol != 'undefined' && Symbol.iterator) || ('@@iterator' as any);
+
 export const dataTypes = {
   mutable: 'mutable',
   immutable: 'immutable',

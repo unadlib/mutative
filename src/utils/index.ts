@@ -1,5 +1,5 @@
 export * from './copy';
-export * from './makeChanges';
+export * from './mark';
 export * from './deepFreeze';
 export * from './draft';
 export * from './proto';

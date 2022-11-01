@@ -4,7 +4,7 @@
 //   getProxyDraft,
 //   isDraftable,
 //   latest,
-//   makeChange,
+//   markChanged,
 // } from './utils';
 // import { createDraft } from './draft';
 
@@ -47,7 +47,7 @@
 //       if (isDraftable(value, target)) {
 //         target.assignedMap.set(value, true);
 //       }
-//       makeChange(target);
+//       markChanged(target);
 //       return result;
 //     },
 //     clear() {
@@ -57,7 +57,7 @@
 //       } else {
 //         target.operated.add(CLEAR);
 //       }
-//       makeChange(target);
+//       markChanged(target);
 //       return result;
 //     },
 //     delete(value: any) {
@@ -71,7 +71,7 @@
 //       } else {
 //         target.operated.add(value);
 //       }
-//       makeChange(target);
+//       markChanged(target);
 //       return result;
 //     },
 //     has(value: any): boolean {
