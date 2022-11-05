@@ -1,7 +1,7 @@
 import { DraftType } from '../constant';
 import type { ProxyDraft } from '../interface';
 import { finalizePatches } from '../patch';
-import { get, getProxyDraft, getValue, isEqual, set } from './draft';
+import { get, getProxyDraft, isEqual, set } from './draft';
 
 export function markChanged(proxyDraft: ProxyDraft) {
   if (!proxyDraft.operated) {

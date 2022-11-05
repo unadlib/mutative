@@ -1,4 +1,4 @@
-import { iteratorSymbol } from './constant';
+import { dataTypes, iteratorSymbol } from './constant';
 import { createDraft } from './draft';
 import { ProxyDraft } from './interface';
 import {
@@ -23,6 +23,7 @@ const getNextIterator =
     let value = target.setMap!.get(key);
     const currentDraft = getProxyDraft(value);
     if (
+      !(target.marker?.(value, dataTypes) === dataTypes.mutable) &&
       !currentDraft &&
       isDraftable(key, target) &&
       !target.finalized &&

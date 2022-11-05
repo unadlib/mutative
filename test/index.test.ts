@@ -1607,14 +1607,14 @@ test('map with mutable', () => {
     foo: {
       bar: 'str',
     },
-    map: new Map([[1, { foobar }]]),
+    map: new Map([[1, foobar]]),
   };
 
   const state = create(
     data,
     (draft) => {
       draft.foo.bar = 'new str';
-      draft.map.get(1)!.foobar.text = 'new text';
+      draft.map.get(1)!.text = 'new text';
     },
     {
       mark: (target) => {
@@ -1626,14 +1626,14 @@ test('map with mutable', () => {
     foo: {
       bar: 'new str',
     },
-    map: new Map([[1, { foobar: { text: 'new text' } }]]),
+    map: new Map([[1, { text: 'new text' }]]),
   });
   expect(state).not.toBe(data);
   expect(state.foo).not.toBe(data.foo);
-  expect(state.map.get(1)!.foobar).toBe(foobar);
+  expect(state.map.get(1)).toBe(foobar);
 });
 
-test.skip('set with mutable', () => {
+test('set with mutable', () => {
   const foobar = {} as any;
   const data = {
     foo: {

@@ -1,4 +1,4 @@
-import { iteratorSymbol } from './constant';
+import { dataTypes, iteratorSymbol } from './constant';
 import { createDraft } from './draft';
 import {
   ensureShallowCopy,
@@ -46,8 +46,7 @@ export const mapHandler = {
   },
   clear() {
     const target = getProxyDraft(this)!;
-    // TODO: use `this.size`
-    if (!latest(target).size) return;
+    if (!this.size) return;
     ensureShallowCopy(target);
     markChanged(target);
     target.assignedMap = new Map();
@@ -65,6 +64,9 @@ export const mapHandler = {
   get(key: any): any {
     const target = getProxyDraft(this)!;
     const value = latest(target).get(key);
+    if (target.marker?.(value, dataTypes) === dataTypes.mutable) {
+      return value;
+    }
     if (target.finalized || !isDraftable(value)) {
       return value;
     }
