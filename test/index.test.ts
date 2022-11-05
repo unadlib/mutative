@@ -1812,7 +1812,7 @@ test('object changes with class instance', () => {
   expect(state.foobar).toBe(foobar);
 });
 
-test.skip('current', () => {
+test('current', () => {
   const data = {
     foo: {
       bar: 'str',
