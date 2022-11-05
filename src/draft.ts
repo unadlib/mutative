@@ -163,16 +163,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       // The original non-existent key has been deleted
       target.assignedMap.delete(key);
     }
-    // const proxyDraft = getProxyDraft(target.copy[key]);
     if (target.copy) delete target.copy[key];
-    // if (proxyDraft) {
-    //   // !case: handle delete a draft
-    //   target.finalities.draft.unshift((patches, inversePatches) => {
-    //     proxyDraft.callbacks?.forEach((callback) => {
-    //       callback(patches, inversePatches);
-    //     });
-    //   });
-    // }
     return true;
   },
 };

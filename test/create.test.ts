@@ -526,7 +526,7 @@ describe('base', () => {
   });
 });
 
-describe.skip('no updates', () => {
+describe('no updates', () => {
   test('object', () => {
     const data = {
       foo: {
@@ -538,11 +538,23 @@ describe.skip('no updates', () => {
     };
 
     const state = create(data, (draft) => {
-      draft.foo.bar = 'new str';
-      // @ts-ignore
-      delete draft.foobar.baz;
       draft.foo.bar = 'str';
-      draft.foobar.baz = 'str';
+    });
+    expect(state).toBe(data);
+  });
+  test('object delete', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      foobar: {
+        baz: 'str',
+      },
+    };
+
+    const state = create(data, (draft) => {
+      // @ts-ignore
+      delete draft.foobar1;
     });
     expect(state).toBe(data);
   });
@@ -554,129 +566,31 @@ describe.skip('no updates', () => {
     };
 
     const state = create(data, (draft) => {
-      draft.arr[0] = 'new str';
       draft.arr[0] = 'str';
     });
     expect(state).toBe(data);
   });
 
-  test('array with push and pop', () => {
+  test('array set length', () => {
     const data = {
       arr: ['str'] as any,
       foo: 'bar',
     };
 
     const state = create(data, (draft) => {
-      draft.arr.push('new str');
-      draft.arr.pop();
-    });
-    expect(state).toBe(data);
-  });
-
-  test('array with push and pop', () => {
-    const data = {
-      arr: ['str'] as any,
-      foo: 'bar',
-    };
-
-    const state = create(data, (draft) => {
-      draft.arr.push('new str', 'new str1');
-      draft.arr.pop();
-      draft.arr.pop();
-    });
-    expect(state).toBe(data);
-  });
-
-  test('case1 for array with splice', () => {
-    const data = {
-      arr: ['a', 'b', 'c'] as any,
-      foo: 'bar',
-    };
-
-    const state = create(data, (draft) => {
-      const result = draft.arr.splice(1, 1, 'new str', 'new str1');
-      draft.arr.splice(1, 2, ...result);
-    });
-    expect(state).toBe(data);
-  });
-
-  test('case2 for array with splice', () => {
-    const data = {
-      arr: ['a', 'b', 'c'] as any,
-      foo: 'bar',
-    };
-
-    const state = create(data, (draft) => {
-      const result = draft.arr.splice(1, 1);
-      draft.arr.splice(1, 0, ...result);
-    });
-    expect(state).toBe(data);
-  });
-
-  test('array with reverse', () => {
-    const data = {
-      arr: ['1', '3', '2'] as any,
-      foo: 'bar',
-    };
-
-    const state = create(data, (draft) => {
-      draft.arr.reverse();
-      draft.arr.reverse();
-    });
-    expect(state).toBe(data);
-  });
-
-  test('array with shift and unshift', () => {
-    const data = {
-      arr: ['1'] as any,
-      foo: 'bar',
-    };
-
-    const state = create(data, (draft) => {
-      draft.arr.unshift('new str');
-      draft.arr.shift();
-    });
-    expect(state).toBe(data);
-  });
-
-  test('2 items array with shift and unshift', () => {
-    const data = {
-      arr: ['1'] as any,
-      foo: 'bar',
-    };
-
-    const state = create(data, (draft) => {
-      draft.arr.unshift('new str', 'new str1');
-      draft.arr.shift();
-      draft.arr.shift();
+      draft.arr.length = 1;
     });
     expect(state).toBe(data);
   });
 
   test('set about new value operations', () => {
     const data = {
-      set: new Set([{}]),
+      set: new Set([{a: 1}]),
       foo: 'bar',
     };
 
     const state = create(data, (draft) => {
-      const a = {};
-      draft.set.add(a);
-      draft.set.delete(a);
-    });
-    expect(state).toBe(data);
-  });
-
-  test('set with old value operations', () => {
-    const a = {};
-    const data = {
-      set: new Set([a]),
-      foo: 'bar',
-    };
-
-    const state = create(data, (draft) => {
-      draft.set.delete(a);
-      draft.set.add(a);
+      draft.set.values().next().value.a = 1;
     });
     expect(state).toBe(data);
   });
@@ -684,16 +598,15 @@ describe.skip('no updates', () => {
   test('map with new value operations', () => {
     const data = {
       map: new Map([
-        [1, { a: { b: 1 } }],
-        [2, { a: { b: 2 } }],
-        [3, { a: { b: 3 } }],
+        [1, 'a'],
+        [2, 'b'],
+        [3, 'c'],
       ]),
       foo: 'bar',
     };
 
     const state = create(data, (draft) => {
-      draft.map.set(4, {} as any);
-      draft.map.delete(4);
+      draft.map.set(1, 'a');
     });
     expect(state).toBe(data);
   });
@@ -709,8 +622,9 @@ describe.skip('no updates', () => {
     };
 
     const state = create(data, (draft) => {
-      draft.map.get(1)!.a.b = 2;
       draft.map.get(1)!.a.b = 1;
+      draft.map.get(2)!.a.b = 2;
+      draft.map.get(3)!.a.b = 3;
     });
     expect(state).toBe(data);
   });
