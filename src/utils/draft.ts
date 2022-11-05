@@ -72,10 +72,10 @@ export function set(target: any, key: PropertyKey, value: any) {
   }
 }
 
-export function peek(draft: any, prop: PropertyKey) {
+export function peek(draft: any, key: PropertyKey) {
   const state = getProxyDraft(draft);
   const source = state ? latest(state) : draft;
-  return source[prop];
+  return source[key];
 }
 
 export function isEqual(x: any, y: any) {

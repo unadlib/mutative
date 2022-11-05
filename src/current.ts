@@ -1,5 +1,22 @@
 import { getProxyDraft } from './utils';
 
+/**
+ * `current(draft)` to get current state
+ *
+ * ## Example
+ *
+ * ```ts
+ * import { create, current } from '../index';
+ *
+ * const baseState = { foo: { bar: 'str' }, arr: [] };
+ * const state = create(
+ *   baseState,
+ *   (draft) => {
+ *     draft.foo.bar = 'str2';
+ *     expect(current(draft.foo)).toEqual({ bar: 'str2' });
+ *   },
+ * );
+ */
 // TODO: refactor
 export function current<T extends object>(target: T): any {
   const proxyDraft = getProxyDraft(target);

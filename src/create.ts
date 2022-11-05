@@ -1,9 +1,28 @@
-import type { CreateResult, Mutable, Options, Result } from './interface';
+import type { CreateResult, Mutable, Options } from './interface';
 import { draftify } from './draftify';
 import { dataTypes } from './constant';
 
 /**
- * something
+ * `create(baseState, callback, options)` to create the next state
+ *
+ * ## Example
+ *
+ * ```ts
+ * import { create } from '../index';
+ *
+ * const baseState = { foo: { bar: 'str' }, arr: [] };
+ * const state = create(
+ *   baseState,
+ *   (draft) => {
+ *     draft.foo.bar = 'str2';
+ *   },
+ * );
+ *
+ * expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+ * expect(state).not.toBe(baseState);
+ * expect(state.foo).not.toBe(baseState.foo);
+ * expect(state.arr).toBe(baseState.arr);
+ * ```
  */
 export function create<
   T extends object,
