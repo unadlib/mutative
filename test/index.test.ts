@@ -354,33 +354,76 @@ test('no update 2 items for array with shift and unshift', () => {
   expect(state).toEqual(data);
 });
 
-// test('no update for set', () => {
-//   const data = {
-//     set: new Set([{}]),
-//     foo: 'bar',
-//   };
+test('base root set', () => {
+  const data = new Set([{ a: 1 }, { a: 2 }]);
 
-//   const state = create(data, (draft) => {
-//     const a = {};
-//     draft.set.add(a);
-//     draft.set.delete(a);
-//   });
-//   expect(state).toBe(data);
-// });
+  const state = create(data, (draft) => {
+    draft.values().next().value.a = 3;
+  });
 
-// test('no update for set', () => {
-//   const a = {};
-//   const data = {
-//     set: new Set([a]),
-//     foo: 'bar',
-//   };
+  expect(state).not.toBe(data);
+  expect(Array.from(state)[0]).not.toBe(Array.from(data)[0]);
+  expect(Array.from(state)[1]).toBe(Array.from(data)[1]);
+});
 
-//   const state = create(data, (draft) => {
-//     draft.set.delete(a);
-//     draft.set.add(a);
-//   });
-//   expect(state).toBe(data);
-// });
+test('base set', () => {
+  const data = {
+    set: new Set([{ a: 1 }, { a: 2 }]),
+    foo: 'bar',
+  };
+
+  const state = create(data, (draft) => {
+    draft.set.values().next().value.a = 3;
+  });
+
+  expect(state).not.toBe(data);
+  expect(state.foo).toBe(data.foo);
+  expect(state.set).not.toBe(data.set);
+  expect(Array.from(state.set)[0]).not.toBe(Array.from(data.set)[0]);
+  expect(Array.from(state.set)[1]).toBe(Array.from(data.set)[1]);
+});
+
+test('update for set', () => {
+  const data = {
+    set: new Set([{}]),
+    foo: 'bar',
+  };
+
+  const state = create(data, (draft) => {
+    const a = {};
+    draft.set.add(a);
+    draft.set.delete(a);
+  });
+  expect(state).not.toBe(data);
+  expect(state).toEqual(data);
+});
+
+test('delete for set', () => {
+  const a = {};
+  const data = {
+    set: new Set([a]),
+    foo: 'bar',
+  };
+
+  const state = create(data, (draft) => {
+    draft.set.delete(a);
+  });
+  expect(state.set.size).toBe(0);
+});
+
+test('delete for set', () => {
+  const a = {};
+  const data = {
+    set: new Set([a]),
+    foo: 'bar',
+  };
+
+  const state = create(data, (draft) => {
+    const draftA = draft.set.values().next().value;
+    draft.set.delete(draftA);
+  });
+  expect(state.set.size).toBe(0);
+});
 
 test('update for map', () => {
   const data = {
@@ -430,17 +473,17 @@ test('update for map', () => {
   expect(state).not.toBe(data);
 });
 
-// test('update for set', () => {
-//   const data = {
-//     set: new Set<any>(),
-//     foo: 'bar',
-//   };
+test('update for set', () => {
+  const data = {
+    set: new Set<any>(),
+    foo: 'bar',
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.set.add(undefined);
-//   });
-//   expect(state).not.toBe(data);
-// });
+  const state = create(data, (draft) => {
+    draft.set.add(undefined);
+  });
+  expect(state).not.toBe(data);
+});
 
 test('delete key in object', () => {
   const data = {
@@ -813,28 +856,28 @@ test('base object set ref object2', () => {
   expect(state).toEqual({ bar: { a: { c: 2 }, b: { a: { c: 1 } } } });
 });
 
-// test('base set add ref', () => {
-//   const data = {
-//     set: new Set<any>(['a']),
-//     b: { x: 1 },
-//   };
+test('base set add ref', () => {
+  const data = {
+    set: new Set<any>(['a']),
+    b: { x: 1 },
+  };
 
-//   const state = create(
-//     data,
-//     (draft) => {
-//       draft.set.add(draft.b);
-//       draft.b.x = 2;
-//     },
-//     {
-//       enablePatches: false,
-//     }
-//   );
-//   expect(state).toEqual({
-//     set: new Set<any>(['a', { x: 2 }]),
-//     b: { x: 2 },
-//   });
-//   expect(Array.from(state.set).slice(-1)[0]).toBe(state.b);
-// });
+  const state = create(
+    data,
+    (draft) => {
+      draft.set.add(draft.b);
+      draft.b.x = 2;
+    },
+    {
+      enablePatches: false,
+    }
+  );
+  expect(state).toEqual({
+    set: new Set<any>(['a', { x: 2 }]),
+    b: { x: 2 },
+  });
+  expect(Array.from(state.set).slice(-1)[0]).toBe(state.b);
+});
 
 test('base map set ref', () => {
   const data = {
@@ -1074,60 +1117,60 @@ test('base array copyWithin 4', () => {
   expect(state).toBe(data);
 });
 
-// test('base set add', () => {
-//   const data = {
-//     bar: {},
-//     set: new Set([1, 2, 3]),
-//   };
+test('base set add', () => {
+  const data = {
+    bar: {},
+    set: new Set([1, 2, 3]),
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.set.add(4);
-//   });
-//   expect(state).toEqual({
-//     bar: {},
-//     set: new Set([1, 2, 3, 4]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.bar).toBe(data.bar);
-//   expect(state.set).not.toBe(data.set);
-// });
+  const state = create(data, (draft) => {
+    draft.set.add(4);
+  });
+  expect(state).toEqual({
+    bar: {},
+    set: new Set([1, 2, 3, 4]),
+  });
+  expect(state).not.toBe(data);
+  expect(state.bar).toBe(data.bar);
+  expect(state.set).not.toBe(data.set);
+});
 
-// test('base set clear', () => {
-//   const data = {
-//     bar: {},
-//     set: new Set([1, 2, 3]),
-//   };
+test('base set clear', () => {
+  const data = {
+    bar: {},
+    set: new Set([1, 2, 3]),
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.set.clear();
-//   });
-//   expect(state).toEqual({
-//     bar: {},
-//     set: new Set(),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.bar).toBe(data.bar);
-//   expect(state.set).not.toBe(data.set);
-// });
+  const state = create(data, (draft) => {
+    draft.set.clear();
+  });
+  expect(state).toEqual({
+    bar: {},
+    set: new Set(),
+  });
+  expect(state).not.toBe(data);
+  expect(state.bar).toBe(data.bar);
+  expect(state.set).not.toBe(data.set);
+});
 
-// test('base set delete', () => {
-//   const data = {
-//     bar: { a: 1 },
-//     set: new Set([1, 2, 3]),
-//   };
+test('base set delete', () => {
+  const data = {
+    bar: { a: 1 },
+    set: new Set([1, 2, 3]),
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.bar.a;
-//     draft.set.delete(2);
-//   });
-//   expect(state).toEqual({
-//     bar: { a: 1 },
-//     set: new Set([1, 3]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.bar).toBe(data.bar);
-//   expect(state.set).not.toBe(data.set);
-// });
+  const state = create(data, (draft) => {
+    draft.bar.a;
+    draft.set.delete(2);
+  });
+  expect(state).toEqual({
+    bar: { a: 1 },
+    set: new Set([1, 3]),
+  });
+  expect(state).not.toBe(data);
+  expect(state.bar).toBe(data.bar);
+  expect(state.set).not.toBe(data.set);
+});
 
 test('base map set', () => {
   const data = {
@@ -1271,37 +1314,37 @@ test('base freeze', () => {
   }).not.toThrow();
 });
 
-// test('base set freeze', () => {
-//   const data = {
-//     set: new Set([1, 2, 3]),
-//   };
+test('base set freeze', () => {
+  const data = {
+    set: new Set([1, 2, 3]),
+  };
 
-//   const state = create(
-//     data,
-//     (draft) => {
-//       draft.set.delete(2);
-//     },
-//     {
-//       enableAutoFreeze: true,
-//     }
-//   );
-//   expect(state).toEqual({
-//     set: new Set([1, 3]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(() => {
-//     //@ts-expect-error
-//     state.set.add(4);
-//   }).toThrowError();
-//   expect(() => {
-//     //@ts-expect-error
-//     state.set.delete(1);
-//   }).toThrowError();
-//   expect(() => {
-//     //@ts-expect-error
-//     state.set.clear();
-//   }).toThrowError();
-// });
+  const state = create(
+    data,
+    (draft) => {
+      draft.set.delete(2);
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+  expect(state).toEqual({
+    set: new Set([1, 3]),
+  });
+  expect(state).not.toBe(data);
+  expect(() => {
+    //@ts-expect-error
+    state.set.add(4);
+  }).toThrowError();
+  expect(() => {
+    //@ts-expect-error
+    state.set.delete(1);
+  }).toThrowError();
+  expect(() => {
+    //@ts-expect-error
+    state.set.clear();
+  }).toThrowError();
+});
 
 test('base map freeze', () => {
   const data = {
@@ -1378,40 +1421,40 @@ test('base map with deep object', () => {
   expect([...state.map.values()][1]).toBe([...data.map.values()][1]);
 });
 
-// test('base set deep object', () => {
-//   const a = { a: 1 };
-//   const b = {};
-//   const data = {
-//     bar: {},
-//     set: new Set([a, b]),
-//   };
+test('base set deep object', () => {
+  const a = { a: 1 };
+  const b = {};
+  const data = {
+    bar: {},
+    set: new Set([a, b]),
+  };
 
-//   const state = create(
-//     data,
-//     (draft) => {
-//       draft.set.values().next().value.x = 1;
-//       const [first] = draft.set.values();
-//       expect(draft.set.has(first)).toBeTruthy();
-//       for (const item of draft.set) {
-//         // @ts-ignore
-//         if (item.x === 1) {
-//           // @ts-ignore
-//           item.c = 2;
-//         }
-//       }
-//     },
-//     {
-//       enablePatches: false,
-//     }
-//   );
-//   expect(state).toEqual({
-//     bar: {},
-//     set: new Set([{ a: 1, x: 1, c: 2 }, {}]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect([...state.set.values()][0]).not.toBe([...data.set.values()][0]);
-//   expect([...state.set.values()][1]).toBe([...data.set.values()][1]);
-// });
+  const state = create(
+    data,
+    (draft) => {
+      draft.set.values().next().value.x = 1;
+      const [first] = draft.set.values();
+      expect(draft.set.has(first)).toBeTruthy();
+      for (const item of draft.set) {
+        // @ts-ignore
+        if (item.x === 1) {
+          // @ts-ignore
+          item.c = 2;
+        }
+      }
+    },
+    {
+      enablePatches: false,
+    }
+  );
+  expect(state).toEqual({
+    bar: {},
+    set: new Set([{ a: 1, x: 1, c: 2 }, {}]),
+  });
+  expect(state).not.toBe(data);
+  expect([...state.set.values()][0]).not.toBe([...data.set.values()][0]);
+  expect([...state.set.values()][1]).toBe([...data.set.values()][1]);
+});
 
 test('only mutable object', () => {
   const data = {
@@ -1590,37 +1633,37 @@ test('map with mutable', () => {
   expect(state.map.get(1)!.foobar).toBe(foobar);
 });
 
-// test('set with mutable', () => {
-//   const foobar = {} as any;
-//   const data = {
-//     foo: {
-//       bar: 'str',
-//     },
-//     set: new Set([foobar]),
-//   };
+test.skip('set with mutable', () => {
+  const foobar = {} as any;
+  const data = {
+    foo: {
+      bar: 'str',
+    },
+    set: new Set([foobar]),
+  };
 
-//   const state = create(
-//     data,
-//     (draft) => {
-//       draft.foo.bar = 'new str';
-//       draft.set.values().next().value.text = 'new text';
-//     },
-//     {
-//       mark: (target) => {
-//         if (target === foobar) return 'mutable';
-//       },
-//     }
-//   );
-//   expect(state).toEqual({
-//     foo: {
-//       bar: 'new str',
-//     },
-//     set: new Set([{ text: 'new text' }]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.foo).not.toBe(data.foo);
-//   expect([...state.set.values()][0]).toBe(foobar);
-// });
+  const state = create(
+    data,
+    (draft) => {
+      draft.foo.bar = 'new str';
+      draft.set.values().next().value.text = 'new text';
+    },
+    {
+      mark: (target) => {
+        if (target === foobar) return 'mutable';
+      },
+    }
+  );
+  expect(state).toEqual({
+    foo: {
+      bar: 'new str',
+    },
+    set: new Set([{ text: 'new text' }]),
+  });
+  expect(state).not.toBe(data);
+  expect(state.foo).not.toBe(data.foo);
+  expect([...state.set.values()][0]).toBe(foobar);
+});
 
 test('object changes with mutable data', () => {
   const foobar = {};
@@ -1693,29 +1736,29 @@ test('array changes with mutable data', () => {
   expect(state.arr[0]).toBe(foobar);
 });
 
-// test('set changes with mutable data', () => {
-//   const foobar = {};
-//   const data = {
-//     foo: {
-//       bar: 'str',
-//     },
-//     set: new Set([{} as any]),
-//   };
+test('set changes with mutable data', () => {
+  const foobar = {};
+  const data = {
+    foo: {
+      bar: 'str',
+    },
+    set: new Set([{} as any]),
+  };
 
-//   const state = create(data, (draft) => {
-//     draft.set.clear();
-//     draft.set.add(foobar);
-//     [...draft.set.values()][0].text = 'new text';
-//   });
-//   expect(state).toEqual({
-//     foo: { bar: 'str' },
-//     set: new Set([{ text: 'new text' }]),
-//   });
-//   expect(state).not.toBe(data);
-//   expect(state.foo).toBe(data.foo);
-//   expect([...state.set.values()][0]).not.toBe([...data.set.values()][0]);
-//   expect([...state.set.values()][0]).toBe(foobar);
-// });
+  const state = create(data, (draft) => {
+    draft.set.clear();
+    draft.set.add(foobar);
+    [...draft.set.values()][0].text = 'new text';
+  });
+  expect(state).toEqual({
+    foo: { bar: 'str' },
+    set: new Set([{ text: 'new text' }]),
+  });
+  expect(state).not.toBe(data);
+  expect(state.foo).toBe(data.foo);
+  expect([...state.set.values()][0]).not.toBe([...data.set.values()][0]);
+  expect([...state.set.values()][0]).toBe(foobar);
+});
 
 test('map changes with mutable data', () => {
   const foobar = {};
@@ -1769,53 +1812,53 @@ test('object changes with class instance', () => {
   expect(state.foobar).toBe(foobar);
 });
 
-// test('current', () => {
-//   const data = {
-//     foo: {
-//       bar: 'str',
-//     },
-//     foobar: {
-//       set: new Set<any>([{}]),
-//       map: new Map<any, any>([['a', {}]]),
-//     },
-//   };
-//   let currentValue: any;
-//   const state = create(data, (draft) => {
-//     draft.foo.bar = 'new str';
-//     draft.foobar.map.set('b', { x: 1 });
-//     draft.foobar.set.values().next().value.x = 2;
-//     currentValue = current(draft);
-//   });
-//   expect(currentValue).toEqual({
-//     foo: {
-//       bar: 'new str',
-//     },
-//     foobar: {
-//       set: new Set<any>([{ x: 2 }]),
-//       map: new Map<any, any>([
-//         ['a', {}],
-//         ['b', { x: 1 }],
-//       ]),
-//     },
-//   });
-//   expect(state).toEqual({
-//     foo: {
-//       bar: 'new str',
-//     },
-//     foobar: {
-//       set: new Set<any>([{ x: 2 }]),
-//       map: new Map<any, any>([
-//         ['a', {}],
-//         ['b', { x: 1 }],
-//       ]),
-//     },
-//   });
-//   expect(state).not.toBe(data);
-//   expect(currentValue).not.toBe(data);
-//   expect(state).not.toBe(currentValue);
-//   expect(state.foo).not.toBe(data.foo);
-//   expect(state.foobar).not.toBe(data.foobar);
-// });
+test.skip('current', () => {
+  const data = {
+    foo: {
+      bar: 'str',
+    },
+    foobar: {
+      set: new Set<any>([{}]),
+      map: new Map<any, any>([['a', {}]]),
+    },
+  };
+  let currentValue: any;
+  const state = create(data, (draft) => {
+    draft.foo.bar = 'new str';
+    draft.foobar.map.set('b', { x: 1 });
+    draft.foobar.set.values().next().value.x = 2;
+    currentValue = current(draft);
+  });
+  expect(currentValue).toEqual({
+    foo: {
+      bar: 'new str',
+    },
+    foobar: {
+      set: new Set<any>([{ x: 2 }]),
+      map: new Map<any, any>([
+        ['a', {}],
+        ['b', { x: 1 }],
+      ]),
+    },
+  });
+  expect(state).toEqual({
+    foo: {
+      bar: 'new str',
+    },
+    foobar: {
+      set: new Set<any>([{ x: 2 }]),
+      map: new Map<any, any>([
+        ['a', {}],
+        ['b', { x: 1 }],
+      ]),
+    },
+  });
+  expect(state).not.toBe(data);
+  expect(currentValue).not.toBe(data);
+  expect(state).not.toBe(currentValue);
+  expect(state.foo).not.toBe(data.foo);
+  expect(state.foobar).not.toBe(data.foobar);
+});
 
 test('multiple drafts with draftify', () => {
   const data = {

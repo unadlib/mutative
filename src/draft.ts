@@ -1,6 +1,7 @@
 import type { Finalities, Patches, ProxyDraft, Marker } from './interface';
 import { dataTypes, DraftType, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
+import { setHandler, setHandlerKeys } from './set';
 import {
   deepFreeze,
   ensureShallowCopy,
@@ -30,6 +31,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       }
     }
     const source = latest(target);
+
     if (source instanceof Map && mapHandlerKeys.includes(key as any)) {
       if (key === 'size') {
         return Object.getOwnPropertyDescriptor(mapHandler, 'size')!.get!.call(
@@ -41,6 +43,19 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         return handle.bind(target.proxy);
       }
     }
+
+    if (source instanceof Set && setHandlerKeys.includes(key as any)) {
+      if (key === 'size') {
+        return Object.getOwnPropertyDescriptor(setHandler, 'size')!.get!.call(
+          target.proxy
+        );
+      }
+      const handle = setHandler[key as keyof typeof setHandler] as any;
+      if (handle) {
+        return handle.bind(target.proxy);
+      }
+    }
+
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
       return desc
@@ -177,8 +192,9 @@ export function createDraft<T extends object>({
   enableAutoFreeze?: boolean;
   marker?: Marker;
 }): T {
+  const type = getType(original);
   const proxyDraft: ProxyDraft = {
-    type: getType(original),
+    type,
     finalized: false,
     parent: parentDraft,
     original,
@@ -189,6 +205,11 @@ export function createDraft<T extends object>({
     enableAutoFreeze,
     marker,
     assignedMap: new Map(),
+    // Mapping of draft Set items to their corresponding draft values.
+    setMap:
+      type === DraftType.Set
+        ? new Map((original as Set<any>).entries())
+        : undefined,
   };
   const { proxy, revoke } = Proxy.revocable<any>(
     Array.isArray(original) ? Object.assign([], proxyDraft) : proxyDraft,
@@ -200,7 +221,10 @@ export function createDraft<T extends object>({
     const target = parentDraft;
     const oldProxyDraft = getProxyDraft(proxy);
     target.finalities.draft.unshift((patches, inversePatches) => {
-      const proxyDraft = getProxyDraft(get(target.copy, key!));
+      // if target is a Set draft, `setMap` is the real Set copies proxy mapping.
+      const proxyDraft = getProxyDraft(
+        get(target.type === DraftType.Set ? target.setMap : target.copy, key!)
+      );
       if (proxyDraft) {
         finalizePatches(proxyDraft, patches, inversePatches);
         // assign the updated value to the copy object

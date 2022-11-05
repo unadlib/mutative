@@ -1,9 +1,7 @@
 import { iteratorSymbol } from './constant';
 import { createDraft } from './draft';
-import { finalizePatches } from './patch';
 import {
   ensureShallowCopy,
-  get,
   getProxyDraft,
   isDraftable,
   isEqual,
@@ -48,6 +46,7 @@ export const mapHandler = {
   },
   clear() {
     const target = getProxyDraft(this)!;
+    // TODO: use `this.size`
     if (!latest(target).size) return;
     ensureShallowCopy(target);
     markChanged(target);
@@ -122,4 +121,4 @@ export const mapHandler = {
   },
 };
 
-export const mapHandlerKeys = [...Object.keys(mapHandler), iteratorSymbol];
+export const mapHandlerKeys = Reflect.ownKeys(mapHandler);

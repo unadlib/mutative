@@ -270,85 +270,86 @@ test('map', () => {
   );
 });
 
-// test('simple set', () => {
-//   checkPatches(
-//     {
-//       set: new Set<any>([{ bar: 'str' }, { bar: 'str' }]),
-//       foobar: {
-//         baz: 'str',
-//       } as any,
-//     },
-//     (draft) => {
-//       draft.set.add({ bar: 'str1' });
-//       draft.set.values().next().value.bar = 'new str0';
-//       Array.from(draft.set.keys())[1].bar = 'new str1';
-//     }
-//   );
-// });
+test('simple set', () => {
+  checkPatches(
+    {
+      set: new Set<any>([{ bar: 'str' }, { bar: 'str' }]),
+      foobar: {
+        baz: 'str',
+      } as any,
+    },
+    (draft) => {
+      draft.set.add({ bar: 'str1' });
+      draft.set.values().next().value.bar = 'new str0';
+      Array.from(draft.set.keys())[1].bar = 'new str1';
+    }
+  );
+});
 
-// test('set', () => {
-//   checkPatches(
-//     {
-//       set: new Set([{ bar: 'str1111' }, { bar: 'str222' }]),
-//       set1: new Set([{ bar: 'str' }, { bar: 'str' }]),
-//       set2: new Set([{ bar: 'str' }, { bar: 'str' }]),
-//       set3: new Set([{ bar: 'str' }, { bar: 'str' }]),
-//       foobar: {
-//         baz: 'str',
-//       } as any,
-//     },
-//     (draft) => {
-//       draft.set.add({ bar: 'str' });
-//       draft.set.values().next().value.bar = 'new str0';
-//       draft.set1.clear();
-//       const a = draft.set.values().next().value;
-//       draft.set3.add(a);
-//       a.bar = 'new str1';
-//       draft.set.delete(a);
-//     }
-//   );
-// });
+test('set', () => {
+  checkPatches(
+    {
+      set: new Set([{ bar: 'str1111' }, { bar: 'str222' }]),
+      set1: new Set([{ bar: 'str' }, { bar: 'str' }]),
+      set2: new Set([{ bar: 'str' }, { bar: 'str' }]),
+      set3: new Set([{ bar: 'str' }, { bar: 'str' }]),
+      foobar: {
+        baz: 'str',
+      } as any,
+    },
+    (draft) => {
+      draft.set.add({ bar: 'str' });
+      draft.set.values().next().value.bar = 'new str0';
+      draft.set1.clear();
+      const a = draft.set.values().next().value;
+      draft.set3.add(a);
+      a.bar = 'new str1';
+      draft.set.delete(a);
+    }
+  );
+});
 
-// test('object with delete', () => {
-//   checkPatches(
-//     {
-//       foobar: {
-//         baz: 'str',
-//       } as any,
-//     },
-//     (draft) => {
-//       draft.foobar.baz = 'new str';
-//       const a = draft.foobar;
-//       delete draft.foobar;
+test('object with delete', () => {
+  checkPatches(
+    {
+      foobar: {
+        baz: 'str',
+      } as any,
+    },
+    (draft) => {
+      draft.foobar.baz = 'new str';
+      const a = draft.foobar;
+      delete draft.foobar;
 
-//       a.baz = 'new str1';
-//       // @ts-ignore
-//       draft.foobar1 = a;
-//       // @ts-ignore
-//       draft.foobar1.baz = 'new str2';
-//     }
-//   );
-// });
+      a.baz = 'new str1';
+      // @ts-ignore
+      draft.foobar1 = a;
+      // @ts-ignore
+      draft.foobar1.baz = 'new str2';
+    }
+  );
+});
 
-// test('object with class', () => {
-//   class Bar {
-//     foo = 'str';
-//   }
+test('object with class', () => {
+  class Bar {
+    foo = 'str';
+  }
 
-//   checkPatches(
-//     {
-//       foobar: {
-//         baz: 'str',
-//         bar: new Bar(),
-//       },
-//     },
-//     (draft) => {
-//       draft.foobar.baz = 'new str';
-//       draft.foobar.bar.foo = 'new str';
-//     },
-//     (target: any) => (target instanceof Bar ? 'immutable' : undefined)
-//   );
-// });
+  checkPatches(
+    {
+      foobar: {
+        baz: 'str',
+        bar: new Bar(),
+      },
+    },
+    (draft) => {
+      draft.foobar.baz = 'new str';
+      draft.foobar.bar.foo = 'new str';
+    },
+    // @ts-ignore
+    (target: any) => (target instanceof Bar ? 'immutable' : undefined)
+  );
+});
 
 test('object with ref', () => {
   const f = {
@@ -527,23 +528,23 @@ test('object setter with ref', () => {
   );
 });
 
-// test('set with ref', () => {
-//   checkPatches(
-//     {
-//       foobar: new Set<any>([
-//         {
-//           baz: 'str0',
-//         },
-//       ]),
-//     },
-//     (draft: any) => {
-//       const f = draft.foobar.values().next().value;
-//       draft.foobar.delete(f);
-//       f.baz = 'new str0';
-//       draft.f = f;
-//     }
-//   );
-// });
+test('set with ref', () => {
+  checkPatches(
+    {
+      foobar: new Set<any>([
+        {
+          baz: 'str0',
+        },
+      ]),
+    },
+    (draft: any) => {
+      const f = draft.foobar.values().next().value;
+      draft.foobar.delete(f);
+      f.baz = 'new str0';
+      draft.f = f;
+    }
+  );
+});
 
 test('map with ref', () => {
   checkPatches(
@@ -650,19 +651,18 @@ test('delete 5', () => {
   );
 });
 
-// test('delete 6', () => {
-//   checkPatches(new Set(['x', 1]), (d) => {
-//     d.delete('x');
-//   });
-// });
+test('delete 6', () => {
+  checkPatches(new Set(['x', 1]), (d) => {
+    d.delete('x');
+  });
+});
 
-// test('delete 7', () => {
-//   checkPatches({ x: new Set(['y', 1]) }, (d) => {
-//     d.x.delete('y');
-//   });
-// });
+test('delete 7', () => {
+  checkPatches({ x: new Set(['y', 1]) }, (d) => {
+    d.x.delete('y');
+  });
+});
 
-// describe('renaming properties', () => {
 test('nested object (no changes)', () => {
   checkPatches({ a: { b: 1 } }, (d) => {
     // @ts-ignore
@@ -903,47 +903,47 @@ test('arrays - delete', () => {
   );
 });
 
-// test('sets - add - 1', () => {
-//   checkPatches(new Set([1]), (d) => {
-//     d.add(2);
-//   });
-// });
+test('sets - add - 1', () => {
+  checkPatches(new Set([1]), (d) => {
+    d.add(2);
+  });
+});
 
-// test('sets - add, delete, add - 1', () => {
-//   checkPatches(new Set([1]), (d) => {
-//     d.add(2);
-//     d.delete(2);
-//     d.add(2);
-//   });
-// });
+test('sets - add, delete, add - 1', () => {
+  checkPatches(new Set([1]), (d) => {
+    d.add(2);
+    d.delete(2);
+    d.add(2);
+  });
+});
 
-// test('sets - add, delete, add - 2', () => {
-//   checkPatches(new Set([2, 1]), (d) => {
-//     d.add(2);
-//     d.delete(2);
-//     d.add(2);
-//   });
-// });
+test('sets - add, delete, add - 2', () => {
+  checkPatches(new Set([2, 1]), (d) => {
+    d.add(2);
+    d.delete(2);
+    d.add(2);
+  });
+});
 
-// test('sets - mutate - 1', () => {
-//   const findById = (set: any, id: any) => {
-//     for (const item of set) {
-//       if (item.id === id) return item;
-//     }
-//   };
-//   checkPatches(
-//     new Set([
-//       { id: 1, val: 'We' },
-//       { id: 2, val: 'will' },
-//     ]),
-//     (d) => {
-//       const obj1 = findById(d, 1);
-//       const obj2 = findById(d, 2);
-//       obj1.val = 'rock';
-//       obj2.val = 'you';
-//     }
-//   );
-// });
+test('sets - mutate - 1', () => {
+  const findById = (set: any, id: any) => {
+    for (const item of set) {
+      if (item.id === id) return item;
+    }
+  };
+  checkPatches(
+    new Set([
+      { id: 1, val: 'We' },
+      { id: 2, val: 'will' },
+    ]),
+    (d) => {
+      const obj1 = findById(d, 1);
+      const obj2 = findById(d, 2);
+      obj1.val = 'rock';
+      obj2.val = 'you';
+    }
+  );
+});
 
 test('arrays - splice should should result in remove op.', () => {
   // These patches were more optimal pre immer 7, but not always correct
@@ -1001,16 +1001,15 @@ test('same value replacement(array) - 2', () => {
   });
 });
 
-// // todo: fix
-// test.skip('same value replacement(set) - 2', () => {
-//   checkPatches(new Set([1, 2, {}]), (d) => {
-//     const [a] = Array.from(d.keys()).slice(-1);
-//     // @ts-ignore
-//     d.delete(a);
-//     d.add(a);
-//   });
-// });
-// // todo: fix
+test('same value replacement(set) - 2', () => {
+  checkPatches(new Set([1, 2, {}]), (d) => {
+    const [a] = Array.from(d.keys()).slice(-1);
+    // @ts-ignore
+    d.delete(a);
+    d.add(a);
+  });
+});
+
 test('same value replacement(map) - 2', () => {
   checkPatches(
     new Map([
@@ -1055,12 +1054,12 @@ test('same value replacement - 5', () => {
   });
 });
 
-// test('same value replacement - 6', () => {
-//   checkPatches(new Set(['x', 3]), (d) => {
-//     d.delete('x');
-//     d.add('x');
-//   });
-// });
+test('same value replacement - 6', () => {
+  checkPatches(new Set(['x', 3]), (d) => {
+    d.delete('x');
+    d.add('x');
+  });
+});
 
 test('simple delete', () => {
   checkPatches({ x: 2 }, (d) => {

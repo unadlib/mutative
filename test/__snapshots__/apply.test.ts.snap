@@ -2034,6 +2034,56 @@ Array [
 ]
 `;
 
+exports[`delete 6 1`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      0,
+    ],
+    "value": "x",
+  },
+]
+`;
+
+exports[`delete 6 2`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      0,
+    ],
+    "value": "x",
+  },
+]
+`;
+
+exports[`delete 7 1`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "x",
+      0,
+    ],
+    "value": "y",
+  },
+]
+`;
+
+exports[`delete 7 2`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "x",
+      0,
+    ],
+    "value": "y",
+  },
+]
+`;
+
 exports[`enablePatches and assign with ref array 1`] = `
 Array [
   Object {
@@ -2910,6 +2960,72 @@ Array [
 ]
 `;
 
+exports[`object with class 1`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "baz",
+    ],
+    "value": "new str",
+  },
+]
+`;
+
+exports[`object with class 2`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "foobar",
+      "baz",
+    ],
+    "value": "str",
+  },
+]
+`;
+
+exports[`object with delete 1`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foobar",
+    ],
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar1",
+    ],
+    "value": Object {
+      "baz": "new str2",
+    },
+  },
+]
+`;
+
+exports[`object with delete 2`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
+    ],
+    "value": Object {
+      "baz": "str",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foobar1",
+    ],
+  },
+]
+`;
+
 exports[`object with ref 1`] = `
 Array [
   Object {
@@ -3014,6 +3130,10 @@ exports[`same value replacement - 5 1`] = `Array []`;
 
 exports[`same value replacement - 5 2`] = `Array []`;
 
+exports[`same value replacement - 6 1`] = `Array []`;
+
+exports[`same value replacement - 6 2`] = `Array []`;
+
 exports[`same value replacement(array) - 2 1`] = `Array []`;
 
 exports[`same value replacement(array) - 2 2`] = `Array []`;
@@ -3025,6 +3145,120 @@ exports[`same value replacement(array) - 2 4`] = `Array []`;
 exports[`same value replacement(map) - 2 1`] = `Array []`;
 
 exports[`same value replacement(map) - 2 2`] = `Array []`;
+
+exports[`same value replacement(set) - 2 1`] = `Array []`;
+
+exports[`same value replacement(set) - 2 2`] = `Array []`;
+
+exports[`set 1`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "set3",
+      2,
+    ],
+    "value": Object {
+      "bar": "new str1",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set1",
+      0,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set1",
+      1,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set",
+      0,
+    ],
+    "value": Object {
+      "bar": "str1111",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "set",
+      1,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+]
+`;
+
+exports[`set 2`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set",
+      1,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "set",
+      0,
+    ],
+    "value": Object {
+      "bar": "str1111",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "set1",
+      1,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "set1",
+      0,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set3",
+      2,
+    ],
+    "value": Object {
+      "bar": "new str1",
+    },
+  },
+]
+`;
 
 exports[`set value and pop the value (array) - 2 1`] = `
 Array [
@@ -3078,6 +3312,145 @@ Array [
       2,
     ],
     "value": Object {},
+  },
+]
+`;
+
+exports[`set with ref 1`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "f",
+    ],
+    "value": Object {
+      "baz": "new str0",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foobar",
+      0,
+    ],
+    "value": Object {
+      "baz": "str0",
+    },
+  },
+]
+`;
+
+exports[`set with ref 2`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "foobar",
+      0,
+    ],
+    "value": Object {
+      "baz": "str0",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "f",
+    ],
+  },
+]
+`;
+
+exports[`sets - add - 1 1`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      1,
+    ],
+    "value": 2,
+  },
+]
+`;
+
+exports[`sets - add - 1 2`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      1,
+    ],
+    "value": 2,
+  },
+]
+`;
+
+exports[`sets - add, delete, add - 1 1`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      1,
+    ],
+    "value": 2,
+  },
+]
+`;
+
+exports[`sets - add, delete, add - 1 2`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      1,
+    ],
+    "value": 2,
+  },
+]
+`;
+
+exports[`sets - add, delete, add - 2 1`] = `Array []`;
+
+exports[`sets - add, delete, add - 2 2`] = `Array []`;
+
+exports[`sets - mutate - 1 1`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      1,
+      "val",
+    ],
+    "value": "you",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      0,
+      "val",
+    ],
+    "value": "rock",
+  },
+]
+`;
+
+exports[`sets - mutate - 1 2`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      1,
+      "val",
+    ],
+    "value": "will",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      0,
+      "val",
+    ],
+    "value": "We",
   },
 ]
 `;
@@ -3390,6 +3763,152 @@ Array [
       "map",
       "b",
     ],
+  },
+]
+`;
+
+exports[`simple set 1`] = `
+Array [
+  Object {
+    "op": "replace",
+    "path": Array [
+      "set",
+      1,
+      "bar",
+    ],
+    "value": "new str1",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "set",
+      0,
+      "bar",
+    ],
+    "value": "new str0",
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set",
+      0,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set",
+      1,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "set",
+      0,
+    ],
+    "value": Object {
+      "bar": "new str0",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "set",
+      1,
+    ],
+    "value": Object {
+      "bar": "new str1",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "set",
+      2,
+    ],
+    "value": Object {
+      "bar": "str1",
+    },
+  },
+]
+`;
+
+exports[`simple set 2`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set",
+      2,
+    ],
+    "value": Object {
+      "bar": "str1",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set",
+      1,
+    ],
+    "value": Object {
+      "bar": "new str1",
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "set",
+      0,
+    ],
+    "value": Object {
+      "bar": "new str0",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "set",
+      1,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "set",
+      0,
+    ],
+    "value": Object {
+      "bar": "str",
+    },
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "set",
+      1,
+      "bar",
+    ],
+    "value": "str",
+  },
+  Object {
+    "op": "replace",
+    "path": Array [
+      "set",
+      0,
+      "bar",
+    ],
+    "value": "str",
   },
 ]
 `;

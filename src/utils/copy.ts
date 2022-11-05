@@ -43,11 +43,6 @@ export function ensureShallowCopy(target: ProxyDraft) {
       ? () => target.marker!(target.original, dataTypes) === dataTypes.immutable
       : undefined
   )!;
-  // TODO: check Set
-  if (target.original instanceof Set) {
-    // for collection of updating draft Set data
-    target.setMap = new Map();
-  }
 }
 
 // todo: optimize

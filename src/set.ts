@@ -1,183 +1,147 @@
-// import type { ProxyDraft } from './interface';
-// import { CLEAR, dataTypes, DraftType, SetOperation } from './constant';
-// import {
-//   getProxyDraft,
-//   isDraftable,
-//   latest,
-//   markChanged,
-// } from './utils';
-// import { createDraft } from './draft';
+import { iteratorSymbol } from './constant';
+import { createDraft } from './draft';
+import { ProxyDraft } from './interface';
+import {
+  ensureShallowCopy,
+  getProxyDraft,
+  isDraftable,
+  latest,
+  markChanged,
+  markSetValue,
+} from './utils';
 
-// export const mutableSetMethods = [
-//   'has',
-//   'add',
-//   'delete',
-//   'clear',
-//   'entries',
-//   'forEach',
-//   'size',
-//   'values',
-//   'keys',
-//   Symbol.iterator,
-// ];
+const getNextIterator =
+  (
+    target: ProxyDraft<any>,
+    iterator: IterableIterator<any>,
+    { isValuesIterator }: { isValuesIterator: boolean }
+  ) =>
+  () => {
+    const result = iterator.next();
+    if (result.done) return result;
+    let key = result.value as any;
+    let value = target.setMap!.get(key);
+    const currentDraft = getProxyDraft(value);
+    if (
+      !currentDraft &&
+      isDraftable(key, target) &&
+      !target.finalized &&
+      target.original!.has(key)
+    ) {
+      // draft a draftable original set item
+      const proxy = createDraft({
+        original: key,
+        parentDraft: target,
+        key: key,
+        finalities: target.finalities,
+        marker: target.marker,
+      });
+      target.setMap!.set(key, proxy);
+      value = proxy;
+    } else if (currentDraft) {
+      // drafted
+      value = currentDraft.proxy;
+    }
+    return {
+      done: false,
+      value: isValuesIterator ? value : [value, value],
+    };
+  };
 
-// export function createSetHandler({
-//   target,
-//   key,
-//   state,
-// }: {
-//   target: ProxyDraft<Set<any>>;
-//   key: string | symbol;
-//   state: Set<any>;
-// }) {
-//   if (key === 'size') {
-//     return latest(target).size;
-//   }
-//   const proxyProto = {
-//     add(value: any) {
-//       const result = Set.prototype.add.call(state, value);
-//       if (
-//         target.original.has(value) &&
-//         Array.from(target.original.values()).slice(-1)[0] === value
-//       ) {
-//         target.operated.delete(value);
-//       } else {
-//         target.operated.add(value);
-//       }
-//       if (isDraftable(value, target)) {
-//         target.assignedMap.set(value, true);
-//       }
-//       markChanged(target);
-//       return result;
-//     },
-//     clear() {
-//       const result = Set.prototype.clear.call(state);
-//       if (!target.original.size) {
-//         target.operated.delete(CLEAR);
-//       } else {
-//         target.operated.add(CLEAR);
-//       }
-//       markChanged(target);
-//       return result;
-//     },
-//     delete(value: any) {
-//       const deleteValue = getProxyDraft(value)
-//         ? getProxyDraft(value)?.original
-//         : value;
-//       const result = Set.prototype.delete.call(state, deleteValue);
-//       if (target.setMap!.has(value)) target.setMap!.delete(value);
-//       if (!target.original.has(value)) {
-//         target.operated.delete(value);
-//       } else {
-//         target.operated.add(value);
-//       }
-//       markChanged(target);
-//       return result;
-//     },
-//     has(value: any): boolean {
-//       if (latest(target).has(value)) return true;
-//       for (const item of target.setMap?.values()!) {
-//         if (
-//           item.copy === value ||
-//           item.original === value ||
-//           item.proxy === value
-//         )
-//           return true;
-//       }
-//       return false;
-//     },
-//     forEach(
-//       this: Set<any>,
-//       callback: (value: any, key: any, self: Set<any>) => void,
-//       thisArg?: any
-//     ) {
-//       for (const value of this.values()) {
-//         callback.call(thisArg, value, value, this);
-//       }
-//     },
-//     keys(): IterableIterator<any> {
-//       return this.values();
-//     },
-//     values(): IterableIterator<any> {
-//       const iterator = target.copy!.values();
-//       return {
-//         [Symbol.iterator]: () => this.values(),
-//         next: () => {
-//           const iteratorResult = iterator.next();
-//           if (iteratorResult.done) return iteratorResult;
-//           const original = iteratorResult.value;
-//           if (
-//             target.assignedMap.has(original) ||
-//             target.marker?.(original, dataTypes) === dataTypes.mutable
-//           ) {
-//             return {
-//               done: false,
-//               value: original,
-//             };
-//           }
-//           let proxyDraft = target.setMap!.get(original);
-//           if (isDraftable(original, target) && !proxyDraft) {
-//             const key = Array.from(target.original.values()).indexOf(original);
-//             const proxy = createDraft({
-//               original,
-//               parentDraft: target,
-//               key,
-//               finalities: target.finalities,
-//               marker: target.marker,
-//             });
-//             proxyDraft = getProxyDraft(proxy)!;
-//             target.setMap!.set(original, proxyDraft);
-//           }
-//           const value = proxyDraft?.proxy;
-//           return {
-//             done: false,
-//             value,
-//           };
-//         },
-//       };
-//     },
-//     entries(): IterableIterator<[any, any]> {
-//       const iterator = target.copy!.entries();
-//       return {
-//         [Symbol.iterator]: () => this.entries(),
-//         next: () => {
-//           const iteratorResult = iterator.next();
-//           if (iteratorResult.done) return iteratorResult;
-//           const original = iteratorResult.value[0];
-//           if (
-//             target.assignedMap.has(original) ||
-//             target.marker?.(original, dataTypes) === dataTypes.mutable
-//           ) {
-//             return {
-//               done: false,
-//               value: [original, original],
-//             };
-//           }
-//           let proxyDraft = target.setMap!.get(original);
-//           if (isDraftable(original, target) && !proxyDraft) {
-//             const key = Array.from(target.original.values()).indexOf(original);
-//             const proxy = createDraft({
-//               original,
-//               parentDraft: target,
-//               key,
-//               finalities: target.finalities,
-//               marker: target.marker,
-//             });
-//             proxyDraft = getProxyDraft(proxy)!;
-//             target.setMap!.set(original, proxyDraft);
-//           }
-//           const value = proxyDraft?.proxy;
-//           return {
-//             done: false,
-//             value: [value, value],
-//           };
-//         },
-//       };
-//     },
-//     [Symbol.iterator]() {
-//       return this.values();
-//     },
-//   };
-//   // TODO: refactor for better performance
-//   return proxyProto[key as keyof typeof proxyProto].bind(proxyProto);
-// }
+export const setHandler = {
+  get size() {
+    const target = getProxyDraft(this)!;
+    return target.setMap!.size;
+  },
+  has(value: any) {
+    const target = getProxyDraft(this)!;
+    // reassigned or non-draftable values
+    if (target.setMap!.has(value)) return true;
+    ensureShallowCopy(target);
+    const valueProxyDraft = getProxyDraft(value)!;
+    // drafted
+    if (valueProxyDraft && target.setMap!.has(valueProxyDraft.original))
+      return true;
+    return false;
+  },
+  add(value: any): any {
+    const target = getProxyDraft(this)!;
+    if (!this.has(value)) {
+      ensureShallowCopy(target);
+      markChanged(target);
+      target.setMap!.set(value, value);
+      target.assignedMap!.set(value, true);
+      markSetValue(target, value, value);
+    }
+    return this;
+  },
+  delete(value: any): boolean {
+    if (!this.has(value)) {
+      return false;
+    }
+    const target = getProxyDraft(this)!;
+    ensureShallowCopy(target);
+    markChanged(target);
+    const valueProxyDraft = getProxyDraft(value)!;
+    if (valueProxyDraft && target.setMap!.has(valueProxyDraft.original)) {
+      // delete drafted
+      target.assignedMap.set(valueProxyDraft.original, false);
+      return target.setMap!.delete(valueProxyDraft.original);
+    } else if (!valueProxyDraft && target.setMap!.has(value)) {
+      // non-draftable values
+      target.assignedMap.set(value, false);
+    } else {
+      // reassigned
+      target.assignedMap.delete(value);
+    }
+    // delete reassigned or non-draftable values
+    return target.setMap!.delete(value);
+  },
+  clear() {
+    if (!this.size) return;
+    const target = getProxyDraft(this)!;
+    ensureShallowCopy(target);
+    markChanged(target);
+    target.assignedMap = new Map();
+    for (const value of target.original) {
+      target.assignedMap.set(value, false);
+    }
+    target.setMap!.clear();
+  },
+  values(): IterableIterator<any> {
+    const target = getProxyDraft(this)!;
+    ensureShallowCopy(target);
+    const iterator = target.setMap!.keys();
+    return {
+      [Symbol.iterator]: () => this.values(),
+      next: getNextIterator(target, iterator, { isValuesIterator: true }),
+    };
+  },
+  entries(): IterableIterator<[any, any]> {
+    const target = getProxyDraft(this)!;
+    ensureShallowCopy(target);
+    const iterator = target.setMap!.keys();
+    return {
+      [Symbol.iterator]: () => this.values(),
+      next: getNextIterator(target, iterator, {
+        isValuesIterator: false,
+      }) as () => IteratorReturnResult<any>,
+    };
+  },
+  keys(): IterableIterator<any> {
+    return this.values();
+  },
+  [iteratorSymbol]() {
+    return this.values();
+  },
+  forEach(callback: any, thisArg?: any) {
+    const iterator = this.values();
+    let result = iterator.next();
+    while (!result.done) {
+      callback.call(thisArg, result.value, result.value, this);
+      result = iterator.next();
+    }
+  },
+};
+
+export const setHandlerKeys = Reflect.ownKeys(setHandler);

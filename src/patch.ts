@@ -1,12 +1,18 @@
 import type { Patches, ProxyDraft } from './interface';
 import { DraftType, Operation } from './constant';
-import { cloneIfNeeded, get, getPath, has, isEqual } from './utils';
+import { cloneIfNeeded, get, getPath, getValue, has, isEqual } from './utils';
 
 export function finalizePatches(
   target: ProxyDraft,
   patches?: Patches,
   inversePatches?: Patches
 ) {
+  if (target.type === DraftType.Set && target.copy) {
+    target.copy.clear();
+    target.setMap?.forEach((value) => {
+      target.copy?.add(getValue(value));
+    });
+  }
   const shouldFinalize =
     target.operated && target.assignedMap.size > 0 && !target.finalized;
   if (shouldFinalize) {
@@ -81,12 +87,9 @@ function generatePatchesFromAssigned(
       : has(original, key)
       ? Operation.Replace
       : Operation.Add;
-    if (isEqual(originalValue, value) && op === Operation.Replace)
-      return;
+    if (isEqual(originalValue, value) && op === Operation.Replace) return;
     const path = basePath.concat(key);
-    patches.push(
-      op === Operation.Remove ? { op, path } : { op, path, value }
-    );
+    patches.push(op === Operation.Remove ? { op, path } : { op, path, value });
     inversePatches.push(
       op === Operation.Add
         ? { op: Operation.Remove, path }
@@ -97,8 +100,48 @@ function generatePatchesFromAssigned(
   });
 }
 
-function generateSetPatches(...args: any): any {
-  //
+function generateSetPatches(
+  proxyState: ProxyDraft<Set<any>>,
+  basePath: any[],
+  patches: Patches,
+  inversePatches: Patches
+) {
+  let { original, copy } = proxyState;
+
+  let i = 0;
+  original.forEach((value: any) => {
+    if (!copy!.has(value)) {
+      const path = basePath.concat([i]);
+      patches.push({
+        op: Operation.Remove,
+        path,
+        value,
+      });
+      inversePatches.unshift({
+        op: Operation.Add,
+        path,
+        value,
+      });
+    }
+    i++;
+  });
+  i = 0;
+  copy!.forEach((value: any) => {
+    if (!original.has(value)) {
+      const path = basePath.concat([i]);
+      patches.push({
+        op: Operation.Add,
+        path,
+        value,
+      });
+      inversePatches.unshift({
+        op: Operation.Remove,
+        path,
+        value,
+      });
+    }
+    i++;
+  });
 }
 
 export function generatePatches(

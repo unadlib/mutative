@@ -40,7 +40,12 @@ export function getPath(
   path: any[] = []
 ): (string | number)[] {
   if (!target) return path;
-  if (typeof target.key !== 'undefined') path.unshift(target.key);
+  if (typeof target.key !== 'undefined')
+    path.unshift(
+      target.parent?.type === DraftType.Set
+        ? Array.from(target.parent.setMap!.keys()).indexOf(target.key as any)
+        : target.key
+    );
   if (target.parent) {
     return getPath(target.parent, path);
   }

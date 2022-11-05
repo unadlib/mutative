@@ -1,6 +1,6 @@
 import type { Patches } from './interface';
 import { DraftType, Operation } from './constant';
-import { deepClone, get, getType } from './utils';
+import { deepClone, get, getProxyDraft, getType } from './utils';
 import { create } from './create';
 
 export function apply<T extends object>(state: T, patches: Patches): T {
@@ -21,7 +21,11 @@ export function apply<T extends object>(state: T, patches: Patches): T {
             `Patching reserved attributes like __proto__, prototype and constructor is not allowed.`
           );
         }
-        base = get(base, key);
+        // use `index` in Set draft
+        base = get(
+          getType(base) === DraftType.Set ? Array.from(base!.values()) : base,
+          key
+        );
         if (typeof base !== 'object') {
           throw new Error(`Cannot apply patch at '${path.join('/')}'.`);
         }

@@ -1,5 +1,6 @@
 import { getProxyDraft } from './utils';
 
+// TODO: refactor
 export function current<T extends object>(target: T): any {
   const proxyDraft = getProxyDraft(target);
   if (proxyDraft) {
