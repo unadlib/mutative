@@ -542,6 +542,24 @@ describe('no updates', () => {
     });
     expect(state).toBe(data);
   });
+  test('assign the original value to a draft', () => {
+    const a = {
+      a: 2,
+    };
+    const data = {
+      s: {
+        a: 1,
+      },
+      a,
+    };
+
+    const state = create(data, (draft) => {
+      draft.a.a = 2;
+      draft.a = a;
+    });
+
+    expect(state).toBe(data);
+  });
   test('object delete', () => {
     const data = {
       foo: {
@@ -585,7 +603,7 @@ describe('no updates', () => {
 
   test('set about new value operations', () => {
     const data = {
-      set: new Set([{a: 1}]),
+      set: new Set([{ a: 1 }]),
       foo: 'bar',
     };
 
@@ -1367,6 +1385,251 @@ describe('class instance ', () => {
     expect(state.foobar.foo).not.toBe(data.foobar.foo);
   });
   // TODO: add test for class inherit instance
+
+  test('class with getters - should use a method to assing a field using a getter that return a non primitive object', () => {
+    class State {
+      _bar = { baz: 1 };
+      foo: any;
+      get bar() {
+        return this._bar;
+      }
+      syncFoo() {
+        const value = this.bar.baz;
+        this.foo = value;
+        this.bar.baz++;
+      }
+    }
+    const state = new State();
+
+    const newState = create(
+      state,
+      (draft) => {
+        draft.syncFoo();
+      },
+      {
+        mark: (target, { immutable }) => {
+          if (target instanceof State) return immutable;
+        },
+      }
+    );
+    expect(newState.foo).toEqual(1);
+    expect(newState.bar).toEqual({ baz: 2 });
+    expect(state.bar).toEqual({ baz: 1 });
+  });
+
+  test('super class with getters - should use a method to assing a field using a getter that return a non primitive object', () => {
+    class BaseState {
+      _bar = { baz: 1 };
+      foo: any;
+      get bar() {
+        return this._bar;
+      }
+      syncFoo() {
+        const value = this.bar.baz;
+        this.foo = value;
+        this.bar.baz++;
+      }
+    }
+
+    class State extends BaseState {}
+
+    const state = new State();
+    const newState = create(
+      state,
+      (draft) => {
+        draft.syncFoo();
+      },
+      {
+        mark: (target, { immutable }) => {
+          if (target instanceof State) return immutable;
+        },
+      }
+    );
+    expect(newState.foo).toEqual(1);
+    expect(newState.bar).toEqual({ baz: 2 });
+    expect(state.bar).toEqual({ baz: 1 });
+  });
+
+  test('class with setters - should define a field with a setter', () => {
+    class State {
+      _bar = 0;
+      get bar() {
+        return this._bar;
+      }
+      set bar(x) {
+        this._bar = x;
+      }
+    }
+    const state = new State();
+
+    const newState3 = create(
+      state,
+      (d) => {
+        d.bar = 1;
+        expect(d._bar).toEqual(1);
+      },
+      {
+        mark: (target, { immutable }) => {
+          if (target instanceof State) return immutable;
+        },
+      }
+    );
+    expect(newState3._bar).toEqual(1);
+    expect(newState3.bar).toEqual(1);
+    expect(state._bar).toEqual(0);
+    expect(state.bar).toEqual(0);
+  });
+
+  test('setter only', () => {
+    let setterCalled = 0;
+    class State {
+      x = 0;
+      set y(value: any) {
+        setterCalled++;
+        this.x = value;
+      }
+    }
+
+    const state = new State();
+    const next = create(
+      state,
+      (draft) => {
+        expect(draft.y).toBeUndefined();
+        draft.y = 2; // setter is inherited, so works
+        expect(draft.x).toBe(2);
+      },
+      {
+        mark: (target, { immutable }) => {
+          if (target instanceof State) return immutable;
+        },
+      }
+    );
+    expect(setterCalled).toBe(1);
+    expect(next.x).toBe(2);
+    expect(state.x).toBe(0);
+  });
+
+  test('getter only', () => {
+    let getterCalled = 0;
+    class State {
+      x = 0;
+      get y() {
+        getterCalled++;
+        return this.x;
+      }
+    }
+
+    const state = new State();
+    const next = create(
+      state,
+      (draft) => {
+        expect(draft.y).toBe(0);
+        expect(() => {
+          draft.y = 2;
+        }).toThrow('Cannot set property y');
+        draft.x = 2;
+        expect(draft.y).toBe(2);
+      },
+      {
+        mark: (target, { immutable }) => {
+          if (target instanceof State) return immutable;
+        },
+      }
+    );
+    expect(next.x).toBe(2);
+    expect(next.y).toBe(2);
+    expect(state.x).toBe(0);
+  });
+
+  test('own setter only', () => {
+    let setterCalled = 0;
+    const state = {
+      x: 0,
+      set y(value: any) {
+        setterCalled++;
+        this.x = value;
+      },
+    };
+
+    const next = create(state, (draft) => {
+      expect(draft.y).toBeUndefined();
+      // setter is not preserved, so we can write
+      draft.y = 2;
+      expect(draft.x).toBe(0);
+      expect(draft.y).toBe(2);
+    });
+    expect(setterCalled).toBe(0);
+    expect(next.x).toBe(0);
+    expect(next.y).toBe(2);
+    expect(state.x).toBe(0);
+  });
+
+  test('own getter only', () => {
+    let getterCalled = 0;
+    const state = {
+      x: 0,
+      get y() {
+        getterCalled++;
+        return this.x;
+      },
+    };
+
+    const next = create(state, (draft) => {
+      expect(draft.y).toBe(0);
+      // de-referenced, so stores it locally
+      draft.y = 2;
+      expect(draft.y).toBe(2);
+      expect(draft.x).toBe(0);
+    });
+    expect(getterCalled).not.toBe(1);
+    expect(next.x).toBe(0);
+    expect(next.y).toBe(2);
+    expect(state.x).toBe(0);
+  });
+
+  test('can work with class with computed props', () => {
+    class State {
+      x = 1;
+
+      set y(v) {
+        this.x = v;
+      }
+
+      get y() {
+        return this.x;
+      }
+    }
+
+    const baseState = new State();
+
+    const nextState = create(
+      baseState,
+      (d) => {
+        expect(d.y).toBe(1);
+        d.y = 2;
+        expect(d.x).toBe(2);
+        expect(d.y).toBe(2);
+        expect(Object.getOwnPropertyDescriptor(d, 'y')).toBeUndefined();
+      },
+      {
+        mark: (target, { immutable }) => {
+          if (target instanceof State) return immutable;
+        },
+      }
+    );
+    expect(baseState.x).toBe(1);
+    expect(baseState.y).toBe(1);
+
+    expect(nextState.x).toBe(2);
+    expect(nextState.y).toBe(2);
+    expect(Object.getOwnPropertyDescriptor(nextState, 'y')).toBeUndefined();
+  });
+
+  test('array about getOwnPropertyDescriptor', () => {
+    create([1], (d) => {
+      expect(Object.getOwnPropertyDescriptor(d, 'length')).not.toBeUndefined();
+    });
+  });
 });
 
 test('object case2', () => {
@@ -1428,4 +1691,90 @@ test('cross case2', () => {
   expect(state).not.toBe(data);
   expect(state.foo).not.toBe(data.foo);
   expect(state.foobar).not.toBe(data.foobar);
+});
+
+describe('error', () => {
+  test('not support: defineProperty', () => {
+    const data = {};
+
+    expect(() => {
+      create(data, (draft) => {
+        Object.defineProperty(draft, 'foo', {});
+      });
+    }).toThrowError('Cannot call `defineProperty()` on drafts');
+  });
+
+  test('not support: setPrototypeOf', () => {
+    const data = {};
+
+    expect(() => {
+      create(data, (draft) => {
+        Object.setPrototypeOf(draft, {});
+      });
+    }).toThrowError('Cannot call `setPrototypeOf()` on drafts');
+  });
+});
+
+test('can work with own computed props with enableAutoFreeze', () => {
+  const baseState = {
+    x: 1,
+    get y() {
+      return this.x;
+    },
+    set y(v) {
+      this.x = v;
+    },
+  };
+
+  const nextState = create(
+    baseState,
+    (d) => {
+      expect(d.y).toBe(1);
+      d.x = 2;
+      expect(d.x).toBe(2);
+      expect(d.y).toBe(1); // this has been copied!
+      d.y = 3;
+      expect(d.x).toBe(2);
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+  expect(baseState.x).toBe(1);
+  expect(baseState.y).toBe(1);
+
+  expect(nextState.x).toBe(2);
+  expect(nextState.y).toBe(3);
+});
+
+test('can work with own computed props', () => {
+  const baseState = {
+    x: 1,
+    get y() {
+      return this.x;
+    },
+    set y(v) {
+      this.x = v;
+    },
+  };
+
+  const nextState = create(baseState, (d) => {
+    expect(d.y).toBe(1);
+    d.x = 2;
+    expect(d.x).toBe(2);
+    expect(d.y).toBe(1); // this has been copied!
+    d.y = 3;
+    expect(d.x).toBe(2);
+  });
+  expect(baseState.x).toBe(1);
+  expect(baseState.y).toBe(1);
+
+  expect(nextState.x).toBe(2);
+  expect(nextState.y).toBe(3);
+  // @ts-ignore
+  nextState.y = 4; // decoupled now!
+  expect(nextState.y).toBe(4);
+  expect(nextState.x).toBe(2);
+  // @ts-ignore
+  expect(Object.getOwnPropertyDescriptor(nextState, 'y').value).toBe(4);
 });

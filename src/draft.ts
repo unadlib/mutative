@@ -216,7 +216,7 @@ export function createDraft<T extends object>({
   proxyDraft.proxy = proxy;
   if (parentDraft) {
     const target = parentDraft;
-    const oldProxyDraft = getProxyDraft(proxy);
+    const oldProxyDraft = getProxyDraft(proxy)!;
     target.finalities.draft.unshift((patches, inversePatches) => {
       // if target is a Set draft, `setMap` is the real Set copies proxy mapping.
       const proxyDraft = getProxyDraft(
@@ -231,7 +231,7 @@ export function createDraft<T extends object>({
         set(target.copy, key!, updatedValue);
       }
       // !case: handle the deleted key
-      oldProxyDraft?.callbacks?.forEach((callback) => {
+      oldProxyDraft.callbacks?.forEach((callback) => {
         callback(patches, inversePatches);
       });
     });
