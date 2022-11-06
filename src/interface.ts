@@ -1,8 +1,4 @@
-import {
-  DraftType,
-  dataTypes,
-  Operation,
-} from './constant';
+import { DraftType, dataTypes, Operation } from './constant';
 
 export type DataType = keyof typeof dataTypes;
 
@@ -83,7 +79,9 @@ export type Immutable<T> = T extends Primitive | ((...args: any) => any)
 
 type MutableMap<K, V> = Map<K, Mutable<V>>;
 type MutableSet<T> = Set<Mutable<T>>;
-type MutableObject<T> = { -readonly [K in keyof T]: Mutable<T[K]> };
+type MutableObject<T> = {
+  -readonly [K in keyof T]: T[K] extends object ? Mutable<T[K]> : T[K];
+};
 
 export type Mutable<T> = T extends Primitive | ((...args: any) => any)
   ? T

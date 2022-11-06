@@ -820,7 +820,6 @@ test('arrays - splice middle', () => {
   });
 });
 
-// // todo: fix
 test('arrays - multiple splice', () => {
   checkPatches([0, 1, 2, 3, 4, 5, 0], (d) => {
     d.splice(4, 2, 3);
