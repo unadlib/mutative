@@ -63,6 +63,29 @@ describe('base', () => {
     expect(state).toEqual({ foo: { bar: { baz: 'new baz' } }, foobar: {} });
   });
 
+  test('object with Symbol key', () => {
+    const a = Symbol('a');
+    const data = {
+      foo: {
+        [a]: 'str',
+      },
+      foobar: {
+        baz: 'str',
+      },
+    };
+
+    const state = create(data, (draft) => {
+      draft.foo[a] = 'new str';
+    });
+    expect(state).toEqual({
+      foo: { [a]: 'new str' },
+      foobar: { baz: 'str' },
+    });
+    expect(state).not.toBe(data);
+    expect(state.foo).not.toBe(data.foo);
+    expect(state.foobar).toBe(data.foobar);
+  });
+
   test('array with push', () => {
     const data = {
       bar: {},
