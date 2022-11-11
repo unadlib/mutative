@@ -1,6 +1,8 @@
 import type { CreateResult, Mutable, Options } from './interface';
 import { draftify } from './draftify';
 import { dataTypes } from './constant';
+import { isDraft } from './utils';
+import { current } from './current';
 
 /**
  * `create(baseState, callback, options)` to create the next state
@@ -29,7 +31,8 @@ export function create<
   F extends boolean = false,
   O extends boolean = false,
   R extends void | Promise<void> = void
->(state: T, mutate: (draft: Mutable<T>) => R, options?: Options<O, F>) {
+>(base: T, mutate: (draft: Mutable<T>) => R, options?: Options<O, F>) {
+  const state = isDraft(base) ? current(base) : base;
   if (options?.mark?.(state, dataTypes) === dataTypes.mutable) {
     const result = mutate(state as Mutable<T>);
     const finalization = options?.enablePatches ? [state, [], []] : state;

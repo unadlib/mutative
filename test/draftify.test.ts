@@ -1,4 +1,4 @@
-import { current, draftify } from '../src';
+import { create, current, draftify } from '../src';
 
 describe('draftify', () => {
   const getBaseState = () => ({
@@ -183,5 +183,13 @@ describe('draftify', () => {
     expect(state1).not.toBe(data1);
     expect(state1.foo1).not.toBe(data1.foo1);
     expect(state1.foobar1).toBe(data1.foobar1);
+  });
+
+  test('draftify a draft', () => {
+    create({ a: 1 }, (draft) => {
+      expect(() => draftify(draft)).toThrowError(
+        `draftify() cannot draft data that has already been drafted.`
+      );
+    });
   });
 });

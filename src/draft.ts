@@ -75,7 +75,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       target.copy![key] = createDraft({
         original: target.original[key],
         parentDraft: target,
-        key,
+        key: target.type === DraftType.Array ? Number(key) : key,
         finalities: target.finalities,
         marker: target.marker,
       });

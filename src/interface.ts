@@ -25,7 +25,7 @@ export interface ProxyDraft<T = any> {
 }
 
 export type Patches = {
-  op: Operation;
+  op: Lowercase<keyof typeof Operation>;
   path: (string | number)[];
   value?: any;
 }[];

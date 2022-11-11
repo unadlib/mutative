@@ -1128,3 +1128,32 @@ test('#879 delete item from array - 2', () => {
     delete draft[2];
   });
 });
+
+test('#466 mapChangeBug', () => {
+  checkPatches(
+    {
+      map: new Map([
+        [
+          'a',
+          new Map([
+            ['b', true],
+            ['c', true],
+            ['d', true],
+          ]),
+        ],
+        ['b', new Map([['a', true]])],
+        ['c', new Map([['a', true]])],
+        ['d', new Map([['a', true]])],
+      ]),
+    },
+    (draft) => {
+      const aMap = draft.map.get('a');
+      // @ts-ignore
+      aMap.forEach((_, other) => {
+        const otherMap = draft.map.get(other);
+        // @ts-ignore
+        otherMap.delete('a');
+      });
+    }
+  );
+});

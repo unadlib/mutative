@@ -20,5 +20,8 @@ import { getProxyDraft } from './utils';
  */
 export function original<T>(target: T): T {
   const proxyDraft = getProxyDraft(target);
-  return proxyDraft ? proxyDraft.original : target;
+  if (!proxyDraft) {
+    throw new Error(`original() is only used for a draft, parameter: ${target}`);
+  }
+  return proxyDraft.original;
 }

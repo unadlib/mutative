@@ -24,10 +24,16 @@ function shallowCopy(original: any, checkCopy?: (original: any) => boolean) {
     if (typeof original !== 'object') {
       throw new Error(`Cannot make a shallow copy ${original}`);
     }
-    return Object.create(
-      Object.getPrototypeOf(original),
-      Object.getOwnPropertyDescriptors(original)
-    );
+
+    const descriptors = Object.getOwnPropertyDescriptors(original);
+    Reflect.ownKeys(descriptors).forEach((key: any) => {
+      const descriptor = descriptors[key];
+      // for freeze
+      if (descriptor.writable === false) {
+        descriptor.writable = true;
+      }
+    });
+    return Object.create(Object.getPrototypeOf(original), descriptors);
   } else {
     throw new Error(
       `Unsupported type： ${original}, only plain objects, arrays, Set and Map are supported`

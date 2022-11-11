@@ -1,11 +1,72 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`#466 mapChangeBug 1`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "map",
+      "d",
+      "a",
+    ],
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "map",
+      "c",
+      "a",
+    ],
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "map",
+      "b",
+      "a",
+    ],
+  },
+]
+`;
+
+exports[`#466 mapChangeBug 2`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "map",
+      "d",
+      "a",
+    ],
+    "value": true,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "map",
+      "c",
+      "a",
+    ],
+    "value": true,
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "map",
+      "b",
+      "a",
+    ],
+    "value": true,
+  },
+]
+`;
+
 exports[`#468 1`] = `
 Array [
   Object {
     "op": "replace",
     "path": Array [
-      "0",
+      0,
       "id",
     ],
     "value": 2,
@@ -27,7 +88,7 @@ Array [
   Object {
     "op": "replace",
     "path": Array [
-      "0",
+      0,
       "id",
     ],
     "value": 1,
@@ -357,7 +418,7 @@ Array [
     "op": "replace",
     "path": Array [
       "arr1",
-      "0",
+      0,
       "a",
     ],
     "value": 0,
@@ -557,7 +618,7 @@ Array [
     "op": "replace",
     "path": Array [
       "arr1",
-      "0",
+      0,
       "a",
     ],
     "value": 1,
@@ -1122,7 +1183,7 @@ Array [
     "op": "remove",
     "path": Array [
       "x",
-      "1",
+      1,
       "c",
     ],
   },
@@ -1135,7 +1196,7 @@ Array [
     "op": "add",
     "path": Array [
       "x",
-      "1",
+      1,
       "c",
     ],
     "value": 3,
@@ -2090,7 +2151,7 @@ Array [
     "op": "replace",
     "path": Array [
       "arr1",
-      "0",
+      0,
       "a",
     ],
     "value": 444,
@@ -2134,7 +2195,7 @@ Array [
     "op": "replace",
     "path": Array [
       "arr1",
-      "0",
+      0,
       "a",
     ],
     "value": 1,
@@ -2537,8 +2598,8 @@ Array [
   Object {
     "op": "replace",
     "path": Array [
-      "0",
-      "0",
+      0,
+      0,
       "b",
     ],
     "value": 2,
@@ -2551,8 +2612,8 @@ Array [
   Object {
     "op": "replace",
     "path": Array [
-      "0",
-      "0",
+      0,
+      0,
       "b",
     ],
     "value": 1,
@@ -3461,7 +3522,7 @@ Array [
     "op": "replace",
     "path": Array [
       "arr1",
-      "0",
+      0,
       "a",
     ],
     "value": 2,
@@ -3475,7 +3536,7 @@ Array [
     "op": "replace",
     "path": Array [
       "arr1",
-      "0",
+      0,
       "a",
     ],
     "value": 1,
@@ -3539,7 +3600,7 @@ Array [
     "op": "replace",
     "path": Array [
       "x",
-      "0",
+      0,
       "y",
     ],
     "value": 5,
@@ -3553,7 +3614,7 @@ Array [
     "op": "replace",
     "path": Array [
       "x",
-      "0",
+      0,
       "y",
     ],
     "value": 4,

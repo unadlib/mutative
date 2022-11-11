@@ -1,6 +1,6 @@
 import type { Finalities, Options, Patches, Result } from './interface';
 import { createDraft, finalizeDraft } from './draft';
-import { isDraftable } from './utils';
+import { isDraft, isDraftable } from './utils';
 
 /**
  * `draftify(baseState, options)` to create the state draft
@@ -27,6 +27,11 @@ export function draftify<
 >(baseState: T, options?: Options<O, F>): [T, () => Result<T, O, F>] {
   const marker = options?.mark;
   const enablePatches = options?.enablePatches ?? false;
+  if (isDraft(baseState)) {
+    throw new Error(
+      `draftify() cannot draft data that has already been drafted.`
+    );
+  }
   if (!isDraftable(baseState, { marker })) {
     throw new Error(
       'create() only supports plain object, array, set, and map.'
