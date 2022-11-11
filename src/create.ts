@@ -43,7 +43,9 @@ export function create<
   if (result instanceof Promise) {
     return result.then(finalize) as CreateResult<T, O, F, R>;
   } else if (typeof result !== 'undefined') {
-    throw new Error(`The create() callback must return 'void' or 'Promise<void>'.`);
+    throw new Error(
+      `The create() callback must return 'void' or 'Promise<void>'.`
+    );
   }
   return finalize() as CreateResult<T, O, F, R>;
 }

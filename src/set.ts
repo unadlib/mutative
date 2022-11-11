@@ -5,7 +5,6 @@ import {
   ensureShallowCopy,
   getProxyDraft,
   isDraftable,
-  latest,
   markChanged,
   markSetValue,
 } from './utils';
@@ -70,8 +69,8 @@ export const setHandler = {
     if (!this.has(value)) {
       ensureShallowCopy(target);
       markChanged(target);
-      target.setMap!.set(value, value);
       target.assignedMap!.set(value, true);
+      target.setMap!.set(value, value);
       markSetValue(target, value, value);
     }
     return this;

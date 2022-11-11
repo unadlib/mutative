@@ -108,7 +108,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     const current = peek(latest(target), key);
     const currentProxyDraft = getProxyDraft(current);
     if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
-      // !case: ignore the case of assigning the original value to a draft
+      // !case: ignore the case of assigning the original draftable value to a draft
       target.copy![key] = value;
       target.assignedMap.set(key, false);
       return true;
@@ -121,8 +121,13 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       return true;
     ensureShallowCopy(target);
     markChanged(target);
+    if (has(target.original, key) && isEqual(value, target.original[key])) {
+      // !case: handle the case of assigning the original non-draftable value to a draft
+      target.assignedMap.delete(key);
+    } else {
+      target.assignedMap.set(key, true);
+    }
     target.copy![key] = value;
-    target.assignedMap.set(key, true);
     markSetValue(target, key, value);
     return true;
   },
@@ -162,9 +167,9 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     }
     if (peek(target.original, key) !== undefined || key in target.original) {
       // !case: delete an existing key
-      target.assignedMap.set(key, false);
       ensureShallowCopy(target);
       markChanged(target);
+      target.assignedMap.set(key, false);
     } else {
       // The original non-existent key has been deleted
       target.assignedMap.delete(key);

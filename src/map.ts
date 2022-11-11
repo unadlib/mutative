@@ -23,8 +23,8 @@ export const mapHandler = {
     if (!source.has(key) || !isEqual(source.get(key), value)) {
       ensureShallowCopy(target);
       markChanged(target);
-      target.copy.set(key, value);
       target.assignedMap.set(key, true);
+      target.copy.set(key, value);
       markSetValue(target, key, value);
     }
     return this;
