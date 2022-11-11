@@ -111,6 +111,46 @@ measure(
 console.log('');
 
 measure(
+  'mutative - with patches',
+  () => baseState,
+  (baseState: any) => {
+    for (let i = 0; i < MAX; i++) {
+      const state = create(
+        baseState,
+        (draft) => {
+          draft.arr.push(i);
+          draft.map[i] = i;
+        },
+        {
+          enableAutoFreeze: false,
+          enablePatches: true,
+        }
+      );
+    }
+  }
+);
+
+measure(
+  'immer - with patches',
+  () => {
+    setAutoFreeze(false);
+    setUseProxies(true);
+    enablePatches();
+    return baseState;
+  },
+  (baseState: any) => {
+    for (let i = 0; i < MAX; i++) {
+      const state = produceWithPatches(baseState, (draft: any) => {
+        draft.arr.push(i);
+        draft.map[i] = i;
+      });
+    }
+  }
+);
+
+console.log('');
+
+measure(
   'mutative - with autoFreeze and patches',
   () => baseState,
   (baseState: any) => {
@@ -292,6 +332,101 @@ measure(
         draft.arr.push(i);
         draft.map[i] = i;
       }
+    });
+  }
+);
+
+console.log('-------');
+
+const object: Record<string, any> = {};
+Array(10 ** 5)
+  .fill(1)
+  .forEach((_, i) => {
+    object[i] = { i };
+  });
+
+measure(
+  'native handcrafted - performance 100k key in object by default',
+  () => object,
+  (baseState: any) => {
+    const state = {
+      ...baseState,
+      0: {
+        ...baseState[0],
+        c: { i: 0 },
+      },
+    };
+  }
+);
+
+measure(
+  'mutative - performance 100k key in object by default',
+  () => object,
+  (baseState: any) => {
+    const state = create(baseState, (draft) => {
+      draft[0].c = { i: 0 };
+    });
+  }
+);
+
+measure(
+  'immer - performance 100k key in object by default',
+  () => {
+    // setAutoFreeze(false);
+    // setUseProxies(true);
+    return object;
+  },
+  (baseState: any) => {
+    const state = produce(baseState, (draft: any) => {
+      draft[0].c = { i: 0 };
+    });
+  }
+);
+
+console.log('');
+
+const a = Array(10 ** 5)
+  .fill(1)
+  .map((_, i) => ({ [i]: i }));
+const data = { b: { c: 2 }, a };
+
+measure(
+  'native handcrafted - performance for 100k items in array',
+  () => data,
+  (baseState: any) => {
+    const state = {
+      ...baseState,
+      b: {
+        ...baseState.b,
+        c: 3,
+      },
+      a: [...baseState.a, { '1': 1 }],
+    };
+  }
+);
+
+measure(
+  'mutative - performance for 100k items in array  by default',
+  () => data,
+  (baseState: any) => {
+    const state = create(baseState, (draft) => {
+      draft.b.c = 3;
+      draft.a.push({ '1': 1 });
+    });
+  }
+);
+
+measure(
+  'immer - performance for 100k items in array by default',
+  () => {
+    // setAutoFreeze(false);
+    // setUseProxies(true);
+    return data;
+  },
+  (baseState: any) => {
+    const state = produce(baseState, (draft: any) => {
+      draft.b.c = 3;
+      draft.a.push({ '1': 1 });
     });
   }
 );
