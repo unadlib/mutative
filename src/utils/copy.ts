@@ -2,7 +2,7 @@ import type { ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 
-function shallowCopy(original: any, checkCopy?: (original: any) => boolean) {
+export function shallowCopy(original: any, checkCopy?: (original: any) => boolean) {
   if (Array.isArray(original)) {
     return Array.prototype.concat.call(original);
   } else if (original instanceof Set) {

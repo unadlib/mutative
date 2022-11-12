@@ -1,4 +1,5 @@
-import { getProxyDraft } from './utils';
+import { dataTypes } from './constant';
+import { getProxyDraft, shallowCopy } from './utils';
 
 /**
  * `current(draft)` to get current state
@@ -42,24 +43,35 @@ export function current<T extends object>(target: T): any {
         elements.push([key, getProxyDraft(value) ? current(value) : value]);
       });
       return new Map(elements);
-    } else if (
-      typeof proxyDraft.copy === 'object' &&
-      Object.getPrototypeOf(proxyDraft.copy) === Object.prototype
-    ) {
+    } else if (typeof proxyDraft.copy === 'object') {
       // For best performance with shallow copies,
       // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));`.
-      const copy: Record<string | symbol, any> = {};
+      const copy: Record<string | symbol, any> = shallowCopy(
+        proxyDraft.copy,
+        proxyDraft.marker
+          ? () =>
+              proxyDraft.marker!(proxyDraft.original, dataTypes) ===
+              dataTypes.immutable
+          : undefined
+      );
       const draftCopy = proxyDraft.copy;
       Object.keys(draftCopy).forEach((key) => {
         const value = draftCopy[key];
         copy![key] = getProxyDraft(value) ? current(value) : value;
+        Object.keys(copy![key]).forEach((_key) => {
+          const _value = copy![key][_key];
+          if (getProxyDraft(_value)) {
+            copy![key][_key] = current(_value);
+          }
+        });
       });
       return copy;
     } else {
       throw new Error(
-        `Unsupported type: ${proxyDraft.copy}, only regular objects, arrays, Set and Map are supported`
+        `current() is only used for Draft, parameter: ${proxyDraft.copy}`
       );
     }
+  } else {
+    throw new Error(`current() is only used for Draft, parameter: ${target}`);
   }
-  return target;
 }

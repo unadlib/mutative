@@ -65,17 +65,33 @@ export interface Options<O extends boolean, F extends boolean> {
 // Exclude `symbol`
 type Primitive = string | number | bigint | boolean | null | undefined;
 
-type ImmutableMap<K, V> = ReadonlyMap<K, Immutable<V>>;
+type ImmutableMap<K, V> = ReadonlyMap<Immutable<K>, Immutable<V>>;
 type ImmutableSet<T> = ReadonlySet<Immutable<T>>;
 type ImmutableObject<T> = { readonly [K in keyof T]: Immutable<T[K]> };
 
-export type Immutable<T> = T extends Primitive | ((...args: any) => any)
+export type IfAvailable<T, Fallback = void> = true | false extends (
+  T extends never ? true : false
+)
+  ? Fallback
+  : keyof T extends never
+  ? Fallback
+  : T;
+type WeakReferences =
+  | IfAvailable<WeakMap<any, any>>
+  | IfAvailable<WeakSet<any>>;
+type AtomicObject = Function | Promise<any> | Date | RegExp;
+
+export type Immutable<T> = T extends Primitive | AtomicObject
   ? T
-  : T extends Map<infer K, infer V>
+  : T extends IfAvailable<ReadonlyMap<infer K, infer V>>
   ? ImmutableMap<K, V>
-  : T extends Set<infer M>
-  ? ImmutableSet<M>
-  : ImmutableObject<T>;
+  : T extends IfAvailable<ReadonlySet<infer V>>
+  ? ImmutableSet<V>
+  : T extends WeakReferences
+  ? T
+  : T extends object
+  ? ImmutableObject<T>
+  : T;
 
 type DraftedMap<K, V> = Map<K, Draft<V>>;
 type DraftedSet<T> = Set<Draft<T>>;
@@ -83,10 +99,14 @@ type DraftedObject<T> = {
   -readonly [K in keyof T]: T[K] extends object ? Draft<T[K]> : T[K];
 };
 
-export type Draft<T> = T extends Primitive | ((...args: any) => any)
+export type Draft<T> = T extends Primitive | AtomicObject
   ? T
-  : T extends Map<infer K, infer V>
+  : T extends IfAvailable<ReadonlyMap<infer K, infer V>>
   ? DraftedMap<K, V>
-  : T extends Set<infer M>
-  ? DraftedSet<M>
-  : DraftedObject<T>;
+  : T extends IfAvailable<ReadonlySet<infer V>>
+  ? DraftedSet<V>
+  : T extends WeakReferences
+  ? T
+  : T extends object
+  ? DraftedObject<T>
+  : T;

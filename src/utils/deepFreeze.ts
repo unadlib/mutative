@@ -82,6 +82,7 @@ export function deepFreeze(target: any) {
       },
     });
   } else if (Array.isArray(target)) {
+    Object.freeze(target);
     for (const value of target) {
       if (
         typeof value !== 'object' ||
@@ -93,7 +94,9 @@ export function deepFreeze(target: any) {
       deepFreeze(value);
     }
   } else {
-    Object.getOwnPropertyNames(target).forEach((name) => {
+    Object.freeze(target);
+    // ignore non-enumerable or symbolic properties
+    Object.keys(target).forEach((name) => {
       const value = target[name];
       if (
         typeof value !== 'object' ||
@@ -105,5 +108,4 @@ export function deepFreeze(target: any) {
       deepFreeze(value);
     });
   }
-  Object.freeze(target);
 }
