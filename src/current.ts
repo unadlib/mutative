@@ -1,6 +1,5 @@
 import { dataTypes, DraftType } from './constant';
 import {
-  forEach,
   get,
   getProxyDraft,
   getType,
@@ -31,10 +30,17 @@ function getCurrent(target: any) {
             : undefined
         );
   if (proxyDraft) proxyDraft.finalized = false;
-  forEach(currentValue, (key: any, value: any) => {
+  const iterator = (key: any, value: any) => {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
     set(currentValue, key, getCurrent(value));
-  });
+  };
+  if (getType(currentValue) === DraftType.Object) {
+    Reflect.ownKeys(currentValue).forEach((key) => {
+      iterator(key, currentValue[key]);
+    });
+  } else {
+    currentValue.forEach((value: any, key: any) => iterator(key, value));
+  }
   return type === DraftType.Set ? new Set(currentValue) : currentValue;
 }
 

@@ -1,13 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`auto freeze - proxy will freeze maps 1`] = `"Cannot set property b, map is not extensible"`;
+exports[`auto freeze - proxy will freeze maps 1`] = `"Cannot modify frozen data"`;
 
-exports[`auto freeze - proxy will freeze maps 2`] = `"Cannot clear map, map is frozen"`;
+exports[`auto freeze - proxy will freeze maps 2`] = `"Cannot modify frozen data"`;
 
-exports[`auto freeze - proxy will freeze maps 3`] = `"Cannot delete property b, map is frozen"`;
+exports[`auto freeze - proxy will freeze maps 3`] = `"Cannot modify frozen data"`;
 
-exports[`auto freeze - proxy will freeze sets 1`] = `"Cannot add 2, set is not extensible"`;
+exports[`auto freeze - proxy will freeze sets 1`] = `"Cannot modify frozen data"`;
 
-exports[`auto freeze - proxy will freeze sets 2`] = `"Cannot delete property 1, set is frozen"`;
+exports[`auto freeze - proxy will freeze sets 2`] = `"Cannot modify frozen data"`;
 
-exports[`auto freeze - proxy will freeze sets 3`] = `"Cannot clear set, set is frozen"`;
+exports[`auto freeze - proxy will freeze sets 3`] = `"Cannot modify frozen data"`;
