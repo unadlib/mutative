@@ -77,16 +77,16 @@ export type Immutable<T> = T extends Primitive | ((...args: any) => any)
   ? ImmutableSet<M>
   : ImmutableObject<T>;
 
-type MutableMap<K, V> = Map<K, Mutable<V>>;
-type MutableSet<T> = Set<Mutable<T>>;
-type MutableObject<T> = {
-  -readonly [K in keyof T]: T[K] extends object ? Mutable<T[K]> : T[K];
+type DraftedMap<K, V> = Map<K, Draft<V>>;
+type DraftedSet<T> = Set<Draft<T>>;
+type DraftedObject<T> = {
+  -readonly [K in keyof T]: T[K] extends object ? Draft<T[K]> : T[K];
 };
 
-export type Mutable<T> = T extends Primitive | ((...args: any) => any)
+export type Draft<T> = T extends Primitive | ((...args: any) => any)
   ? T
   : T extends Map<infer K, infer V>
-  ? MutableMap<K, V>
+  ? DraftedMap<K, V>
   : T extends Set<infer M>
-  ? MutableSet<M>
-  : MutableObject<T>;
+  ? DraftedSet<M>
+  : DraftedObject<T>;

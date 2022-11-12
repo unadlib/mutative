@@ -1,4 +1,4 @@
-import type { CreateResult, Mutable, Options } from './interface';
+import type { CreateResult, Draft, Options } from './interface';
 import { draftify } from './draftify';
 import { dataTypes } from './constant';
 import { isDraft } from './utils';
@@ -31,10 +31,10 @@ export function create<
   F extends boolean = false,
   O extends boolean = false,
   R extends void | Promise<void> = void
->(base: T, mutate: (draft: Mutable<T>) => R, options?: Options<O, F>) {
+>(base: T, mutate: (draft: Draft<T>) => R, options?: Options<O, F>) {
   const state = isDraft(base) ? current(base) : base;
   if (options?.mark?.(state, dataTypes) === dataTypes.mutable) {
-    const result = mutate(state as Mutable<T>);
+    const result = mutate(state as Draft<T>);
     const finalization = options?.enablePatches ? [state, [], []] : state;
     if (result instanceof Promise) {
       return result.then(() => finalization) as CreateResult<T, O, F, R>;
@@ -42,7 +42,7 @@ export function create<
     return finalization as CreateResult<T, O, F, R>;
   }
   const [draft, finalize] = draftify(state, options);
-  const result = mutate(draft as Mutable<T>);
+  const result = mutate(draft as Draft<T>);
   if (result instanceof Promise) {
     return result.then(finalize) as CreateResult<T, O, F, R>;
   } else if (typeof result !== 'undefined') {

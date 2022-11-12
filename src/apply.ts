@@ -1,4 +1,4 @@
-import type { Mutable, Options, Patches } from './interface';
+import type { Draft, Options, Patches } from './interface';
 import { DraftType, Operation } from './constant';
 import { deepClone, get, getType, isDraft } from './utils';
 import { create } from './create';
@@ -11,7 +11,7 @@ export function apply<T extends object, F extends boolean = false>(
     Exclude<keyof Options<boolean, F>, 'enablePatches'>
   >
 ) {
-  const mutate = (draft: Mutable<T>) => {
+  const mutate = (draft: Draft<T>) => {
     patches.forEach((patch) => {
       const { path, op } = patch;
       let base: any = draft;
@@ -86,7 +86,7 @@ export function apply<T extends object, F extends boolean = false>(
   };
   if (isDraft(state)) {
     // todo: check applyOptions
-    mutate(state as Mutable<T>);
+    mutate(state as Draft<T>);
     return state;
   }
   return create<T, F>(state, mutate, {
