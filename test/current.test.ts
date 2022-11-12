@@ -88,7 +88,7 @@ describe('current', () => {
   });
 });
 
-test.skip('nested draft', () => {
+test('nested draft', () => {
   create(
     {
       c: {
@@ -97,6 +97,24 @@ test.skip('nested draft', () => {
       d: {
         d: 1,
       },
+      map: new Map([
+        [
+          'd',
+          {
+            d: {
+              d: 1,
+            },
+          },
+        ],
+      ]),
+
+      set: new Set([
+        {
+          d: {
+            d: 1,
+          },
+        },
+      ]),
     },
     (draft) => {
       draft.c.a = 2;
@@ -108,7 +126,33 @@ test.skip('nested draft', () => {
           },
         },
       };
-      const a = current(draft.d);
+      // @ts-ignore
+      draft.map.get('d')!.d.d = {
+        f: {
+          f: {
+            f: draft.c,
+          },
+        },
+      };
+      // @ts-ignore
+      draft.set.values().next().value.d.d = {
+        f: {
+          f: {
+            f: draft.c,
+          },
+        },
+      };
+
+      const d = current(draft.d);
+      const map = current(draft.map);
+      const set = current(draft.set);
+      expect(d.d.f.f.f).toEqual({ a: 2 });
+      expect(isDraft(d.d.f.f.f)).toBeFalsy();
+      expect(map.get('d').d.d.f.f.f).toEqual({ a: 2 });
+      expect(isDraft(map.get('d').d.d.f.f.f)).toBeFalsy();
+      const f = set.values().next().value.d.d.f.f.f;
+      expect(f).toEqual({ a: 2 });
+      expect(isDraft(f)).toBeFalsy();
     }
   );
 });

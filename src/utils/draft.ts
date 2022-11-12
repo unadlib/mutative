@@ -24,13 +24,12 @@ export function isDraftable<T extends { marker?: Marker } = ProxyDraft>(
   value: any,
   target?: T
 ) {
+  if (!value || typeof value !== 'object') return false;
   return (
-    (!!value &&
-      ((typeof value === 'object' &&
-        Object.getPrototypeOf(value) === Object.prototype) ||
-        Array.isArray(value) ||
-        value instanceof Map ||
-        value instanceof Set)) ||
+    Object.getPrototypeOf(value) === Object.prototype ||
+    Array.isArray(value) ||
+    value instanceof Map ||
+    value instanceof Set ||
     target?.marker?.(value, dataTypes) === dataTypes.immutable
   );
 }

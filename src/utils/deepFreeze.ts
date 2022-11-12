@@ -1,3 +1,17 @@
+import { DraftType } from '../constant';
+import { getType } from './draft';
+
+export function forEach(target: any, iterator: any, enumerableOnly = false) {
+  if (getType(target) === DraftType.Object) {
+    const keys = (enumerableOnly ? Object.keys : Reflect.ownKeys)(target);
+    keys.forEach((key) => {
+      iterator(key, target[key], target);
+    });
+  } else {
+    target.forEach((value: any, key: any) => iterator(key, value, target));
+  }
+}
+
 const readonlyDescriptors = {
   writable: false,
   enumerable: false,
@@ -95,7 +109,7 @@ export function deepFreeze(target: any) {
     }
   } else {
     Object.freeze(target);
-    // ignore non-enumerable or symbolic properties
+    // ignore non-enumerable or symbol properties
     Object.keys(target).forEach((name) => {
       const value = target[name];
       if (

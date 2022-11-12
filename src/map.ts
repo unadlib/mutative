@@ -67,7 +67,7 @@ export const mapHandler = {
     if (target.marker?.(value, dataTypes) === dataTypes.mutable) {
       return value;
     }
-    if (target.finalized || !isDraftable(value)) {
+    if (target.finalized || !isDraftable(value, target)) {
       return value;
     }
     // drafted or reassigned

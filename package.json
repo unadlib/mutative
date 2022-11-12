@@ -12,6 +12,7 @@
     "performance": "cd test/performance && ts-node index.ts",
     "performance:set-map": "cd test/performance && ts-node set-map.ts",
     "performance:big-object": "cd test/performance && ts-node big-object.ts",
+    "performance:all": "yarn perf && yarn performance && yarn performance:set-map && yarn performance:big-object",
     "build": "yarn clean && tsc && yarn build:prod && yarn build:dev",
     "build:prod": "NODE_ENV=production rollup --config",
     "build:dev": "NODE_ENV=development rollup --config",

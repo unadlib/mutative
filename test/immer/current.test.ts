@@ -122,9 +122,11 @@ function runTests(name: any, useProxies: any) {
           z: {},
         });
         expect(isDraft(c.y.nested)).toBe(false);
+        // @ts-ignore
+        expect(isDraft(draft.y.nested)).toBe(true);
         expect(c.z).toBe(base.z);
         // @ts-ignore
-        expect(c.y.nested).toBe(draft.y.nested);
+        expect(c.y.nested).not.toBe(draft.y.nested);
       });
     });
 
