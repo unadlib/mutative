@@ -1,17 +1,14 @@
-export function has(target: object, property: PropertyKey): boolean {
+export function has(target: object, key: PropertyKey) {
   return target instanceof Map
-    ? target.has(property)
-    : Object.prototype.hasOwnProperty.call(target, property);
+    ? target.has(key)
+    : Object.prototype.hasOwnProperty.call(target, key);
 }
 
-export function getDescriptor(
-  target: object,
-  property: PropertyKey
-): PropertyDescriptor | undefined {
-  if (property in target) {
+export function getDescriptor(target: object, key: PropertyKey) {
+  if (key in target) {
     let prototype = Reflect.getPrototypeOf(target);
     while (prototype) {
-      const descriptor = Reflect.getOwnPropertyDescriptor(prototype, property);
+      const descriptor = Reflect.getOwnPropertyDescriptor(prototype, key);
       if (descriptor) return descriptor;
       prototype = Reflect.getPrototypeOf(prototype);
     }

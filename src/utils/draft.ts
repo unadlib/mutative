@@ -1,5 +1,5 @@
+import type { Marker, ProxyDraft } from '../interface';
 import { dataTypes, DraftType, PROXY_DRAFT } from '../constant';
-import { Marker, ProxyDraft } from '../interface';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
@@ -16,7 +16,7 @@ export function getProxyDraft<T extends any>(value: T): ProxyDraft | null {
 
 export function getValue<T extends object>(value: T): T {
   const proxyDraft = getProxyDraft(value);
-  return !proxyDraft ? value : proxyDraft.copy ?? proxyDraft.original;
+  return proxyDraft ? proxyDraft.copy ?? proxyDraft.original : value;
 }
 
 export function isDraftable<T extends { marker?: Marker } = ProxyDraft>(

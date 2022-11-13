@@ -57,8 +57,17 @@ export type Marker = (
 ) => null | undefined | DataType;
 
 export interface Options<O extends boolean, F extends boolean> {
+  /**
+   * Enable patch, and return the patches and inversePatches.
+   */
   enablePatches?: O;
+  /**
+   * Enable autoFreeze, and return frozen state.
+   */
   enableAutoFreeze?: F;
+  /**
+   * Set a marker to determine if the object is mutable or if an instance is an immutable.
+   */
   mark?: Marker;
 }
 

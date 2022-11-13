@@ -1,6 +1,6 @@
+import type { ProxyDraft } from './interface';
 import { dataTypes, iteratorSymbol } from './constant';
 import { createDraft } from './draft';
-import { ProxyDraft } from './interface';
 import {
   ensureShallowCopy,
   getProxyDraft,
@@ -18,7 +18,7 @@ const getNextIterator =
   () => {
     const result = iterator.next();
     if (result.done) return result;
-    let key = result.value as any;
+    const key = result.value as any;
     let value = target.setMap!.get(key);
     const currentDraft = getProxyDraft(value);
     if (
@@ -64,7 +64,7 @@ export const setHandler = {
       return true;
     return false;
   },
-  add(value: any): any {
+  add(value: any) {
     const target = getProxyDraft(this)!;
     if (!this.has(value)) {
       ensureShallowCopy(target);

@@ -1,5 +1,5 @@
-import { DraftType } from '../constant';
 import type { ProxyDraft } from '../interface';
+import { DraftType } from '../constant';
 import { finalizePatches } from '../patch';
 import { get, getProxyDraft, isEqual, set } from './draft';
 

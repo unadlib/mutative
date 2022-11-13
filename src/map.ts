@@ -24,7 +24,7 @@ export const mapHandler = {
       ensureShallowCopy(target);
       markChanged(target);
       target.assignedMap.set(key, true);
-      target.copy!.set(key, value);
+      target.copy.set(key, value);
       markSetValue(target, key, value);
     }
     return this;
@@ -41,7 +41,7 @@ export const mapHandler = {
     } else {
       target.assignedMap.delete(key);
     }
-    target.copy!.delete(key);
+    target.copy.delete(key);
     return true;
   },
   clear() {
@@ -82,7 +82,7 @@ export const mapHandler = {
       marker: target.marker,
     });
     ensureShallowCopy(target);
-    target.copy!.set(key, draft);
+    target.copy.set(key, draft);
     return draft;
   },
   keys(): IterableIterator<any> {
