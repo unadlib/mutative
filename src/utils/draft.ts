@@ -1,5 +1,4 @@
 import { dataTypes, DraftType, PROXY_DRAFT } from '../constant';
-import { current } from '../current';
 import { Marker, ProxyDraft } from '../interface';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
@@ -15,7 +14,7 @@ export function getProxyDraft<T extends any>(value: T): ProxyDraft | null {
   return (value as { [PROXY_DRAFT]: any })?.[PROXY_DRAFT];
 }
 
-export function getValue<T extends object>(value: T) {
+export function getValue<T extends object>(value: T): T {
   const proxyDraft = getProxyDraft(value);
   return !proxyDraft ? value : proxyDraft.copy ?? proxyDraft.original;
 }
@@ -37,7 +36,7 @@ export function isDraftable<T extends { marker?: Marker } = ProxyDraft>(
 export function getPath(
   target: ProxyDraft,
   path: any[] = []
-): (string | number)[] {
+): (string | number | object)[] {
   if (!target) return path;
   if (typeof target.key !== 'undefined')
     path.unshift(
@@ -51,7 +50,6 @@ export function getPath(
   return path;
 }
 
-// TODO: refactor with support for es5
 export function getType(target: any) {
   if (target instanceof Map) return DraftType.Map;
   if (target instanceof Set) return DraftType.Set;
@@ -71,9 +69,9 @@ export function set(target: any, key: PropertyKey, value: any) {
   }
 }
 
-export function peek(draft: any, key: PropertyKey) {
-  const state = getProxyDraft(draft);
-  const source = state ? latest(state) : draft;
+export function peek(target: any, key: PropertyKey) {
+  const state = getProxyDraft(target);
+  const source = state ? latest(state) : target;
   return source[key];
 }
 

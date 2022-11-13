@@ -84,11 +84,10 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     return value;
   },
   set(target: ProxyDraft, key: string | number | symbol, value: any) {
-    if (target.type === DraftType.Set) {
-      throw new Error('Set draft does not support any property assignment.');
-    }
-    if (target.type === DraftType.Map) {
-      throw new Error('Map draft does not support any property assignment.');
+    if (target.type === DraftType.Set || target.type === DraftType.Map) {
+      throw new Error(
+        `'${target.type}' draft does not support any property assignment.`
+      );
     }
     if (
       target.type === DraftType.Array &&
@@ -152,14 +151,14 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     return Reflect.getPrototypeOf(target.original);
   },
   setPrototypeOf(target: ProxyDraft, value: object | null) {
-    throw new Error('Cannot call `setPrototypeOf()` on drafts');
+    throw new Error(`Cannot call 'setPrototypeOf()' on drafts`);
   },
   defineProperty(
     target: ProxyDraft,
     key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
-    throw new Error('Cannot call `defineProperty()` on drafts');
+    throw new Error(`Cannot call 'defineProperty()' on drafts`);
   },
   deleteProperty(target: ProxyDraft, key: string | symbol) {
     if (target.type === DraftType.Array) {
@@ -259,7 +258,7 @@ export function finalizeDraft<T>(
   for (const finalize of proxyDraft.finalities.draft) {
     finalize(patches, inversePatches);
   }
-  const state = !proxyDraft.operated ? proxyDraft.original : proxyDraft.copy;
+  const state = proxyDraft.operated ? proxyDraft.copy : proxyDraft.original;
   for (const revoke of proxyDraft.finalities.revoke) {
     revoke();
   }

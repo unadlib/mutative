@@ -40,7 +40,7 @@ test('Unexpected operation check of Set draft', () => {
       // @ts-ignore
       draft.x = 1;
     });
-  }).toThrowError('Set draft does not support any property assignment.');
+  }).toThrowError(`'set' draft does not support any property assignment.`);
 });
 
 test('Unexpected operation check of Map draft', () => {
@@ -56,7 +56,7 @@ test('Unexpected operation check of Map draft', () => {
       // @ts-ignore
       draft.x = 1;
     });
-  }).toThrowError('Map draft does not support any property assignment.');
+  }).toThrowError(`'map' draft does not support any property assignment.`);
 });
 
 // https://github.com/immerjs/immer/issues/819

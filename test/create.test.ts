@@ -1724,7 +1724,7 @@ describe('error', () => {
       create(data, (draft) => {
         Object.defineProperty(draft, 'foo', {});
       });
-    }).toThrowError('Cannot call `defineProperty()` on drafts');
+    }).toThrowError(`Cannot call 'defineProperty()' on drafts`);
   });
 
   test('not support: setPrototypeOf', () => {
@@ -1734,7 +1734,7 @@ describe('error', () => {
       create(data, (draft) => {
         Object.setPrototypeOf(draft, {});
       });
-    }).toThrowError('Cannot call `setPrototypeOf()` on drafts');
+    }).toThrowError(`Cannot call 'setPrototypeOf()' on drafts`);
   });
 });
 

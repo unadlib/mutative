@@ -2,7 +2,10 @@ import type { ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 
-export function shallowCopy(original: any, checkCopy?: (original: any) => boolean) {
+export function shallowCopy(
+  original: any,
+  checkCopy?: (original: any) => boolean
+) {
   if (Array.isArray(original)) {
     return Array.prototype.concat.call(original);
   } else if (original instanceof Set) {
@@ -63,14 +66,11 @@ function deepClone(target: any) {
   if (target instanceof Set) return new Set(Array.from(target).map(deepClone));
   const copy = Object.create(Object.getPrototypeOf(target));
   for (const key in target) copy[key] = deepClone(target[key]);
-  // TODO: copy immutable symbols?
   return copy;
 }
 
 export function cloneIfNeeded<T>(target: T): T {
-  if (isDraft(target)) {
-    return deepClone(target);
-  } else return target;
+  return isDraft(target) ? deepClone(target) : target;
 }
 
 export { deepClone };

@@ -24,7 +24,7 @@ export const mapHandler = {
       ensureShallowCopy(target);
       markChanged(target);
       target.assignedMap.set(key, true);
-      target.copy.set(key, value);
+      target.copy!.set(key, value);
       markSetValue(target, key, value);
     }
     return this;
@@ -41,7 +41,7 @@ export const mapHandler = {
     } else {
       target.assignedMap.delete(key);
     }
-    target.copy.delete(key);
+    target.copy!.delete(key);
     return true;
   },
   clear() {
@@ -53,11 +53,11 @@ export const mapHandler = {
     for (const [key] of target.original) {
       target.assignedMap.set(key, false);
     }
-    target.copy.clear();
+    target.copy!.clear();
   },
   forEach(callback: (value: any, key: any, self: any) => void, thisArg?: any) {
     const target = getProxyDraft(this)!;
-    latest(target).forEach((_value: any, _key: any, _map: any) => {
+    latest(target).forEach((_value: any, _key: any) => {
       callback.call(thisArg, this.get(_key), _key, this);
     });
   },
