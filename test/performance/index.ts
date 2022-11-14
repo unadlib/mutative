@@ -372,8 +372,8 @@ measure(
 measure(
   'immer - performance 100k key in object by default',
   () => {
-    // setAutoFreeze(false);
-    // setUseProxies(true);
+    setAutoFreeze(true);
+    setUseProxies(true);
     return object;
   },
   (baseState: any) => {
@@ -419,8 +419,8 @@ measure(
 measure(
   'immer - performance for 100k items in array by default',
   () => {
-    // setAutoFreeze(false);
-    // setUseProxies(true);
+    setAutoFreeze(true);
+    setUseProxies(true);
     return data;
   },
   (baseState: any) => {

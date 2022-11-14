@@ -8,28 +8,43 @@ import produce, {
 import { create } from '../../src';
 import { measure } from './measure';
 
-const MAX = 1000;
+const MAX = 10;
 
-const baseState = {
-  set: new Set(
-    Array(10 ** 3)
-      .fill('')
-      .map((_, i) => ({ [i]: i }))
-  ),
-  map: new Map(
-    Array(10 ** 3)
-      .fill('')
-      .map((_, i) => [{ [i]: i }, { [i]: i }])
-  ),
+const getData = () => {
+  const baseState = {
+    set: new Set(
+      Array(10 ** 4 * 5)
+        .fill('')
+        .map((_, i) => ({ [i]: i }))
+    ),
+    map: new Map(
+      Array(10 ** 4 * 5)
+        .fill('')
+        .map((_, i) => [{ [i]: i }, { [i]: i }])
+    ),
+  };
+  return baseState;
 };
 
-type BaseState = typeof baseState;
+interface BaseState {
+  set: Set<{
+    [x: number]: number;
+  }>;
+  map: Map<
+    {
+      [x: number]: number;
+    },
+    {
+      [x: number]: number;
+    }
+  >;
+}
 
 enableMapSet();
 
 measure(
   'native handcrafted',
-  () => baseState,
+  () => getData(),
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
       const state = {
@@ -43,7 +58,7 @@ measure(
 
 measure(
   'mutative - without autoFreeze',
-  () => baseState,
+  () => getData(),
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
       const state = create(baseState, (draft) => {
@@ -59,7 +74,7 @@ measure(
   () => {
     setAutoFreeze(false);
     setUseProxies(true);
-    return baseState;
+    return getData();
   },
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
@@ -75,7 +90,7 @@ console.log('');
 
 measure(
   'mutative - with autoFreeze',
-  () => baseState,
+  () => getData(),
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
       const state = create(
@@ -97,7 +112,7 @@ measure(
   () => {
     setAutoFreeze(true);
     setUseProxies(true);
-    return baseState;
+    return getData();
   },
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
@@ -113,7 +128,7 @@ console.log('');
 
 measure(
   'mutative - with autoFreeze and patches',
-  () => baseState,
+  () => getData(),
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
       const state = create(
@@ -137,7 +152,7 @@ measure(
     setAutoFreeze(true);
     setUseProxies(true);
     enablePatches();
-    return baseState;
+    return getData();
   },
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {
@@ -153,7 +168,7 @@ console.log('-------');
 
 measure(
   'mutative - single - without autoFreeze',
-  () => baseState,
+  () => getData(),
   (baseState: BaseState) => {
     const state = create(baseState, (draft) => {
       for (let i = 0; i < MAX; i++) {
@@ -169,7 +184,7 @@ measure(
   () => {
     setAutoFreeze(false);
     setUseProxies(true);
-    return baseState;
+    return getData();
   },
   (baseState: BaseState) => {
     const state = produce(baseState, (draft) => {
@@ -185,7 +200,7 @@ console.log('');
 
 measure(
   'mutative - single - with autoFreeze',
-  () => baseState,
+  () => getData(),
   (baseState: BaseState) => {
     const state = create(
       baseState,
@@ -207,7 +222,7 @@ measure(
   () => {
     setAutoFreeze(true);
     setUseProxies(true);
-    return baseState;
+    return getData();
   },
   (baseState: BaseState) => {
     const state = produce(baseState, (draft) => {
@@ -223,7 +238,7 @@ console.log('');
 
 measure(
   'mutative - single - with patches',
-  () => baseState,
+  () => getData(),
   (baseState: BaseState) => {
     const state = create(
       baseState,
@@ -246,7 +261,7 @@ measure(
     setAutoFreeze(false);
     setUseProxies(true);
     enablePatches();
-    return baseState;
+    return getData();
   },
   (baseState: BaseState) => {
     const state = produceWithPatches(baseState, (draft) => {
@@ -262,7 +277,7 @@ console.log('');
 
 measure(
   'mutative - single - with autoFreeze and patches',
-  () => baseState,
+  () => getData(),
   (baseState: BaseState) => {
     const state = create(
       baseState,
@@ -286,7 +301,7 @@ measure(
     setAutoFreeze(true);
     setUseProxies(true);
     enablePatches();
-    return baseState;
+    return getData();
   },
   (baseState: BaseState) => {
     const state = produceWithPatches(baseState, (draft) => {

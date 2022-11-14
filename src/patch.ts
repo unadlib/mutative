@@ -73,13 +73,12 @@ function generateArrayPatches(
 }
 
 function generatePatchesFromAssigned(
-  proxyState: ProxyDraft<Record<string, any>>,
+  { original, copy, assignedMap }: ProxyDraft<Record<string, any>>,
   basePath: any[],
   patches: Patches,
   inversePatches: Patches
 ) {
-  const { original, copy } = proxyState;
-  proxyState.assignedMap.forEach((assignedValue, key) => {
+  assignedMap.forEach((assignedValue, key) => {
     const originalValue = get(original, key);
     const value = cloneIfNeeded(get(copy, key));
     const op = !assignedValue
@@ -101,13 +100,11 @@ function generatePatchesFromAssigned(
 }
 
 function generateSetPatches(
-  proxyState: ProxyDraft<Set<any>>,
+  { original, copy }: ProxyDraft<Set<any>>,
   basePath: any[],
   patches: Patches,
   inversePatches: Patches
 ) {
-  let { original, copy } = proxyState;
-
   let i = 0;
   original.forEach((value: any) => {
     if (!copy!.has(value)) {
