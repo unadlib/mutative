@@ -1,5 +1,6 @@
 import { create, draftify, original, current, apply } from '../src';
 
+
 test('check object type', () => {
   const data = {};
 

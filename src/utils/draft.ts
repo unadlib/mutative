@@ -38,7 +38,7 @@ export function getPath(
   path: any[] = []
 ): (string | number | object)[] {
   if (!target) return path;
-  if (typeof target.key !== 'undefined')
+  if (target.key !== undefined)
     path.unshift(
       target.parent?.type === DraftType.Set
         ? Array.from(target.parent.setMap!.keys()).indexOf(target.key as any)

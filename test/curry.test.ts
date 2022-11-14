@@ -1,6 +1,6 @@
-import { create, current, draftify } from '../src';
+import { create, current } from '../src';
 
-describe('draftify', () => {
+describe('Currying', () => {
   const getBaseState = () => ({
     foobar: { foo: 'str', bar: 'str' },
     baz: { text: 'str' },
@@ -9,9 +9,9 @@ describe('draftify', () => {
     foobar: { foo: 'str', bar: 'baz' },
     baz: { text: 'str' },
   };
-  test('base draftify', () => {
+  test('base Currying', () => {
     const baseState = getBaseState();
-    const [draft, finalize] = draftify(baseState);
+    const [draft, finalize] = create(baseState);
     draft.foobar.bar = 'baz';
     const state = finalize();
     expect(state).toEqual(expectedResult);
@@ -20,9 +20,9 @@ describe('draftify', () => {
     expect(state.baz).toBe(baseState.baz);
   });
 
-  test('draftify with enableAutoFreeze', () => {
+  test('Currying with enableAutoFreeze', () => {
     const baseState = getBaseState();
-    const [draft, finalize] = draftify(baseState, { enableAutoFreeze: true });
+    const [draft, finalize] = create(baseState, { enableAutoFreeze: true });
     draft.foobar.bar = 'baz';
     const state = finalize();
     expect(state).toEqual(expectedResult);
@@ -35,9 +35,9 @@ describe('draftify', () => {
     }).toThrowError();
   });
 
-  test('draftify with enablePatches', () => {
+  test('Currying with enablePatches', () => {
     const baseState = getBaseState();
-    const [draft, finalize] = draftify(baseState, { enablePatches: true });
+    const [draft, finalize] = create(baseState, { enablePatches: true });
     draft.foobar.bar = 'baz';
     const [state, patches, inversePatches] = finalize();
     expect(state).toEqual(expectedResult);
@@ -60,9 +60,9 @@ describe('draftify', () => {
     ]);
   });
 
-  test('draftify with enableAutoFreeze and enablePatches', () => {
+  test('Currying with enableAutoFreeze and enablePatches', () => {
     const baseState = getBaseState();
-    const [draft, finalize] = draftify(baseState, {
+    const [draft, finalize] = create(baseState, {
       enablePatches: true,
       enableAutoFreeze: true,
     });
@@ -92,18 +92,18 @@ describe('draftify', () => {
     }).toThrowError();
   });
 
-  test('draftify with undraftable state', () => {
+  test('Currying with undraftable state', () => {
     class Foo {
       bar = 'str';
     }
     const baseState = new Foo();
     expect(() => {
-      draftify(baseState);
+      create(baseState);
     }).toThrowError(
       `create() only supports plain object, array, set, and map.`
     );
   });
-  test('draftify with draftable state and hook', () => {
+  test('Currying with draftable state and hook', () => {
     class BaseFoo {
       _bar = {
         baz: 'str',
@@ -120,7 +120,7 @@ describe('draftify', () => {
 
     class Foo extends BaseFoo {}
     const baseState = new Foo();
-    const [draft, finalize] = draftify(baseState, {
+    const [draft, finalize] = create(baseState, {
       mark: (target) => {
         if (target instanceof Foo) return 'immutable';
       },
@@ -131,9 +131,9 @@ describe('draftify', () => {
     expect(state).toBeInstanceOf(Foo);
   });
 
-  test('draftify with hook', () => {
+  test('Currying with hook', () => {
     const baseState = getBaseState();
-    const [draft, finalize] = draftify(baseState, {
+    const [draft, finalize] = create(baseState, {
       mark: (target) => {
         if (target === baseState.baz) return 'mutable';
       },
@@ -143,7 +143,7 @@ describe('draftify', () => {
     expect(state).toBe(baseState);
   });
 
-  test('multiple drafts with draftify', () => {
+  test('multiple drafts with Currying', () => {
     const data = {
       foo: {
         bar: 'str',
@@ -157,8 +157,8 @@ describe('draftify', () => {
       foobar1: {},
     };
 
-    const [draft, finalize] = draftify(data);
-    const [draft1, finalize1] = draftify(data1);
+    const [draft, finalize] = create(data);
+    const [draft1, finalize1] = create(data1);
     draft.foo.bar = 'new str';
     draft1.foo1.bar1 = 'new str1';
     draft.foo.b = current(draft1.foo1);
@@ -185,10 +185,10 @@ describe('draftify', () => {
     expect(state1.foobar1).toBe(data1.foobar1);
   });
 
-  test('draftify a draft', () => {
+  test('Currying a draft', () => {
     create({ a: 1 }, (draft) => {
-      expect(() => draftify(draft)).toThrowError(
-        `draftify() cannot draft data that has already been drafted.`
+      expect(() => create(draft)).toThrowError(
+        `Currying() cannot draft data that has already been drafted.`
       );
     });
   });

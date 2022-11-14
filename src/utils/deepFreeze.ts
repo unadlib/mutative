@@ -10,6 +10,10 @@ function isFreezable(value: any) {
   );
 }
 
+function throwFrozenError(value: any) {
+  throw new Error('Cannot modify frozen object');
+}
+
 export function deepFreeze(target: any) {
   if (Object.isFrozen(target)) return;
   const type = getType(target);
@@ -24,12 +28,7 @@ export function deepFreeze(target: any) {
           deepFreeze(value);
         }
       }
-      target.set =
-        target.clear =
-        target.delete =
-          () => {
-            throw new Error('Cannot modify frozen data');
-          };
+      target.set = target.clear = target.delete = throwFrozenError;
       break;
     case DraftType.Set:
       for (const value of target) {
@@ -37,12 +36,7 @@ export function deepFreeze(target: any) {
           deepFreeze(value);
         }
       }
-      target.add =
-        target.clear =
-        target.delete =
-          () => {
-            throw new Error('Cannot modify frozen data');
-          };
+      target.add = target.clear = target.delete = throwFrozenError;
       break;
     case DraftType.Array:
       Object.freeze(target);
