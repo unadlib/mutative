@@ -1,4 +1,4 @@
-import { produce, enableMapSet } from 'immer';
+import { produce, enableMapSet, setAutoFreeze, Immutable } from 'immer';
 import { create } from '../src';
 
 enableMapSet();
@@ -30,11 +30,13 @@ test('Map draft constructor is not equal to Map', () => {
 test('Unexpected operation check of Set draft', () => {
   const data = new Set([1]);
 
-  produce(data, (draft) => {
-    // @ts-ignore
-    draft.x = 1;
-  });
-
+  // ! it should throw an error
+  expect(() => {
+    produce(data, (draft) => {
+      // @ts-ignore
+      draft.x = 1;
+    });
+  }).not.toThrowError();
   expect(() => {
     create(data, (draft) => {
       // @ts-ignore
@@ -46,10 +48,13 @@ test('Unexpected operation check of Set draft', () => {
 test('Unexpected operation check of Map draft', () => {
   const data = new Map([[1, 'a']]);
 
-  produce(data, (draft) => {
-    // @ts-ignore
-    draft.x = 1;
-  });
+  // ! it should throw an error
+  expect(() => {
+    produce(data, (draft) => {
+      // @ts-ignore
+      draft.x = 1;
+    });
+  }).not.toThrowError();
 
   expect(() => {
     create(data, (draft) => {
@@ -72,7 +77,7 @@ test('immer failed case - maintains order when adding', () => {
   const newSet = produce(set, (draft) => {
     draft.add(objs[1]);
   });
-
+// ! it should keep the order
   expect(Array.from(newSet)).not.toEqual([objs[0], objs[1]]);
 });
 
@@ -109,6 +114,7 @@ test('immer failed case - maintains order when adding2', () => {
     draft.add(objs[1]);
   });
 
+  // ! it should keep the order
   expect(Array.from(newSet)).not.toEqual([objs[0], objs[1]]);
 });
 
@@ -151,3 +157,38 @@ test('mutative case - maintains order when adding2', () => {
 
 //   JSON.stringify(newState);
 // })
+
+test('immer failed case - freeze Map key', () => {
+  setAutoFreeze(true);
+  const base = new Map<{ a: number }, number>([[{ a: 1 }, 1]]);
+  const state: Immutable<Map<{ a: number }, number>> = produce(
+    base,
+    (draft) => {
+      draft.values().next().value = 2;
+    }
+  );
+
+  // ! it should throw error about freeze
+  expect(() => {
+    // @ts-ignore
+    Array.from(state.keys())[0].a = 2;
+  }).not.toThrowError();
+});
+
+test('mutative case - freeze Map key', () => {
+  const base = new Map<{ a: number }, number>([[{ a: 1 }, 1]]);
+  const state = create(
+    base,
+    (draft) => {
+      draft.values().next().value = 2;
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+
+  expect(() => {
+    // @ts-ignore
+    Array.from(state.keys())[0].a = 2;
+  }).toThrowError();
+});

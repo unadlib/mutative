@@ -20,10 +20,9 @@ export function deepFreeze(target: any) {
   switch (type) {
     case DraftType.Map:
       for (const [key, value] of target) {
-        // todo: think about freezing keys
-        // if (isFreezable(key)) {
-        //   deepFreeze(key);
-        // }
+        if (isFreezable(key)) {
+          deepFreeze(key);
+        }
         if (isFreezable(value)) {
           deepFreeze(value);
         }
