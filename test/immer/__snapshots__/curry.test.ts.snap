@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`curry - proxy should check arguments 1`] = `"create() only supports plain object, array, set, and map."`;
+
+exports[`curry - proxy should check arguments 2`] = `"Invalid options: , 'options' should be an object."`;
+
+exports[`curry - proxy should support returning new states from curring 1`] = `"create() only supports plain object, array, set, and map."`;

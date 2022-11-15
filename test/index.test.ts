@@ -1,4 +1,4 @@
-import { create, draftify, original, current, apply } from '../src';
+import { create, original, current, apply } from '../src';
 
 
 test('check object type', () => {
@@ -217,7 +217,7 @@ test('object with async mutation', async () => {
   expect(state.foobar).toBe(data.foobar);
 });
 
-test('draftify with object', () => {
+test('create with object', () => {
   const data = {
     foo: {
       bar: 'str',
@@ -225,7 +225,7 @@ test('draftify with object', () => {
     foobar: {},
   };
 
-  const [draft, finalize] = draftify(data);
+  const [draft, finalize] = create(data);
   draft.foo.bar = 'new str';
   const state = finalize();
   expect(state).toEqual({ foo: { bar: 'new str' }, foobar: {} });
@@ -1861,7 +1861,7 @@ test('current', () => {
   expect(state.foobar).not.toBe(data.foobar);
 });
 
-test('multiple drafts with draftify', () => {
+test('multiple drafts with create', () => {
   const data = {
     foo: {
       bar: 'str',
@@ -1875,8 +1875,8 @@ test('multiple drafts with draftify', () => {
     foobar1: {},
   };
 
-  const [draft, finalize] = draftify(data);
-  const [draft1, finalize1] = draftify(data1);
+  const [draft, finalize] = create(data);
+  const [draft1, finalize1] = create(data1);
   draft.foo.bar = 'new str';
   draft1.foo1.bar1 = 'new str1';
   draft.foo.b = current(draft1.foo1);

@@ -187,9 +187,7 @@ describe('Currying', () => {
 
   test('Currying a draft', () => {
     create({ a: 1 }, (draft) => {
-      expect(() => create(draft)).toThrowError(
-        `Currying() cannot draft data that has already been drafted.`
-      );
+      expect(() => create(draft)).not.toThrowError();
     });
   });
 });

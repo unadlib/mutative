@@ -27,14 +27,15 @@ import { current } from './current';
  * ```
  */
 function create<
+  P extends any[],
   T extends object,
   F extends boolean = false,
   O extends boolean = false,
   R extends void | Promise<void> = void
 >(
-  mutate: (draft: Draft<T>) => R,
+  mutate: (draft: Draft<T>, ...args: P) => R,
   options?: Options<O, F>
-): (base: T) => CreateResult<T, O, F, R>;
+): (base: T, ...args: P) => CreateResult<T, O, F, R>;
 function create<
   T extends object,
   O extends boolean = false,
@@ -52,13 +53,19 @@ function create<
 ): CreateResult<T, O, F, R>;
 function create(arg0: any, arg1: any, arg2?: any): any {
   if (typeof arg0 === 'function' && typeof arg1 !== 'function') {
-    return (base: any) => create(base, arg0, arg1);
+    return (base: any, ...args: any[]) =>
+      create(base, (draft) => arg0(draft, ...args), arg1);
   }
   let base = arg0;
   let mutate = arg1;
   let options = arg2;
   if (typeof arg1 !== 'function') {
-    options = arg2;
+    options = arg1;
+  }
+  if (options !== undefined && toString.call(options) !== '[object Object]') {
+    throw new Error(
+      `Invalid options: ${options}, 'options' should be an object.`
+    );
   }
   const state = isDraft(base) ? current(base) : base;
   if (options?.mark?.(state, dataTypes) === dataTypes.mutable) {

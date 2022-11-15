@@ -1,5 +1,5 @@
 'use strict';
-import { draftify, create } from '../../src';
+import { create } from '../../src';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -14,15 +14,15 @@ function runTests(name: any, useProxies: any) {
 
     it('should check arguments', () => {
       // @ts-ignore
-      expect(() => draftify(3)).toThrowErrorMatchingSnapshot();
+      expect(() => create(3)).toThrowErrorMatchingSnapshot();
       const buf = Buffer.from([]);
-      expect(() => draftify(buf)).toThrowErrorMatchingSnapshot();
+      expect(() => create(buf)).toThrowErrorMatchingSnapshot();
     });
 
     it('should support manual drafts', () => {
       const state = [{}, {}, {}];
 
-      const [draft, finalize] = draftify(state);
+      const [draft, finalize] = create(state);
       draft.forEach((item, index) => {
         // @ts-ignore
         item.index = index;
@@ -39,7 +39,7 @@ function runTests(name: any, useProxies: any) {
       it('cannot modify after finish', () => {
         const state = { a: 1 };
 
-        const [draft, finalize] = draftify(state);
+        const [draft, finalize] = create(state);
         draft.a = 2;
         expect(finalize()).toEqual({ a: 2 });
         expect(() => {
@@ -50,7 +50,7 @@ function runTests(name: any, useProxies: any) {
     it('should support patches drafts', () => {
       const state = { a: 1 };
 
-      const [draft, finalize] = draftify(state);
+      const [draft, finalize] = create(state);
       draft.a = 2;
       // @ts-ignore
       draft.b = 3;
@@ -66,10 +66,10 @@ function runTests(name: any, useProxies: any) {
     it('should handle multiple create draft calls', () => {
       const state = { a: 1 };
 
-      const [draft, finalize] = draftify(state);
+      const [draft, finalize] = create(state);
       draft.a = 2;
 
-      const [draft2, finalize2] = draftify(state);
+      const [draft2, finalize2] = create(state);
       // @ts-ignore
       draft2.b = 3;
 
@@ -87,7 +87,7 @@ function runTests(name: any, useProxies: any) {
     it('combines with produce - 1', () => {
       const state = { a: 1 };
 
-      const [draft, finalize] = draftify(state);
+      const [draft, finalize] = create(state);
       draft.a = 2;
       const res1 = create(draft, (d) => {
         // @ts-ignore
@@ -105,7 +105,7 @@ function runTests(name: any, useProxies: any) {
 
     //   const res1 = create(state, (draft) => {
     //     draft.b = 3;
-    //     const draft2 = draftify(draft);
+    //     const draft2 = create(draft);
     //     draft.c = 4;
     //     draft2.d = 5;
     //     const res2 = finalize(draft2);
@@ -132,7 +132,7 @@ function runTests(name: any, useProxies: any) {
     //   });
 
     // it('should not finish twice', () => {
-    //   const draft = draftify({ a: 1 });
+    //   const draft = create({ a: 1 });
     //   draft.a++;
     //   finalize(draft);
     //   expect(() => finalize(draft)).toThrowErrorMatchingSnapshot();
