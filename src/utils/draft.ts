@@ -79,3 +79,9 @@ export function isEqual(x: any, y: any) {
     return x !== x && y !== y;
   }
 }
+
+export function revokeProxy(proxyDraft: ProxyDraft) {
+  for (const revoke of proxyDraft.finalities.revoke) {
+    revoke();
+  }
+}

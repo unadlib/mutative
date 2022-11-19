@@ -1,7 +1,7 @@
 import type { CreateResult, Draft, Options, Result } from './interface';
 import { draftify } from './draftify';
 import { dataTypes } from './constant';
-import { isDraft } from './utils';
+import { getProxyDraft, isDraft, revokeProxy } from './utils';
 import { current } from './current';
 
 /**
@@ -83,9 +83,18 @@ function create(arg0: any, arg1: any, arg2?: any): any {
   if (typeof arg1 !== 'function') {
     return [draft, finalize];
   }
-  const result = mutate(draft);
+  let result;
+  try {
+    result = mutate(draft);
+  } catch (error) {
+    revokeProxy(getProxyDraft(draft)!);
+    throw error;
+  }
   if (result instanceof Promise) {
-    return result.then(finalize);
+    return result.then(finalize, (error) => {
+      revokeProxy(getProxyDraft(draft)!);
+      throw error;
+    });
   } else if (result !== undefined) {
     throw new Error(
       `The create() callback must return 'void' or 'Promise<void>'.`

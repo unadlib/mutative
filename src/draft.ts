@@ -24,6 +24,7 @@ import {
   get,
   set,
   markSetValue,
+  revokeProxy,
 } from './utils';
 import { finalizePatches } from './patch';
 import { checkReadable } from './unsafe';
@@ -269,9 +270,7 @@ export function finalizeDraft<T>(
     finalize(patches, inversePatches);
   }
   const state = proxyDraft.operated ? proxyDraft.copy : proxyDraft.original;
-  for (const revoke of proxyDraft.finalities.revoke) {
-    revoke();
-  }
+  revokeProxy(proxyDraft);
   if (proxyDraft.options.enableAutoFreeze) {
     deepFreeze(state);
   }

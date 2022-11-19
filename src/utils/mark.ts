@@ -25,5 +25,11 @@ export function markSetValue(target: ProxyDraft, key: any, value: any) {
         set(copy, key, proxyDraft.copy ?? proxyDraft.original);
       }
     });
+    if (target.options.enableAutoFreeze) {
+      // !case: assign the draft value in cross draft tree
+      if (proxyDraft && proxyDraft.finalities !== target.finalities) {
+        target.options.enableAutoFreeze = false;
+      }
+    }
   }
 }
