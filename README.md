@@ -21,20 +21,6 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-- `draftify()`
-
-```ts
-const baseState = {
-  foo: 'bar',
-  list: [{ text: 'todo' }],
-};
-
-const [draft, finalize] = draftify(baseState, { enableAutoFreeze: true });
-draft.foo = 'foobar';
-draft.list.push({ text: 'learning' });
-const state = finalize();
-```
-
 - `apply()`
 
 ```ts
@@ -91,6 +77,10 @@ const state = create(baseState, (draft) => {
 ```
 
 - `isDraft()`
+- `unsafe()`
+- `castDraft()`
+- `castImmutable()`
 - `Mutable<T>`
 - `Immutable<T>`
 - `Patches`
+- `Patch`

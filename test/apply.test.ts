@@ -1157,3 +1157,23 @@ test('#466 mapChangeBug', () => {
     }
   );
 });
+
+test('undefined as a map key', () => {
+  const a = undefined;
+  const data = {
+    foo: new Map([[a, { x: 1 }]]),
+  };
+
+  const [, patches] = create(
+    data,
+    (draft) => {
+      draft.foo.get(a)!.x = 2;
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  expect(patches).toEqual([
+    { op: 'replace', path: ['foo', undefined, 'x'], value: 2 },
+  ]);
+});

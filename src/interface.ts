@@ -23,11 +23,13 @@ export interface ProxyDraft<T = any> {
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
 }
 
-export type Patches = {
+export type Patch = {
   op: Lowercase<keyof typeof Operation>;
   path: (string | number)[];
   value?: any;
-}[];
+};
+
+export type Patches = Patch[];
 
 export type Result<
   T extends object,

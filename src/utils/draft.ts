@@ -19,10 +19,7 @@ export function getValue<T extends object>(value: T): T {
   return proxyDraft ? proxyDraft.copy ?? proxyDraft.original : value;
 }
 
-export function isDraftable(
-  value: any,
-  options?: Options<any, any>
-) {
+export function isDraftable(value: any, options?: Options<any, any>) {
   if (!value || typeof value !== 'object') return false;
   return (
     Object.getPrototypeOf(value) === Object.prototype ||
@@ -38,7 +35,7 @@ export function getPath(
   path: any[] = []
 ): (string | number | object)[] {
   if (!target) return path;
-  if (target.key !== undefined)
+  if (Object.hasOwnProperty.call(target, 'key'))
     path.unshift(
       target.parent?.type === DraftType.Set
         ? Array.from(target.parent.setMap!.keys()).indexOf(target.key as any)

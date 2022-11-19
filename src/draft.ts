@@ -192,19 +192,15 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
   },
 };
 
-export function createDraft<T extends object>({
-  original,
-  parentDraft,
-  key,
-  finalities,
-  options,
-}: {
+export function createDraft<T extends object>(createDraftOptions: {
   original: T;
   parentDraft?: ProxyDraft | null;
   key?: string | number | symbol;
   finalities: Finalities;
   options: Options<any, any>;
 }): T {
+  const { original, parentDraft, key, finalities, options } =
+    createDraftOptions;
   const type = getType(original);
   const proxyDraft: ProxyDraft = {
     type,
@@ -213,7 +209,6 @@ export function createDraft<T extends object>({
     original,
     copy: null,
     proxy: null,
-    key,
     finalities,
     options,
     assignedMap: new Map(),
@@ -223,6 +218,10 @@ export function createDraft<T extends object>({
         ? new Map((original as Set<any>).entries())
         : undefined,
   };
+  // !case: undefined as a draft map key
+  if (Object.hasOwnProperty.call(createDraftOptions, 'key')) {
+    proxyDraft.key = key;
+  }
   const { proxy, revoke } = Proxy.revocable<any>(
     Array.isArray(original) ? Object.assign([], proxyDraft) : proxyDraft,
     proxyHandler
