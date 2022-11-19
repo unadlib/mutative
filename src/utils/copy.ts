@@ -48,8 +48,8 @@ export function ensureShallowCopy(target: ProxyDraft) {
   if (target.copy) return;
   target.copy = shallowCopy(
     target.original,
-    target.marker
-      ? () => target.marker!(target.original, dataTypes) === dataTypes.immutable
+    target.options.mark
+      ? () => target.options.mark!(target.original, dataTypes) === dataTypes.immutable
       : undefined
   )!;
 }

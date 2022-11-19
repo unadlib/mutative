@@ -1,5 +1,6 @@
 import { dataTypes, iteratorSymbol } from './constant';
 import { createDraft } from './draft';
+import { checkReadable } from './unsafe';
 import {
   ensureShallowCopy,
   getProxyDraft,
@@ -64,10 +65,15 @@ export const mapHandler = {
   get(key: any): any {
     const target = getProxyDraft(this)!;
     const value = latest(target).get(key);
-    if (target.marker?.(value, dataTypes) === dataTypes.mutable) {
+    const mutable =
+      target.options.mark?.(value, dataTypes) === dataTypes.mutable;
+    if (target.options.strict) {
+      checkReadable(value, target.options, mutable);
+    }
+    if (mutable) {
       return value;
     }
-    if (target.finalized || !isDraftable(value, target)) {
+    if (target.finalized || !isDraftable(value, target.options)) {
       return value;
     }
     // drafted or reassigned
@@ -79,7 +85,7 @@ export const mapHandler = {
       parentDraft: target,
       key,
       finalities: target.finalities,
-      marker: target.marker,
+      options: target.options,
     });
     ensureShallowCopy(target);
     target.copy.set(key, draft);

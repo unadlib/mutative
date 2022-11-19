@@ -12,7 +12,7 @@ import {
 
 function getCurrent(target: any) {
   const proxyDraft = getProxyDraft(target);
-  if (!isDraftable(target, proxyDraft!)) return target;
+  if (!isDraftable(target, proxyDraft?.options)) return target;
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   if (proxyDraft) proxyDraft.finalized = true;
@@ -23,9 +23,9 @@ function getCurrent(target: any) {
       ? Array.from(proxyDraft?.setMap!.values() ?? target)
       : shallowCopy(
           target,
-          proxyDraft?.marker
+          proxyDraft?.options.mark
             ? () =>
-                proxyDraft.marker!(proxyDraft.original, dataTypes) ===
+                proxyDraft.options.mark!(proxyDraft.original, dataTypes) ===
                 dataTypes.immutable
             : undefined
         );

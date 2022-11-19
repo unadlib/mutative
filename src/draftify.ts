@@ -6,15 +6,23 @@ export function draftify<
   T extends object,
   O extends boolean = false,
   F extends boolean = false
->(baseState: T, options?: Options<O, F>): [T, () => Result<T, O, F>] {
-  const marker = options?.mark;
-  const enablePatches = options?.enablePatches ?? false;
+>(baseState: T, _options?: Options<O, F>): [T, () => Result<T, O, F>] {
+  const mark = _options?.mark;
+  const enablePatches = _options?.enablePatches ?? false;
+  const strict = _options?.strict ?? false;
+  const enableAutoFreeze = _options?.enableAutoFreeze ?? false;
+  const options = {
+    enableAutoFreeze,
+    mark,
+    strict,
+    enablePatches,
+  };
   if (isDraft(baseState)) {
     throw new Error(
       `draftify() cannot draft data that has already been drafted.`
     );
   }
-  if (!isDraftable(baseState, { marker })) {
+  if (!isDraftable(baseState, options)) {
     throw new Error(
       'create() only supports plain object, array, set, and map.'
     );
@@ -33,8 +41,7 @@ export function draftify<
     original: baseState,
     parentDraft: null,
     finalities,
-    enableAutoFreeze: options?.enableAutoFreeze,
-    marker,
+    options,
   });
   return [
     draft,

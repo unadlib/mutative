@@ -1,4 +1,10 @@
-import type { Finalities, Patches, ProxyDraft, Marker } from './interface';
+import type {
+  Finalities,
+  Patches,
+  ProxyDraft,
+  Mark,
+  Options,
+} from './interface';
 import { dataTypes, DraftType, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
@@ -20,13 +26,17 @@ import {
   markSetValue,
 } from './utils';
 import { finalizePatches } from './patch';
+import { checkReadable } from './unsafe';
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
-    if (target.marker) {
+    if (target.options.mark) {
       const value = Reflect.get(target.original, key, receiver);
-      if (target.marker(value, dataTypes) === dataTypes.mutable) {
+      if (target.options.mark(value, dataTypes) === dataTypes.mutable) {
+        if (target.options.strict) {
+          checkReadable(value, target.options, true);
+        }
         return value;
       }
     }
@@ -58,6 +68,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
 
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
+      // TODO: should we check for non-configurable here?
       return desc
         ? `value` in desc
           ? desc.value
@@ -66,7 +77,10 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         : undefined;
     }
     const value = source[key];
-    if (target.finalized || !isDraftable(value, target)) {
+    if (target.options.strict) {
+      checkReadable(value, target.options);
+    }
+    if (target.finalized || !isDraftable(value, target.options)) {
       return value;
     }
     // Ensure that the assigned values are not drafted
@@ -77,7 +91,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         parentDraft: target,
         key: target.type === DraftType.Array ? Number(key) : key,
         finalities: target.finalities,
-        marker: target.marker,
+        options: target.options,
       });
       return target.copy![key];
     }
@@ -183,15 +197,13 @@ export function createDraft<T extends object>({
   parentDraft,
   key,
   finalities,
-  enableAutoFreeze,
-  marker,
+  options,
 }: {
   original: T;
-  finalities: Finalities;
   parentDraft?: ProxyDraft | null;
   key?: string | number | symbol;
-  enableAutoFreeze?: boolean;
-  marker?: Marker;
+  finalities: Finalities;
+  options: Options<any, any>;
 }): T {
   const type = getType(original);
   const proxyDraft: ProxyDraft = {
@@ -203,8 +215,7 @@ export function createDraft<T extends object>({
     proxy: null,
     key,
     finalities,
-    enableAutoFreeze,
-    marker,
+    options,
     assignedMap: new Map(),
     // Mapping of draft Set items to their corresponding draft values.
     setMap:
@@ -262,7 +273,7 @@ export function finalizeDraft<T>(
   for (const revoke of proxyDraft.finalities.revoke) {
     revoke();
   }
-  if (proxyDraft.enableAutoFreeze) {
+  if (proxyDraft.options.enableAutoFreeze) {
     deepFreeze(state);
   }
   return [state, patches, inversePatches] as [

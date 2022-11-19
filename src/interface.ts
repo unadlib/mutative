@@ -15,11 +15,10 @@ export interface ProxyDraft<T = any> {
   copy: T | null;
   proxy: T | null;
   finalities: Finalities;
+  options: Options<any, any>;
   parent?: ProxyDraft | null;
   key?: string | number | symbol;
   setMap?: Map<object, ProxyDraft>;
-  enableAutoFreeze?: boolean;
-  marker?: Marker;
   assignedMap: Map<any, boolean>;
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
 }
@@ -51,12 +50,16 @@ export type CreateResult<
   R extends void | Promise<void>
 > = R extends Promise<void> ? Promise<Result<T, O, F>> : Result<T, O, F>;
 
-export type Marker = (
+export type Mark = (
   target: any,
   types: typeof dataTypes
 ) => null | undefined | DataType;
 
 export interface Options<O extends boolean, F extends boolean> {
+  /**
+   * Forbid accessing non-draftable values in strict mode
+   */
+  strict?: boolean;
   /**
    * Enable patch, and return the patches and inversePatches.
    */
@@ -66,9 +69,9 @@ export interface Options<O extends boolean, F extends boolean> {
    */
   enableAutoFreeze?: F;
   /**
-   * Set a marker to determine if the object is mutable or if an instance is an immutable.
+   * Set a mark to determine if the object is mutable or if an instance is an immutable.
    */
-  mark?: Marker;
+  mark?: Mark;
 }
 
 // Exclude `symbol`

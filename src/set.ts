@@ -8,6 +8,7 @@ import {
   markChanged,
   markSetValue,
 } from './utils';
+import { checkReadable } from './unsafe';
 
 const getNextIterator =
   (
@@ -21,10 +22,15 @@ const getNextIterator =
     const key = result.value as any;
     let value = target.setMap!.get(key);
     const currentDraft = getProxyDraft(value);
+    const mutable =
+      target.options.mark?.(value, dataTypes) === dataTypes.mutable;
+    if (target.options.strict) {
+      checkReadable(key, target.options, mutable);
+    }
     if (
-      !(target.marker?.(value, dataTypes) === dataTypes.mutable) &&
+      !mutable &&
       !currentDraft &&
-      isDraftable(key, target) &&
+      isDraftable(key, target.options) &&
       !target.finalized &&
       target.original!.has(key)
     ) {
@@ -34,7 +40,7 @@ const getNextIterator =
         parentDraft: target,
         key: key,
         finalities: target.finalities,
-        marker: target.marker,
+        options: target.options,
       });
       target.setMap!.set(key, proxy);
       value = proxy;
