@@ -26,6 +26,10 @@ exports[`base functionality - proxy (autofreeze) revokes the draft once produce 
 
 exports[`base functionality - proxy (autofreeze) revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
 
+exports[`base functionality - proxy (autofreeze) set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+
+exports[`base functionality - proxy (autofreeze) set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+
 exports[`base functionality - proxy (autofreeze) throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
 
 exports[`base functionality - proxy (autofreeze) throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
@@ -57,6 +61,10 @@ exports[`base functionality - proxy (autofreeze)(patch listener) revokes the dra
 exports[`base functionality - proxy (autofreeze)(patch listener) revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
 
 exports[`base functionality - proxy (autofreeze)(patch listener) revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+
+exports[`base functionality - proxy (autofreeze)(patch listener) set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+
+exports[`base functionality - proxy (autofreeze)(patch listener) set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
 
 exports[`base functionality - proxy (autofreeze)(patch listener) throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
 
@@ -90,6 +98,10 @@ exports[`base functionality - proxy (no freeze) revokes the draft once produce r
 
 exports[`base functionality - proxy (no freeze) revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
 
+exports[`base functionality - proxy (no freeze) set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+
+exports[`base functionality - proxy (no freeze) set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+
 exports[`base functionality - proxy (no freeze) throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
 
 exports[`base functionality - proxy (no freeze) throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
@@ -121,6 +133,10 @@ exports[`base functionality - proxy (patch listener) revokes the draft once prod
 exports[`base functionality - proxy (patch listener) revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
 
 exports[`base functionality - proxy (patch listener) revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+
+exports[`base functionality - proxy (patch listener) set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+
+exports[`base functionality - proxy (patch listener) set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
 
 exports[`base functionality - proxy (patch listener) throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
 

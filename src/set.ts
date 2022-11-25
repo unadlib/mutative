@@ -128,7 +128,7 @@ export const setHandler = {
     ensureShallowCopy(target);
     const iterator = target.setMap!.keys();
     return {
-      [Symbol.iterator]: () => this.values(),
+      [Symbol.iterator]: () => this.entries(),
       next: getNextIterator(target, iterator, {
         isValuesIterator: false,
       }) as () => IteratorReturnResult<any>,

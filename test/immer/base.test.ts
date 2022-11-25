@@ -666,7 +666,7 @@ function runBaseTest(
       });
     });
 
-    describe.skip('set drafts', () => {
+    describe('set drafts', () => {
       it('supports iteration', () => {
         const base = new Set([
           { id: 1, a: 1 },
@@ -837,7 +837,7 @@ function runBaseTest(
         expect(nextState.aSet).toBe(baseState.aSet);
       });
 
-      it('can add new items', () => {
+      it.skip('can add new items', () => {
         const nextState = produce(baseState, (s) => {
           // Set.prototype.set should return the Set itself
           const res = s.aSet.add('force');
