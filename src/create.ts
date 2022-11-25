@@ -27,8 +27,8 @@ import { current } from './current';
  * ```
  */
 function create<
-  P extends any[],
   T extends object,
+  P extends any[],
   F extends boolean = false,
   O extends boolean = false,
   R extends void | Promise<void> = void
@@ -49,6 +49,17 @@ function create<
 >(
   base: T,
   mutate: (draft: Draft<T>) => R,
+  options?: Options<O, F>
+): CreateResult<T, O, F, R>;
+function create<
+  T extends object,
+  D extends Draft<T>,
+  F extends boolean = false,
+  O extends boolean = false,
+  R extends void | Promise<void> = void
+>(
+  base: T,
+  mutate: (draft: T) => R,
   options?: Options<O, F>
 ): CreateResult<T, O, F, R>;
 function create(arg0: any, arg1: any, arg2?: any): any {
