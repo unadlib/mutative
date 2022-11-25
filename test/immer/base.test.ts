@@ -1397,12 +1397,14 @@ function runBaseTest(
       });
 
       describe('when base state is a draft', () => {
-        it.skip('always wraps the draft in a new draft', () => {
+        // ! it's different from mutative
+        it('always wraps the draft in a new draft', () => {
           produce({}, (parent) => {
             produce(parent, (child) => {
               expect(child).not.toBe(parent);
               expect(isDraft(child)).toBeTruthy();
-              expect(original(child)).toBe(parent);
+              expect(isDraft(parent)).toBeTruthy();
+              expect(original(child)).not.toBe(parent);
             });
           });
         });
@@ -1435,9 +1437,10 @@ function runBaseTest(
       });
 
       describe('when base state contains a draft', () => {
-        it.skip('wraps unowned draft with its own draft', () => {
+        // ! it's different from mutative
+        it('wraps unowned draft with its own draft', () => {
           produce({ a: {} }, (parent) => {
-            produce({ a: parent.a }, (child) => {
+            create({ a: parent.a }, (child) => {
               expect(child.a).not.toBe(parent.a);
               expect(isDraft(child.a)).toBeTruthy();
               expect(original(child.a)).toBe(parent.a);
@@ -1445,9 +1448,10 @@ function runBaseTest(
           });
         });
 
-        it.skip('returns unowned draft if no changes were made', () => {
+        // ! it's different from mutative
+        it('returns unowned draft if no changes were made', () => {
           produce({ a: {} }, (parent) => {
-            const result = produce({ a: parent.a }, () => {});
+            const result = create({ a: parent.a }, () => {});
             expect(result.a).toBe(parent.a);
           });
         });
@@ -1463,11 +1467,12 @@ function runBaseTest(
           });
         });
 
+        // ! it's different from mutative
         // We cannot auto-freeze the result of a nested producer,
         // because it may contain a draft from a parent producer.
-        it.skip('never auto-freezes the result', () => {
+        it('never auto-freezes the result', () => {
           produce({ a: {} }, (parent) => {
-            const r = produce({ a: parent.a }, (child) => {
+            const r = create({ a: parent.a }, (child) => {
               child.b = 1; // Ensure a copy is returned.
             });
             expect(Object.isFrozen(r)).toBeFalsy();
