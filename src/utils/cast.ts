@@ -3,7 +3,7 @@ import type { Draft, Immutable } from '../interface';
 /**
  * Cast a value to an Draft type value.
  */
-export function castDraft<T>(value: T): Draft<T> {
+export function castDraft<T>(value: T): T extends object ? Draft<T> : T {
   return value as any;
 }
 

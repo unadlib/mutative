@@ -1,5 +1,5 @@
 import { assert } from './assert';
-import { create, Draft, Immutable, apply } from '../../src';
+import { create, Draft, Immutable, apply, castDraft } from '../../src';
 
 interface State {
   readonly num: number;
@@ -303,17 +303,15 @@ it('works with `void` hack', () => {
   assert(copy, base);
 });
 
-// TODO: fix type
 it('works with generic parameters', () => {
   let insert = <T>(array: readonly T[], index: number, elem: T) => {
     // Need explicit cast on draft as T[] is wider than readonly T[]
-    // @ts-expect-error
     return create(
       array,
-      (draft: T[]) => {
-        draft.push(elem);
-        draft.splice(index, 0, elem);
-        draft.concat([elem]);
+      (draft) => {
+        draft.push(castDraft(elem));
+        draft.splice(index, 0, castDraft(elem));
+        draft.concat([castDraft(elem)]);
       },
       {
         enableAutoFreeze: true,
@@ -643,122 +641,122 @@ it('infers async curried', async () => {
   }
 });
 
-// {
-//   type State = { count: number };
-//   type ROState = Immutable<State>;
-//   const base: any = { count: 0 };
-//   {
-//     // basic
-//     const res = create(base as State, (draft) => {
-//       draft.count++;
-//     });
-//     assert(res, _ as State);
-//   }
-//   {
-//     // basic
-//     const res = create<State>(base, (draft) => {
-//       draft.count++;
-//     });
-//     assert(res, _ as State);
-//   }
-//   {
-//     // basic
-//     const res = create(base as ROState, (draft) => {
-//       draft.count++;
-//     });
-//     assert(res, _ as ROState);
-//   }
-//   {
-//     // curried
-//     const f = create((state: State) => {
-//       state.count++;
-//     });
-//     assert(f, _ as (state: Immutable<State>) => State);
-//   }
-//   {
-//     // curried
-//     const f = create((state: Draft<ROState>) => {
-//       state.count++;
-//     });
-//     assert(f, _ as (state: ROState) => State);
-//   }
-//   {
-//     // curried
-//     const f: (value: State) => State = create((state) => {
-//       state.count++;
-//     });
-//   }
-//   {
-//     // curried
-//     const f: (value: ROState) => ROState = create((state) => {
-//       state.count++;
-//     });
-//   }
-//   {
-//     // curried initial
-//     const f = create((state) => {
-//       state.count++;
-//     }, _ as State);
-//     assert(f, _ as (state?: State) => State);
-//   }
-//   {
-//     // curried initial
-//     const f = create((state) => {
-//       state.count++;
-//     }, _ as ROState);
-//     assert(f, _ as (state?: ROState) => ROState);
-//   }
-//   {
-//     // curried
-//     const f: (value: State) => State = create((state) => {
-//       state.count++;
-//     }, base as ROState);
-//   }
-//   {
-//     // curried
-//     const f: (value: ROState) => ROState = create((state) => {
-//       state.count++;
-//     }, base as ROState);
-//   }
-//   // {
-//   //   // nothing allowed
-//   //   const res = create(base as State | undefined, (draft) => {
-//   //     return nothing;
-//   //   });
-//   //   assert(res, _ as State | undefined);
-//   // }
-//   // {
-//   //   // as any
-//   //   const res = create(base as State, (draft) => {
-//   //     return nothing as any;
-//   //   });
-//   //   assert(res, _ as State);
-//   // }
-//   // {
-//   //   // nothing not allowed
-//   //   // @ts-expect-error
-//   //   create(base as State, (draft) => {
-//   //     return nothing;
-//   //   });
-//   // }
-//   {
-//     const f = create((draft: State) => {});
-//     const n = f(base as State);
-//     assert(n, _ as State);
-//   }
-//   {
-//     const f = create((draft: Draft<ROState>) => {
-//       draft.count++;
-//     });
-//     const n = f(base as ROState);
-//     assert(n, _ as State);
-//   }
-//   {
-//     // explictly use generic
-//     const f = create<ROState>((draft) => {
-//       draft.count++;
-//     });
-//     const n = f(base as ROState);
-//     assert(n, _ as ROState); // yay!
-//   }
-// }
+{
+  type State = { count: number };
+  type ROState = Immutable<State>;
+  const base: any = { count: 0 };
+  {
+    // basic
+    const res = create(base as State, (draft) => {
+      draft.count++;
+    });
+    assert(res, _ as State);
+  }
+  {
+    // basic
+    const res = create<State>(base, (draft) => {
+      draft.count++;
+    });
+    assert(res, _ as State);
+  }
+  {
+    // basic
+    const res = create(base as ROState, (draft) => {
+      draft.count++;
+    });
+    assert(res, _ as ROState);
+  }
+  {
+    // curried
+    const f = create((state: State) => {
+      state.count++;
+    });
+    assert(f, _ as (state: State) => State);
+  }
+  {
+    // curried
+    const f = create((state: Draft<ROState>) => {
+      state.count++;
+    });
+    assert(f, _ as (state: ROState) => ROState);
+  }
+  {
+    // curried
+    const f: (value: State) => State = create((state) => {
+      state.count++;
+    });
+  }
+  {
+    // curried
+    const f: (value: ROState) => ROState = create((state) => {
+      state.count++;
+    });
+  }
+  {
+    // curried initial
+    const f = create((state: Draft<State>) => {
+      state.count++;
+    });
+    assert(f, _ as (state: State) => State);
+  }
+  {
+    // curried initial
+    const f = create((state: Draft<ROState>) => {
+      state.count++;
+    });
+    assert(f, _ as (state: ROState) => ROState);
+  }
+  {
+    // curried
+    const f: (value: State) => State = create((state) => {
+      state.count++;
+    });
+  }
+  {
+    // curried
+    const f: (value: ROState) => ROState = create((state) => {
+      state.count++;
+    });
+  }
+  // {
+  //   // nothing allowed
+  //   const res = create(base as State | undefined, (draft) => {
+  //     return nothing;
+  //   });
+  //   assert(res, _ as State | undefined);
+  // }
+  // {
+  //   // as any
+  //   const res = create(base as State, (draft) => {
+  //     return nothing as any;
+  //   });
+  //   assert(res, _ as State);
+  // }
+  // {
+  //   // nothing not allowed
+  //   // @ts-expect-error
+  //   create(base as State, (draft) => {
+  //     return nothing;
+  //   });
+  // }
+  {
+    const f = create((draft: State) => {});
+    const n = f(base as State);
+    assert(n, _ as State);
+  }
+  {
+    const f = create((draft: Draft<ROState>) => {
+      draft.count++;
+    });
+    const n = f(base as ROState);
+    assert(n, _ as ROState);
+  }
+  {
+    // explictly use generic
+    const f = create<ROState>((draft) => {
+      draft.count++;
+    });
+    const n = f(base as ROState);
+    assert(n, _ as ROState); // yay!
+  }
+}

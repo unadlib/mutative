@@ -28,7 +28,27 @@ import { current } from './current';
  */
 function create<
   T extends object,
-  P extends any[],
+  F extends boolean = false,
+  O extends boolean = false,
+  R extends void | Promise<void> = void
+>(
+  base: T,
+  mutate: (draft: Draft<T>) => R,
+  options?: Options<O, F>
+): CreateResult<T, O, F, R>;
+function create<
+  T extends object,
+  F extends boolean = false,
+  O extends boolean = false,
+  R extends void | Promise<void> = void
+>(
+  base: T,
+  mutate: (draft: T) => R,
+  options?: Options<O, F>
+): CreateResult<T, O, F, R>;
+function create<
+  T extends object,
+  P extends any[] = [],
   F extends boolean = false,
   O extends boolean = false,
   R extends void | Promise<void> = void
@@ -41,31 +61,14 @@ function create<
   O extends boolean = false,
   F extends boolean = false
 >(base: T, options?: Options<O, F>): [T, () => Result<T, O, F>];
-function create<
-  T extends object,
-  F extends boolean = false,
-  O extends boolean = false,
-  R extends void | Promise<void> = void
->(
-  base: T,
-  mutate: (draft: Draft<T>) => R,
-  options?: Options<O, F>
-): CreateResult<T, O, F, R>;
-function create<
-  T extends object,
-  D extends Draft<T>,
-  F extends boolean = false,
-  O extends boolean = false,
-  R extends void | Promise<void> = void
->(
-  base: T,
-  mutate: (draft: T) => R,
-  options?: Options<O, F>
-): CreateResult<T, O, F, R>;
 function create(arg0: any, arg1: any, arg2?: any): any {
   if (typeof arg0 === 'function' && typeof arg1 !== 'function') {
     return function (this: any, base: any, ...args: any[]) {
-      return create(base, (draft: any) => arg0.call(this, draft, ...args), arg1);
+      return create(
+        base,
+        (draft: any) => arg0.call(this, draft, ...args),
+        arg1
+      );
     };
   }
   let base = arg0;
