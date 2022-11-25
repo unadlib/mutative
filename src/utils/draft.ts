@@ -105,11 +105,14 @@ export function handleValue(target: any) {
     if (isDraft(value)) {
       const proxyDraft = getProxyDraft(value)!;
       ensureShallowCopy(proxyDraft);
+      const updatedValue = proxyDraft.assignedMap.size
+        ? proxyDraft.copy
+        : proxyDraft.original;
       if (target instanceof Set) {
         setMap = setMap ?? new Map();
-        setMap.set(key, proxyDraft.copy);
+        setMap.set(key, updatedValue);
       } else {
-        set(target, key, proxyDraft.copy);
+        set(target, key, updatedValue);
       }
     } else {
       handleValue(value);

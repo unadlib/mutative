@@ -509,11 +509,11 @@ function runBaseTest(
         expect(result.get('second').a).toEqual(100);
       });
 
-      it.skip('can assign by key', () => {
+      it('can assign by key', () => {
         const nextState = produce(baseState, (s) => {
           // Map.prototype.set should return the Map itself
           const res = s.aMap.set('force', true);
-          if (!global.USES_BUILD) expect(res).toBe(s.aMap[PROXY_DRAFT].draft_);
+          if (!global.USES_BUILD) expect(res).toBe(s.aMap[PROXY_DRAFT].proxy);
         });
         expect(nextState).not.toBe(baseState);
         expect(nextState.aMap).not.toBe(baseState.aMap);
@@ -837,11 +837,11 @@ function runBaseTest(
         expect(nextState.aSet).toBe(baseState.aSet);
       });
 
-      it.skip('can add new items', () => {
+      it('can add new items', () => {
         const nextState = produce(baseState, (s) => {
           // Set.prototype.set should return the Set itself
           const res = s.aSet.add('force');
-          if (!global.USES_BUILD) expect(res).toBe(s.aSet[PROXY_DRAFT].draft_);
+          if (!global.USES_BUILD) expect(res).toBe(s.aSet[PROXY_DRAFT].proxy);
         });
         expect(nextState).not.toBe(baseState);
         expect(nextState.aSet).not.toBe(baseState.aSet);
@@ -1185,11 +1185,11 @@ function runBaseTest(
       expect(nextState).toEqual({ foo: { a: true, c: true } });
     });
 
-    it.skip('can nest a draft in a new object (no changes)', () => {
+    it('can nest a draft in a new object (no changes)', () => {
       const baseState = { obj: {} };
-      const nextState = produce(baseState, (s) => {
-        s.foo = { bar: s.obj };
-        delete s.obj;
+      const nextState = produce(baseState, (draft) => {
+        draft.foo = { bar: draft.obj };
+        delete draft.obj;
       });
       expect(nextState.foo.bar).toBe(baseState.obj);
     });
