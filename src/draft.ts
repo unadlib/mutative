@@ -236,7 +236,6 @@ export function createDraft<T extends object>(createDraftOptions: {
         // assign the updated value to the copy object
         let updatedValue = proxyDraft.original;
         if (proxyDraft.operated) {
-          finalizeAssigned(target, key!);
           updatedValue = getValue(get(target.copy, key!));
         }
         finalizePatches(proxyDraft, patches, inversePatches);

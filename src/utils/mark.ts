@@ -30,7 +30,6 @@ export function markSetValue(target: ProxyDraft, key: any, value: any) {
       if (isEqual(get(copy, key), value)) {
         let updatedValue = proxyDraft.original;
         if (proxyDraft.copy) {
-          finalizeAssigned(target, key);
           updatedValue = proxyDraft.copy;
         }
         finalizePatches(target, patches, inversePatches);

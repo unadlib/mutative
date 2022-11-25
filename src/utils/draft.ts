@@ -88,10 +88,7 @@ export function revokeProxy(proxyDraft: ProxyDraft) {
   }
 }
 
-//  TODO: refactor for config
-const handledSet = new WeakSet<any>();
-
-export function handleValue(target: any) {
+export function handleValue(target: any, handledSet: WeakSet<any>) {
   if (
     isDraft(target) ||
     !isDraftable(target) ||
@@ -115,7 +112,7 @@ export function handleValue(target: any) {
         set(target, key, updatedValue);
       }
     } else {
-      handleValue(value);
+      handleValue(value, handledSet);
     }
   });
   if (setMap) {
@@ -137,6 +134,6 @@ export function finalizeAssigned(proxyDraft: ProxyDraft, key: PropertyKey) {
     proxyDraft.assignedMap.get(key) &&
     copy
   ) {
-    handleValue(get(copy, key));
+    handleValue(get(copy, key), proxyDraft.finalities.handledSet);
   }
 }

@@ -2,7 +2,7 @@ import type { ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 
-function StrictCopy(target: any) {
+function strictCopy(target: any) {
   const descriptors = Object.getOwnPropertyDescriptors(target);
   Reflect.ownKeys(descriptors).forEach((key: any) => {
     const desc = descriptors[key];

@@ -30,6 +30,7 @@ export function draftify<
   const finalities: Finalities = {
     draft: [],
     revoke: [],
+    handledSet: new WeakSet<any>(),
   };
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
