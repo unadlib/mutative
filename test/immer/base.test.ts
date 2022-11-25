@@ -40,9 +40,9 @@ const isProd = process.env.NODE_ENV === 'production';
 //   expect(require('../package.json').dependencies).toBeUndefined();
 // });
 
-// runBaseTest('proxy (no freeze)', false, false);
-// runBaseTest('proxy (autofreeze)', true, false);
-// runBaseTest('proxy (patch listener)', false, true);
+runBaseTest('proxy (no freeze)', false, false);
+runBaseTest('proxy (autofreeze)', true, false);
+runBaseTest('proxy (patch listener)', false, true);
 runBaseTest('proxy (autofreeze)(patch listener)', true, true);
 
 // runBaseTest("es5 (no freeze)", false, false)
