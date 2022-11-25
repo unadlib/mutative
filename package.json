@@ -60,6 +60,7 @@
     "jsdoc-tests": "^0.1.1",
     "lodash": "^4.17.21",
     "prettier": "^2.5.1",
+    "redux": "^4.2.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.70.1",
     "rollup-plugin-terser": "^7.0.0",

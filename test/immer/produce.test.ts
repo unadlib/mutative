@@ -1,5 +1,5 @@
 import { assert } from './assert';
-import { create, Draft, Immutable, apply, castDraft } from '../../src';
+import { create, Draft, Immutable, apply, castDraft, castImmutable } from '../../src';
 
 interface State {
   readonly num: number;
@@ -399,9 +399,7 @@ it('can work with readonly base types', () => {
       done: true,
     });
   };
-  // TODO: fix types
-  // @ts-expect-error
-  const newState2: State = create(reducer)(state);
+  const newState2: State = create(reducer)(castDraft(state));
   assert(newState2, _ as State);
 
   // // base case for with-initial-state
@@ -499,29 +497,41 @@ it('#749 types Immer', () => {
   expect(z.z).toBeUndefined();
 });
 
-// TODO: fix types
-// it('infers draft, #720', () => {
-//   function nextNumberCalculator(fn: (base: number) => number) {
-//     // noop
-//   }
+it('infers draft, #720', () => {
+  function nextNumberCalculator(fn: (base: Draft<{s: number}>) => {s: number}) {
+    // noop
+  }
 
-//   const res2 = nextNumberCalculator(
-//     create((draft) => {
-//       // @ts-expect-error
-//       let x: string = draft;
-//       return draft + 1;
-//     })
-//   );
+  const res2 = nextNumberCalculator(
+    create((draft) => {
+      draft.s++;
+    })
+  );
 
-//   const res = nextNumberCalculator(
-//     create((draft) => {
-//       // @ts-expect-error
-//       let x: string = draft;
-//       // return draft + 1;
-//       return undefined;
-//     })
-//   );
-// });
+  const res = nextNumberCalculator(
+    create((draft) => {
+      draft.s++;
+    })
+  );
+});
+
+it('infers draft, #720', () => {
+  function nextNumberCalculator(fn: (base: {s: number}) => {s: number}) {
+    // noop
+  }
+
+  const res2 = nextNumberCalculator(
+    create((draft) => {
+      draft.s++;
+    })
+  );
+
+  const res = nextNumberCalculator(
+    create((draft) => {
+      draft.s++;
+    })
+  );
+});
 
 it('infers draft, #720 - 2', () => {
   function useState<S>(
