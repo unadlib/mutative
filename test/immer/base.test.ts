@@ -356,7 +356,7 @@ function runBaseTest(
       }
     });
 
-    describe.skip('map drafts', () => {
+    describe('map drafts', () => {
       it('supports key access', () => {
         const value = baseState.aMap.get('jedi');
         const nextState = produce(baseState, (s) => {
@@ -509,7 +509,7 @@ function runBaseTest(
         expect(result.get('second').a).toEqual(100);
       });
 
-      it('can assign by key', () => {
+      it.skip('can assign by key', () => {
         const nextState = produce(baseState, (s) => {
           // Map.prototype.set should return the Map itself
           const res = s.aMap.set('force', true);
