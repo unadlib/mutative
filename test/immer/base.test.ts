@@ -957,13 +957,23 @@ function runBaseTest(
       expect(nextState.foo).toBeTruthy();
     });
 
-    it.skip('preserves symbol properties', () => {
+    it('preserves symbol properties', () => {
       const test = Symbol('test');
       const baseState = { [test]: true };
-      const nextState = produce(baseState, (s) => {
-        expect(s[test]).toBeTruthy();
-        s.foo = true;
-      });
+      const nextState = produce(
+        baseState,
+        (s) => {
+          expect(s[test]).toBeTruthy();
+          s.foo = true;
+        },
+        {
+          mark: (target, { immutable }) => {
+            if (target === baseState) {
+              return immutable;
+            }
+          },
+        }
+      );
       expect(nextState).toEqual({
         [test]: true,
         foo: true,
@@ -971,7 +981,7 @@ function runBaseTest(
     });
 
     if (!global.USES_BUILD)
-      it.skip('preserves non-enumerable properties', () => {
+      it('preserves non-enumerable properties', () => {
         const baseState = {};
         // Non-enumerable object property
         Object.defineProperty(baseState, 'foo', {
@@ -990,6 +1000,12 @@ function runBaseTest(
           expect(isEnumerable(s, 'foo')).toBeFalsy();
           s.foo.a++;
           expect(isEnumerable(s, 'foo')).toBeFalsy();
+        }, {
+          mark: (target, { immutable }) => {
+            if (target === baseState) {
+              return immutable;
+            }
+          },
         });
         expect(nextState.foo).toBeTruthy();
         expect(isEnumerable(nextState, 'foo')).toBeFalsy();
@@ -1069,7 +1085,7 @@ function runBaseTest(
       expect(Object.getOwnPropertyDescriptor(nextState, 'y')).toBeUndefined();
     });
 
-    it.skip('allows inherited computed properties', () => {
+    it('allows inherited computed properties', () => {
       const proto = {};
       Object.defineProperty(proto, 'foo', {
         get() {
@@ -1090,7 +1106,7 @@ function runBaseTest(
         },
         {
           mark: (target, { immutable }) => {
-            if (target === proto) {
+            if (target === baseState) {
               return immutable;
             }
           },
@@ -1098,7 +1114,7 @@ function runBaseTest(
       );
     });
 
-    it.skip('optimization: does not visit properties of new data structures if autofreeze is disabled and no drafts are unfinalized', () => {
+    it('optimization: does not visit properties of new data structures if autofreeze is disabled and no drafts are unfinalized', () => {
       const newData = {};
       Object.defineProperty(newData, 'x', {
         enumerable: true,
@@ -1603,7 +1619,7 @@ function runBaseTest(
       ).toBe(2);
     });
 
-    it.skip('doesnt recurse into frozen structures if external data is frozen', () => {
+    it('doesnt recurse into frozen structures if external data is frozen', () => {
       const frozen = {};
       Object.defineProperty(frozen, 'x', {
         get() {

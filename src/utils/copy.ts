@@ -6,7 +6,8 @@ function strictCopy(target: any) {
   const descriptors = Object.getOwnPropertyDescriptors(target);
   Reflect.ownKeys(descriptors).forEach((key: any) => {
     const desc = descriptors[key];
-    if (desc.writable === false) {
+    // for freeze
+    if (!desc.writable) {
       desc.writable = true;
       desc.configurable = true;
     }
@@ -21,10 +22,10 @@ function strictCopy(target: any) {
   return Object.create(Object.getPrototypeOf(target), descriptors);
 }
 
+// TODO: think about support for custom shallow copy
 export function shallowCopy(
   original: any,
-  checkCopy?: (original: any) => boolean,
-  strictCopy?: (original: any) => any,
+  checkCopy?: (original: any) => boolean
 ) {
   if (Array.isArray(original)) {
     return Array.prototype.concat.call(original);
@@ -36,21 +37,11 @@ export function shallowCopy(
     if (typeof original !== 'object') {
       throw new Error(`Cannot make a shallow copy ${original}`);
     }
-
-    const descriptors = Object.getOwnPropertyDescriptors(original);
-    Reflect.ownKeys(descriptors).forEach((key: any) => {
-      const descriptor = descriptors[key];
-      // for freeze
-      if (!descriptor.writable) {
-        descriptor.writable = true;
-      }
-    });
-    return Object.create(Object.getPrototypeOf(original), descriptors);
+    return strictCopy(original);
   } else if (
     typeof original === 'object' &&
     Object.getPrototypeOf(original) === Object.prototype
   ) {
-    if (strictCopy) return strictCopy(original);
     // For best performance with shallow copies,
     // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));` by default.
     const copy: Record<string | symbol, any> = {};

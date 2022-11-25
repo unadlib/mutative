@@ -19,7 +19,6 @@ import {
   set,
   markSetValue,
   revokeProxy,
-  finalizeAssigned,
 } from './utils';
 import { finalizePatches } from './patch';
 import { checkReadable } from './unsafe';
