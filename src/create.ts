@@ -53,8 +53,9 @@ function create<
 ): CreateResult<T, O, F, R>;
 function create(arg0: any, arg1: any, arg2?: any): any {
   if (typeof arg0 === 'function' && typeof arg1 !== 'function') {
-    return (base: any, ...args: any[]) =>
-      create(base, (draft) => arg0(draft, ...args), arg1);
+    return function (this: any, base: any, ...args: any[]) {
+      return create(base, (draft: any) => arg0.call(this, draft, ...args), arg1);
+    };
   }
   let base = arg0;
   let mutate = arg1;

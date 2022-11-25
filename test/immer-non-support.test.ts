@@ -3,6 +3,10 @@ import { create } from '../src';
 
 enableMapSet();
 
+beforeEach(() => {
+  setAutoFreeze(true);
+});
+
 test('Set draft constructor is not equal to Set', () => {
   const data = new Set([1, 2, 3]);
 
@@ -77,7 +81,7 @@ test('immer failed case - maintains order when adding', () => {
   const newSet = produce(set, (draft) => {
     draft.add(objs[1]);
   });
-// ! it should keep the order
+  // ! it should keep the order
   expect(Array.from(newSet)).not.toEqual([objs[0], objs[1]]);
 });
 
@@ -136,27 +140,66 @@ test('mutative case - maintains order when adding2', () => {
   expect(Array.from(newSet)).toEqual([objs[0], objs[1]]);
 });
 
-// test.only("", () => {
-//   const state = {
-//     foo: {
-//       bar: {
-//         baz: 1
-//       }
-//     }
-//   }
-//   const newState = create(state, draft => {
-//     draft.foo = create(draft.foo, fooDraft => {
-//       // @ts-ignore
-//       fooDraft.baz = fooDraft.bar.baz
-//     })
-//     // draft.foo = create(draft.foo, fooDraft => {
-//     //   /* another produce call makes this fail */
-//     //   /* no actual mutation necessary to make this happen */
-//     // })
-//   })
+// https://github.com/immerjs/immer/issues/936
+test("[936] immer failed case- Nested and chained produce usage results in error: Cannot perform 'get' on a proxy that has been revoked", () => {
+  setAutoFreeze(true);
+  const state = {
+    foo: {
+      bar: {
+        baz: 1,
+      },
+    },
+  };
+  const newState = produce(state, (draft) => {
+    draft.foo = produce(draft.foo, (fooDraft) => {
+      // @ts-ignore
+      fooDraft.baz = fooDraft.bar.baz;
+    });
+    draft.foo = produce(draft.foo, (fooDraft) => {
+      /* another produce call makes this fail */
+      /* no actual mutation necessary to make this happen */
+    });
+  });
+  expect(() => {
+    JSON.stringify(newState);
+  }).toThrowError();
+});
 
-//   JSON.stringify(newState);
-// })
+test('[936]', () => {
+  const state = {
+    foo: {
+      bar: {
+        baz: 1,
+      },
+    },
+  };
+  const newState = create(
+    state,
+    (draft) => {
+      draft.foo = create(
+        draft.foo,
+        (fooDraft) => {
+          // @ts-ignore
+          fooDraft.baz = fooDraft.bar.baz;
+        },
+        {
+          enableAutoFreeze: true,
+        }
+      );
+      // draft.foo = create(draft.foo, fooDraft => {
+      //   /* another produce call makes this fail */
+      //   /* no actual mutation necessary to make this happen */
+      // })
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+
+  expect(() => {
+    JSON.stringify(newState);
+  }).not.toThrowError();
+});
 
 test('immer failed case - freeze Map key', () => {
   setAutoFreeze(true);
@@ -191,4 +234,47 @@ test('mutative case - freeze Map key', () => {
     // @ts-ignore
     Array.from(state.keys())[0].a = 2;
   }).toThrowError();
+});
+
+test('immer failed case - escaped draft', () => {
+  setAutoFreeze(false);
+  const dataSet = [{}, {}, {}] as any;
+  const data = {
+    data: null,
+    a: {
+      b: 1,
+    },
+  };
+  const state = produce(data, (draft) => {
+    draft.data = dataSet;
+    const a = draft.a;
+    dataSet[0] = a;
+    dataSet[1].a = { b: 1, c: [a] };
+    draft.a.b = 2;
+  });
+
+  expect(() => {
+    JSON.stringify(state);
+  }).toThrowError();
+});
+
+test('mutative case - handle draft', () => {
+  const dataSet = [{}, {}, {}] as any;
+  const data = {
+    data: null,
+    a: {
+      b: 1,
+    },
+  };
+  const state = create(data, (draft) => {
+    draft.data = dataSet;
+    const a = draft.a;
+    dataSet[0] = a;
+    dataSet[1].a = { b: 1, c: [a] };
+    draft.a.b = 2;
+  });
+
+  expect(() => {
+    JSON.stringify(state);
+  }).not.toThrowError();
 });

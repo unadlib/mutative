@@ -1,10 +1,4 @@
-import type {
-  Finalities,
-  Patches,
-  ProxyDraft,
-  Mark,
-  Options,
-} from './interface';
+import type { Finalities, Patches, ProxyDraft, Options } from './interface';
 import { dataTypes, DraftType, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
@@ -25,6 +19,7 @@ import {
   set,
   markSetValue,
   revokeProxy,
+  finalizeAssigned,
 } from './utils';
 import { finalizePatches } from './patch';
 import { checkReadable } from './unsafe';
@@ -238,11 +233,13 @@ export function createDraft<T extends object>(createDraftOptions: {
         get(target.type === DraftType.Set ? target.setMap : target.copy, key!)
       );
       if (proxyDraft) {
-        finalizePatches(proxyDraft, patches, inversePatches);
         // assign the updated value to the copy object
-        const updatedValue = proxyDraft.operated
-          ? getValue(get(target.copy, key!))
-          : proxyDraft.original;
+        let updatedValue = proxyDraft.original;
+        if (proxyDraft.operated) {
+          finalizeAssigned(target, key!);
+          updatedValue = getValue(get(target.copy, key!));
+        }
+        finalizePatches(proxyDraft, patches, inversePatches);
         set(target.copy, key!, updatedValue);
       }
       // !case: handle the deleted key

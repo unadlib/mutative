@@ -1177,3 +1177,25 @@ test('undefined as a map key', () => {
     { op: 'replace', path: ['foo', undefined, 'x'], value: 2 },
   ]);
 });
+
+
+test('patches issue', () => {
+  checkPatches(
+    {
+      foo: {
+        bar: {
+          a: 1,
+        },
+      },
+      f: {},
+    },
+    (draft) => {
+      // @ts-ignore
+      draft.e = { ffff: draft.foo.bar };
+      // @ts-ignore
+      delete draft.foo.bar;
+      // @ts-ignore
+      draft.e.ffff.a = 2;
+    }
+  );
+});

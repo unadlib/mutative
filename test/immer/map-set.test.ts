@@ -246,7 +246,6 @@ function runBaseTest(
     test('#586', () => {
       const base = new Set([1, 2]);
       const set = create(base, (draftSet) => {
-        debugger;
         expect(Array.from(draftSet)).toEqual([1, 2]);
         draftSet.add(3);
       });

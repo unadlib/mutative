@@ -1,7 +1,14 @@
 import type { ProxyDraft } from '../interface';
 import { DraftType } from '../constant';
 import { finalizePatches } from '../patch';
-import { get, getProxyDraft, isEqual, set } from './draft';
+import {
+  finalizeAssigned,
+  get,
+  getProxyDraft,
+  isDraftable,
+  isEqual,
+  set,
+} from './draft';
 
 export function markChanged(proxyDraft: ProxyDraft) {
   if (!proxyDraft.operated) {
@@ -21,8 +28,13 @@ export function markSetValue(target: ProxyDraft, key: any, value: any) {
     proxyDraft.callbacks.push((patches, inversePatches) => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
       if (isEqual(get(copy, key), value)) {
+        let updatedValue = proxyDraft.original;
+        if (proxyDraft.copy) {
+          finalizeAssigned(target, key);
+          updatedValue = proxyDraft.copy;
+        }
         finalizePatches(target, patches, inversePatches);
-        set(copy, key, proxyDraft.copy ?? proxyDraft.original);
+        set(copy, key, updatedValue);
       }
     });
     if (target.options.enableAutoFreeze) {
@@ -31,5 +43,13 @@ export function markSetValue(target: ProxyDraft, key: any, value: any) {
         target.options.enableAutoFreeze = false;
       }
     }
+  } if (isDraftable(value, target.options)) {
+    // !case: assign the non-draft value
+    target.finalities.draft.unshift(() => {
+      const copy = target.type === DraftType.Set ? target.setMap : target.copy;
+      if (isEqual(get(copy, key), value)) {
+        finalizeAssigned(target, key);
+      }
+    });
   }
 }

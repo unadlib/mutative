@@ -3143,6 +3143,50 @@ Array [
 ]
 `;
 
+exports[`patches issue 1`] = `
+Array [
+  Object {
+    "op": "remove",
+    "path": Array [
+      "foo",
+      "bar",
+    ],
+  },
+  Object {
+    "op": "add",
+    "path": Array [
+      "e",
+    ],
+    "value": Object {
+      "ffff": Object {
+        "a": 2,
+      },
+    },
+  },
+]
+`;
+
+exports[`patches issue 2`] = `
+Array [
+  Object {
+    "op": "add",
+    "path": Array [
+      "foo",
+      "bar",
+    ],
+    "value": Object {
+      "a": 1,
+    },
+  },
+  Object {
+    "op": "remove",
+    "path": Array [
+      "e",
+    ],
+  },
+]
+`;
+
 exports[`patches mutate 1`] = `
 Array [
   Object {

@@ -1,5 +1,7 @@
-import type { Mark, Options, ProxyDraft } from '../interface';
+import type { Options, ProxyDraft } from '../interface';
 import { dataTypes, DraftType, PROXY_DRAFT } from '../constant';
+import { ensureShallowCopy } from './copy';
+import { forEach } from './forEach';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
@@ -83,5 +85,55 @@ export function isEqual(x: any, y: any) {
 export function revokeProxy(proxyDraft: ProxyDraft) {
   for (const revoke of proxyDraft.finalities.revoke) {
     revoke();
+  }
+}
+
+//  TODO: refactor for config
+const handledSet = new WeakSet<any>();
+
+export function handleValue(target: any) {
+  if (
+    isDraft(target) ||
+    !isDraftable(target) ||
+    handledSet.has(target) ||
+    Object.isFrozen(target)
+  )
+    return;
+  let setMap: Map<any, any> | undefined;
+  handledSet.add(target);
+  forEach(target, (key, value) => {
+    if (isDraft(value)) {
+      const proxyDraft = getProxyDraft(value)!;
+      ensureShallowCopy(proxyDraft);
+      if (target instanceof Set) {
+        setMap = setMap ?? new Map();
+        setMap.set(key, proxyDraft.copy);
+      } else {
+        set(target, key, proxyDraft.copy);
+      }
+    } else {
+      handleValue(value);
+    }
+  });
+  if (setMap) {
+    const set = target as Set<any>;
+    const values = Array.from(set.values());
+    set.clear();
+    values.forEach((value) => {
+      set.add(setMap!.has(value) ? setMap!.get(value) : value);
+    });
+  }
+}
+
+export function finalizeAssigned(proxyDraft: ProxyDraft, key: PropertyKey) {
+  // handle the draftable assigned values， and the value is not a draft
+  const copy =
+    proxyDraft.type === DraftType.Set ? proxyDraft.setMap : proxyDraft.copy;
+  if (
+    proxyDraft.finalities.revoke.length > 1 &&
+    proxyDraft.assignedMap.get(key) &&
+    copy
+  ) {
+    handleValue(get(copy, key));
   }
 }
