@@ -1178,7 +1178,6 @@ test('undefined as a map key', () => {
   ]);
 });
 
-
 test('patches issue', () => {
   checkPatches(
     {
@@ -1197,5 +1196,43 @@ test('patches issue', () => {
       // @ts-ignore
       draft.e.ffff.a = 2;
     }
+  );
+});
+
+test('different options - apply patches', () => {
+  create(
+    { a: { b: 1 } },
+    (draft) => {
+      expect(() => {
+        apply(draft, [], {
+          enableAutoFreeze: false,
+        });
+      }).toThrowError(`Cannot apply patches with options to a draft.`);
+    },
+    { enableAutoFreeze: true }
+  );
+});
+
+test('set - patches', () => {
+  expect(() => {
+    apply(new Set([0]), [{ op: 'replace', path: [0], value: 1 }]);
+  }).toThrowError(`Cannot apply replace patch to set.`);
+});
+
+test('array - patches', () => {
+  const arr = apply([1, 2, 3], [{ op: 'remove', path: [0] }]);
+  expect(arr).toEqual([2, 3]);
+});
+
+test('unexpected - patches', () => {
+  expect(() => {
+    apply({ a: {} }, [{ op: 'replace', path: ['__proto__', 'a'], value: 1 }]);
+  }).toThrowError(
+    `Patching reserved attributes like __proto__ and constructor is not allowed.`
+  );
+  expect(() => {
+    apply({ a: {} }, [{ op: 'replace', path: ['constructor', 'a'], value: 1 }]);
+  }).toThrowError(
+    `Patching reserved attributes like __proto__ and constructor is not allowed.`
   );
 });

@@ -1248,7 +1248,7 @@ test('do not allow __proto__ polution - 738', () => {
   }).toThrow(
     isProd
       ? '24'
-      : 'Patching reserved attributes like __proto__, prototype and constructor is not allowed'
+      : 'Patching reserved attributes like __proto__ and constructor is not allowed'
   );
   // @ts-ignore
   expect(obj.polluted).toBe(undefined);
@@ -1267,7 +1267,7 @@ test('do not allow __proto__ polution using arrays - 738', () => {
   }).toThrow(
     isProd
       ? '24'
-      : 'Patching reserved attributes like __proto__, prototype and constructor is not allowed'
+      : 'Patching reserved attributes like __proto__ and constructor is not allowed'
   );
   // @ts-ignore
   expect(obj.polluted).toBe(undefined);
@@ -1317,7 +1317,7 @@ test('do not allow constructor.prototype polution - 738', () => {
   }).toThrow(
     isProd
       ? '24'
-      : 'Patching reserved attributes like __proto__, prototype and constructor is not allowed'
+      : 'Patching reserved attributes like __proto__ and constructor is not allowed'
   );
   // @ts-ignore
   expect(Object.polluted).toBe(undefined);
@@ -1352,7 +1352,7 @@ test('CVE-2020-28477 (https://snyk.io/vuln/SNYK-JS-IMMER-1019369) follow up', ()
   }).toThrow(
     isProd
       ? '24'
-      : 'Patching reserved attributes like __proto__, prototype and constructor is not allowed'
+      : 'Patching reserved attributes like __proto__ and constructor is not allowed'
   );
   // @ts-ignore
   expect(obj.polluted).toBe(undefined);

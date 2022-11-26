@@ -17,11 +17,6 @@ export function draftify<
     strict,
     enablePatches,
   };
-  if (isDraft(baseState)) {
-    throw new Error(
-      `draftify() cannot draft data that has already been drafted.`
-    );
-  }
   if (!isDraftable(baseState, options)) {
     throw new Error(
       'create() only supports plain object, array, set, and map.'

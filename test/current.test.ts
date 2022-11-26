@@ -7,6 +7,11 @@ describe('current', () => {
       bar?: { foobar: string };
       data?: { foo: string };
     }
+    const set = new Set([1]);
+    const boz = {
+      a: 1,
+      set,
+    };
     const value = create(
       {
         arr: [{ foo: 'bar' } as Item],
@@ -14,6 +19,7 @@ describe('current', () => {
         map: new Map<string, Item>([['foo', { foo: 'bar' }]]),
         obj: { foo: 'bar' } as Item,
         data: { foo: 'bar' },
+        boz,
       },
       (draft) => {
         const { data } = draft;
@@ -52,6 +58,12 @@ describe('current', () => {
           foo: 'baz',
         });
 
+        expect(current(draft.set)).toEqual(
+          new Set([
+            { bar: { foobar: 'baz' }, data: { foo: 'new str2' }, foo: 'baz' },
+          ])
+        );
+
         draft.map.get('foo')!.foo = 'baz';
         expect(isDraft(draft.map.get('foo')!)).toBe(true);
         expect(current(draft.map.get('foo')!)).toEqual({ foo: 'baz' });
@@ -83,6 +95,13 @@ describe('current', () => {
           data: { foo: 'new str4' },
           foo: 'baz',
         });
+        draft.boz.a = 2;
+        expect(current(draft.boz).set).toBe(boz.set);
+      },
+      {
+        mark: (target, { mutable }) => {
+          if (target === set) return mutable;
+        },
       }
     );
   });
@@ -146,9 +165,13 @@ test('nested draft', () => {
       const d = current(draft.d);
       const map = current(draft.map);
       const set = current(draft.set);
+      // @ts-ignore
       expect(d.d.f.f.f).toEqual({ a: 2 });
+      // @ts-ignore
       expect(isDraft(d.d.f.f.f)).toBeFalsy();
+      // @ts-ignore
       expect(map.get('d').d.d.f.f.f).toEqual({ a: 2 });
+      // @ts-ignore
       expect(isDraft(map.get('d').d.d.f.f.f)).toBeFalsy();
       const f = set.values().next().value.d.d.f.f.f;
       expect(f).toEqual({ a: 2 });

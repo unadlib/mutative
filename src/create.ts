@@ -84,7 +84,7 @@ function create(arg0: any, arg1: any, arg2?: any): any {
   }
   const state = isDraft(base) ? current(base) : base;
   if (options?.mark?.(state, dataTypes) === dataTypes.mutable) {
-    const finalization = options?.enablePatches ? [state, [], []] : state;
+    const finalization = options.enablePatches ? [state, [], []] : state;
     if (typeof arg1 !== 'function') {
       return [state, () => finalization];
     }

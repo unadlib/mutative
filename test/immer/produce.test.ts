@@ -477,7 +477,6 @@ it('works with ReadonlyMap and ReadonlySet', () => {
 
 it('shows error in production if called incorrectly', () => {
   expect(() => {
-    debugger;
     create(null as any);
   }).toThrow('create() only supports plain object, array, set, and map.');
 });

@@ -19,13 +19,11 @@ export function apply<T extends object, F extends boolean = false>(
         const parentType = getType(base);
         const key = String(path[index]);
         if (
-          ((parentType === DraftType.Object ||
-            parentType === DraftType.Array) &&
-            (key === '__proto__' || key === 'constructor')) ||
-          (typeof base === 'function' && key === 'prototype')
+          (parentType === DraftType.Object || parentType === DraftType.Array) &&
+          (key === '__proto__' || key === 'constructor')
         ) {
           throw new Error(
-            `Patching reserved attributes like __proto__, prototype and constructor is not allowed.`
+            `Patching reserved attributes like __proto__ and constructor is not allowed.`
           );
         }
         // use `index` in Set draft

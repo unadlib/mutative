@@ -496,8 +496,9 @@ describe('base', () => {
     };
 
     const state = create(data, (draft) => {
+      const iterator = draft.map.values();
       // @ts-ignore
-      draft.map.values().next().value.x = 1;
+      iterator.next().value.x = 1;
       for (const [key, item] of draft.map) {
         // @ts-ignore
         if (item.x === 1) {
@@ -505,6 +506,11 @@ describe('base', () => {
           item.c = 2;
         }
       }
+
+      expect(iterator.next().done).toBe(false);
+      expect(iterator.next().done).toBe(false);
+      expect(iterator.next().done).toBe(true);
+
     });
     expect(state).toEqual({
       bar: {},
@@ -1222,7 +1228,9 @@ describe('hook in options', () => {
       data,
       (draft) => {
         draft.foo.bar = 'new str';
-        draft.set.values().next().value.text = 'new text';
+        const iterator = draft.set.values();
+        iterator.next().value.text = 'new text';
+        expect(iterator.next().done).toBe(true);
       },
       {
         mark: (target) => {

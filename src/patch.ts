@@ -9,8 +9,8 @@ export function finalizePatches(
 ) {
   if (target.type === DraftType.Set && target.copy) {
     target.copy.clear();
-    target.setMap?.forEach((value) => {
-      target.copy?.add(getValue(value));
+    target.setMap!.forEach((value) => {
+      target.copy!.add(getValue(value));
     });
   }
   const shouldFinalize =

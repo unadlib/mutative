@@ -1,6 +1,5 @@
 import { create, original, current, apply } from '../src';
 
-
 test('check object type', () => {
   const data = {};
 
@@ -482,6 +481,21 @@ test('update for set', () => {
 
   const state = create(data, (draft) => {
     draft.set.add(undefined);
+  });
+  expect(state).not.toBe(data);
+});
+
+test('update for set', () => {
+  const data = {
+    set: new Set([{ b: 2 }]),
+    a: {
+      b: 1,
+    },
+  };
+
+  const state = create(data, (draft) => {
+    draft.set.add(draft.a);
+    draft.set.delete(draft.a);
   });
   expect(state).not.toBe(data);
 });

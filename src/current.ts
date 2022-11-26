@@ -1,5 +1,6 @@
 import { dataTypes, DraftType } from './constant';
 import {
+  forEach,
   get,
   getProxyDraft,
   getType,
@@ -16,31 +17,28 @@ function getCurrent(target: any) {
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   if (proxyDraft) proxyDraft.finalized = true;
-  const currentValue =
-    type === DraftType.Map
-      ? new Map(target)
-      : type === DraftType.Set
-      ? Array.from(proxyDraft?.setMap!.values() ?? target)
-      : shallowCopy(
-          target,
-          proxyDraft?.options.mark
-            ? () =>
-                proxyDraft.options.mark!(proxyDraft.original, dataTypes) ===
-                dataTypes.immutable
-            : undefined
-        );
-  if (proxyDraft) proxyDraft.finalized = false;
-  const iterator = (key: any, value: any) => {
+  let currentValue: any;
+  try {
+    currentValue =
+      type === DraftType.Map
+        ? new Map(target)
+        : type === DraftType.Set
+        ? Array.from(proxyDraft!.setMap!.values()!)
+        : shallowCopy(
+            target,
+            proxyDraft?.options.mark
+              ? () =>
+                  proxyDraft.options.mark!(proxyDraft.original, dataTypes) ===
+                  dataTypes.immutable
+              : undefined
+          );
+  } finally {
+    if (proxyDraft) proxyDraft.finalized = false;
+  }
+  forEach(currentValue, (key, value) => {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
     set(currentValue, key, getCurrent(value));
-  };
-  if (getType(currentValue) === DraftType.Object) {
-    Reflect.ownKeys(currentValue).forEach((key) => {
-      iterator(key, currentValue[key]);
-    });
-  } else {
-    currentValue.forEach((value: any, key: any) => iterator(key, value));
-  }
+  });
   return type === DraftType.Set ? new Set(currentValue) : currentValue;
 }
 
@@ -61,7 +59,7 @@ function getCurrent(target: any) {
  *   },
  * );
  */
-export function current<T extends object>(target: T): any {
+export function current<T extends object>(target: T): T {
   if (!isDraft(target)) {
     throw new Error(`current() is only used for Draft, parameter: ${target}`);
   }

@@ -93,7 +93,8 @@ export const setHandler = {
       // delete drafted
       target.assignedMap.set(valueProxyDraft.original, false);
       return target.setMap!.delete(valueProxyDraft.original);
-    } else if (!valueProxyDraft && target.setMap!.has(value)) {
+    }
+    if (!valueProxyDraft && target.setMap!.has(value)) {
       // non-draftable values
       target.assignedMap.set(value, false);
     } else {

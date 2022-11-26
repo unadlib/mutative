@@ -190,4 +190,65 @@ describe('Currying', () => {
       expect(() => create(draft)).not.toThrowError();
     });
   });
+
+  test('Currying with mutable', () => {
+    const baseState = { a: 1 };
+    const [draft, finalize] = create(baseState, {
+      mark: (target, { mutable }) => {
+        if (target === baseState) return mutable;
+      },
+    });
+    draft.a = 2;
+    expect(finalize()).toBe(baseState);
+  });
+
+  test('Currying with mutable and enablePatches', () => {
+    const baseState = { a: 1 };
+    const [draft, finalize] = create(baseState, {
+      mark: (target, { mutable }) => {
+        if (target === baseState) return mutable;
+      },
+      enablePatches: true,
+    });
+    draft.a = 2;
+    const [state, patches, inversePatches] = finalize();
+    expect(state).toBe(baseState);
+    expect(patches).toEqual([]);
+    expect(inversePatches).toEqual([]);
+  });
+
+  test('async create with mutable', async () => {
+    const baseState = { a: 1 };
+    const state = await create(
+      baseState,
+      async (draft) => {
+        draft.a = 2;
+      },
+      {
+        mark: (target, { mutable }) => {
+          if (target === baseState) return mutable;
+        },
+      }
+    );
+    expect(state).toBe(baseState);
+  });
+
+  test('async create with mutable and enablePatches', async () => {
+    const baseState = { a: 1 };
+    const [state, patches, inversePatches] = await create(
+      baseState,
+      async (draft) => {
+        draft.a = 2;
+      },
+      {
+        mark: (target, { mutable }) => {
+          if (target === baseState) return mutable;
+        },
+        enablePatches: true,
+      }
+    );
+    expect(state).toBe(baseState);
+    expect(patches).toEqual([]);
+    expect(inversePatches).toEqual([]);
+  });
 });

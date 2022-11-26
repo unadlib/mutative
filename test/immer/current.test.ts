@@ -121,6 +121,7 @@ function runTests(name: any, useProxies: any) {
           },
           z: {},
         });
+        // @ts-ignore
         expect(isDraft(c.y.nested)).toBe(false);
         // @ts-ignore
         expect(isDraft(draft.y.nested)).toBe(true);
