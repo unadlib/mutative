@@ -16,8 +16,8 @@ export function finalizePatches(
   const shouldFinalize =
     target.operated && target.assignedMap.size > 0 && !target.finalized;
   if (shouldFinalize) {
-    const basePath = getPath(target);
     if (patches && inversePatches) {
+      const basePath = getPath(target);
       generatePatches(target, basePath, patches, inversePatches);
     }
     target.finalized = true;

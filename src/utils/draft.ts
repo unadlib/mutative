@@ -36,11 +36,10 @@ export function getPath(
   target: ProxyDraft,
   path: any[] = []
 ): (string | number | object)[] {
-  if (!target) return path;
   if (Object.hasOwnProperty.call(target, 'key'))
     path.unshift(
-      target.parent?.type === DraftType.Set
-        ? Array.from(target.parent.setMap!.keys()).indexOf(target.key as any)
+      target.parent!.type === DraftType.Set
+        ? Array.from(target.parent!.setMap!.keys()).indexOf(target.key as any)
         : target.key
     );
   if (target.parent) {
@@ -96,7 +95,8 @@ export function handleValue(target: any, handledSet: WeakSet<any>) {
     Object.isFrozen(target)
   )
     return;
-  let setMap: Map<any, any> | undefined;
+  const isSet = target instanceof Set;
+  const setMap: Map<any, any> | undefined = isSet ? new Map() : undefined;
   handledSet.add(target);
   forEach(target, (key, value) => {
     if (isDraft(value)) {
@@ -105,9 +105,8 @@ export function handleValue(target: any, handledSet: WeakSet<any>) {
       const updatedValue = proxyDraft.assignedMap.size
         ? proxyDraft.copy
         : proxyDraft.original;
-      if (target instanceof Set) {
-        setMap = setMap ?? new Map();
-        setMap.set(key, updatedValue);
+      if (isSet) {
+        setMap!.set(key, updatedValue);
       } else {
         set(target, key, updatedValue);
       }

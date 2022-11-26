@@ -510,7 +510,6 @@ describe('base', () => {
       expect(iterator.next().done).toBe(false);
       expect(iterator.next().done).toBe(false);
       expect(iterator.next().done).toBe(true);
-
     });
     expect(state).toEqual({
       bar: {},
@@ -1511,6 +1510,35 @@ describe('class instance ', () => {
     expect(state.bar).toEqual(0);
   });
 
+  test('object with setters - should define a field with a setter', () => {
+    const data = {
+      _bar: 1,
+      get bar() {
+        return this._bar;
+      },
+      set bar(x) {
+        this._bar = x;
+      },
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.bar = 2;
+        expect(draft._bar).toEqual(1);
+      },
+      {
+        mark: (target, { immutable }) => {
+          if (target === data) return immutable;
+        },
+      }
+    );
+    expect(state._bar).toEqual(1);
+    expect(state.bar).toEqual(2);
+    expect(data._bar).toEqual(1);
+    expect(data.bar).toEqual(1);
+  });
+
   test('setter only', () => {
     let setterCalled = 0;
     class State {
@@ -1808,4 +1836,37 @@ test('can work with own computed props', () => {
   expect(nextState.x).toBe(2);
   // @ts-ignore
   expect(Object.getOwnPropertyDescriptor(nextState, 'y').value).toBe(4);
+});
+
+test('set a Set value', () => {
+  const data = {
+    set: new Set([1, 2, 3]),
+    bar: {
+      baz: 'str',
+    },
+  };
+
+  const state = create(data, (draft) => {
+    // @ts-ignore
+    draft.set = new Set([draft.bar, 1, 2, 3]);
+  });
+  const fistItem = state.set.values().next().value;
+  expect(fistItem).toBe(state.bar);
+  expect(isDraft(fistItem)).toBe(false);
+});
+
+test('Set with enable patches in root', () => {
+  const [state, patches, inversePatches] = create(
+    new Set([1, 2]),
+    (draft) => {
+      // @ts-ignore
+      draft.add({});
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  expect(state).toEqual(new Set([1, 2, {}]));
+  expect(patches).toEqual([{ op: 'add', path: [2], value: {} }]);
+  expect(inversePatches).toEqual([{ op: 'remove', path: [2], value: {} }]);
 });

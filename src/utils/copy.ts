@@ -34,9 +34,6 @@ export function shallowCopy(
   } else if (original instanceof Map) {
     return new Map(original);
   } else if (checkCopy?.(original)) {
-    if (typeof original !== 'object') {
-      throw new Error(`Cannot make a shallow copy ${original}`);
-    }
     return strictCopy(original);
   } else if (
     typeof original === 'object' &&
