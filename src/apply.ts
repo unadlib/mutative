@@ -85,7 +85,9 @@ export function apply<T extends object, F extends boolean = false>(
     });
   };
   if (isDraft(state)) {
-    // todo: check applyOptions
+    if (typeof applyOptions !== 'undefined') {
+      throw new Error(`Cannot apply patches with options to a draft.`);
+    }
     mutate(state as Draft<T>);
     return state;
   }

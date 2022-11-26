@@ -68,7 +68,6 @@ export function ensureShallowCopy(target: ProxyDraft) {
   )!;
 }
 
-// todo: optimize
 function deepClone<T>(target: T): T;
 function deepClone(target: any) {
   if (!isDraftable(target)) return getValue(target);

@@ -21,10 +21,11 @@ export function markChanged(proxyDraft: ProxyDraft) {
 
 export function markSetValue(target: ProxyDraft, key: any, value: any) {
   const proxyDraft = getProxyDraft(value);
-  // TODO: Reduce repetition callbacks
   if (proxyDraft) {
     // !case: assign the draft value
-    proxyDraft.callbacks = proxyDraft.callbacks ?? [];
+    if (!proxyDraft.callbacks) {
+      proxyDraft.callbacks = [];
+    }
     proxyDraft.callbacks.push((patches, inversePatches) => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
       if (isEqual(get(copy, key), value)) {
@@ -38,7 +39,7 @@ export function markSetValue(target: ProxyDraft, key: any, value: any) {
     });
     if (target.options.enableAutoFreeze) {
       // !case: assign the draft value in cross draft tree
-      if (proxyDraft && proxyDraft.finalities !== target.finalities) {
+      if (proxyDraft.finalities !== target.finalities) {
         target.options.enableAutoFreeze = false;
       }
     }

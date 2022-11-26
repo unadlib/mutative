@@ -37,7 +37,7 @@ function generateArrayPatches(
     [original, copy] = [copy, original];
     [patches, inversePatches] = [inversePatches, patches];
   }
-  for (let index = 0; index < original.length; index++) {
+  for (let index = 0; index < original.length; index += 1) {
     if (assignedMap.get(index.toString()) && copy[index] !== original[index]) {
       const path = basePath.concat([index]);
       patches.push({
@@ -105,10 +105,10 @@ function generateSetPatches(
   patches: Patches,
   inversePatches: Patches
 ) {
-  let i = 0;
+  let index = 0;
   original.forEach((value: any) => {
     if (!copy!.has(value)) {
-      const path = basePath.concat([i]);
+      const path = basePath.concat([index]);
       patches.push({
         op: Operation.Remove,
         path,
@@ -120,12 +120,12 @@ function generateSetPatches(
         value,
       });
     }
-    i++;
+    index += 1;
   });
-  i = 0;
+  index = 0;
   copy!.forEach((value: any) => {
     if (!original.has(value)) {
-      const path = basePath.concat([i]);
+      const path = basePath.concat([index]);
       patches.push({
         op: Operation.Add,
         path,
@@ -137,7 +137,7 @@ function generateSetPatches(
         value,
       });
     }
-    i++;
+    index += 1;
   });
 }
 

@@ -63,7 +63,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
 
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
-      // TODO: should we check for non-configurable here?
       return desc
         ? `value` in desc
           ? desc.value
