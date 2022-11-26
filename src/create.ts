@@ -110,7 +110,8 @@ function create(arg0: any, arg1: any, arg2?: any): any {
       revokeProxy(getProxyDraft(draft)!);
       throw error;
     });
-  } else if (result !== undefined) {
+  }
+  if (result !== undefined) {
     throw new Error(
       `The create() callback must return 'void' or 'Promise<void>'.`
     );

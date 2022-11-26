@@ -32,7 +32,7 @@ export function shallowCopy(
   } else if (original instanceof Set) {
     return new Set(original.values());
   } else if (original instanceof Map) {
-    return new Map(original.entries());
+    return new Map(original);
   } else if (checkCopy?.(original)) {
     if (typeof original !== 'object') {
       throw new Error(`Cannot make a shallow copy ${original}`);
@@ -51,7 +51,7 @@ export function shallowCopy(
     return copy;
   } else {
     throw new Error(
-      `Unsupported type： ${original}, only plain objects, arrays, Set and Map are supported`
+      `Unsupported type: ${original}, only plain objects, arrays, Set and Map are supported`
     );
   }
 }
