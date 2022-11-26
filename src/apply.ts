@@ -15,7 +15,7 @@ export function apply<T extends object, F extends boolean = false>(
     patches.forEach((patch) => {
       const { path, op } = patch;
       let base: any = draft;
-      for (let index = 0; index < path.length - 1; index++) {
+      for (let index = 0; index < path.length - 1; index += 1) {
         const parentType = getType(base);
         const key = String(path[index]);
         if (

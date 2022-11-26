@@ -2,15 +2,10 @@ import { DraftType } from '../constant';
 import { getType } from './draft';
 
 function isFreezable(value: any) {
-  return !(
-    typeof value !== 'object' ||
-    value === null ||
-    value === undefined ||
-    Object.isFrozen(value)
-  );
+  return value && typeof value === 'object' && !Object.isFrozen(value);
 }
 
-function throwFrozenError(value: any) {
+function throwFrozenError() {
   throw new Error('Cannot modify frozen object');
 }
 

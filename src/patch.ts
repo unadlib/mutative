@@ -32,7 +32,6 @@ function generateArrayPatches(
 ) {
   let { original, assignedMap } = proxyState;
   let copy = proxyState.copy!;
-  // TODO: refactor algorithm
   if (copy.length < original.length) {
     [original, copy] = [copy, original];
     [patches, inversePatches] = [inversePatches, patches];
@@ -54,7 +53,7 @@ function generateArrayPatches(
       });
     }
   }
-  for (let index = original.length; index < copy.length; index++) {
+  for (let index = original.length; index < copy.length; index += 1) {
     const path = basePath.concat([index]);
     patches.push({
       op: Operation.Add,
