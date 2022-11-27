@@ -174,8 +174,9 @@ measure(
   () => {
     setUseProxies(true);
     setAutoFreeze(false);
+    return cloneDeep(baseState);
   },
-  () => {
+  (baseState) => {
     produce(baseState, (draft) => {
       for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
         draft[i].done = true;
@@ -189,8 +190,9 @@ measure(
   () => {
     setUseProxies(true);
     setAutoFreeze(true);
+    return deepFreeze(cloneDeep(baseState));
   },
-  () => {
+  (frozenBazeState) => {
     produce(frozenBazeState, (draft) => {
       for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
         draft[i].done = true;
@@ -204,8 +206,9 @@ measure(
   () => {
     setUseProxies(true);
     setAutoFreeze(false);
+    return cloneDeep(baseState);
   },
-  () => {
+  (baseState) => {
     produce(
       baseState,
       (draft) => {
@@ -223,8 +226,9 @@ measure(
   () => {
     setUseProxies(true);
     setAutoFreeze(true);
+    return cloneDeep(baseState);
   },
-  () => {
+  (baseState) => {
     produce(
       baseState,
       (draft) => {
@@ -242,8 +246,9 @@ measure(
   () => {
     setUseProxies(false);
     setAutoFreeze(false);
+    return cloneDeep(baseState);
   },
-  () => {
+  (baseState) => {
     produce(baseState, (draft) => {
       for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
         draft[i].done = true;
@@ -257,8 +262,9 @@ measure(
   () => {
     setUseProxies(false);
     setAutoFreeze(true);
+    return deepFreeze(cloneDeep(baseState));
   },
-  () => {
+  (frozenBazeState) => {
     produce(frozenBazeState, (draft) => {
       for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
         draft[i].done = true;
@@ -272,8 +278,9 @@ measure(
   () => {
     setUseProxies(false);
     setAutoFreeze(false);
+    return cloneDeep(baseState);
   },
-  () => {
+  (baseState) => {
     produce(
       baseState,
       (draft) => {
@@ -291,10 +298,11 @@ measure(
   () => {
     setUseProxies(false);
     setAutoFreeze(true);
+    return deepFreeze(cloneDeep(baseState));
   },
-  () => {
+  (frozenBazeState) => {
     produce(
-      baseState,
+      frozenBazeState,
       (draft) => {
         for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
           draft[i].done = true;
@@ -308,9 +316,9 @@ measure(
 measure(
   'mutative - without autofreeze',
   () => {
-    //
+    return cloneDeep(baseState);
   },
-  () => {
+  (baseState) => {
     create(baseState, (draft) => {
       for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
         draft[i].done = true;
@@ -322,11 +330,11 @@ measure(
 measure(
   'mutative - with autofreeze',
   () => {
-    //
+    return deepFreeze(cloneDeep(baseState));
   },
-  () => {
+  (frozenBazeState) => {
     create(
-      baseState,
+      frozenBazeState,
       (draft) => {
         for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
           draft[i].done = true;
