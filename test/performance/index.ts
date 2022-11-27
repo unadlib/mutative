@@ -27,7 +27,7 @@ Array(10 ** 3)
   });
 
 measure(
-  'native handcrafted',
+  'naive handcrafted reducer',
   () => baseState,
   (baseState: any) => {
     for (let i = 0; i < MAX; i++) {
@@ -346,7 +346,7 @@ Array(10 ** 5)
   });
 
 measure(
-  'native handcrafted - performance 100k key in object by default',
+  'naive handcrafted reducer - performance 100k key in object by default',
   () => object,
   (baseState: any) => {
     const state = {
@@ -391,7 +391,7 @@ const a = Array(10 ** 5)
 const data = { b: { c: 2 }, a };
 
 measure(
-  'native handcrafted - performance for 100k items in array',
+  'naive handcrafted reducer - performance for 100k items in array',
   () => data,
   (baseState: any) => {
     const state = {

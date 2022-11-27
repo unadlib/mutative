@@ -43,7 +43,7 @@ interface BaseState {
 enableMapSet();
 
 measure(
-  'native handcrafted',
+  'naive handcrafted reducer',
   () => getData(),
   (baseState: BaseState) => {
     for (let i = 0; i < MAX; i++) {

@@ -33,7 +33,7 @@ const getData = () => {
 };
 
 measure(
-  'native handcrafted reducer',
+  'naive handcrafted reducer',
   () => getData(),
   (baseState: any) => {
     for (let i = 0; i < MAX; i++) {
