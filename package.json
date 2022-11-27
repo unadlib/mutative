@@ -61,6 +61,7 @@
     "immutable": "^4.0.0",
     "jest": "^27.5.1",
     "jsdoc-tests": "^0.1.1",
+    "json2csv": "^5.0.7",
     "lodash": "^4.17.21",
     "prettier": "^2.5.1",
     "redux": "^4.2.0",
