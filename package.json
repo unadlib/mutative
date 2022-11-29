@@ -1,6 +1,6 @@
 {
   "name": "mutative",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Efficient creation of immutable state",
   "main": "lib/index.js",
   "unpkg": "dist/index.umd.js",
