@@ -116,7 +116,7 @@ export function handleValue(target: any, handledSet: WeakSet<any>) {
   });
   if (setMap) {
     const set = target as Set<any>;
-    const values = Array.from(set.values());
+    const values = Array.from(set);
     set.clear();
     values.forEach((value) => {
       set.add(setMap!.has(value) ? setMap!.get(value) : value);
