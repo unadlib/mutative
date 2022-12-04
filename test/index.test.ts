@@ -1,4 +1,5 @@
 import { create, original, current, apply } from '../src';
+import { PROXY_DRAFT } from '../src/constant';
 
 test('check object type', () => {
   const data = {};
@@ -1978,4 +1979,21 @@ test('class instance with mark', () => {
   expect(state.foo).not.toBe(data.foo);
   expect(state.foobar).not.toBe(data.foobar);
   expect(state.foobar.foo).not.toBe(data.foobar.foo);
+});
+
+test('should handle equality correctly about NaN', () => {
+  const baseState = {
+    x: 's1',
+    y: 1,
+    z: NaN,
+  };
+  const nextState = create(baseState, (draft: any) => {
+    draft.x = 's2';
+    draft.y = 1;
+    draft.z = NaN;
+    expect(draft[PROXY_DRAFT].assignedMap.get('x')).toBe(true);
+    expect(draft[PROXY_DRAFT].assignedMap.get('y')).toBe(undefined);
+    expect(draft[PROXY_DRAFT].assignedMap.get('z')).toBe(undefined);
+  });
+  expect(nextState.x).toBe('s2');
 });
