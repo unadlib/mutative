@@ -23,12 +23,15 @@ export function getValue<T extends object>(value: T): T {
 
 export function isDraftable(value: any, options?: Options<any, any>) {
   if (!value || typeof value !== 'object') return false;
+  let markResult: any;
   return (
     Object.getPrototypeOf(value) === Object.prototype ||
     Array.isArray(value) ||
     value instanceof Map ||
     value instanceof Set ||
-    options?.mark?.(value, dataTypes) === dataTypes.immutable
+    (!!options?.mark &&
+      ((markResult = options.mark(value, dataTypes)) === dataTypes.immutable ||
+        typeof markResult === 'function'))
   );
 }
 

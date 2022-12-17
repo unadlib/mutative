@@ -1,4 +1,4 @@
-import type { ProxyDraft } from '../interface';
+import type { Mark, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 
@@ -22,19 +22,25 @@ function strictCopy(target: any) {
   return Object.create(Object.getPrototypeOf(target), descriptors);
 }
 
-// TODO: think about support for custom shallow copy
-export function shallowCopy(
-  original: any,
-  checkCopy?: (original: any) => boolean
-) {
+export function shallowCopy(original: any, mark?: Mark<any, any>) {
+  let markResult: any;
   if (Array.isArray(original)) {
     return Array.prototype.concat.call(original);
   } else if (original instanceof Set) {
     return new Set(original.values());
   } else if (original instanceof Map) {
     return new Map(original);
-  } else if (checkCopy?.(original)) {
-    return strictCopy(original);
+  } else if (
+    mark &&
+    (markResult = mark(original, dataTypes)) &&
+    markResult !== dataTypes.mutable
+  ) {
+    if (markResult === dataTypes.immutable) {
+      return strictCopy(original);
+    } else if (typeof markResult === 'function') {
+      return markResult();
+    }
+    throw new Error(`Unsupported mark result: ${markResult}`);
   } else if (
     typeof original === 'object' &&
     Object.getPrototypeOf(original) === Object.prototype
@@ -55,14 +61,7 @@ export function shallowCopy(
 
 export function ensureShallowCopy(target: ProxyDraft) {
   if (target.copy) return;
-  target.copy = shallowCopy(
-    target.original,
-    target.options.mark
-      ? () =>
-          target.options.mark!(target.original, dataTypes) ===
-          dataTypes.immutable
-      : undefined
-  )!;
+  target.copy = shallowCopy(target.original, target.options.mark)!;
 }
 
 function deepClone<T>(target: T): T;

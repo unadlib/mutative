@@ -53,10 +53,13 @@ export type CreateResult<
   R extends void | Promise<void>
 > = R extends Promise<void> ? Promise<Result<T, O, F>> : Result<T, O, F>;
 
-export type Mark = (
+type BaseMark = null | undefined | DataType;
+type MarkWithCopy = BaseMark | (() => any);
+
+export type Mark<O extends boolean, F extends boolean> = (
   target: any,
   types: typeof dataTypes
-) => null | undefined | DataType;
+) => O extends true ? BaseMark : F extends true ? BaseMark : MarkWithCopy;
 
 export interface Options<O extends boolean, F extends boolean> {
   /**
@@ -73,8 +76,9 @@ export interface Options<O extends boolean, F extends boolean> {
   enableAutoFreeze?: F;
   /**
    * Set a mark to determine if the object is mutable or if an instance is an immutable.
+   * And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
    */
-  mark?: Mark;
+  mark?: Mark<O, F>;
 }
 
 // Exclude `symbol`

@@ -1037,6 +1037,32 @@ describe('freeze', () => {
 });
 
 describe('hook in options', () => {
+  test('custom shallow copy', () => {
+    const data = {
+      foo: {
+        bar: 'str',
+      },
+      date: new Date(0),
+    };
+
+    const state = create(
+      data,
+      (draft) => {
+        draft.date.setFullYear(2000);
+      },
+      {
+        mark: (target) => {
+          if (target instanceof Date) return () => new Date(target.getTime());
+        },
+      }
+    );
+    expect(data).not.toBe(state);
+    expect(data.foo).toBe(state.foo);
+    expect(data.date).not.toBe(state.date);
+    expect(state.date.getTime()).toBe(946684800000);
+    expect(data.date.getTime()).not.toBe(946684800000);
+  });
+
   test('only mutable object', () => {
     const data = {
       foo: {
@@ -1051,8 +1077,8 @@ describe('hook in options', () => {
         draft.foobar.text = 'new text';
       },
       {
-        mark: (target) => {
-          if (target === data.foobar) return 'mutable';
+        mark: (target, { mutable }) => {
+          if (target === data.foobar) return mutable;
         },
       }
     );

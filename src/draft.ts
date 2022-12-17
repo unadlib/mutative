@@ -26,9 +26,11 @@ import { checkReadable } from './unsafe';
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
     if (key === PROXY_DRAFT) return target;
+    let markResult: any;
     if (target.options.mark) {
       const value = Reflect.get(target.original, key, receiver);
-      if (target.options.mark(value, dataTypes) === dataTypes.mutable) {
+      markResult = target.options.mark(value, dataTypes);
+      if (markResult === dataTypes.mutable) {
         if (target.options.strict) {
           checkReadable(value, target.options, true);
         }
@@ -87,6 +89,12 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         finalities: target.finalities,
         options: target.options,
       });
+      if (typeof markResult === 'function') {
+        const subProxyDraft = getProxyDraft(target.copy![key])!;
+        ensureShallowCopy(subProxyDraft);
+        markChanged(subProxyDraft);
+        return subProxyDraft.copy;
+      }
       return target.copy![key];
     }
     return value;
