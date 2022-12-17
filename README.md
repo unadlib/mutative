@@ -8,10 +8,10 @@ Efficient creation of immutable state
 10x faster than immer
 
 ## Motivation
+### Performance
 
-## Performance
-
-## Difference between Immer and Mutative
+### Features
+### Difference between Immer and Mutative
 
 ## Installation
 

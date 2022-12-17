@@ -22,7 +22,7 @@
     "performance:array-object": "cd test/performance && ts-node array-object.ts",
     "performance:all": "yarn perf && yarn performance && yarn performance:set-map && yarn performance:big-object && yarn performance:sample && yarn performance:array-object",
     "build": "tsdx build --format esm,cjs,umd",
-    "build:doc": "rimraf docs && typedoc --out docs src/index.ts",
+    "build:doc": "rimraf docs && typedoc --out docs src/index.ts --readme none",
     "commit": "yarn git-cz",
     "size": "size-limit",
     "analyze": "size-limit --why"

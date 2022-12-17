@@ -3,6 +3,9 @@ import { DraftType, Operation } from './constant';
 import { deepClone, get, getType, isDraft } from './utils';
 import { create } from './create';
 
+/**
+ * `apply(state, patches)` to apply patches to state
+ */
 export function apply<T extends object, F extends boolean = false>(
   state: T,
   patches: Patches,

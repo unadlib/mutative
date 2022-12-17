@@ -5,6 +5,9 @@ export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
 }
 
+/**
+ * Check if the value is a draft
+ */
 export function isDraft(target: any) {
   return !!getProxyDraft(target);
 }

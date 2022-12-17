@@ -20,6 +20,9 @@ export const checkReadable = (
   }
 };
 
+/**
+ * `unsafe(callback)` to access mutable data directly
+ */
 export const unsafe = <T>(callback: () => T): T => {
   readable = true;
   let result: T;

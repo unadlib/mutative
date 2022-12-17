@@ -51,6 +51,7 @@ function getCurrent(target: any) {
  *     expect(current(draft.foo)).toEqual({ bar: 'str2' });
  *   },
  * );
+ * ```
  */
 export function current<T extends object>(target: T): T {
   if (!isDraft(target)) {
