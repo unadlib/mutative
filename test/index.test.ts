@@ -6,7 +6,7 @@ test('check object type', () => {
 
   create(data, (draft) => {
     expect(typeof draft === 'object').toBeTruthy();
-    expect(toString.call(draft) === '[object Object]').toBeTruthy();
+    expect(Object.prototype.toString.call(draft) === '[object Object]').toBeTruthy();
   });
 });
 
@@ -15,7 +15,7 @@ test('check array type', () => {
 
   create(data, (draft) => {
     expect(Array.isArray(draft)).toBeTruthy();
-    expect(toString.call(draft) === '[object Array]').toBeTruthy();
+    expect(Object.prototype.toString.call(draft) === '[object Array]').toBeTruthy();
     expect(draft.length).toBe(1);
   });
 });

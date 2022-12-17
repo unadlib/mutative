@@ -77,7 +77,10 @@ function create(arg0: any, arg1: any, arg2?: any): any {
   if (typeof arg1 !== 'function') {
     options = arg1;
   }
-  if (options !== undefined && toString.call(options) !== '[object Object]') {
+  if (
+    options !== undefined &&
+    Object.prototype.toString.call(options) !== '[object Object]'
+  ) {
     throw new Error(
       `Invalid options: ${options}, 'options' should be an object.`
     );

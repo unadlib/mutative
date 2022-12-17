@@ -1,6 +1,6 @@
 import type { Finalities, Options, Patches, Result } from './interface';
 import { createDraft, finalizeDraft } from './draft';
-import { isDraft, isDraftable } from './utils';
+import { isDraftable } from './utils';
 
 export function draftify<
   T extends object,

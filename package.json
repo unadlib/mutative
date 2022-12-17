@@ -2,9 +2,14 @@
   "name": "mutative",
   "version": "0.1.0",
   "description": "Efficient creation of immutable state",
-  "main": "lib/index.js",
-  "unpkg": "dist/index.umd.js",
+  "main": "dist/index.js",
+  "module": "dist/mutative.esm.js",
+  "unpkg": "dist/mutative.umd.production.min.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "test": "jest",
     "clean": "rimraf dist",
@@ -16,12 +21,22 @@
     "performance:sample": "cd test/performance && ts-node sample.ts",
     "performance:array-object": "cd test/performance && ts-node array-object.ts",
     "performance:all": "yarn perf && yarn performance && yarn performance:set-map && yarn performance:big-object && yarn performance:sample && yarn performance:array-object",
-    "build": "yarn clean && tsc && yarn build:prod && yarn build:dev",
-    "build:prod": "NODE_ENV=production rollup --config",
-    "build:dev": "NODE_ENV=development rollup --config",
+    "build": "tsdx build --format esm,cjs,umd",
     "build:doc": "rimraf docs && typedoc --out docs src/index.ts",
-    "commit": "yarn git-cz"
+    "commit": "yarn git-cz",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
   },
+  "size-limit": [
+    {
+      "path": "dist/mutative.cjs.production.min.js",
+      "limit": "5 KB"
+    },
+    {
+      "path": "dist/mutative.esm.js",
+      "limit": "5 KB"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unadlib/mutative.git"
@@ -42,9 +57,9 @@
   },
   "homepage": "https://github.com/unadlib/mutative#readme",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^21.0.2",
-    "@rollup/plugin-node-resolve": "^13.1.3",
-    "@rollup/plugin-replace": "^4.0.0",
+    "@size-limit/preset-small-lib": "^8.1.0",
+    "@size-limit/webpack": "^8.1.0",
+    "@size-limit/webpack-why": "^8.1.0",
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.21",
     "@typescript-eslint/eslint-plugin": "^5.15.0",
@@ -69,8 +84,10 @@
     "rollup": "^2.70.1",
     "rollup-plugin-terser": "^7.0.0",
     "seamless-immutable": "^7.1.4",
+    "size-limit": "^8.1.0",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.7.0",
+    "tsdx": "^0.14.1",
     "tslib": "^2.3.1",
     "typedoc": "^0.22.13",
     "typedoc-plugin-markdown": "^3.11.14",
@@ -85,7 +102,15 @@
   "jest": {
     "preset": "ts-jest",
     "globals": {
-      "__DEV__": true
+      "__DEV__": true,
+      "ts-jest": {
+        "tsconfig": {
+          "noImplicitReturns": false,
+          "noFallthroughCasesInSwitch": false,
+          "noUnusedLocals": false,
+          "noUnusedParameters": false
+        }
+      }
     }
   }
 }

@@ -13,4 +13,5 @@ export function getDescriptor(target: object, key: PropertyKey) {
       prototype = Reflect.getPrototypeOf(prototype);
     }
   }
+  return;
 }

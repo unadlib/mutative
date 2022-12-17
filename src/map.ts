@@ -1,5 +1,6 @@
 import { dataTypes, iteratorSymbol } from './constant';
-import { createDraft } from './draft';
+import { internal } from './internal';
+import { markFinalization } from './patch';
 import { checkReadable } from './unsafe';
 import {
   ensureShallowCopy,
@@ -8,12 +9,12 @@ import {
   isEqual,
   latest,
   markChanged,
-  markSetValue,
 } from './utils';
 
 export const mapHandler = {
   get size() {
-    return latest(getProxyDraft(this)!).size;
+    const current: Map<any, any> = latest(getProxyDraft(this)!);
+    return current.size;
   },
   has(key: any): boolean {
     return latest(getProxyDraft(this)!).has(key);
@@ -26,7 +27,7 @@ export const mapHandler = {
       markChanged(target);
       target.assignedMap.set(key, true);
       target.copy.set(key, value);
-      markSetValue(target, key, value);
+      markFinalization(target, key, value);
     }
     return this;
   },
@@ -80,7 +81,7 @@ export const mapHandler = {
     if (value !== target.original.get(key)) {
       return value;
     }
-    const draft = createDraft({
+    const draft = internal.createDraft({
       original: value,
       parentDraft: target,
       key,
@@ -107,7 +108,7 @@ export const mapHandler = {
           value,
         };
       },
-    };
+    } as any;
   },
   entries(): IterableIterator<[any, any]> {
     const iterator = this.keys();
@@ -122,7 +123,7 @@ export const mapHandler = {
           value: [result.value, value],
         };
       },
-    };
+    } as any;
   },
   [iteratorSymbol]() {
     return this.entries();

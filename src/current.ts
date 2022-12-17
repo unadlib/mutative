@@ -1,4 +1,4 @@
-import { dataTypes, DraftType } from './constant';
+import { DraftType } from './constant';
 import {
   forEach,
   get,

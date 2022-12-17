@@ -1,14 +1,14 @@
 import type { ProxyDraft } from './interface';
 import { dataTypes, iteratorSymbol } from './constant';
-import { createDraft } from './draft';
+import { internal } from './internal';
 import {
   ensureShallowCopy,
   getProxyDraft,
   isDraftable,
   markChanged,
-  markSetValue,
 } from './utils';
 import { checkReadable } from './unsafe';
+import { markFinalization } from './patch';
 
 const getNextIterator =
   (
@@ -35,7 +35,7 @@ const getNextIterator =
       target.original!.has(key)
     ) {
       // draft a draftable original set item
-      const proxy = createDraft({
+      const proxy = internal.createDraft({
         original: key,
         parentDraft: target,
         key: key,
@@ -56,7 +56,7 @@ const getNextIterator =
 
 export const setHandler = {
   get size() {
-    const target = getProxyDraft(this)!;
+    const target: ProxyDraft<any> = getProxyDraft(this)!;
     return target.setMap!.size;
   },
   has(value: any) {
@@ -77,7 +77,7 @@ export const setHandler = {
       markChanged(target);
       target.assignedMap!.set(value, true);
       target.setMap!.set(value, value);
-      markSetValue(target, value, value);
+      markFinalization(target, value, value);
     }
     return this;
   },

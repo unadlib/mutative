@@ -2,6 +2,7 @@ import type { Finalities, Patches, ProxyDraft, Options } from './interface';
 import { dataTypes, DraftType, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
+import { internal } from './internal';
 import {
   deepFreeze,
   ensureShallowCopy,
@@ -17,10 +18,9 @@ import {
   peek,
   get,
   set,
-  markSetValue,
   revokeProxy,
 } from './utils';
-import { finalizePatches } from './patch';
+import { finalizePatches, markFinalization } from './patch';
 import { checkReadable } from './unsafe';
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
@@ -45,7 +45,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
           target.proxy
         );
       }
-      const handle = mapHandler[key as keyof typeof mapHandler];
+      const handle = mapHandler[key as keyof typeof mapHandler] as Function;
       if (handle) {
         return handle.bind(target.proxy);
       }
@@ -57,7 +57,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
           target.proxy
         );
       }
-      const handle = setHandler[key as keyof typeof setHandler] as any;
+      const handle = setHandler[key as keyof typeof setHandler] as Function;
       if (handle) {
         return handle.bind(target.proxy);
       }
@@ -143,7 +143,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       target.assignedMap.set(key, true);
     }
     target.copy![key] = value;
-    markSetValue(target, key, value);
+    markFinalization(target, key, value);
     return true;
   },
   has(target: ProxyDraft, key: string | symbol) {
@@ -166,14 +166,10 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
   getPrototypeOf(target: ProxyDraft) {
     return Reflect.getPrototypeOf(target.original);
   },
-  setPrototypeOf(target: ProxyDraft, value: object | null) {
+  setPrototypeOf() {
     throw new Error(`Cannot call 'setPrototypeOf()' on drafts`);
   },
-  defineProperty(
-    target: ProxyDraft,
-    key: string | symbol,
-    descriptor: PropertyDescriptor
-  ) {
+  defineProperty() {
     throw new Error(`Cannot call 'defineProperty()' on drafts`);
   },
   deleteProperty(target: ProxyDraft, key: string | symbol) {
@@ -262,6 +258,8 @@ export function createDraft<T extends object>(createDraftOptions: {
   return proxy;
 }
 
+internal.createDraft = createDraft;
+
 export function finalizeDraft<T>(
   result: T,
   patches?: Patches,
@@ -277,8 +275,8 @@ export function finalizeDraft<T>(
     deepFreeze(state);
   }
   return [state, patches, inversePatches] as [
-    state: T,
-    patches?: Patches,
-    inversePatches?: Patches
+    T,
+    Patches | undefined,
+    Patches | undefined
   ];
 }
