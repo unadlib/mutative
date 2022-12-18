@@ -1,7 +1,7 @@
 import { getProxyDraft } from './utils';
 
 /**
- * `original(draft)` to get original state
+ * `original(draft)` to get original state in the draft mutation function.
  *
  * ## Example
  *

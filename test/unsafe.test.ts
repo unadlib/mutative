@@ -47,6 +47,54 @@ test('base with strict mode', () => {
   }).toThrowError();
 });
 
+
+test('base without strict mode', () => {
+  class Foobar {
+    bar = 1;
+  }
+
+  const foobar = new Foobar();
+  const data = {
+    foo: {
+      bar: 'str',
+    },
+    foobar,
+  };
+
+  const state = create(
+    data,
+    (draft) => {
+      unsafe(() => {
+        draft.foobar.bar = 2;
+      });
+      draft.foo.bar = 'new str';
+    },
+    {
+      strict: false,
+    }
+  );
+  expect(state).toEqual({
+    foo: {
+      bar: 'new str',
+    },
+    foobar,
+  });
+  expect(state).not.toBe(data);
+  expect(state.foo).not.toBe(data.foo);
+  expect(state.foobar).toBe(foobar);
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        draft.foobar.bar = 2;
+      },
+      {
+        strict: false,
+      }
+    );
+  }).not.toThrowError();
+});
+
 test('access primitive type and immutable object', () => {
   [
     1,

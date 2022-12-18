@@ -7,13 +7,13 @@ describe('jsdoc', () => {
   test('apply()', () => {
     jsdocTests('../src/apply.ts', __dirname, require);
   });
-  test('draftify()', () => {
-    jsdocTests('../src/draftify.ts', __dirname, require);
-  });
   test('current()', () => {
     jsdocTests('../src/current.ts', __dirname, require);
   });
   test('original()', () => {
     jsdocTests('../src/original.ts', __dirname, require);
+  });
+  test('unsafe()', () => {
+    jsdocTests('../src/unsafe.ts', __dirname, require);
   });
 });

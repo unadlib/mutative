@@ -36,7 +36,7 @@ mutative
 
 #### Defined in
 
-[interface.ts:121](https://github.com/unadlib/mutative/blob/0ec70ad/src/interface.ts#L121)
+[interface.ts:121](https://github.com/unadlib/mutative/blob/f694a6f/src/interface.ts#L121)
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 #### Defined in
 
-[interface.ts:103](https://github.com/unadlib/mutative/blob/0ec70ad/src/interface.ts#L103)
+[interface.ts:103](https://github.com/unadlib/mutative/blob/f694a6f/src/interface.ts#L103)
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 #### Defined in
 
-[interface.ts:27](https://github.com/unadlib/mutative/blob/0ec70ad/src/interface.ts#L27)
+[interface.ts:27](https://github.com/unadlib/mutative/blob/f694a6f/src/interface.ts#L27)
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 #### Defined in
 
-[interface.ts:33](https://github.com/unadlib/mutative/blob/0ec70ad/src/interface.ts#L33)
+[interface.ts:33](https://github.com/unadlib/mutative/blob/f694a6f/src/interface.ts#L33)
 
 ## Functions
 
@@ -89,6 +89,24 @@ ___
 ▸ **apply**<`T`, `F`\>(`state`, `patches`, `applyOptions?`): `T` \| `F` extends ``true`` ? [`Immutable`](README.md#immutable)<`T`\> : `T`
 
 `apply(state, patches)` to apply patches to state
+
+## Example
+
+```ts
+import { create, apply } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const [state, patches] = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'str2';
+  },
+  { enablePatches: true }
+);
+expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+expect(patches).toEqual([{ op: 'replace', path: ['foo', 'bar'], value: 'str2' }]);
+expect(state).toEqual(apply(baseState, patches));
+```
 
 #### Type parameters
 
@@ -111,7 +129,7 @@ ___
 
 #### Defined in
 
-[apply.ts:9](https://github.com/unadlib/mutative/blob/0ec70ad/src/apply.ts#L9)
+[apply.ts:27](https://github.com/unadlib/mutative/blob/f694a6f/src/apply.ts#L27)
 
 ___
 
@@ -139,7 +157,7 @@ Cast a value to an Draft type value.
 
 #### Defined in
 
-[utils/cast.ts:6](https://github.com/unadlib/mutative/blob/0ec70ad/src/utils/cast.ts#L6)
+[utils/cast.ts:6](https://github.com/unadlib/mutative/blob/f694a6f/src/utils/cast.ts#L6)
 
 ___
 
@@ -167,7 +185,7 @@ Cast a value to an Immutable type value.
 
 #### Defined in
 
-[utils/cast.ts:13](https://github.com/unadlib/mutative/blob/0ec70ad/src/utils/cast.ts#L13)
+[utils/cast.ts:13](https://github.com/unadlib/mutative/blob/f694a6f/src/utils/cast.ts#L13)
 
 ___
 
@@ -219,7 +237,7 @@ expect(state.arr).toBe(baseState.arr);
 
 #### Defined in
 
-[create.ts:29](https://github.com/unadlib/mutative/blob/0ec70ad/src/create.ts#L29)
+[create.ts:29](https://github.com/unadlib/mutative/blob/f694a6f/src/create.ts#L29)
 
 ▸ **create**<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`<`T`, `O`, `F`, `R`\>
 
@@ -246,7 +264,7 @@ expect(state.arr).toBe(baseState.arr);
 
 #### Defined in
 
-[create.ts:39](https://github.com/unadlib/mutative/blob/0ec70ad/src/create.ts#L39)
+[create.ts:39](https://github.com/unadlib/mutative/blob/f694a6f/src/create.ts#L39)
 
 ▸ **create**<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`: `T`, ...`args`: `P`) => `CreateResult`<`T`, `O`, `F`, `R`\>
 
@@ -286,7 +304,7 @@ expect(state.arr).toBe(baseState.arr);
 
 #### Defined in
 
-[create.ts:49](https://github.com/unadlib/mutative/blob/0ec70ad/src/create.ts#L49)
+[create.ts:49](https://github.com/unadlib/mutative/blob/f694a6f/src/create.ts#L49)
 
 ▸ **create**<`T`, `O`, `F`\>(`base`, `options?`): [`T`, () => `Result`<`T`, `O`, `F`\>]
 
@@ -311,7 +329,7 @@ expect(state.arr).toBe(baseState.arr);
 
 #### Defined in
 
-[create.ts:59](https://github.com/unadlib/mutative/blob/0ec70ad/src/create.ts#L59)
+[create.ts:59](https://github.com/unadlib/mutative/blob/f694a6f/src/create.ts#L59)
 
 ___
 
@@ -319,7 +337,7 @@ ___
 
 ▸ **current**<`T`\>(`target`): `T`
 
-`current(draft)` to get current state
+`current(draft)` to get current state in the draft mutation function.
 
 ## Example
 
@@ -354,7 +372,7 @@ const state = create(
 
 #### Defined in
 
-[current.ts:56](https://github.com/unadlib/mutative/blob/0ec70ad/src/current.ts#L56)
+[current.ts:56](https://github.com/unadlib/mutative/blob/f694a6f/src/current.ts#L56)
 
 ___
 
@@ -376,7 +394,7 @@ Check if the value is a draft
 
 #### Defined in
 
-[utils/draft.ts:11](https://github.com/unadlib/mutative/blob/0ec70ad/src/utils/draft.ts#L11)
+[utils/draft.ts:11](https://github.com/unadlib/mutative/blob/f694a6f/src/utils/draft.ts#L11)
 
 ___
 
@@ -384,7 +402,7 @@ ___
 
 ▸ **original**<`T`\>(`target`): `T`
 
-`original(draft)` to get original state
+`original(draft)` to get original state in the draft mutation function.
 
 ## Example
 
@@ -419,7 +437,7 @@ const state = create(
 
 #### Defined in
 
-[original.ts:21](https://github.com/unadlib/mutative/blob/0ec70ad/src/original.ts#L21)
+[original.ts:21](https://github.com/unadlib/mutative/blob/f694a6f/src/original.ts#L21)
 
 ___
 
@@ -427,7 +445,34 @@ ___
 
 ▸ **unsafe**<`T`\>(`callback`): `T`
 
-`unsafe(callback)` to access mutable data directly
+`unsafe(callback)` to access mutable data directly in strict mode.
+
+## Example
+
+```ts
+import { create, unsafe } from '../index';
+
+class Foobar {
+  bar = 1;
+}
+
+const baseState = { foobar: new Foobar() };
+const state = create(
+  baseState,
+  (draft) => {
+   unsafe(() => {
+     draft.foobar.bar = 2;
+   });
+  },
+  {
+    strict: true,
+  }
+);
+
+expect(state).toBe(baseState);
+expect(state.foobar).toBe(baseState.foobar);
+expect(state.foobar.bar).toBe(2);
+```
 
 #### Type parameters
 
@@ -447,4 +492,4 @@ ___
 
 #### Defined in
 
-[unsafe.ts:26](https://github.com/unadlib/mutative/blob/0ec70ad/src/unsafe.ts#L26)
+[unsafe.ts:53](https://github.com/unadlib/mutative/blob/f694a6f/src/unsafe.ts#L53)

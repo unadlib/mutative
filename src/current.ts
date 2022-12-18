@@ -36,7 +36,7 @@ function getCurrent(target: any) {
 }
 
 /**
- * `current(draft)` to get current state
+ * `current(draft)` to get current state in the draft mutation function.
  *
  * ## Example
  *
