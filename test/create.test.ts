@@ -1063,6 +1063,38 @@ describe('hook in options', () => {
     expect(data.date.getTime()).not.toBe(946684800000);
   });
 
+  class A {}
+
+  test.each([
+    { value: 0 },
+    { value: 1 },
+    { value: null },
+    { value: true },
+    { value: false },
+    { value: {} },
+    { value: [] },
+    { value: new A() },
+  ])('Unexpected mark function $value', ({ value }) => {
+    const data = {
+      foo: 'str',
+    };
+
+    expect(() => {
+      create(
+        data,
+        (draft) => {
+          draft.foo = 'bar';
+        },
+        {
+          // @ts-expect-error
+          mark: (target) => {
+            if (typeof target === 'object') return value;
+          },
+        }
+      );
+    }).toThrowError(/Unsupported mark result/);
+  });
+
   test('only mutable object', () => {
     const data = {
       foo: {

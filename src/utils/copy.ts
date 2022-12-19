@@ -32,7 +32,8 @@ export function shallowCopy(original: any, mark?: Mark<any, any>) {
     return new Map(original);
   } else if (
     mark &&
-    (markResult = mark(original, dataTypes)) &&
+    ((markResult = mark(original, dataTypes)),
+    typeof markResult !== 'undefined') &&
     markResult !== dataTypes.mutable
   ) {
     if (markResult === dataTypes.immutable) {
