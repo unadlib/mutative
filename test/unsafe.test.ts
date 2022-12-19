@@ -6,11 +6,13 @@ test('base with strict mode', () => {
   }
 
   const foobar = new Foobar();
+  const foobar0 = new Foobar();
   const data = {
     foo: {
       bar: 'str',
     },
     foobar,
+    foobar0,
   };
 
   const state = create(
@@ -20,6 +22,8 @@ test('base with strict mode', () => {
         draft.foobar.bar = 2;
       });
       draft.foo.bar = 'new str';
+      const foobar0 = unsafe(() =>  draft.foobar0);
+      foobar0.bar = 3;
     },
     {
       strict: true,
@@ -30,6 +34,7 @@ test('base with strict mode', () => {
       bar: 'new str',
     },
     foobar,
+    foobar0,
   });
   expect(state).not.toBe(data);
   expect(state.foo).not.toBe(data.foo);
