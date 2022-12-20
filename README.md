@@ -10,16 +10,17 @@ Efficient creation of immutable state
 ## Motivation
 
 TBD
+
 ### Performance
 
 TBD
 
 ### Features
 
-- apply patches
+- Apply patches
 - Supports optional freezing
 - Custom shallow copy
-- immutable and mutable markable
+- Immutable and mutable data markable
 - Strict mode for safer mutable data access
 
 ### Difference between Immer and Mutative
@@ -27,6 +28,8 @@ TBD
 | -                             | Mutative |      Immer      |
 | :---------------------------- | -------: | :-------------: |
 | Best performance              |       ✅ |       ❌        |
+| Custom shallow copy           |       ✅ |       ❌        |
+| Strict mode                   |       ✅ |       ❌        |
 | Default common data structure |       ✅ | ❌(auto freeze) |
 | Non-invasive marking          |       ✅ |       ❌        |
 | Automatic type inference      |       ✅ |       ❌        |
