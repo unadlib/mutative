@@ -8,16 +8,53 @@ Efficient creation of immutable state
 10x faster than immer
 
 ## Motivation
+
+TBD
 ### Performance
 
+TBD
+
 ### Features
+
+- apply patches
+- Supports optional freezing
+- Custom shallow copy
+- immutable and mutable markable
+- Strict mode for safer mutable data access
+
 ### Difference between Immer and Mutative
+
+| -                             | Mutative |      Immer      |
+| :---------------------------- | -------: | :-------------: |
+| Best performance              |       ✅ |       ❌        |
+| Default common data structure |       ✅ | ❌(auto freeze) |
+| Non-invasive marking          |       ✅ |       ❌        |
+| Automatic type inference      |       ✅ |       ❌        |
+| Complete freeze data          |       ✅ |       ❌        |
 
 ## Installation
 
+```sh
+yarn install mutative # npm install mutative
+```
+
 ## Examples
 
+```ts
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'coding' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.foo = 'foobar';
+  draft.list.push({ text: 'learning' });
+});
+```
+
 ## Migration from Immer to Mutative
+
+TBD
 
 ## APIs
 
@@ -101,4 +138,4 @@ const state = create(baseState, (draft) => {
 
 ## FAQs
 
-
+TBD
