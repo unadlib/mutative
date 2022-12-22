@@ -11,7 +11,6 @@ TBD
 
 ### Performance
 
-
 ```
 naive handcrafted reducer x 3,661 ops/sec ±2.40% (96 runs sampled)
 mutative - without autoFreeze x 5,437 ops/sec ±1.46% (95 runs sampled)
@@ -26,7 +25,7 @@ immer - with patches and autoFreeze x 245 ops/sec ±0.66% (90 runs sampled)
 The fastest method is mutative - without autoFreeze
 ```
 
-> Mutative Size:       4.11 kB with all dependencies, minified and gzipped.
+> Mutative Size: 4.11 kB with all dependencies, minified and gzipped.
 
 ### Features
 
@@ -39,14 +38,14 @@ The fastest method is mutative - without autoFreeze
 
 ### Difference between Immer and Mutative
 
-| -                             | Mutative |      Immer      |
-| :---------------------------- | -------: | :-------------: |
-| Custom shallow copy           |       ✅ |       ❌        |
-| Strict mode                   |       ✅ |       ❌        |
-| Default common data structure |       ✅ | ❌(auto-freeze) |
-| Non-invasive marking          |       ✅ |       ❌        |
-| Automatic type inference      |       ✅ |       ❌        |
-| Complete freeze data          |       ✅ |       ❌        |
+| -                         | Mutative | Immer |
+| :------------------------ | -------: | :---: |
+| Custom shallow copy       |       ✅ |  ❌   |
+| Strict mode               |       ✅ |  ❌   |
+| No data freeze by default |       ✅ |  ❌   |
+| Non-invasive marking      |       ✅ |  ❌   |
+| Automatic type inference  |       ✅ |  ❌   |
+| Complete freeze data      |       ✅ |  ❌   |
 
 ## Installation
 
