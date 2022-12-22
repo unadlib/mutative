@@ -1,7 +1,7 @@
 {
   "name": "mutative",
   "version": "0.2.1",
-  "description": "Efficient creation of immutable state",
+  "description": "A JavaScript library for efficient creation of immutable state",
   "main": "dist/index.js",
   "module": "dist/mutative.esm.js",
   "unpkg": "dist/mutative.umd.production.min.js",

@@ -1,17 +1,16 @@
-# mutative
+# Mutative
 
 ![Node CI](https://github.com/unadlib/mutative/workflows/Node%20CI/badge.svg)
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 
-Efficient creation of immutable state
-
-10x faster than immer
+Mutative - A JavaScript library for efficient creation of immutable state, 10x faster than immer by default.
 
 ## Motivation
 
 TBD
 
 ### Performance
+
 
 ```
 naive handcrafted reducer x 3,661 ops/sec ±2.40% (96 runs sampled)
@@ -23,13 +22,17 @@ mutative - with patches x 748 ops/sec ±1.23% (94 runs sampled)
 immer - with patches x 7.60 ops/sec ±0.32% (23 runs sampled)
 mutative - with patches and autoFreeze x 419 ops/sec ±0.31% (94 runs sampled)
 immer - with patches and autoFreeze x 245 ops/sec ±0.66% (90 runs sampled)
+
 The fastest method is mutative - without autoFreeze
 ```
 
+> Mutative Size:       4.11 kB with all dependencies, minified and gzipped.
+
 ### Features
 
+- Mutation to create the immutable state
 - Apply patches
-- Supports optional freezing
+- Optional freezing state
 - Custom shallow copy
 - Immutable and mutable data markable
 - Strict mode for safer mutable data access
