@@ -1,5 +1,4 @@
-import { DraftType } from '../constant';
-import type { ProxyDraft } from '../interface';
+import { DraftType, ProxyDraft } from '../interface';
 import { ensureShallowCopy } from './copy';
 import { get, getProxyDraft, isDraft, isDraftable, set } from './draft';
 import { forEach } from './forEach';

@@ -1,4 +1,4 @@
-import type { Mark, ProxyDraft } from '../interface';
+import { Mark, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 

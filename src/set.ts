@@ -1,4 +1,4 @@
-import type { ProxyDraft } from './interface';
+import { ProxyDraft } from './interface';
 import { dataTypes, iteratorSymbol } from './constant';
 import { internal } from './internal';
 import {

@@ -1,5 +1,5 @@
-import type { Options, ProxyDraft } from '../interface';
-import { dataTypes, DraftType, PROXY_DRAFT } from '../constant';
+import { DraftType, Options, ProxyDraft } from '../interface';
+import { dataTypes, PROXY_DRAFT } from '../constant';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;

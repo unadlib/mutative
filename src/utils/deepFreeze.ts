@@ -1,4 +1,4 @@
-import { DraftType } from '../constant';
+import { DraftType } from '../interface';
 import { getType } from './draft';
 
 function isFreezable(value: any) {

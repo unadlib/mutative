@@ -1,4 +1,4 @@
-import type { CreateResult, Draft, Options, Result } from './interface';
+import { CreateResult, Draft, Options, Result } from './interface';
 import { draftify } from './draftify';
 import { dataTypes } from './constant';
 import { getProxyDraft, isDraft, revokeProxy } from './utils';

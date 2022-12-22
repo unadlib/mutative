@@ -7,16 +7,3 @@ export const dataTypes = {
   mutable: 'mutable',
   immutable: 'immutable',
 } as const;
-
-export const enum DraftType {
-  Object = 'object',
-  Array = 'array',
-  Map = 'map',
-  Set = 'set',
-}
-
-export const enum Operation {
-  Remove = 'remove',
-  Replace = 'replace',
-  Add = 'add',
-}

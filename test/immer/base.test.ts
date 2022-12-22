@@ -4,7 +4,8 @@ import { create, original, isDraft } from '../../src';
 import deepFreeze from 'deep-freeze';
 import * as lodash from 'lodash';
 import { getType } from '../../src/utils';
-import { DraftType, PROXY_DRAFT } from '../../src/constant';
+import { PROXY_DRAFT } from '../../src/constant';
+import { DraftType } from '../../src/interface';
 
 jest.setTimeout(1000);
 

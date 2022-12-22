@@ -1,5 +1,4 @@
-import type { Patches, ProxyDraft } from './interface';
-import { DraftType, Operation } from './constant';
+import { DraftType, Operation, Patches, ProxyDraft } from './interface';
 import {
   cloneIfNeeded,
   finalizeAssigned,

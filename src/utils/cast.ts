@@ -1,4 +1,4 @@
-import type { Draft, Immutable } from '../interface';
+import { Draft, Immutable } from '../interface';
 
 /**
  * Cast a value to an Draft type value.

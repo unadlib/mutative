@@ -1,4 +1,4 @@
-import type { ProxyDraft } from '../interface';
+import { ProxyDraft } from '../interface';
 
 export function markChanged(proxyDraft: ProxyDraft) {
   if (!proxyDraft.operated) {

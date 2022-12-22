@@ -1,4 +1,17 @@
-import { DraftType, dataTypes, Operation } from './constant';
+import { dataTypes } from './constant';
+
+export const enum DraftType {
+  Object = 'object',
+  Array = 'array',
+  Map = 'map',
+  Set = 'set',
+}
+
+export const Operation = {
+  Remove: 'remove',
+  Replace: 'replace',
+  Add: 'add',
+} as const;
 
 export type DataType = keyof typeof dataTypes;
 
@@ -25,7 +38,7 @@ export interface ProxyDraft<T = any> {
 }
 
 export type Patch = {
-  op: Lowercase<keyof typeof Operation>;
+  op: typeof Operation[keyof typeof Operation];
   path: (string | number)[];
   value?: any;
 };
@@ -37,11 +50,7 @@ export type Result<
   O extends boolean,
   F extends boolean
 > = O extends true
-  ? [
-      state: F extends true ? Immutable<T> : T,
-      patches: Patches,
-      inversePatches: Patches
-    ]
+  ? [F extends true ? Immutable<T> : T, Patches, Patches]
   : F extends true
   ? Immutable<T>
   : T;

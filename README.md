@@ -13,7 +13,18 @@ TBD
 
 ### Performance
 
-TBD
+```
+naive handcrafted reducer x 3,661 ops/sec ±2.40% (96 runs sampled)
+mutative - without autoFreeze x 5,437 ops/sec ±1.46% (95 runs sampled)
+immer - without autoFreeze x 7.63 ops/sec ±0.39% (24 runs sampled)
+mutative - with autoFreeze x 897 ops/sec ±0.93% (98 runs sampled)
+immer - with autoFreeze x 321 ops/sec ±0.71% (92 runs sampled)
+mutative - with patches x 748 ops/sec ±1.23% (94 runs sampled)
+immer - with patches x 7.60 ops/sec ±0.32% (23 runs sampled)
+mutative - with patches and autoFreeze x 419 ops/sec ±0.31% (94 runs sampled)
+immer - with patches and autoFreeze x 245 ops/sec ±0.66% (90 runs sampled)
+The fastest method is mutative - without autoFreeze
+```
 
 ### Features
 
@@ -27,10 +38,9 @@ TBD
 
 | -                             | Mutative |      Immer      |
 | :---------------------------- | -------: | :-------------: |
-| Best performance              |       ✅ |       ❌        |
 | Custom shallow copy           |       ✅ |       ❌        |
 | Strict mode                   |       ✅ |       ❌        |
-| Default common data structure |       ✅ | ❌(auto freeze) |
+| Default common data structure |       ✅ | ❌(auto-freeze) |
 | Non-invasive marking          |       ✅ |       ❌        |
 | Automatic type inference      |       ✅ |       ❌        |
 | Complete freeze data          |       ✅ |       ❌        |

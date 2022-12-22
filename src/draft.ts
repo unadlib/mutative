@@ -1,5 +1,11 @@
-import type { Finalities, Patches, ProxyDraft, Options } from './interface';
-import { dataTypes, DraftType, PROXY_DRAFT } from './constant';
+import {
+  DraftType,
+  Finalities,
+  Patches,
+  ProxyDraft,
+  Options,
+} from './interface';
+import { dataTypes, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
 import { internal } from './internal';
