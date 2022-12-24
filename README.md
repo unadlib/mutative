@@ -4,15 +4,23 @@
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-Mutative - A JavaScript library for efficient creation of immutable state, 10x faster than immer by default.
+Mutative - A JavaScript library for efficient immutable updates, 10x faster than Immer by default.
 
 ![Benchmark](./benchmark.jpg)
 
 ## Motivation
 
-TBD
+Writing immutable updates by hand is usually difficult, prone to errors and cumbersome. Immer helps us write simpler immutable updates with "mutative" logic.
 
-### Performance
+But its [performance issue](https://github.com/immerjs/immer/issues?q=is%3Aissue+is%3Aopen+performance) leads to a big runtime performance overhead. Immer must have auto-freeze enabled by default(Performance will be worse if auto-freeze is disabled), such immutable state with Immer are not common. In scenarios such as cross-process, remote data transfer, etc., we have to constantly freeze these immutable data.
+
+There are more parts that could be improved, such as better type inference, non-intrusive markup, support for more types of immutability, Safer immutability, and so on.
+
+This is why Mutative was created.
+
+### Mutative vs Immer Performance
+
+Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better.
 
 ```
 Naive handcrafted reducer - No Freeze x 3,713 ops/sec ±0.86% (89 runs sampled)
@@ -31,16 +39,19 @@ Immer - Patches and Freeze x 239 ops/sec ±0.99% (89 runs sampled)
 The fastest method is Mutative - No Freeze
 ```
 
-> Mutative Size: 4.11 kB with all dependencies, minified and gzipped.
+> OS: macOS 12.6, CPU: Apple M1 Max, Node.js: 16.14.2
 
 ### Features
 
-- Mutation to create the immutable state
-- Apply patches
+- Mutation makes immutable updates
+- Support and Apply patches
 - Optional freezing state
 - Custom shallow copy
 - Immutable and mutable data markable
 - Strict mode for safer mutable data access
+- Support for JSON patches
+
+> Mutative Size: 4.11 kB with all dependencies, minified and gzipped.
 
 ### Difference between Immer and Mutative
 
@@ -50,8 +61,8 @@ The fastest method is Mutative - No Freeze
 | Strict mode               |       ✅ |  ❌   |
 | No data freeze by default |       ✅ |  ❌   |
 | Non-invasive marking      |       ✅ |  ❌   |
-| Automatic type inference  |       ✅ |  ❌   |
 | Complete freeze data      |       ✅ |  ❌   |
+| Non-global config         |       ✅ |  ❌   |
 
 ## Installation
 
