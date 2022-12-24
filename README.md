@@ -2,8 +2,11 @@
 
 ![Node CI](https://github.com/unadlib/mutative/workflows/Node%20CI/badge.svg)
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
+![license](https://img.shields.io/npm/l/mutative)
 
 Mutative - A JavaScript library for efficient creation of immutable state, 10x faster than immer by default.
+
+![Benchmark](./benchmark.jpg)
 
 ## Motivation
 
@@ -12,17 +15,20 @@ TBD
 ### Performance
 
 ```
-naive handcrafted reducer x 3,661 ops/sec ±2.40% (96 runs sampled)
-mutative - without autoFreeze x 5,437 ops/sec ±1.46% (95 runs sampled)
-immer - without autoFreeze x 7.63 ops/sec ±0.39% (24 runs sampled)
-mutative - with autoFreeze x 897 ops/sec ±0.93% (98 runs sampled)
-immer - with autoFreeze x 321 ops/sec ±0.71% (92 runs sampled)
-mutative - with patches x 748 ops/sec ±1.23% (94 runs sampled)
-immer - with patches x 7.60 ops/sec ±0.32% (23 runs sampled)
-mutative - with patches and autoFreeze x 419 ops/sec ±0.31% (94 runs sampled)
-immer - with patches and autoFreeze x 245 ops/sec ±0.66% (90 runs sampled)
+Naive handcrafted reducer - No Freeze x 3,713 ops/sec ±0.86% (89 runs sampled)
+Mutative - No Freeze x 5,323 ops/sec ±1.69% (93 runs sampled)
+Immer - No Freeze x 7.51 ops/sec ±0.88% (23 runs sampled)
 
-The fastest method is mutative - without autoFreeze
+Mutative - Freeze x 875 ops/sec ±1.20% (95 runs sampled)
+Immer - Freeze x 320 ops/sec ±0.45% (92 runs sampled)
+
+Mutative - Patches and No Freeze x 752 ops/sec ±0.16% (96 runs sampled)
+Immer - Patches and No Freeze x 7.48 ops/sec ±1.32% (23 runs sampled)
+
+Mutative - Patches and Freeze x 425 ops/sec ±0.33% (95 runs sampled)
+Immer - Patches and Freeze x 239 ops/sec ±0.99% (89 runs sampled)
+
+The fastest method is Mutative - No Freeze
 ```
 
 > Mutative Size: 4.11 kB with all dependencies, minified and gzipped.

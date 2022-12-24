@@ -11,7 +11,17 @@ import produce, {
 } from 'immer';
 import { create } from '../../src';
 
-const result = [];
+const result = [
+  {
+    '': 'Mutative',
+  },
+  {
+    '': 'Immer',
+  },
+  {
+    '': 'Naive handcrafted reducer',
+  },
+];
 
 const getData = () => {
   const baseState: { arr: any[]; map: Record<string, any> } = {
@@ -44,7 +54,7 @@ const suite = new Suite();
 
 suite
   .add(
-    'naive handcrafted reducer',
+    'Naive handcrafted reducer - No Freeze',
     function () {
       const state = {
         ...baseState,
@@ -60,7 +70,7 @@ suite
     }
   )
   .add(
-    'mutative - without autoFreeze',
+    'Mutative - No Freeze',
     function () {
       const state = create(baseState, (draft) => {
         draft.arr.push(i);
@@ -75,7 +85,7 @@ suite
     }
   )
   .add(
-    'immer - without autoFreeze',
+    'Immer - No Freeze',
     function () {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
@@ -92,7 +102,7 @@ suite
     }
   )
   .add(
-    'mutative - with autoFreeze',
+    'Mutative - Freeze',
     function () {
       const state = create(
         baseState,
@@ -114,7 +124,7 @@ suite
     }
   )
   .add(
-    'immer - with autoFreeze',
+    'Immer - Freeze',
     function () {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
@@ -131,7 +141,7 @@ suite
     }
   )
   .add(
-    'mutative - with patches',
+    'Mutative - Patches and No Freeze',
     function () {
       const state = create(
         baseState,
@@ -153,7 +163,7 @@ suite
     }
   )
   .add(
-    'immer - with patches',
+    'Immer - Patches and No Freeze',
     function () {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr.push(i);
@@ -171,7 +181,7 @@ suite
     }
   )
   .add(
-    'mutative - with patches and autoFreeze',
+    'Mutative - Patches and Freeze',
     function () {
       const state = create(
         baseState,
@@ -193,7 +203,7 @@ suite
     }
   )
   .add(
-    'immer - with patches and autoFreeze',
+    'Immer - Patches and Freeze',
     function () {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr.push(i);
@@ -212,10 +222,9 @@ suite
   )
   .on('cycle', function (event) {
     console.log(String(event.target));
-    result.push({
-      'Update 50K arrays and 1K objects': event.target.name,
-      'ops/sec': Math.round(event.target.hz),
-    });
+    const [name] = event.target.name.split(' - ');
+    const index = result.findIndex((i) => i[''] === name);
+    result[index][event.target.name] = Math.round(event.target.hz);
   })
   .on('complete', function () {
     console.log('The fastest method is ' + this.filter('fastest').map('name'));
@@ -223,8 +232,21 @@ suite
   .run({ async: false });
 
 try {
+  // Mutative Performance
+  // Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better.
+  const fields = [];
+  result.forEach((item) => {
+    fields.push(...Object.keys(item).slice(1));
+  });
+  result.forEach((item) => {
+    fields.forEach((field) => {
+      if (!(field in item)) {
+        item[field] = '-';
+      }
+    });
+  });
   const csv = parse(result, {
-    fields: ['Update 50K arrays and 1K objects', 'ops/sec'],
+    fields: ['', ...fields.reverse()],
   });
   fs.writeFileSync('benchmark.csv', csv);
 } catch (err) {
