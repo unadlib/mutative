@@ -6,7 +6,7 @@
 
 Mutative - A JavaScript library for efficient creation of immutable state, 10x faster than immer by default.
 
-![Benchmark](./benchmark.jpg)
+![Benchmark](./benchmark-result.jpg)
 
 ## Motivation
 
