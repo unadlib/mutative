@@ -70,7 +70,7 @@ suite
     }
   )
   .add(
-    'Mutative - No Freeze',
+    'Mutative - No Freeze(by default)',
     function () {
       const state = create(baseState, (draft) => {
         draft.arr.push(i);
@@ -124,7 +124,7 @@ suite
     }
   )
   .add(
-    'Immer - Freeze',
+    'Immer - Freeze(by default)',
     function () {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
