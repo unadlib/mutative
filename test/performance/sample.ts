@@ -1,3 +1,6 @@
+// @ts-nocheck
+'use strict';
+
 import produce, {
   setAutoFreeze,
   setUseProxies,

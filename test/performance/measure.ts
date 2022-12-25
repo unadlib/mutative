@@ -14,8 +14,8 @@ function measureTime(setup, fn) {
   return endTime - startTime;
 }
 
-export function measure(name, setup, fn) {
-  const times = [...Array(5)].map(() => measureTime(setup, fn));
+export function measure(name, setup, fn, num = 5) {
+  const times = [...Array(num)].map(() => measureTime(setup, fn));
   const medianTime = times.sort()[Math.round(times.length / 2)];
   console.log(`${name}: ${medianTime}ms`);
 }

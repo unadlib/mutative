@@ -1,3 +1,6 @@
+// @ts-nocheck
+'use strict';
+
 import { produce, setUseProxies, setAutoFreeze, enableMapSet } from 'immer';
 import { create } from '../../src';
 import { measure } from './measure';

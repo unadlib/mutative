@@ -20,7 +20,7 @@ This is why Mutative was created.
 
 ### Mutative vs Immer Performance
 
-Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better.
+Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better, [view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts).
 
 ```
 Naive handcrafted reducer - No Freeze x 3,713 ops/sec ±0.86% (89 runs sampled)
@@ -40,6 +40,8 @@ The fastest method is Mutative - No Freeze
 ```
 
 > OS: macOS 12.6, CPU: Apple M1 Max, Node.js: 16.14.2
+
+
 
 ### Features
 

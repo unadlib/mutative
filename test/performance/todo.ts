@@ -18,6 +18,7 @@ function freeze(x) {
   return x;
 }
 
+const time = 20;
 const MAX = 50000;
 const MODIFY_FACTOR = 0.1;
 const baseState = [];
@@ -182,7 +183,8 @@ measure(
         draft[i].done = true;
       }
     });
-  }
+  },
+  time
 );
 
 measure(
@@ -198,7 +200,8 @@ measure(
         draft[i].done = true;
       }
     });
-  }
+  },
+  time
 );
 
 measure(
@@ -218,7 +221,8 @@ measure(
       },
       function () {}
     );
-  }
+  },
+  time
 );
 
 measure(
@@ -238,7 +242,8 @@ measure(
       },
       function () {}
     );
-  }
+  },
+  time
 );
 
 measure(
@@ -254,7 +259,8 @@ measure(
         draft[i].done = true;
       }
     });
-  }
+  },
+  time
 );
 
 measure(
@@ -270,7 +276,8 @@ measure(
         draft[i].done = true;
       }
     });
-  }
+  },
+  time
 );
 
 measure(
@@ -290,7 +297,8 @@ measure(
       },
       function () {}
     );
-  }
+  },
+  time
 );
 
 measure(
@@ -310,7 +318,8 @@ measure(
       },
       function () {}
     );
-  }
+  },
+  time
 );
 
 measure(
@@ -324,7 +333,8 @@ measure(
         draft[i].done = true;
       }
     });
-  }
+  },
+  time
 );
 
 measure(
@@ -344,5 +354,6 @@ measure(
         enableAutoFreeze: true,
       }
     );
-  }
+  },
+  time
 );

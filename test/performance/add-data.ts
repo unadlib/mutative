@@ -1,5 +1,6 @@
 // @ts-nocheck
 'use strict';
+
 import produce, { setAutoFreeze, setUseProxies, enableAllPlugins } from 'immer';
 import lodash from 'lodash';
 import { fromJS } from 'immutable';
@@ -23,13 +24,15 @@ const immutableJsBaseState = fromJS(baseState);
 const seamlessBaseState = Seamless.from(baseState);
 
 const MAX = 10000;
+const time = 100;
 
 measure(
   'just mutate',
   () => ({ draft: cloneDeep(baseState) }),
   ({ draft }) => {
     draft.data = dataSet;
-  }
+  },
+  time
 );
 
 measure(
@@ -38,93 +41,157 @@ measure(
   ({ draft }) => {
     draft.data = dataSet;
     deepFreeze(draft);
+  },
+  time
+);
+
+measure(
+  'handcrafted reducer (no freeze)',
+  () => {},
+  () => {
+    const nextState = {
+      ...baseState,
+      data: dataSet,
+    };
+  },
+  time
+);
+
+measure(
+  'handcrafted reducer (with freeze)',
+  () => {},
+  () => {
+    const nextState = deepFreeze({
+      ...baseState,
+      data: dataSet,
+    });
+  },
+  time
+);
+
+measure(
+  'immutableJS',
+  () => {},
+  () => {
+    let state = immutableJsBaseState.withMutations((state) => {
+      state.setIn(['data'], fromJS(dataSet));
+    });
+  },
+  time
+);
+
+measure(
+  'immutableJS + toJS',
+  () => {},
+  () => {
+    let state = immutableJsBaseState
+      .withMutations((state) => {
+        state.setIn(['data'], fromJS(dataSet));
+      })
+      .toJS();
+  },
+  time
+);
+
+measure(
+  'seamless-immutable',
+  () => {},
+  () => {
+    seamlessBaseState.set('data', dataSet);
+  },
+  time
+);
+
+measure(
+  'seamless-immutable + asMutable',
+  () => {},
+  () => {
+    seamlessBaseState.set('data', dataSet).asMutable({ deep: true });
+  },
+  time
+);
+
+measure(
+  'immer (proxy) - without autofreeze * ' + MAX,
+  () => cloneDeep(baseState),
+  () => {
+    setUseProxies(true);
+    setAutoFreeze(false);
+    for (let i = 0; i < MAX; i++)
+      produce(baseState, (draft) => {
+        draft.data = dataSet;
+      });
+  },
+  time
+);
+
+measure(
+  'immer (proxy) - with autofreeze * ' + MAX,
+  () => cloneDeep(baseState),
+  (baseState) => {
+    setUseProxies(true);
+    setAutoFreeze(true);
+    for (let i = 0; i < MAX; i++)
+      produce(baseState, (draft) => {
+        draft.data = dataSet;
+      });
+  },
+  time
+);
+
+measure(
+  'immer (es5) - without autofreeze * ' + MAX,
+  () => cloneDeep(baseState),
+  (baseState) => {
+    setUseProxies(false);
+    setAutoFreeze(false);
+    for (let i = 0; i < MAX; i++)
+      produce(baseState, (draft) => {
+        draft.data = dataSet;
+      });
+  },
+  time
+);
+
+measure(
+  'immer (es5) - with autofreeze * ' + MAX,
+  () => cloneDeep(baseState),
+  (baseState) => {
+    setUseProxies(false);
+    setAutoFreeze(true);
+    for (let i = 0; i < MAX; i++)
+      produce(baseState, (draft) => {
+        draft.data = dataSet;
+      });
+  },
+  time
+);
+
+measure(
+  'mutative without autofreeze * ' + MAX,
+  () => cloneDeep(baseState),
+  (baseState) => {
+    for (let i = 0; i < MAX; i++)
+      create(baseState, (draft) => {
+        draft.data = dataSet;
+      });
   }
 );
 
-measure('handcrafted reducer (no freeze)', () => {
-  const nextState = {
-    ...baseState,
-    data: dataSet,
-  };
-});
-
-measure('handcrafted reducer (with freeze)', () => {
-  const nextState = deepFreeze({
-    ...baseState,
-    data: dataSet,
-  });
-});
-
-measure('immutableJS', () => {
-  let state = immutableJsBaseState.withMutations((state) => {
-    state.setIn(['data'], fromJS(dataSet));
-  });
-});
-
-measure('immutableJS + toJS', () => {
-  let state = immutableJsBaseState
-    .withMutations((state) => {
-      state.setIn(['data'], fromJS(dataSet));
-    })
-    .toJS();
-});
-
-measure('seamless-immutable', () => {
-  seamlessBaseState.set('data', dataSet);
-});
-
-measure('seamless-immutable + asMutable', () => {
-  seamlessBaseState.set('data', dataSet).asMutable({ deep: true });
-});
-
-measure('immer (proxy) - without autofreeze * ' + MAX, () => {
-  setUseProxies(true);
-  setAutoFreeze(false);
-  for (let i = 0; i < MAX; i++)
-    produce(baseState, (draft) => {
-      draft.data = dataSet;
-    });
-});
-
-measure('immer (proxy) - with autofreeze * ' + MAX, () => {
-  setUseProxies(true);
-  setAutoFreeze(true);
-  for (let i = 0; i < MAX; i++)
-    produce(frozenBazeState, (draft) => {
-      draft.data = dataSet;
-    });
-});
-
-measure('immer (es5) - without autofreeze * ' + MAX, () => {
-  setUseProxies(false);
-  setAutoFreeze(false);
-  for (let i = 0; i < MAX; i++)
-    produce(baseState, (draft) => {
-      draft.data = dataSet;
-    });
-});
-
-measure('immer (es5) - with autofreeze * ' + MAX, () => {
-  setUseProxies(false);
-  setAutoFreeze(true);
-  for (let i = 0; i < MAX; i++)
-    produce(frozenBazeState, (draft) => {
-      draft.data = dataSet;
-    });
-});
-
-measure('mutative without autofreeze * ' + MAX, () => {
-  for (let i = 0; i < MAX; i++)
-    create(baseState, (draft) => {
-      draft.data = dataSet;
-    });
-});
-
-measure('mutative with autofreeze * ' + MAX, () => {
-  for (let i = 0; i < MAX; i++)
-    create(frozenBazeState, (draft) => {
-      draft.data = dataSet;
-    }, {
-      enableAutoFreeze: true,
-    });
-});
+measure(
+  'mutative with autofreeze * ' + MAX,
+  () => cloneDeep(baseState),
+  (baseState) => {
+    for (let i = 0; i < MAX; i++)
+      create(
+        baseState,
+        (draft) => {
+          draft.data = dataSet;
+        },
+        {
+          enableAutoFreeze: true,
+        }
+      );
+  },
+  time
+);
