@@ -4,7 +4,12 @@
   "description": "A JavaScript library for efficient creation of immutable state",
   "main": "dist/index.js",
   "module": "dist/mutative.esm.js",
+  "umd:main": "dist/mutative.umd.production.min.js",
   "unpkg": "dist/mutative.umd.production.min.js",
+  "jsdelivr": "dist/mutative.umd.production.min.js",
+  "jsnext:main": "dist/mutative.esm.js",
+  "react-native": "dist/mutative.esm.js",
+  "source": "src/index.ts",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
@@ -46,6 +51,7 @@
     "mutative",
     "immutable",
     "mutable",
+    "immutability",
     "mutation"
   ],
   "license": "MIT",
