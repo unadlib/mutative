@@ -4,7 +4,7 @@
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-Mutative - A JavaScript library for efficient immutable updates, 10x faster than Immer by default.
+**Mutative** - A JavaScript library for efficient immutable updates, 10x faster than Immer by default.
 
 ![Benchmark](./benchmark.jpg)
 
@@ -18,7 +18,7 @@ There are more parts that could be improved, such as better type inference, non-
 
 This is why Mutative was created.
 
-### Mutative vs Immer Performance
+## Mutative vs Immer Performance
 
 Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better, [view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts).
 
@@ -41,21 +41,19 @@ The fastest method is Mutative - No Freeze
 
 > OS: macOS 12.6, CPU: Apple M1 Max, Node.js: 16.14.2
 
+## Features
 
-
-### Features
-
-- Mutation makes immutable updates
-- Support and Apply patches
-- Optional freezing state
-- Custom shallow copy
-- Immutable and mutable data markable
-- Strict mode for safer mutable data access
-- Support for JSON patches
+- **Mutation makes immutable updates**: 
+- **Support and Apply patches**:
+- **Optional freezing state**:
+- **Custom shallow copy**:
+- **Immutable and mutable data markable**:
+- **Strict mode for safer mutable data access**:
+- **Support for JSON patches**:
 
 > Mutative Size: 4.11 kB with all dependencies, minified and gzipped.
 
-### Difference between Immer and Mutative
+## Difference between Mutative and Immer
 
 | -                         | Mutative | Immer |
 | :------------------------ | -------: | :---: |
@@ -66,13 +64,15 @@ The fastest method is Mutative - No Freeze
 | Complete freeze data      |       ✅ |  ❌   |
 | Non-global config         |       ✅ |  ❌   |
 
+[TOC]
+
 ## Installation
 
 ```sh
 yarn install mutative # npm install mutative
 ```
 
-## Examples
+## Usage
 
 ```ts
 const baseState = {
@@ -86,13 +86,9 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-## Migration from Immer to Mutative
-
-TBD
-
 ## APIs
 
-- `create()`
+### `create()`
 
 ```ts
 const baseState = {
@@ -106,7 +102,25 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-- `apply()`
+#### `create(state, fn, options)` - Then options is optional.
+
+- strict - `boolean`, the default is false.
+> Forbid accessing non-draftable values in strict mode.
+
+- enablePatches - `boolean`, the default is false.
+> Enable patch, and return the patches and inversePatches.
+
+- enableAutoFreeze - `boolean`, the default is false.
+> Enable autoFreeze, and return frozen state.
+
+- mark - `() => ('mutable'|'immutable'|function)`
+> Set a mark to determine if the object is mutable or if an instance is an immutable, and it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
+
+#### Curried producers with `create()`
+
+TBD
+
+### `apply()`
 
 ```ts
 const baseState = {
@@ -131,7 +145,7 @@ const prevState = apply(state, inversePatches);
 expect(prevState).toEqual(baseState);
 ```
 
-- `current()`
+### `current()`
 
 ```ts
 const baseState = {
@@ -146,7 +160,7 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-- `original()`
+### `original()`
 
 ```ts
 const baseState = {
@@ -161,14 +175,18 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-- `isDraft()`
-- `unsafe()`
-- `castDraft()`
-- `castImmutable()`
+### `isDraft()`
+### `unsafe()`
+### `castDraft()`
+### `castImmutable()`
 - `Mutable<T>`
 - `Immutable<T>`
 - `Patches`
 - `Patch`
+
+## Migration from Immer to Mutative
+
+TBD
 
 ## FAQs
 
