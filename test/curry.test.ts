@@ -251,4 +251,122 @@ describe('Currying', () => {
     expect(patches).toEqual([]);
     expect(inversePatches).toEqual([]);
   });
+
+  test('base producer', async () => {
+    const baseState = {
+      foo: {
+        bar: 'str',
+      },
+      list: [],
+    };
+    const producer = create(
+      (draft: {
+        foo: {
+          bar: string;
+        };
+        list: any[];
+      }) => {
+        draft.foo.bar = 'baz';
+      }
+    );
+    const state = producer(baseState);
+    expect(state).not.toBe(baseState);
+    expect(state.foo).not.toBe(baseState.foo);
+    expect(state.list).toBe(baseState.list);
+    expect(state).toEqual({
+      foo: {
+        bar: 'baz',
+      },
+      list: [],
+    });
+  });
+
+  test(`async producer with 'enableAutoFreeze' option`, async () => {
+    const baseState = {
+      foo: {
+        bar: 'str',
+      },
+      list: [],
+    };
+    const producer = create(
+      async (draft: {
+        foo: {
+          bar: string;
+        };
+        list: any[];
+      }) => {
+        draft.foo.bar = 'baz';
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+    const state = await producer(baseState);
+    expect(Object.isFrozen(state)).toBeTruthy();
+    expect(state).not.toBe(baseState);
+    expect(state.foo).not.toBe(baseState.foo);
+    expect(state.list).toBe(baseState.list);
+    expect(state).toEqual({
+      foo: {
+        bar: 'baz',
+      },
+      list: [],
+    });
+  });
+
+  test(`producer with 'enablePatches' option`, async () => {
+    const baseState = {
+      foo: {
+        bar: 'str',
+      },
+      list: [],
+    };
+    const producer = create(
+      (draft: {
+        foo: {
+          bar: string;
+        };
+        list: any[];
+      }) => {
+        draft.foo.bar = 'baz';
+      },
+      {
+        enablePatches: true,
+      }
+    );
+    const [state, patches, inversePatches] = producer(baseState);
+    expect(patches).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "op": "replace",
+          "path": Array [
+            "foo",
+            "bar",
+          ],
+          "value": "baz",
+        },
+      ]
+    `);
+    expect(inversePatches).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "op": "replace",
+          "path": Array [
+            "foo",
+            "bar",
+          ],
+          "value": "str",
+        },
+      ]
+    `);
+    expect(state).not.toBe(baseState);
+    expect(state.foo).not.toBe(baseState.foo);
+    expect(state.list).toBe(baseState.list);
+    expect(state).toEqual({
+      foo: {
+        bar: 'baz',
+      },
+      list: [],
+    });
+  });
 });
