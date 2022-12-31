@@ -4,7 +4,7 @@
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-**Mutative** - A JavaScript library for efficient immutable updates, 10x faster than Immer by default.
+**Mutative** - A JavaScript library for efficient immutable updates, 10x faster than Immer by default, even faster than naive handcrafted reducer.
 
 ![Benchmark](./benchmark.jpg)
 
@@ -71,6 +71,11 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 | Non-invasive marking      |       ✅ |  ❌   |
 | Complete freeze data      |       ✅ |  ❌   |
 | Non-global config         |       ✅ |  ❌   |
+| Support IE browser        |       ❌ |  ✅   |
+
+> Mutative draft functions don't allow return value (except for `void` or `Promise<void>`), but immer is allowed.
+
+Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 
 ## Installation
 
@@ -81,6 +86,8 @@ yarn install mutative # npm install mutative
 ## Usage
 
 ```ts
+import { create } from 'mutative';
+
 const baseState = {
   foo: 'bar',
   list: [{ text: 'coding' }],
@@ -94,7 +101,7 @@ const state = create(baseState, (draft) => {
 
 `create(baseState, (draft) => void, options?: Options): newState`
 
-TBD
+The first argument of `create()` is the base state. Mutative drafts it and passes it to the arguments of the draft function, and performs the draft mutation until the draft function finishes, then Mutative will finalize it and produce the new state.
 
 Use `create()` for more advanced functions by setting `options`.
 
@@ -102,7 +109,11 @@ Use `create()` for more advanced functions by setting `options`.
 
 ### `create()`
 
+Use `create()` for draft mutation to get a new state, which also supports currying.
+
 ```ts
+import { create } from 'mutative';
+
 const baseState = {
   foo: 'bar',
   list: [{ text: 'todo' }],
@@ -114,7 +125,7 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-TBD
+In this basic example, the changes to the draft are 'mutative' within the draft callback, and `create()` is finally executed with a new immutable state.
 
 #### `create(state, fn, options)` - Then options is optional.
 
@@ -133,15 +144,34 @@ TBD
 - mark - `() => ('mutable'|'immutable'|function)`
   > Set a mark to determine if the object is mutable or if an instance is an immutable, and it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
 
-#### `create()` Curried producers
+#### `create()` - Currying
 
-TBD
+- create `draft`
+
+```ts
+const [draft, finalize] = create(baseState);
+draft.foobar.bar = 'baz';
+const state = finalize();
+```
+
+- create `producer`
+
+```ts
+const producer = create(() => {
+  draft.foobar.bar = 'baz';
+});
+const state = producer(baseState);
+```
+
+> They also all support set options such as `const [draft, finalize] = create(baseState, { enableAutoFreeze: true });`
 
 ### `apply()`
 
-TBD
+Use `apply()` for patches to get the new state.
 
 ```ts
+import { create, apply } from 'mutative';
+
 const baseState = {
   foo: 'bar',
   list: [{ text: 'todo' }],
@@ -166,7 +196,7 @@ expect(prevState).toEqual(baseState);
 
 ### `current()`
 
-TBD
+Get the current value in the draft.
 
 ```ts
 const baseState = {
@@ -183,7 +213,7 @@ const state = create(baseState, (draft) => {
 
 ### `original()`
 
-TBD
+Get the original value in the draft.
 
 ```ts
 const baseState = {
@@ -199,6 +229,8 @@ const state = create(baseState, (draft) => {
 ```
 
 ### `unsafe()`
+
+When strict mode is enabled, mutable data can only be accessed using `unsafe()`.
 
 ```ts
 const baseState = {
@@ -221,6 +253,8 @@ const state = create(
 
 ### `isDraft()`
 
+Check if it is a draft.
+
 ```ts
 const baseState = {
   date: new Date(),
@@ -242,10 +276,95 @@ const state = create(baseState, (draft) => {
 - `Patches`
 - `Patch`
 
+## FAQs
+
+- Why doesn't Mutative support IE?
+
+Mutative is a library that relies heavily on the use of the Proxy object, which is a feature of modern web browsers that allows the interception of various operations on objects. As such, Mutative may not be fully compatible with older browsers that do not support the Proxy object, such as Internet Explorer. However, these older browsers make up a very small percentage of the overall browser market, so the impact on compatibility is likely minimal.
+
+- Why does Mutative have such good performance?
+
+Mutative optimization focus is on shallow copy optimization, more complete lazy drafts, finalization process optimization, and more.
+
+- I'm already using Immer, can I migrate smoothly to Mutative?
+
+Yes. Unless you have to be compatible with Internet Explorer, Mutative supports almost all of Immer features, and you can easily migrate from Immer to Mutative.
+
+> Migration is also not possible for React Native that does not support Proxy.
+
 ## Migration from Immer to Mutative
 
-TBD
+1. `produce()` -> `create()`
 
-## FAQs
+Mutative auto freezing option is disabled by default, Immer auto freezing option is enabled by default (if disabled, Immer performance will have a more huge drop).
+
+> You need to check if auto freezing has any impact on your project. If it depends on auto freezing, you can enable it yourself in Mutative.
+
+```ts
+import produce from 'immer';
+
+const nextState = produce(baseState, (draft) => {
+  draft[1].done = true;
+  draft.push({ title: 'something' });
+});
+```
+
+Use Mutative
+
+```ts
+import { create } from 'mutative';
+
+const nextState = create(baseState, (draft) => {
+  draft[1].done = true;
+  draft.push({ title: 'something' });
+});
+```
+
+2. Use `Patches`
+
+```ts
+import { produceWithPatches, applyPatches } from 'immer';
+
+enablePatches();
+
+const baseState = {
+  age: 33,
+};
+
+const [nextState, patches, inversePatches] = produceWithPatches(
+  baseState,
+  (draft) => {
+    draft.age++;
+  }
+);
+
+const state = applyPatches(nextState, inversePatches);
+
+expect(state).toEqual(baseState);
+```
+
+Use Mutative
+
+```ts
+import { create, apply } from 'mutative';
+
+const baseState = {
+  age: 33,
+};
+
+const [nextState, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.age++;
+  },
+  {
+    enablePatches: true,
+  }
+);
+
+const state = apply(nextState, inversePatches);
+
+expect(state).toEqual(baseState);
+```
 
 TBD
