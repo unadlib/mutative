@@ -276,6 +276,10 @@ const state = create(baseState, (draft) => {
 - `Patches`
 - `Patch`
 
+### Integration with React
+
+- [use-mutative](https://github.com/unadlib/use-mutative) - TBD
+
 ## FAQs
 
 - Why doesn't Mutative support IE?
