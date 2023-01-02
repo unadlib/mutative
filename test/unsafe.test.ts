@@ -22,7 +22,7 @@ test('base with strict mode', () => {
         draft.foobar.bar = 2;
       });
       draft.foo.bar = 'new str';
-      const foobar0 = unsafe(() =>  draft.foobar0);
+      const foobar0 = unsafe(() => draft.foobar0);
       foobar0.bar = 3;
     },
     {
@@ -51,7 +51,6 @@ test('base with strict mode', () => {
     );
   }).toThrowError();
 });
-
 
 test('base without strict mode', () => {
   class Foobar {
@@ -561,7 +560,7 @@ test('change Date instance', () => {
     (draft) => {
       unsafe(() => {
         draft.date.setFullYear(2000);
-      })
+      });
     },
     {
       strict: true,

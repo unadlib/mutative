@@ -131,7 +131,7 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
 - strict - `boolean`, the default is false.
 
-  > Forbid accessing non-draftable values in strict mode.
+  > Forbid accessing non-draftable values in strict mode(unless using `unsafe()`).
 
 - enablePatches - `boolean`, the default is false.
 
@@ -279,7 +279,7 @@ const state = create(baseState, (draft) => {
 
 ### Integration with React
 
-- [use-mutative](https://github.com/unadlib/use-mutative) - TBD
+- [use-mutative](https://github.com/unadlib/use-mutative)
 
 ## FAQs
 
@@ -296,6 +296,14 @@ Mutative optimization focus is on shallow copy optimization, more complete lazy 
 Yes. Unless you have to be compatible with Internet Explorer, Mutative supports almost all of Immer features, and you can easily migrate from Immer to Mutative.
 
 > Migration is also not possible for React Native that does not support Proxy.
+
+- Why return values are not supported?
+
+If it is supported, there is an additional performance loss of traversing the returned object tree. Also Immer has draft [escape issues](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts#L327) for return values.
+
+- Can Mutative be integrated with Redux?
+
+Yes.
 
 ## Migration from Immer to Mutative
 
@@ -325,7 +333,7 @@ const nextState = create(baseState, (draft) => {
 });
 ```
 
-2. Use `Patches`
+2. `Patches`
 
 ```ts
 import { produceWithPatches, applyPatches } from 'immer';
