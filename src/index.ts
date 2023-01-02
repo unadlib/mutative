@@ -6,4 +6,4 @@ export { unsafe } from './unsafe';
 export { isDraft } from './utils/draft';
 
 export { castDraft, castImmutable } from './utils/cast';
-export type { Immutable, Draft, Patches, Patch } from './interface';
+export type { Immutable, Draft, Patches, Patch, Options } from './interface';

@@ -73,7 +73,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 | Non-global config         |       ✅ |  ❌   |
 | Support IE browser        |       ❌ |  ✅   |
 
-> Mutative draft functions don't allow return value (except for `void` or `Promise<void>`), but immer is allowed.
+> Mutative draft functions don't allow return value (except for `void` or `Promise<void>`), but Immer is allowed.
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 
@@ -275,6 +275,7 @@ const state = create(baseState, (draft) => {
 - `Immutable<T>`
 - `Patches`
 - `Patch`
+- `Options<O, F>`
 
 ### Integration with React
 

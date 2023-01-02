@@ -306,3 +306,31 @@ test('immer failed case - escaped draft', () => {
     }).not.toThrowError();
   }
 });
+
+test('immer failed case - escaped draft about return value', () => {
+  {
+    setAutoFreeze(false);
+    const dataSet = [{}, {}, {}] as any;
+    const data = {
+      data: null,
+      a: {
+        b: 1,
+        c: 1,
+      },
+    };
+    const producer = produce((draft: any) => {
+      const a = draft.a;
+      dataSet[0] = a;
+      dataSet[1].a = { b: 1, c: [a] };
+      draft.a.b = 2;
+      draft.a.c = 2;
+      return {
+        ...dataSet,
+      };
+    });
+
+    expect(() => {
+      JSON.stringify(producer(data));
+    }).toThrowError();
+  }
+});
