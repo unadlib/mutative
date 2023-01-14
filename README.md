@@ -1,6 +1,7 @@
 # Mutative
 
-![Node CI](https://github.com/unadlib/mutative/workflows/Node%20CI/badge.svg)
+[![Build Status][ci-image]][ci-url]
+[![Coverage Status][coveralls-image]][coveralls-url]
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 

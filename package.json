@@ -18,6 +18,7 @@
   "scripts": {
     "test": "jest",
     "clean": "rimraf dist",
+    "test:coverage": "jest --coverage && coveralls < coverage/lcov.info",
     "perf": "cd test/performance && ts-node add-data.ts && ts-node todo.ts && ts-node incremental.ts",
     "benchmark": "cd test/performance && ts-node benchmark.ts",
     "performance:basic": "cd test/performance && ts-node index.ts",
@@ -72,6 +73,7 @@
     "@typescript-eslint/parser": "^5.15.0",
     "benchmark": "^2.1.4",
     "commitizen": "^4.2.4",
+    "coveralls": "^3.1.1",
     "deep-freeze": "^0.0.1",
     "eslint": "^8.11.0",
     "eslint-config-airbnb": "^19.0.4",
