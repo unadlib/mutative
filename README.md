@@ -1,7 +1,7 @@
 # Mutative
 
-[![Build Status][ci-image]][ci-url]
-[![Coverage Status][coveralls-image]][coveralls-url]
+![Node CI](https://github.com/unadlib/mutative/workflows/Node%20CI/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/unadlib/mutative/badge.svg?branch=master)](https://coveralls.io/github/unadlib/mutative?branch=master)
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
