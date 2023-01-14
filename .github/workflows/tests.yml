@@ -1,47 +1,27 @@
-name: Tests
-on: [push]
-env:
-  CI: true
+on: ["push", "pull_request"]
+
+name: Test Coveralls
 
 jobs:
-  test:
-    name: Node ${{ matrix.node }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
 
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [14]
-        os: [ubuntu-latest]
-
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v2
-
-      - name: Set Node.js version
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Install npm dependencies
-        run: yarn install
-
-      - name: Run tests
-        run: yarn test:coverage
-
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          flag-name: ${{matrix.os}}-node-${{ matrix.node }}
-          parallel: true
-
-  finish:
-    needs: test
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
+
+    - uses: actions/checkout@v1
+
+    - name: Use Node.js 14.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+
+    - name: yarn install, yarn test:coverage
+      run: |
+        yarn install
+        yarn test:coverage
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
