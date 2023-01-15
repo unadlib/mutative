@@ -334,3 +334,71 @@ test('immer failed case - escaped draft about return value', () => {
     }).toThrowError();
   }
 });
+
+// https://github.com/immerjs/immer/issues/1012
+test('Unexpected access to getter property in irrelevant plain objects', () => {
+  {
+    setAutoFreeze(false);
+
+    let isAgeGetterCalled = false;
+
+    const state = {
+      data: {
+        data: {
+          lisa: {
+            name: 'lisa',
+            get age() {
+              console.log('age getter called');
+              isAgeGetterCalled = true;
+              return 18;
+            },
+          },
+        },
+      },
+      other: { a: 9 },
+    };
+
+    const value = produce(state, (draft) => {
+      console.log('immer produce enter');
+      draft.other.a = 6;
+      console.log('immer produce exit');
+    });
+
+    console.log('immer + isAgeGetterCalled', isAgeGetterCalled);
+    expect(isAgeGetterCalled).toBe(true);
+    // Expect: false
+    // output: true
+    //         ↑  Error here, in this case,
+    //            the getter should not called, when `setAutoFreeze(false)`
+  }
+  {
+    let isAgeGetterCalled = false;
+
+    const state = {
+      data: {
+        data: {
+          lisa: {
+            name: 'lisa',
+            get age() {
+              console.log('age getter called');
+              isAgeGetterCalled = true;
+              return 18;
+            },
+          },
+        },
+      },
+      other: { a: 9 },
+    };
+
+    const value = create(state, (draft) => {
+      console.log('mutative create enter');
+      draft.other.a = 6;
+      console.log('mutative create exit');
+    });
+
+    console.log();
+
+    console.log('mutative + isAgeGetterCalled', isAgeGetterCalled);
+    expect(isAgeGetterCalled).toBe(false);
+  }
+});
