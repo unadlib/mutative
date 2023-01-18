@@ -24,7 +24,7 @@ function getCurrent(target: any) {
         ? new Map(target)
         : type === DraftType.Set
         ? Array.from(proxyDraft!.setMap!.values()!)
-        : shallowCopy(target, proxyDraft?.options.mark);
+        : shallowCopy(target, proxyDraft?.options);
   } finally {
     if (proxyDraft) proxyDraft.finalized = false;
   }

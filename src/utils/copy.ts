@@ -1,4 +1,4 @@
-import { Mark, ProxyDraft } from '../interface';
+import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 
@@ -22,7 +22,7 @@ function strictCopy(target: any) {
   return Object.create(Object.getPrototypeOf(target), descriptors);
 }
 
-export function shallowCopy(original: any, mark?: Mark<any, any>) {
+export function shallowCopy(original: any, options?: Options<any, any>) {
   let markResult: any;
   if (Array.isArray(original)) {
     return Array.prototype.concat.call(original);
@@ -31,14 +31,19 @@ export function shallowCopy(original: any, mark?: Mark<any, any>) {
   } else if (original instanceof Map) {
     return new Map(original);
   } else if (
-    mark &&
-    ((markResult = mark(original, dataTypes)),
+    options?.mark &&
+    ((markResult = options.mark(original, dataTypes)),
     typeof markResult !== 'undefined') &&
     markResult !== dataTypes.mutable
   ) {
     if (markResult === dataTypes.immutable) {
       return strictCopy(original);
     } else if (typeof markResult === 'function') {
+      if (__DEV__ && (options.enablePatches || options.enableAutoFreeze)) {
+        throw new Error(
+          `You can't use mark and patches or auto freeze together.`
+        );
+      }
       return markResult();
     }
     throw new Error(`Unsupported mark result: ${markResult}`);
@@ -62,7 +67,7 @@ export function shallowCopy(original: any, mark?: Mark<any, any>) {
 
 export function ensureShallowCopy(target: ProxyDraft) {
   if (target.copy) return;
-  target.copy = shallowCopy(target.original, target.options.mark)!;
+  target.copy = shallowCopy(target.original, target.options)!;
 }
 
 function deepClone<T>(target: T): T;
