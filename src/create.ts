@@ -1,8 +1,15 @@
 import { CreateResult, Draft, Options, Result } from './interface';
 import { draftify } from './draftify';
 import { dataTypes } from './constant';
-import { getProxyDraft, isDraft, revokeProxy } from './utils';
-import { current } from './current';
+import {
+  getProxyDraft,
+  isDraft,
+  isDraftable,
+  isEqual,
+  revokeProxy,
+} from './utils';
+import { current, handleReturnValue } from './current';
+import { safeReturnValue } from './safeReturn';
 
 /**
  * `create(baseState, callback, options)` to create the next state
@@ -27,17 +34,17 @@ import { current } from './current';
  * ```
  */
 function create<
-  T extends object,
+  T extends any,
   F extends boolean = false,
   O extends boolean = false,
-  R extends void | Promise<void> = void
+  R extends void | Promise<void> | T | Promise<T> = void
 >(
   base: T,
   mutate: (draft: Draft<T>) => R,
   options?: Options<O, F>
 ): CreateResult<T, O, F, R>;
 function create<
-  T extends object,
+  T extends any,
   F extends boolean = false,
   O extends boolean = false,
   R extends void | Promise<void> = void
@@ -47,7 +54,7 @@ function create<
   options?: Options<O, F>
 ): CreateResult<T, O, F, R>;
 function create<
-  T extends object,
+  T extends any,
   P extends any[] = [],
   F extends boolean = false,
   O extends boolean = false,
@@ -57,7 +64,7 @@ function create<
   options?: Options<O, F>
 ): (base: T, ...args: P) => CreateResult<T, O, F, R>;
 function create<
-  T extends object,
+  T extends any,
   O extends boolean = false,
   F extends boolean = false
 >(base: T, options?: Options<O, F>): [T, () => Result<T, O, F>];
@@ -86,8 +93,21 @@ function create(arg0: any, arg1: any, arg2?: any): any {
     );
   }
   const state = isDraft(base) ? current(base) : base;
-  if (options?.mark?.(state, dataTypes) === dataTypes.mutable) {
-    const finalization = options.enablePatches ? [state, [], []] : state;
+  const mark = options?.mark;
+  const enablePatches = options?.enablePatches ?? false;
+  const strict = options?.strict ?? false;
+  const enableAutoFreeze = options?.enableAutoFreeze ?? false;
+  const _options = {
+    enableAutoFreeze,
+    mark,
+    strict,
+    enablePatches,
+  };
+  if (
+    _options.mark?.(state, dataTypes) === dataTypes.mutable ||
+    !isDraftable(state, _options)
+  ) {
+    const finalization = _options.enablePatches ? [state, [], []] : state;
     if (typeof arg1 !== 'function') {
       return [state, () => finalization];
     }
@@ -97,7 +117,7 @@ function create(arg0: any, arg1: any, arg2?: any): any {
     }
     return finalization;
   }
-  const [draft, finalize] = draftify(state, options);
+  const [draft, finalize] = draftify(state, _options);
   if (typeof arg1 !== 'function') {
     return [draft, finalize];
   }
@@ -108,18 +128,40 @@ function create(arg0: any, arg1: any, arg2?: any): any {
     revokeProxy(getProxyDraft(draft)!);
     throw error;
   }
+  const returnValue = (value: any) => {
+    if (!isDraft(value)) {
+      const proxyDraft = getProxyDraft(draft);
+      if (!isEqual(value, draft) && proxyDraft?.operated) {
+        throw new Error(
+          `Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.`
+        );
+      }
+      if (safeReturnValue.length) {
+        const _value = safeReturnValue.pop();
+        if (typeof _value !== 'undefined') {
+          handleReturnValue(value);
+        }
+        return finalize(_value);
+      }
+      if (typeof value !== 'undefined') {
+        if (_options.strict) {
+          handleReturnValue(value, true);
+        }
+        return finalize(value);
+      }
+    }
+    if (typeof value !== 'undefined' && value !== draft) {
+      throw new Error(`The return draft should be the current root draft.`);
+    }
+    return finalize();
+  };
   if (result instanceof Promise) {
-    return result.then(finalize, (error) => {
+    return result.then(returnValue, (error) => {
       revokeProxy(getProxyDraft(draft)!);
       throw error;
     });
   }
-  if (result !== undefined) {
-    throw new Error(
-      `The create() callback must return 'void' or 'Promise<void>'.`
-    );
-  }
-  return finalize();
+  return returnValue(result);
 }
 
 export { create };

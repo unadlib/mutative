@@ -25,7 +25,7 @@ export const mapHandler = {
     if (!source.has(key) || !isEqual(source.get(key), value)) {
       ensureShallowCopy(target);
       markChanged(target);
-      target.assignedMap.set(key, true);
+      target.assignedMap!.set(key, true);
       target.copy.set(key, value);
       markFinalization(target, key, value);
     }
@@ -39,9 +39,9 @@ export const mapHandler = {
     ensureShallowCopy(target);
     markChanged(target);
     if (target.original.has(key)) {
-      target.assignedMap.set(key, false);
+      target.assignedMap!.set(key, false);
     } else {
-      target.assignedMap.delete(key);
+      target.assignedMap!.delete(key);
     }
     target.copy.delete(key);
     return true;

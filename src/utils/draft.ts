@@ -53,9 +53,9 @@ export function getPath(
 }
 
 export function getType(target: any) {
+  if (Array.isArray(target)) return DraftType.Array;
   if (target instanceof Map) return DraftType.Map;
   if (target instanceof Set) return DraftType.Set;
-  if (Array.isArray(target)) return DraftType.Array;
   return DraftType.Object;
 }
 
@@ -86,7 +86,8 @@ export function isEqual(x: any, y: any) {
 }
 
 export function revokeProxy(proxyDraft: ProxyDraft) {
-  for (const revoke of proxyDraft.finalities.revoke) {
+  while (proxyDraft.finalities.revoke.length > 0) {
+    const revoke = proxyDraft.finalities.revoke.pop()!;
     revoke();
   }
 }

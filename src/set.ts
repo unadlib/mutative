@@ -91,15 +91,15 @@ export const setHandler = {
     const valueProxyDraft = getProxyDraft(value)!;
     if (valueProxyDraft && target.setMap!.has(valueProxyDraft.original)) {
       // delete drafted
-      target.assignedMap.set(valueProxyDraft.original, false);
+      target.assignedMap!.set(valueProxyDraft.original, false);
       return target.setMap!.delete(valueProxyDraft.original);
     }
     if (!valueProxyDraft && target.setMap!.has(value)) {
       // non-draftable values
-      target.assignedMap.set(value, false);
+      target.assignedMap!.set(value, false);
     } else {
       // reassigned
-      target.assignedMap.delete(value);
+      target.assignedMap!.delete(value);
     }
     // delete reassigned or non-draftable values
     return target.setMap!.delete(value);
@@ -109,9 +109,8 @@ export const setHandler = {
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
     markChanged(target);
-    target.assignedMap = new Map();
     for (const value of target.original) {
-      target.assignedMap.set(value, false);
+      target.assignedMap!.set(value, false);
     }
     target.setMap!.clear();
   },

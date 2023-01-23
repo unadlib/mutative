@@ -18,7 +18,7 @@ export function handleValue(target: any, handledSet: WeakSet<any>) {
     if (isDraft(value)) {
       const proxyDraft = getProxyDraft(value)!;
       ensureShallowCopy(proxyDraft);
-      const updatedValue = proxyDraft.assignedMap.size
+      const updatedValue = proxyDraft.assignedMap!.size
         ? proxyDraft.copy
         : proxyDraft.original;
       if (isSet) {
@@ -46,7 +46,7 @@ export function finalizeAssigned(proxyDraft: ProxyDraft, key: PropertyKey) {
     proxyDraft.type === DraftType.Set ? proxyDraft.setMap : proxyDraft.copy;
   if (
     proxyDraft.finalities.revoke.length > 1 &&
-    proxyDraft.assignedMap.get(key) &&
+    proxyDraft.assignedMap!.get(key) &&
     copy
   ) {
     handleValue(get(copy, key), proxyDraft.finalities.handledSet);

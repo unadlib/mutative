@@ -11,6 +11,28 @@ import {
   shallowCopy,
 } from './utils';
 
+export function handleReturnValue<T extends object>(value: T, warning = false) {
+  forEach(value, (key, item, source) => {
+    if (isDraft(item)) {
+      if (warning) {
+        console.warn(
+          `The return value contains drafts, please use safeReturn() to wrap the return value.`
+        );
+      }
+      const currentValue = current(item);
+      if (source instanceof Set) {
+        const arr = Array.from(source);
+        source.clear();
+        arr.forEach((item) => source.add(key === item ? currentValue : item));
+      } else {
+        set(source, key, currentValue);
+      }
+    } else if (typeof item === 'object') {
+      handleReturnValue(item, warning);
+    }
+  });
+}
+
 function getCurrent(target: any) {
   const proxyDraft = getProxyDraft(target);
   if (!isDraftable(target, proxyDraft?.options)) return target;
