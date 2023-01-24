@@ -5,7 +5,10 @@ export function draftify<
   T extends object,
   O extends boolean = false,
   F extends boolean = false
->(baseState: T, options: Options<O, F>): [T, (returnedValue?: any) => Result<T, O, F>] {
+>(
+  baseState: T,
+  options: Options<O, F>
+): [T, (returnedValue: [T] | []) => Result<T, O, F>] {
   const finalities: Finalities = {
     draft: [],
     revoke: [],
@@ -25,9 +28,9 @@ export function draftify<
   });
   return [
     draft,
-    (returnedValue?: T) => {
+    (returnedValue: [T] | [] = []) => {
       const [finalizedState, finalizedPatches, finalizedInversePatches] =
-        finalizeDraft(draft, patches, inversePatches, returnedValue);
+        finalizeDraft(draft, returnedValue, patches, inversePatches);
       return (
         options.enablePatches
           ? [finalizedState, finalizedPatches, finalizedInversePatches]

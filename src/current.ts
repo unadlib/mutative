@@ -15,9 +15,7 @@ export function handleReturnValue<T extends object>(value: T, warning = false) {
   forEach(value, (key, item, source) => {
     if (isDraft(item)) {
       if (warning) {
-        console.warn(
-          `The return value contains drafts, please use safeReturn() to wrap the return value.`
-        );
+        console.warn(`The return value contains drafts, please use safeReturn() to wrap the return value.`);
       }
       const currentValue = current(item);
       if (source instanceof Set) {

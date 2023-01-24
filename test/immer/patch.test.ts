@@ -1,5 +1,5 @@
 'use strict';
-import { apply, create, isDraft } from '../../src';
+import { apply, create, isDraft, safeReturn } from '../../src';
 
 jest.setTimeout(1000);
 
@@ -1284,7 +1284,9 @@ test('do not allow prototype polution - 738', () => {
     apply(Object, [
       { op: 'add', path: ['prototype', 'polluted'], value: 'yes' },
     ]);
-  }).toThrow('create() only supports plain object, array, set, and map.');
+  }).toThrowErrorMatchingInlineSnapshot(
+    `"Patching reserved attributes like __proto__ and constructor is not allowed."`
+  );
   // @ts-ignore
   expect(obj.polluted).toBe(undefined);
 });
@@ -1385,8 +1387,8 @@ test('#648 assigning object to itself should not change patches', () => {
   ]);
 });
 
-// test('#791 patch for  nothing is stored as undefined', () => {
-//   const [newState, patches] = create({ abc: 123 }, (draft) => nothing, {
+// test('#791 patch for returning `undefined` is stored as undefined', () => {
+//   const [newState, patches] = create({ abc: 123 }, (draft) => safeReturn(undefined), {
 //     enablePatches: true,
 //   });
 //   expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
@@ -1424,66 +1426,70 @@ test('#876 Ensure empty patch set for atomic set+delete on Map', () => {
   }
 });
 
-// test('#888 patch to a primitive produces the primitive', () => {
-//   {
-//     const [res, patches] = create({ abc: 123 }, (draft) => nothing, {
-//       enablePatches: true,
-//     });
-//     expect(res).toEqual(undefined);
-//     expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
-//   }
-//   {
-//     const [res, patches] = create(null, (draft) => nothing, {
-//       enablePatches: true,
-//     });
-//     expect(res).toEqual(undefined);
-//     expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
-//   }
-//   {
-//     const [res, patches] = create(0, (draft) => nothing, {
-//       enablePatches: true,
-//     });
-//     expect(res).toEqual(undefined);
-//     expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
-//   }
-//   {
-//     const [res, patches] = create('foobar', (draft) => nothing, {
-//       enablePatches: true,
-//     });
-//     expect(res).toEqual(undefined);
-//     expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
-//   }
-//   {
-//     const [res, patches] = create([], (draft) => nothing, {
-//       enablePatches: true,
-//     });
-//     expect(res).toEqual(undefined);
-//     expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
-//   }
-//   {
-//     const [res, patches] = create(false, (draft) => nothing, {
-//       enablePatches: true,
-//     });
-//     expect(res).toEqual(undefined);
-//     expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
-//   }
-//   {
-//     const [res, patches] = create('foobar', (draft) => 'something else', {
-//       enablePatches: true,
-//     });
-//     expect(res).toEqual('something else');
-//     expect(patches).toEqual([
-//       { op: 'replace', path: [], value: 'something else' },
-//     ]);
-//   }
-//   {
-//     const [res, patches] = create(false, (draft) => true, {
-//       enablePatches: true,
-//     });
-//     expect(res).toEqual(true);
-//     expect(patches).toEqual([{ op: 'replace', path: [], value: true }]);
-//   }
-// });
+test('#888 patch to a primitive produces the primitive', () => {
+  {
+    const [res, patches] = create(
+      { abc: 123 },
+      (draft) => safeReturn(undefined),
+      {
+        enablePatches: true,
+      }
+    );
+    expect(res).toEqual(undefined);
+    expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
+  }
+  {
+    const [res, patches] = create(null, (draft) => safeReturn(undefined), {
+      enablePatches: true,
+    });
+    expect(res).toEqual(undefined);
+    expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
+  }
+  {
+    const [res, patches] = create(0, (draft) => safeReturn(undefined), {
+      enablePatches: true,
+    });
+    expect(res).toEqual(undefined);
+    expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
+  }
+  {
+    const [res, patches] = create('foobar', (draft) => safeReturn(undefined), {
+      enablePatches: true,
+    });
+    expect(res).toEqual(undefined);
+    expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
+  }
+  {
+    const [res, patches] = create([], (draft) => safeReturn(undefined), {
+      enablePatches: true,
+    });
+    expect(res).toEqual(undefined);
+    expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
+  }
+  {
+    const [res, patches] = create(false, (draft) => safeReturn(undefined), {
+      enablePatches: true,
+    });
+    expect(res).toEqual(undefined);
+    expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
+  }
+  {
+    const [res, patches] = create('foobar', (draft) => 'something else', {
+      enablePatches: true,
+    });
+    expect(res).toEqual('something else');
+    expect(patches).toEqual([
+      { op: 'replace', path: [], value: 'something else' },
+    ]);
+  }
+  {
+    const [res, patches] = create(false, (draft) => true, {
+      enablePatches: true,
+    });
+    expect(res).toEqual(true);
+    expect(patches).toEqual([{ op: 'replace', path: [], value: true }]);
+  }
+});
 
 describe('#879 delete item from array', () => {
   runPatchTest(

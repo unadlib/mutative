@@ -52,19 +52,21 @@ function runTests(name: any, useProxies: any) {
       expect(reducer({}, 3)).toEqual({ index: 3 });
     });
 
-    // it('should support passing an initial state as second argument', () => {
-    //   const reducer = create(
-    //     (item: { index?: number }, index: number) => {
-    //       item.index = index;
-    //     }
-    //     // { hello: 'world' }
-    //   );
-    //   // @ts-ignore
-    //   expect(reducer(undefined, 3)).toEqual({ hello: 'world', index: 3 });
-    //   expect(reducer({}, 3)).toEqual({ index: 3 });
-    //   // @ts-ignore
-    //   expect(reducer()).toEqual({ hello: 'world', index: undefined });
-    // });
+    it('should support passing an initial state as second argument', () => {
+      const reducer = create(
+        (item: { index?: number }, index: number) => {
+          item.index = index;
+        }
+        // { hello: 'world' }
+      );
+      // ! different from immer
+      // @ts-ignore
+      expect(reducer({ hello: 'world' }, 3)).toEqual({ hello: 'world', index: 3 });
+      expect(reducer({}, 3)).toEqual({ index: 3 });
+      // ! different from immer
+      // @ts-ignore
+      expect(reducer({ hello: 'world' })).toEqual({ hello: 'world', index: undefined });
+    });
 
     it('can has fun with change detection', () => {
       const spread = create((target: any, source: any) => {

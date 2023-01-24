@@ -1,4 +1,4 @@
-import { CreateResult, Draft, Options, Result } from './interface';
+import { CreateResult, Draft, Operation, Options, Result } from './interface';
 import { draftify } from './draftify';
 import { dataTypes } from './constant';
 import {
@@ -70,6 +70,9 @@ function create<
 >(base: T, options?: Options<O, F>): [T, () => Result<T, O, F>];
 function create(arg0: any, arg1: any, arg2?: any): any {
   if (typeof arg0 === 'function' && typeof arg1 !== 'function') {
+    // if (Object.prototype.toString.call(arg1) !== '[object Object]') {
+    //   throw new Error(`Invalid options: ${arg1}, 'options' should be an object.`);
+    // }
     return function (this: any, base: any, ...args: any[]) {
       return create(
         base,
@@ -83,6 +86,11 @@ function create(arg0: any, arg1: any, arg2?: any): any {
   let options = arg2;
   if (typeof arg1 !== 'function') {
     options = arg1;
+    if (!isDraftable(base, options)) {
+      throw new Error(
+        `Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable.`
+      );
+    }
   }
   if (
     options !== undefined &&
@@ -103,19 +111,36 @@ function create(arg0: any, arg1: any, arg2?: any): any {
     strict,
     enablePatches,
   };
+  safeReturnValue.length = 0;
   if (
     _options.mark?.(state, dataTypes) === dataTypes.mutable ||
     !isDraftable(state, _options)
   ) {
-    const finalization = _options.enablePatches ? [state, [], []] : state;
     if (typeof arg1 !== 'function') {
-      return [state, () => finalization];
+      return [state, () => (_options.enablePatches ? [state, [], []] : state)];
     }
     const result = mutate(state);
+    const returnValue = (value: any) => {
+      let _state = state;
+      if (safeReturnValue.length) {
+        _state = safeReturnValue.pop();
+      } else if (value !== undefined) {
+        _state = value;
+      } else {
+        return _options.enablePatches ? [_state, [], []] : _state;
+      }
+      return _options.enablePatches
+        ? [
+            _state,
+            [{ op: Operation.Replace, path: [], value: _state }],
+            [{ op: Operation.Replace, path: [], value: state }],
+          ]
+        : _state;
+    };
     if (result instanceof Promise) {
-      return result.then(() => finalization);
+      return result.then(returnValue);
     }
-    return finalization;
+    return returnValue(result);
   }
   const [draft, finalize] = draftify(state, _options);
   if (typeof arg1 !== 'function') {
@@ -129,31 +154,45 @@ function create(arg0: any, arg1: any, arg2?: any): any {
     throw error;
   }
   const returnValue = (value: any) => {
+    const proxyDraft = getProxyDraft(draft)!;
     if (!isDraft(value)) {
-      const proxyDraft = getProxyDraft(draft);
-      if (!isEqual(value, draft) && proxyDraft?.operated) {
+      if (
+        value !== undefined &&
+        !isEqual(value, draft) &&
+        proxyDraft.operated
+      ) {
         throw new Error(
           `Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.`
         );
       }
       if (safeReturnValue.length) {
         const _value = safeReturnValue.pop();
-        if (typeof _value !== 'undefined') {
+        if (_value !== undefined) {
           handleReturnValue(value);
         }
-        return finalize(_value);
+        return finalize([_value]);
       }
-      if (typeof value !== 'undefined') {
+      if (value !== undefined) {
         if (_options.strict) {
           handleReturnValue(value, true);
         }
-        return finalize(value);
+        return finalize([value]);
       }
     }
-    if (typeof value !== 'undefined' && value !== draft) {
-      throw new Error(`The return draft should be the current root draft.`);
+    if (value === draft || value === undefined) {
+      return finalize([]);
     }
-    return finalize();
+    const returnedProxyDraft = getProxyDraft(value)!;
+    if (_options === returnedProxyDraft.options) {
+      if (returnedProxyDraft.operated) {
+        throw new Error(`Cannot return a modified child draft.`);
+      }
+      return finalize([current(value)]);
+    }
+    // if (value !== undefined && value !== draft) {
+    //   throw new Error(`The return draft should be the current root draft.`);
+    // }
+    return finalize([value]);
   };
   if (result instanceof Promise) {
     return result.then(returnValue, (error) => {

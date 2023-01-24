@@ -271,9 +271,9 @@ internal.createDraft = createDraft;
 
 export function finalizeDraft<T>(
   result: T,
+  returnedValue: [T] | [],
   patches?: Patches,
-  inversePatches?: Patches,
-  returnedValue?: T
+  inversePatches?: Patches
 ) {
   const proxyDraft = getProxyDraft(result)!;
   const original = proxyDraft.original;
@@ -283,20 +283,22 @@ export function finalizeDraft<T>(
       finalize(patches, inversePatches);
     }
   }
-  const state =
-    returnedValue ?? proxyDraft.operated
-      ? proxyDraft.copy
-      : proxyDraft.original;
+  const hasReturnedValue = !!returnedValue.length;
+  const state = hasReturnedValue
+    ? returnedValue[0]
+    : proxyDraft.operated
+    ? proxyDraft.copy
+    : proxyDraft.original;
   revokeProxy(proxyDraft);
   if (proxyDraft.options.enableAutoFreeze) {
     deepFreeze(state);
   }
   return [
     state,
-    patches && returnedValue
-      ? [{ op: Operation.Replace, path: [], value: returnedValue }]
+    patches && hasReturnedValue
+      ? [{ op: Operation.Replace, path: [], value: returnedValue[0] }]
       : patches,
-    inversePatches && returnedValue
+    inversePatches && hasReturnedValue
       ? [{ op: Operation.Replace, path: [], value: original }]
       : inversePatches,
   ] as [T, Patches | undefined, Patches | undefined];

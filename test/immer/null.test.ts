@@ -2,9 +2,10 @@
 import { create } from '../../src';
 
 describe('null functionality', () => {
-  const baseState: any = null;
+  const baseState = null;
 
-  it('should throw error for the original without modifications', () => {
-    expect(() => create(baseState, () => {})).toThrowError();
+  it('should return the original without modifications', () => {
+    const nextState = create(baseState, () => {});
+    expect(nextState).toBe(baseState);
   });
 });
