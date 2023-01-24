@@ -31,6 +31,17 @@ export function apply<T extends object, F extends boolean = false>(
     Exclude<keyof Options<boolean, F>, 'enablePatches'>
   >
 ) {
+  let i: number;
+  for (i = patches.length - 1; i >= 0; i -= 1) {
+    const { value, op, path } = patches[i];
+    if (!path.length && op === Operation.Replace) {
+      state = value;
+      break;
+    }
+  }
+  if (i > -1) {
+    patches = patches.slice(i + 1);
+  }
   const mutate = (draft: Draft<T>) => {
     patches.forEach((patch) => {
       const { path, op } = patch;

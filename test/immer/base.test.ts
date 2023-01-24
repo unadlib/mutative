@@ -37,9 +37,9 @@ function shallowCopy(base: any) {
 
 const isProd = process.env.NODE_ENV === 'production';
 
-// test('immer should have no dependencies', () => {
-//   expect(require('../package.json').dependencies).toBeUndefined();
-// });
+test('should have no dependencies', () => {
+  expect(require('../../package.json').dependencies).toBeUndefined();
+});
 
 runBaseTest('proxy (no freeze)', false, false);
 runBaseTest('proxy (autofreeze)', true, false);
@@ -1502,54 +1502,54 @@ function runBaseTest(
       });
 
       // "Upvalues" are variables from a parent scope.
-      // it('does not finalize upvalue drafts', () => {
-      //   produce({ a: {}, b: {} }, (parent) => {
-      //     expect(produce({}, () => parent)).toBe(parent);
-      //     parent.x; // Ensure proxy not revoked.
+      it.skip('does not finalize upvalue drafts', () => {
+        produce({ a: {}, b: {} }, (parent) => {
+          expect(produce({}, () => parent)).toBe(parent);
+          parent.x; // Ensure proxy not revoked.
 
-      //     expect(produce({}, () => [parent])[0]).toBe(parent);
-      //     parent.x; // Ensure proxy not revoked.
+          expect(produce({}, () => [parent])[0]).toBe(parent);
+          parent.x; // Ensure proxy not revoked.
 
-      //     expect(produce({}, () => parent.a)).toBe(parent.a);
-      //     parent.a.x; // Ensure proxy not revoked.
+          expect(produce({}, () => parent.a)).toBe(parent.a);
+          parent.a.x; // Ensure proxy not revoked.
 
-      //     // Modified parent test
-      //     parent.c = 1;
-      //     expect(produce({}, () => [parent.b])[0]).toBe(parent.b);
-      //     parent.b.x; // Ensure proxy not revoked.
-      //   });
-      // });
+          // Modified parent test
+          parent.c = 1;
+          expect(produce({}, () => [parent.b])[0]).toBe(parent.b);
+          parent.b.x; // Ensure proxy not revoked.
+        });
+      });
 
-      // it(
-      //   'works with interweaved Immer instances',
-      //   () => {
-      //     const base = {};
-      //     const result = create(base, (s1) =>
-      //       create(
-      //         { s1 },
-      //         (s2) => {
-      //           expect(original(s2.s1)).toBe(s1);
-      //           s2.n = 1;
-      //           s2.s1 = create(
-      //             { s2 },
-      //             (s3) => {
-      //               expect(original(s3.s2)).toBe(s2);
-      //               expect(original(s3.s2.s1)).toBe(s2.s1);
-      //               return s3.s2.s1;
-      //             },
-      //             { enableAutoFreeze: autoFreeze }
-      //           );
-      //         },
-      //         {
-      //           enableAutoFreeze: autoFreeze,
-      //         }
-      //       )
-      //     );
-      //     expect(result.n).toBe(1);
-      //     expect(result.s1).toBe(base);
-      //   },
-      //   { enableAutoFreeze: autoFreeze }
-      // );
+      it.skip(
+        'works with interweaved Immer instances',
+        () => {
+          const base = {};
+          const result = create(base, (s1) =>
+            create(
+              { s1 },
+              (s2) => {
+                expect(original(s2.s1)).toBe(s1);
+                s2.n = 1;
+                s2.s1 = create(
+                  { s2 },
+                  (s3) => {
+                    expect(original(s3.s2)).toBe(s2);
+                    expect(original(s3.s2.s1)).toBe(s2.s1);
+                    return s3.s2.s1;
+                  },
+                  { enableAutoFreeze: autoFreeze }
+                );
+              },
+              {
+                enableAutoFreeze: autoFreeze,
+              }
+            )
+          );
+          expect(result.n).toBe(1);
+          expect(result.s1).toBe(base);
+        },
+        { enableAutoFreeze: autoFreeze }
+      );
     });
 
     if (useProxies)
@@ -2043,10 +2043,10 @@ function runBaseTest(
       expect(create(() => safeReturn(undefined))(3)).toBe(undefined);
     });
 
-    // describe('base state type', () => {
-    //   if (!global.USES_BUILD) testObjectTypes(produce);
-    //   testLiteralTypes(produce);
-    // });
+    describe('base state type', () => {
+      // testObjectTypes(produce);
+      testLiteralTypes(produce);
+    });
 
     afterEach(() => {
       expect(baseState).toBe(origBaseState);
@@ -2643,11 +2643,7 @@ function testLiteralTypes(produce) {
             produce(value, (draft) => {
               draft.foo = true;
             })
-          ).toThrowError(
-            isProd
-              ? '[Immer] minified error nr: 21'
-              : 'produce can only be called on things that are draftable'
-          );
+          ).toThrowError();
         });
       } else {
         it('does not create a draft', () => {

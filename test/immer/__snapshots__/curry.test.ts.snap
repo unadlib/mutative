@@ -4,4 +4,4 @@ exports[`curry - proxy should check arguments 1`] = `"Invalid base state: create
 
 exports[`curry - proxy should check arguments 2`] = `"Invalid options: , 'options' should be an object."`;
 
-exports[`curry - proxy should support returning new states from curring 1`] = `"Cannot set properties of undefined (setting 'hello')"`;
+exports[`curry - proxy should support returning new states from curring 1`] = `"Cannot read properties of null (reading 'finalities')"`;

@@ -209,7 +209,6 @@ export function createDraft<T extends object>(createDraftOptions: {
   const { original, parentDraft, key, finalities, options } =
     createDraftOptions;
   const type = getType(original);
-  // @ts-ignore
   const proxyDraft: ProxyDraft = {
     type,
     finalized: false,
@@ -273,24 +272,27 @@ export function finalizeDraft<T>(
   result: T,
   returnedValue: [T] | [],
   patches?: Patches,
-  inversePatches?: Patches
+  inversePatches?: Patches,
+  enableAutoFreeze?: boolean
 ) {
-  const proxyDraft = getProxyDraft(result)!;
-  const original = proxyDraft.original;
-  if (proxyDraft.operated) {
+  const proxyDraft = getProxyDraft(result);
+  const original = proxyDraft?.original ?? result;
+  const hasReturnedValue = !!returnedValue.length;
+  if (proxyDraft?.operated) {
     while (proxyDraft.finalities.draft.length > 0) {
       const finalize = proxyDraft.finalities.draft.pop()!;
       finalize(patches, inversePatches);
     }
   }
-  const hasReturnedValue = !!returnedValue.length;
   const state = hasReturnedValue
     ? returnedValue[0]
-    : proxyDraft.operated
-    ? proxyDraft.copy
-    : proxyDraft.original;
-  revokeProxy(proxyDraft);
-  if (proxyDraft.options.enableAutoFreeze) {
+    : proxyDraft
+    ? proxyDraft.operated
+      ? proxyDraft.copy
+      : proxyDraft.original
+    : result;
+  if (proxyDraft) revokeProxy(proxyDraft);
+  if (enableAutoFreeze) {
     deepFreeze(state);
   }
   return [

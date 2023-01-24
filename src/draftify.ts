@@ -1,5 +1,7 @@
 import { Finalities, Options, Patches, Result } from './interface';
 import { createDraft, finalizeDraft } from './draft';
+import { isDraftable } from './utils';
+import { dataTypes } from './constant';
 
 export function draftify<
   T extends object,
@@ -20,17 +22,28 @@ export function draftify<
     patches = [];
     inversePatches = [];
   }
-  const draft = createDraft({
-    original: baseState,
-    parentDraft: null,
-    finalities,
-    options,
-  });
+  const isMutable =
+    options.mark?.(baseState, dataTypes) === dataTypes.mutable ||
+    !isDraftable(baseState, options);
+  const draft = isMutable
+    ? baseState
+    : createDraft({
+        original: baseState,
+        parentDraft: null,
+        finalities,
+        options,
+      });
   return [
     draft,
     (returnedValue: [T] | [] = []) => {
       const [finalizedState, finalizedPatches, finalizedInversePatches] =
-        finalizeDraft(draft, returnedValue, patches, inversePatches);
+        finalizeDraft(
+          draft,
+          returnedValue,
+          patches,
+          inversePatches,
+          options.enableAutoFreeze
+        );
       return (
         options.enablePatches
           ? [finalizedState, finalizedPatches, finalizedInversePatches]

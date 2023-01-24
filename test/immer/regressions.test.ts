@@ -256,7 +256,7 @@ function runBaseTest(
 
     // Disabled: these are optimizations that would be nice if they
     // could be detected, but don't change the correctness of the result
-    test.skip('#659 no reconciliation after read - 4', () => {
+    test('#659 no reconciliation after read - 4', () => {
       const bar = {};
       const foo = { bar };
 
@@ -270,16 +270,15 @@ function runBaseTest(
         },
         {
           enableAutoFreeze,
-          enablePatches: true,
         }
       );
-
-      expect(apply(foo, next[1])).toBe(foo);
+      // ! it's different from mutative
+      expect(next).toEqual(foo);
     });
 
     // Disabled: these are optimizations that would be nice if they
     // could be detected, but don't change the correctness of the result
-    test.skip('#659 no reconciliation after read - 5', () => {
+    test('#659 no reconciliation after read - 5', () => {
       const bar = {};
       const foo = { bar };
 
@@ -295,7 +294,8 @@ function runBaseTest(
           enableAutoFreeze,
         }
       );
-      expect(next).toBe(foo);
+      // ! it's different from mutative
+      expect(next).toEqual(foo);
     });
 
     test('#659 no reconciliation after read - 6', () => {

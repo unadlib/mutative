@@ -241,13 +241,13 @@ it('works with return type of: number', () => {
   }
 });
 
-// it('can return an object type that is identical to the base type', () => {
-//   let base = { a: 0 } as { a: number };
-//   let result = create(base, (draft) => {
-//     return draft.a < 0 ? { a: 0 } : undefined;
-//   });
-//   assert(result, _ as { a: number });
-// });
+it('can return an object type that is identical to the base type', () => {
+  let base = { a: 0 } as { a: number };
+  let result = create(base, (draft) => {
+    return draft.a < 0 ? { a: 0 } : undefined;
+  });
+  assert(result, _ as { a: number });
+});
 
 it('can NOT return an object type that is _not_ assignable to the base type', () => {
   let base = { a: 0 } as { a: number };

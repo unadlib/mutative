@@ -370,3 +370,51 @@ describe('Currying', () => {
     });
   });
 });
+
+test(`check Primitive type`, () => {
+  class Foo {}
+  [
+    -1,
+    1,
+    0,
+    NaN,
+    BigInt(1),
+    Infinity,
+    '',
+    'test',
+    null,
+    false,
+    undefined,
+    Symbol('foo'),
+    new Date(),
+    new Foo(),
+    new WeakMap(),
+    new WeakSet(),
+  ].forEach((value: any) => {
+    expect(() => create(value)).toThrowError();
+  });
+});
+
+test(`check Primitive type with patches`, () => {
+  class Foo {}
+  [
+    -1,
+    1,
+    0,
+    NaN,
+    BigInt(1),
+    Infinity,
+    '',
+    'test',
+    null,
+    false,
+    undefined,
+    Symbol('foo'),
+    new Date(),
+    new Foo(),
+    new WeakMap(),
+    new WeakSet(),
+  ].forEach((value: any) => {
+    expect(() => create(value, { enablePatches: true })).toThrowError();
+  });
+});

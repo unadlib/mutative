@@ -5,3 +5,5 @@ exports[`manual - proxy cannot modify after finish 1`] = `"Cannot perform 'set' 
 exports[`manual - proxy should check arguments 1`] = `"Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable."`;
 
 exports[`manual - proxy should check arguments 2`] = `"Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable."`;
+
+exports[`manual - proxy should not finish twice 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
