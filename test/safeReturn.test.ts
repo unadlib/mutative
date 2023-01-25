@@ -18,6 +18,32 @@ test('base', () => {
   expect(create(() => safeReturn(undefined))(3)).toBe(undefined);
 });
 
+test('base enableAutoFreeze: true', () => {
+  create(
+    { a: { b: 1 } },
+    (draft) => {
+      return safeReturn({
+        a: draft.a,
+      });
+    },
+    { enableAutoFreeze: true }
+  );
+});
+
+test('base enableAutoFreeze: true - without safeReturn()', () => {
+  expect(() => {
+    create(
+      { a: { b: 1 } },
+      (draft) => {
+        return {
+          a: draft.a,
+        };
+      },
+      { enableAutoFreeze: true }
+    );
+  }).toThrowError();
+});
+
 describe.each([{ useSafeReturn: true }, { useSafeReturn: false }])(
   'check Primitive type $useSafeReturn',
   ({ useSafeReturn }) => {
