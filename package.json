@@ -11,6 +11,14 @@
   "react-native": "dist/mutative.esm.js",
   "source": "src/index.ts",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/mutative.esm.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": "./*"
+  },
   "files": [
     "dist",
     "src"
@@ -27,7 +35,7 @@
     "performance:sample": "cd test/performance && ts-node sample.ts",
     "performance:array-object": "cd test/performance && ts-node array-object.ts",
     "performance": "yarn perf && yarn performance:basic && yarn performance:set-map && yarn performance:big-object && yarn performance:sample && yarn performance:array-object",
-    "build": "tsdx build --format esm,cjs,umd",
+    "build": "tsdx build --format esm,cjs,umd && cp dist/mutative.esm.js dist/mutative.esm.mjs",
     "build:doc": "rimraf docs && typedoc --out docs src/index.ts --readme none",
     "commit": "yarn git-cz",
     "size": "size-limit",
@@ -69,8 +77,8 @@
     "@size-limit/webpack-why": "^8.1.0",
     "@types/jest": "^29.4.0",
     "@types/node": "^17.0.21",
-    "@typescript-eslint/eslint-plugin": "^5.15.0",
-    "@typescript-eslint/parser": "^5.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "@typescript-eslint/parser": "^5.49.0",
     "benchmark": "^2.1.4",
     "commitizen": "^4.2.4",
     "coveralls": "^3.1.1",
@@ -80,7 +88,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-prettier": "^4.0.0",
-    "immer": "^9.0.12",
+    "immer": "^9.0.18",
     "immutable": "^4.0.0",
     "jest": "^29.4.0",
     "jsdoc-tests": "^0.1.1",
@@ -94,12 +102,12 @@
     "seamless-immutable": "^7.1.4",
     "size-limit": "^8.1.0",
     "ts-jest": "^29.0.5",
-    "ts-node": "^10.7.0",
+    "ts-node": "^10.9.1",
     "tsdx": "^0.14.1",
     "tslib": "^2.3.1",
     "typedoc": "^0.22.13",
     "typedoc-plugin-markdown": "^3.11.14",
-    "typescript": "^4.6.2",
+    "typescript": "^4.9.4",
     "yargs": "^17.3.1"
   },
   "config": {
