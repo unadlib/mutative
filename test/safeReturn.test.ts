@@ -1,4 +1,4 @@
-import { create, safeReturn } from '../src';
+import { create, original, safeReturn } from '../src';
 
 test('base', () => {
   const base = 3;
@@ -155,7 +155,7 @@ test('error args', () => {
     // @ts-expect-error
     create(3, () => safeReturn(undefined, undefined))
   ).toThrowErrorMatchingInlineSnapshot(
-    `"Cannot read properties of null (reading 'finalities')"`
+    `"safeReturn() must be called with one argument."`
   );
 
   expect(() =>
@@ -302,4 +302,47 @@ test(`safe returning with non-enumerable or symbolic properties`, () => {
   // @ts-expect-error
   expect(state2.state).toBe(component.state);
   expect(state2[key]).toBe(state);
+});
+
+test('works with interweaved Immer instances with disable Freeze', () => {
+  const base = {};
+  const result = create(base, (s1) => {
+    const f = create(
+      { s1 },
+      (s2) => {
+        s2.s1 = s2.s1;
+      },
+      {
+        enableAutoFreeze: false,
+      }
+    );
+    return safeReturn(f);
+  });
+  // @ts-expect-error
+  expect(result.s1).toBe(base);
+});
+
+test('works with interweaved Immer instances with strict mode and disable Freeze', () => {
+  const base = {};
+  const result = create(
+    base,
+    (s1) => {
+      const f = create(
+        { s1 },
+        (s2) => {
+          s2.s1 = s2.s1;
+        },
+        {
+          enableAutoFreeze: false,
+        }
+      );
+      return f;
+    },
+    {
+      enableAutoFreeze: false,
+      strict: true,
+    }
+  );
+  // @ts-expect-error
+  expect(result.s1).toBe(base);
 });

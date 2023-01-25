@@ -1502,7 +1502,7 @@ function runBaseTest(
       });
 
       // "Upvalues" are variables from a parent scope.
-      it.skip('does not finalize upvalue drafts', () => {
+      it('does not finalize upvalue drafts', () => {
         produce({ a: {}, b: {} }, (parent) => {
           expect(produce({}, () => parent)).toBe(parent);
           parent.x; // Ensure proxy not revoked.
@@ -1520,11 +1520,11 @@ function runBaseTest(
         });
       });
 
-      it.skip(
-        'works with interweaved Immer instances',
-        () => {
-          const base = {};
-          const result = create(base, (s1) =>
+      it('works with interweaved Immer instances and disable freeze', () => {
+        const base = {};
+        const result = create(base, (s1) =>
+          // ! it's different from mutative
+          safeReturn(
             create(
               { s1 },
               (s2) => {
@@ -1537,19 +1537,20 @@ function runBaseTest(
                     expect(original(s3.s2.s1)).toBe(s2.s1);
                     return s3.s2.s1;
                   },
-                  { enableAutoFreeze: autoFreeze }
+                  // ! it's different from mutative
+                  { enableAutoFreeze: false }
                 );
               },
               {
-                enableAutoFreeze: autoFreeze,
+                // ! it's different from mutative
+                enableAutoFreeze: false,
               }
             )
-          );
-          expect(result.n).toBe(1);
-          expect(result.s1).toBe(base);
-        },
-        { enableAutoFreeze: autoFreeze }
-      );
+          )
+        );
+        expect(result.n).toBe(1);
+        expect(result.s1).toBe(base);
+      });
     });
 
     if (useProxies)

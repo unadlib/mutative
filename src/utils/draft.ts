@@ -85,7 +85,8 @@ export function isEqual(x: any, y: any) {
   }
 }
 
-export function revokeProxy(proxyDraft: ProxyDraft) {
+export function revokeProxy(proxyDraft: ProxyDraft | null) {
+  if (!proxyDraft) return;
   while (proxyDraft.finalities.revoke.length > 0) {
     const revoke = proxyDraft.finalities.revoke.pop()!;
     revoke();

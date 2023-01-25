@@ -1287,7 +1287,7 @@ test('do not allow prototype polution - 738', () => {
       { op: 'add', path: ['prototype', 'polluted'], value: 'yes' },
     ]);
   }).toThrowErrorMatchingInlineSnapshot(
-    `"Cannot read properties of null (reading 'finalities')"`
+    `"Patching reserved attributes like __proto__ and constructor is not allowed."`
   );
   // @ts-ignore
   expect(obj.polluted).toBe(undefined);
@@ -1390,9 +1390,13 @@ test('#648 assigning object to itself should not change patches', () => {
 });
 
 test('#791 patch for returning `undefined` is stored as undefined', () => {
-  const [newState, patches] = create({ abc: 123 }, (draft) => safeReturn(undefined), {
-    enablePatches: true,
-  });
+  const [newState, patches] = create(
+    { abc: 123 },
+    (draft) => safeReturn(undefined),
+    {
+      enablePatches: true,
+    }
+  );
   expect(patches).toEqual([{ op: 'replace', path: [], value: undefined }]);
 
   expect(apply({}, patches)).toEqual(undefined);

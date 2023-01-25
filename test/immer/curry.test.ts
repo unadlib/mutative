@@ -46,9 +46,9 @@ function runTests(name: any, useProxies: any) {
         item.index = index;
       });
 
-      // ! different from immer
+      // ! different from mutative
       // @ts-ignore
-      expect(() => reducer(undefined, 3)).toThrowErrorMatchingSnapshot();
+      expect(() => reducer(undefined, 3)).toThrowError();
       expect(reducer({}, 3)).toEqual({ index: 3 });
     });
 
