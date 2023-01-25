@@ -10,7 +10,8 @@ function runPatchTest(
   producer: any,
   patches: any,
   inversePatches?: any,
-  expectedResult?: any
+  expectedResult?: any,
+  options?: any
 ) {
   let resultProxies, resultEs5;
 
@@ -21,6 +22,7 @@ function runPatchTest(
       producer,
       {
         enablePatches: true,
+        ...options,
       }
     );
 
@@ -36,11 +38,11 @@ function runPatchTest(
     });
 
     test('patches are replayable', () => {
-      expect(apply(base, recordedPatches)).toEqual(res);
+      expect(apply(base, recordedPatches, options)).toEqual(res);
     });
 
     test('patches can be reversed', () => {
-      expect(apply(res, recordedInversePatches)).toEqual(base);
+      expect(apply(res, recordedInversePatches, options)).toEqual(base);
     });
 
     return res;
@@ -1164,39 +1166,48 @@ test('#559 patches works in a nested reducer with proxies', () => {
   expect(reversedSubState).toMatchObject(state.sub);
 });
 
-// describe.skip('#588', () => {
-//   const reference = { value: { num: 53 } };
+describe('#588', () => {
+  const reference = { value: { num: 53 } };
 
-//   class Base {
-//     get nested() {
-//       return reference.value;
-//     }
-//     set nested(value) {}
-//   }
+  class Base {
+    get nested() {
+      return reference.value;
+    }
+    set nested(value) {}
+  }
 
-//   let base = new Base();
+  let base = new Base();
 
-//   runPatchTest(
-//     base,
-//     (vdraft: any) => {
-//       reference.value = vdraft;
-//       create(
-//         base,
-//         (bdraft) => {
-//           bdraft.nested.num = 42;
-//         },
-//         {
-//           mark: (target, { immutable }) => {
-//             if (target instanceof Base) {
-//               return immutable;
-//             }
-//           },
-//         }
-//       );
-//     },
-//     [{ op: 'add', path: ['num'], value: 42 }]
-//   );
-// });
+  runPatchTest(
+    base,
+    (vdraft: any) => {
+      reference.value = vdraft;
+      create(
+        base,
+        (bdraft) => {
+          bdraft.nested.num = 42;
+        },
+        {
+          mark: (target: any, { immutable }: any) => {
+            if (target instanceof Base) {
+              return immutable;
+            }
+          },
+        }
+      );
+    },
+    [{ op: 'add', path: ['num'], value: 42 }],
+    undefined,
+    undefined,
+    {
+      mark: (target: any, { immutable }: any) => {
+        if (target instanceof Base) {
+          return immutable;
+        }
+      },
+    }
+  );
+});
 
 test('#676 patching Date objects', () => {
   class Test {

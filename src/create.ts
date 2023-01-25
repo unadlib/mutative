@@ -125,7 +125,7 @@ function create(arg0: any, arg1: any, arg2?: any): any {
   try {
     result = mutate(draft);
   } catch (error) {
-    revokeProxy(getProxyDraft(draft)!);
+    revokeProxy(getProxyDraft(draft));
     throw error;
   }
   const returnValue = (value: any) => {
