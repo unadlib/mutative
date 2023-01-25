@@ -20,7 +20,7 @@
     "clean": "rimraf dist",
     "test:coverage": "jest --coverage && coveralls < coverage/lcov.info",
     "perf": "cd test/performance && ts-node add-data.ts && ts-node todo.ts && ts-node incremental.ts",
-    "benchmark": "yarn build && ts-node test/performance/benchmarks/benchmark.ts",
+    "benchmark": "yarn build && ts-node test/performance/benchmark.ts",
     "performance:basic": "cd test/performance && ts-node index.ts",
     "performance:set-map": "cd test/performance && ts-node set-map.ts",
     "performance:big-object": "cd test/performance && ts-node big-object.ts",
