@@ -109,6 +109,7 @@ test('access primitive type and immutable object', () => {
     '',
     'test',
     null,
+    true,
     false,
     undefined,
     Symbol('foo'),

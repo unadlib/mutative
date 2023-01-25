@@ -126,7 +126,7 @@ function generatePatchesFromAssigned(
   patches: Patches,
   inversePatches: Patches
 ) {
-  assignedMap?.forEach((assignedValue, key) => {
+  assignedMap!.forEach((assignedValue, key) => {
     const originalValue = get(original, key);
     const value = cloneIfNeeded(get(copy, key));
     const op = !assignedValue

@@ -1928,3 +1928,78 @@ test('Set with enable patches in root', () => {
   expect(patches).toEqual([{ op: 'add', path: [2], value: {} }]);
   expect(inversePatches).toEqual([{ op: 'remove', path: [2], value: {} }]);
 });
+
+test('copy error: check stable mark()', () => {
+  let time = 0;
+  class Foo {
+    bar = 0;
+  }
+  expect(() => {
+    create(
+      {
+        foo: new Foo(),
+      },
+
+      (draft) => {
+        draft.foo.bar = 1;
+      },
+      {
+        mark: (target, { immutable }) => {
+          if (target instanceof Foo && time < 2) {
+            time += 1;
+            return immutable;
+          }
+        },
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(
+    `"Please check mark() to ensure that it is a stable marker draftable function."`
+  );
+});
+
+test('enablePatches and changes', () => {
+  expect(() => {
+    create(
+      { a: { b: 1 }, c: 1 },
+      (draft) => {
+        draft.c = 2;
+        draft.a.b;
+      },
+      {
+        enablePatches: true,
+      }
+    );
+  }).not.toThrowError();
+});
+
+test(`Don't auto freeze non-enumerable or symbolic properties`, () => {
+  const component = {};
+  Object.defineProperty(component, 'state', {
+    value: { x: 1 },
+    enumerable: false,
+    writable: true,
+    configurable: true,
+  });
+
+  const state = {
+    x: 1,
+  };
+
+  const state2: any = create(
+    state,
+    (draft) => {
+      // @ts-expect-error
+      draft.ref = component;
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+
+  state2.ref.state.x++;
+
+  expect(Object.isFrozen(state2)).toBeTruthy();
+  expect(Object.isFrozen(state2.ref)).toBeTruthy();
+  // Do not auto freeze non-enumerable or symbolic properties
+  expect(Object.isFrozen(state2.ref.state)).toBeFalsy();
+});

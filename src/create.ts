@@ -142,13 +142,13 @@ function create(arg0: any, arg1: any, arg2?: any): any {
       }
       if (safeReturnValue.length) {
         const _value = safeReturnValue.pop();
-        if (_value !== undefined) {
+        if (typeof value === 'object' && value !== null) {
           handleReturnValue(value);
         }
         return finalize([_value]);
       }
       if (value !== undefined) {
-        if (_options.strict) {
+        if (_options.strict && typeof value === 'object' && value !== null) {
           handleReturnValue(value, true);
         }
         return finalize([value]);

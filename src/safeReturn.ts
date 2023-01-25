@@ -7,7 +7,11 @@ export function safeReturn<T extends object | undefined>(value: T): T {
   if (arguments.length > 1) {
     throw new Error('safeReturn() must be called with one argument.');
   }
-  if (__DEV__ && value !== undefined && typeof value !== 'object') {
+  if (
+    __DEV__ &&
+    value !== undefined &&
+    (typeof value !== 'object' || value === null)
+  ) {
     console.warn(
       'safeReturn() must be called with an object or undefined, other types do not need to be returned via safeReturn().'
     );
