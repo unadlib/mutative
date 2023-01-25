@@ -236,8 +236,8 @@ export function createDraft<T extends object>(createDraftOptions: {
   proxyDraft.proxy = proxy;
   if (parentDraft) {
     const target = parentDraft;
-    const oldProxyDraft = getProxyDraft(proxy)!;
     target.finalities.draft.push((patches, inversePatches) => {
+      const oldProxyDraft = getProxyDraft(proxy)!;
       // if target is a Set draft, `setMap` is the real Set copies proxy mapping.
       const proxyDraft = getProxyDraft(
         get(target.type === DraftType.Set ? target.setMap : target.copy, key!)

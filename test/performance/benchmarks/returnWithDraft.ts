@@ -9,7 +9,7 @@ import produce, {
   setAutoFreeze,
   setUseProxies,
 } from 'immer';
-import { create } from '../../..';
+import { create, safeReturn } from '../../..';
 
 const getData = () => {
   const baseState: { arr: any[]; map: Record<string, any> } = {
@@ -45,11 +45,11 @@ suite
     'Mutative - No Freeze(by default)',
     function () {
       const state = create(baseState, (draft) => {
-        return {
+        return safeReturn({
           ...baseState,
           arr: [...draft.arr, i],
           map: { ...draft.map, [i]: { i } },
-        };
+        });
       });
     },
     {
@@ -85,11 +85,11 @@ suite
       const state = create(
         baseState,
         (draft) => {
-          return {
+          return safeReturn({
             ...baseState,
             arr: [...draft.arr, i],
             map: { ...draft.map, [i]: { i } },
-          };
+          });
         },
         {
           enableAutoFreeze: true,
@@ -130,11 +130,11 @@ suite
       const state = create(
         baseState,
         (draft) => {
-          return {
+          return safeReturn({
             ...baseState,
             arr: [...draft.arr, i],
             map: { ...draft.map, [i]: { i } },
-          };
+          });
         },
         {
           enableAutoFreeze: false,
@@ -176,11 +176,11 @@ suite
       const state = create(
         baseState,
         (draft) => {
-          return {
+          return safeReturn({
             ...baseState,
             arr: [...draft.arr, i],
             map: { ...draft.map, [i]: { i } },
-          };
+          });
         },
         {
           enableAutoFreeze: true,

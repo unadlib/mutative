@@ -13,13 +13,14 @@ import {
 
 export function handleReturnValue<T extends object>(value: T, warning = false) {
   forEach(value, (key, item, source) => {
-    if (isDraft(item)) {
+    const proxyDraft = getProxyDraft(item);
+    if (proxyDraft) {
       if (warning) {
         console.warn(
           `The return value contains drafts, please use safeReturn() to wrap the return value.`
         );
       }
-      const currentValue = current(item);
+      const currentValue = proxyDraft.original;
       if (source instanceof Set) {
         const arr = Array.from(source);
         source.clear();

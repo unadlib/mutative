@@ -372,3 +372,13 @@ test('works with interweaved Immer instances with strict mode and disable Freeze
   // @ts-expect-error
   expect(result.s1).toBe(base);
 });
+
+test('deep draft', () => {
+  const state = create({ a: { b: { c: 1 } } }, (draft) => {
+    draft.a.b.c;
+    return safeReturn({
+      a: draft.a,
+    });
+  });
+  expect(state).toEqual({ a: { b: { c: 1 } } });
+});
