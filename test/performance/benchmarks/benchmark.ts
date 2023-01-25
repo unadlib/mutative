@@ -9,19 +9,7 @@ import produce, {
   setAutoFreeze,
   setUseProxies,
 } from 'immer';
-import { create } from '../..';
-
-const result = [
-  {
-    '': 'Mutative',
-  },
-  {
-    '': 'Immer',
-  },
-  {
-    '': 'Naive handcrafted reducer',
-  },
-];
+import { create } from '../../..';
 
 const getData = () => {
   const baseState: { arr: any[]; map: Record<string, any> } = {
@@ -54,27 +42,14 @@ const suite = new Suite();
 
 suite
   .add(
-    'Naive handcrafted reducer - No Freeze',
-    function () {
-      const state = {
-        ...baseState,
-        arr: [...baseState.arr, i],
-        map: { ...baseState.map, [i]: { i } },
-      };
-    },
-    {
-      onStart: () => {
-        i = Math.random();
-        baseState = getData();
-      },
-    }
-  )
-  .add(
     'Mutative - No Freeze(by default)',
     function () {
       const state = create(baseState, (draft) => {
-        draft.arr.push(i);
-        draft.map[i] = i;
+        return {
+          ...baseState,
+          arr: [...draft.arr, i],
+          map: { ...draft.map, [i]: { i } },
+        };
       });
     },
     {
@@ -88,8 +63,11 @@ suite
     'Immer - No Freeze',
     function () {
       const state = produce(baseState, (draft: any) => {
-        draft.arr.push(i);
-        draft.map[i] = i;
+        return {
+          ...baseState,
+          arr: [...draft.arr, i],
+          map: { ...draft.map, [i]: { i } },
+        };
       });
     },
     {
@@ -107,8 +85,11 @@ suite
       const state = create(
         baseState,
         (draft) => {
-          draft.arr.push(i);
-          draft.map[i] = i;
+          return {
+            ...baseState,
+            arr: [...draft.arr, i],
+            map: { ...draft.map, [i]: { i } },
+          };
         },
         {
           enableAutoFreeze: true,
@@ -127,8 +108,11 @@ suite
     'Immer - Freeze(by default)',
     function () {
       const state = produce(baseState, (draft: any) => {
-        draft.arr.push(i);
-        draft.map[i] = i;
+        return {
+          ...baseState,
+          arr: [...draft.arr, i],
+          map: { ...draft.map, [i]: { i } },
+        };
       });
     },
     {
@@ -146,8 +130,11 @@ suite
       const state = create(
         baseState,
         (draft) => {
-          draft.arr.push(i);
-          draft.map[i] = i;
+          return {
+            ...baseState,
+            arr: [...draft.arr, i],
+            map: { ...draft.map, [i]: { i } },
+          };
         },
         {
           enableAutoFreeze: false,
@@ -166,8 +153,11 @@ suite
     'Immer - Patches and No Freeze',
     function () {
       const state = produceWithPatches(baseState, (draft: any) => {
-        draft.arr.push(i);
-        draft.map[i] = i;
+        return {
+          ...baseState,
+          arr: [...draft.arr, i],
+          map: { ...draft.map, [i]: { i } },
+        };
       });
     },
     {
@@ -186,8 +176,11 @@ suite
       const state = create(
         baseState,
         (draft) => {
-          draft.arr.push(i);
-          draft.map[i] = i;
+          return {
+            ...baseState,
+            arr: [...draft.arr, i],
+            map: { ...draft.map, [i]: { i } },
+          };
         },
         {
           enableAutoFreeze: true,
@@ -206,8 +199,11 @@ suite
     'Immer - Patches and Freeze',
     function () {
       const state = produceWithPatches(baseState, (draft: any) => {
-        draft.arr.push(i);
-        draft.map[i] = i;
+        return {
+          ...baseState,
+          arr: [...draft.arr, i],
+          map: { ...draft.map, [i]: { i } },
+        };
       });
     },
     {
@@ -222,33 +218,8 @@ suite
   )
   .on('cycle', function (event) {
     console.log(String(event.target));
-    const [name] = event.target.name.split(' - ');
-    const index = result.findIndex((i) => i[''] === name);
-    result[index][event.target.name] = Math.round(event.target.hz);
   })
   .on('complete', function () {
     console.log('The fastest method is ' + this.filter('fastest').map('name'));
   })
   .run({ async: false });
-
-try {
-  // Mutative vs Immer Performance
-  // Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better.
-  const fields = [];
-  result.forEach((item) => {
-    fields.push(...Object.keys(item).slice(1));
-  });
-  result.forEach((item) => {
-    fields.forEach((field) => {
-      if (!(field in item)) {
-        item[field] = '-';
-      }
-    });
-  });
-  const csv = parse(result, {
-    fields: ['', ...fields.reverse()],
-  });
-  fs.writeFileSync('benchmark.csv', csv);
-} catch (err) {
-  console.error(err);
-}
