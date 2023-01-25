@@ -100,42 +100,45 @@ function runTests(name: any, useProxies: any) {
       expect(res2).toEqual({ a: 2, b: 4 });
     });
 
-    // it('combines with produce - 2', () => {
-    //   const state = { a: 1 };
+    it('combines with produce - 2', () => {
+      const state = { a: 1 } as any;
 
-    //   const res1 = create(state, (draft) => {
-    //     draft.b = 3;
-    //     const draft2 = create(draft);
-    //     draft.c = 4;
-    //     draft2.d = 5;
-    //     const res2 = finalize(draft2);
-    //     expect(res2).toEqual({
-    //       a: 1,
-    //       b: 3,
-    //       d: 5,
-    //     });
-    //     draft.d = 2;
-    //   });
-    //   expect(res1).toEqual({
-    //     a: 1,
-    //     b: 3,
-    //     c: 4,
-    //     d: 2,
-    //   });
-    // });
+      const res1 = create(state, (draft) => {
+        draft.b = 3;
+        const [draft2, finalize] = create(draft);
+        draft.c = 4;
+        draft2.d = 5;
+        const res2 = finalize();
+        expect(res2).toEqual({
+          a: 1,
+          b: 3,
+          d: 5,
+        });
+        draft.d = 2;
+      });
+      expect(res1).toEqual({
+        a: 1,
+        b: 3,
+        c: 4,
+        d: 2,
+      });
+    });
 
-    // !global.USES_BUILD &&
-    //   it('should not finish drafts from produce', () => {
-    //     create({ x: 1 }, (draft) => {
-    //       expect(() => finalize(draft)).toThrowErrorMatchingSnapshot();
-    //     });
-    //   });
+    it('should not finish drafts from produce', () => {
+      create({ x: 1 }, (draft) => {
+        expect(() => {
+          const [_, finalize] = create(draft);
+          finalize();
+          // ! it's different from mutative
+        }).not.toThrowError();
+      });
+    });
 
-    // it('should not finish twice', () => {
-    //   const draft = create({ a: 1 });
-    //   draft.a++;
-    //   finalize(draft);
-    //   expect(() => finalize(draft)).toThrowErrorMatchingSnapshot();
-    // });
+    it('should not finish twice', () => {
+      const [draft, finalize] = create({ a: 1 });
+      draft.a++;
+      finalize();
+      expect(() => finalize()).toThrowErrorMatchingSnapshot();
+    });
   });
 }

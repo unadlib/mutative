@@ -24,7 +24,10 @@ export function finalizePatches(
     });
   }
   const shouldFinalize =
-    target.operated && target.assignedMap.size > 0 && !target.finalized;
+    target.operated &&
+    target.assignedMap &&
+    target.assignedMap.size > 0 &&
+    !target.finalized;
   if (shouldFinalize) {
     if (patches && inversePatches) {
       const basePath = getPath(target);
@@ -61,7 +64,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
   }
   if (isDraftable(value, target.options)) {
     // !case: assign the non-draft value
-    target.finalities.draft.unshift(() => {
+    target.finalities.draft.push(() => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
       if (isEqual(get(copy, key), value)) {
         finalizeAssigned(target, key);
@@ -83,7 +86,7 @@ function generateArrayPatches(
     [patches, inversePatches] = [inversePatches, patches];
   }
   for (let index = 0; index < original.length; index += 1) {
-    if (assignedMap.get(index.toString()) && copy[index] !== original[index]) {
+    if (assignedMap!.get(index.toString()) && copy[index] !== original[index]) {
       const path = basePath.concat([index]);
       patches.push({
         op: Operation.Replace,
@@ -123,7 +126,7 @@ function generatePatchesFromAssigned(
   patches: Patches,
   inversePatches: Patches
 ) {
-  assignedMap.forEach((assignedValue, key) => {
+  assignedMap!.forEach((assignedValue, key) => {
     const originalValue = get(original, key);
     const value = cloneIfNeeded(get(copy, key));
     const op = !assignedValue

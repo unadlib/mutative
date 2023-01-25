@@ -1,5 +1,13 @@
 import { assert } from './assert';
-import { create, Draft, Immutable, apply, castDraft, castImmutable } from '../../src';
+import {
+  create,
+  Draft,
+  Immutable,
+  apply,
+  castDraft,
+  castImmutable,
+  safeReturn,
+} from '../../src';
 
 interface State {
   readonly num: number;
@@ -233,13 +241,13 @@ it('works with return type of: number', () => {
   }
 });
 
-// it('can return an object type that is identical to the base type', () => {
-//   let base = { a: 0 } as { a: number };
-//   let result = create(base, (draft) => {
-//     return draft.a < 0 ? { a: 0 } : undefined;
-//   });
-//   assert(result, _ as { a: number });
-// });
+it('can return an object type that is identical to the base type', () => {
+  let base = { a: 0 } as { a: number };
+  let result = create(base, (draft) => {
+    return draft.a < 0 ? { a: 0 } : undefined;
+  });
+  assert(result, _ as { a: number });
+});
 
 it('can NOT return an object type that is _not_ assignable to the base type', () => {
   let base = { a: 0 } as { a: number };
@@ -256,20 +264,20 @@ it('does not enforce immutability at the type level', () => {
   assert(result, _ as any[]);
 });
 
-// it('can produce an undefined value', () => {
-//   type State = { readonly a: number } | undefined;
-//   const base = { a: 0 } as State;
+it('can produce an undefined value', () => {
+  type State = { readonly a: number } | undefined;
+  const base = { a: 0 } as State;
 
-//   // Return only nothing.
-//   let result = create(base, (_) => nothing);
-//   assert(result, _ as State);
+  // Return only nothing.
+  let result = create(base, (_) => safeReturn(undefined));
+  assert(result, _ as State);
 
-//   // Return maybe nothing.
-//   let result2 = create(base, (draft) => {
-//     if (draft?.a ?? 0 > 0) return nothing;
-//   });
-//   assert(result2, _ as State);
-// });
+  // Return maybe nothing.
+  let result2 = create(base, (draft) => {
+    if (draft?.a ?? 0 > 0) return safeReturn(undefined);
+  });
+  assert(result2, _ as State);
+});
 
 it('can return the draft itself', () => {
   let base = _ as { readonly a: number };
@@ -477,8 +485,10 @@ it('works with ReadonlyMap and ReadonlySet', () => {
 
 it('shows error in production if called incorrectly', () => {
   expect(() => {
-    create(null as any);
-  }).toThrow('create() only supports plain object, array, set, and map.');
+    create(null);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `"Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable."`
+  );
 });
 
 it('#749 types Immer', () => {
@@ -497,7 +507,9 @@ it('#749 types Immer', () => {
 });
 
 it('infers draft, #720', () => {
-  function nextNumberCalculator(fn: (base: Draft<{s: number}>) => {s: number}) {
+  function nextNumberCalculator(
+    fn: (base: Draft<{ s: number }>) => { s: number }
+  ) {
     // noop
   }
 
@@ -515,7 +527,7 @@ it('infers draft, #720', () => {
 });
 
 it('infers draft, #720', () => {
-  function nextNumberCalculator(fn: (base: {s: number}) => {s: number}) {
+  function nextNumberCalculator(fn: (base: { s: number }) => { s: number }) {
     // noop
   }
 
@@ -727,27 +739,26 @@ it('infers async curried', async () => {
       state.count++;
     });
   }
-  // {
-  //   // nothing allowed
-  //   const res = create(base as State | undefined, (draft) => {
-  //     return nothing;
-  //   });
-  //   assert(res, _ as State | undefined);
-  // }
-  // {
-  //   // as any
-  //   const res = create(base as State, (draft) => {
-  //     return nothing as any;
-  //   });
-  //   assert(res, _ as State);
-  // }
-  // {
-  //   // nothing not allowed
-  //   // @ts-expect-error
-  //   create(base as State, (draft) => {
-  //     return nothing;
-  //   });
-  // }
+  {
+    // nothing allowed
+    const res = create(base as State | undefined, (draft) => {
+      return safeReturn(undefined);
+    });
+    assert(res, _ as State | undefined);
+  }
+  {
+    // as any
+    const res = create(base as State, (draft) => {
+      return safeReturn(undefined);
+    });
+    assert(res, _ as State);
+  }
+  {
+    // nothing not allowed
+    create(base as State, (draft) => {
+      return safeReturn(undefined);
+    });
+  }
   {
     const f = create((draft: State) => {});
     const n = f(base as State);

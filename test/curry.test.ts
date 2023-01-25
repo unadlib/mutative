@@ -99,8 +99,8 @@ describe('Currying', () => {
     const baseState = new Foo();
     expect(() => {
       create(baseState);
-    }).toThrowError(
-      `create() only supports plain object, array, set, and map.`
+    }).toThrowErrorMatchingInlineSnapshot(
+      `"Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable."`
     );
   });
   test('Currying with draftable state and hook', () => {
@@ -368,5 +368,55 @@ describe('Currying', () => {
       },
       list: [],
     });
+  });
+});
+
+test(`check Primitive type`, () => {
+  class Foo {}
+  [
+    -1,
+    1,
+    0,
+    NaN,
+    BigInt(1),
+    Infinity,
+    '',
+    'test',
+    null,
+    true,
+    false,
+    undefined,
+    Symbol('foo'),
+    new Date(),
+    new Foo(),
+    new WeakMap(),
+    new WeakSet(),
+  ].forEach((value: any) => {
+    expect(() => create(value)).toThrowError();
+  });
+});
+
+test(`check Primitive type with patches`, () => {
+  class Foo {}
+  [
+    -1,
+    1,
+    0,
+    NaN,
+    BigInt(1),
+    Infinity,
+    '',
+    'test',
+    null,
+    true,
+    false,
+    undefined,
+    Symbol('foo'),
+    new Date(),
+    new Foo(),
+    new WeakMap(),
+    new WeakSet(),
+  ].forEach((value: any) => {
+    expect(() => create(value, { enablePatches: true })).toThrowError();
   });
 });

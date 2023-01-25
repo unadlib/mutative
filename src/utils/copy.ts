@@ -60,7 +60,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
     return copy;
   } else {
     throw new Error(
-      `Unsupported type: ${original}, only plain objects, arrays, Set and Map are supported`
+      `Please check mark() to ensure that it is a stable marker draftable function.`
     );
   }
 }

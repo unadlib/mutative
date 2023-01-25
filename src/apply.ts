@@ -31,6 +31,17 @@ export function apply<T extends object, F extends boolean = false>(
     Exclude<keyof Options<boolean, F>, 'enablePatches'>
   >
 ) {
+  let i: number;
+  for (i = patches.length - 1; i >= 0; i -= 1) {
+    const { value, op, path } = patches[i];
+    if (!path.length && op === Operation.Replace) {
+      state = value;
+      break;
+    }
+  }
+  if (i > -1) {
+    patches = patches.slice(i + 1);
+  }
   const mutate = (draft: Draft<T>) => {
     patches.forEach((patch) => {
       const { path, op } = patch;
@@ -39,8 +50,10 @@ export function apply<T extends object, F extends boolean = false>(
         const parentType = getType(base);
         const key = String(path[index]);
         if (
-          (parentType === DraftType.Object || parentType === DraftType.Array) &&
-          (key === '__proto__' || key === 'constructor')
+          ((parentType === DraftType.Object ||
+            parentType === DraftType.Array) &&
+            (key === '__proto__' || key === 'constructor')) ||
+          (typeof base === 'function' && key === 'prototype')
         ) {
           throw new Error(
             `Patching reserved attributes like __proto__ and constructor is not allowed.`
@@ -103,7 +116,7 @@ export function apply<T extends object, F extends boolean = false>(
     });
   };
   if (isDraft(state)) {
-    if (typeof applyOptions !== 'undefined') {
+    if (applyOptions !== undefined) {
       throw new Error(`Cannot apply patches with options to a draft.`);
     }
     mutate(state as Draft<T>);

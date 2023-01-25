@@ -6,7 +6,9 @@ test('check object type', () => {
 
   create(data, (draft) => {
     expect(typeof draft === 'object').toBeTruthy();
-    expect(Object.prototype.toString.call(draft) === '[object Object]').toBeTruthy();
+    expect(
+      Object.prototype.toString.call(draft) === '[object Object]'
+    ).toBeTruthy();
   });
 });
 
@@ -15,7 +17,9 @@ test('check array type', () => {
 
   create(data, (draft) => {
     expect(Array.isArray(draft)).toBeTruthy();
-    expect(Object.prototype.toString.call(draft) === '[object Array]').toBeTruthy();
+    expect(
+      Object.prototype.toString.call(draft) === '[object Array]'
+    ).toBeTruthy();
     expect(draft.length).toBe(1);
   });
 });
@@ -1996,4 +2000,132 @@ test('should handle equality correctly about NaN', () => {
     expect(draft[PROXY_DRAFT].assignedMap.get('z')).toBe(undefined);
   });
   expect(nextState.x).toBe('s2');
+});
+
+test('check Primitive type with returning', () => {
+  [
+    -1,
+    1,
+    0,
+    NaN,
+    BigInt(1),
+    Infinity,
+    '',
+    'test',
+    null,
+    true,
+    false,
+    undefined,
+    Symbol('foo'),
+  ].forEach((value: any) => {
+    expect(
+      create(value, (draft) => {
+        return '';
+      })
+    ).toBe('');
+  });
+});
+
+test('check Primitive type with returning and patches', () => {
+  [
+    -1,
+    1,
+    0,
+    NaN,
+    BigInt(1),
+    Infinity,
+    '',
+    'test',
+    null,
+    true,
+    false,
+    undefined,
+    Symbol('foo'),
+  ].forEach((value: any) => {
+    expect(
+      create(
+        value,
+        (draft) => {
+          return '';
+        },
+        {
+          enablePatches: true,
+        }
+      )
+    ).toEqual([
+      '',
+      [{ op: 'replace', path: [], value: '' }],
+      [{ op: 'replace', path: [], value: value }],
+    ]);
+  });
+});
+
+test('check Primitive type with returning, patches and freeze', () => {
+  [
+    -1,
+    1,
+    0,
+    NaN,
+    BigInt(1),
+    Infinity,
+    '',
+    'test',
+    null,
+    true,
+    false,
+    undefined,
+    Symbol('foo'),
+  ].forEach((value: any) => {
+    expect(
+      create(
+        value,
+        (draft) => {
+          return '';
+        },
+        {
+          enableAutoFreeze: true,
+          enablePatches: true,
+        }
+      )
+    ).toEqual([
+      '',
+      [{ op: 'replace', path: [], value: '' }],
+      [{ op: 'replace', path: [], value: value }],
+    ]);
+  });
+});
+
+test('check Primitive type with returning, patches, freeze and async', async () => {
+  for (const value of [
+    -1,
+    1,
+    0,
+    NaN,
+    BigInt(1),
+    Infinity,
+    '',
+    'test',
+    null,
+    true,
+    false,
+    undefined,
+    Symbol('foo'),
+  ]) {
+    await expect(
+      await create(
+        value,
+        async (draft) => {
+          return '';
+        },
+        {
+          enableAutoFreeze: true,
+          enablePatches: true,
+        }
+      )
+    ).toEqual([
+      '',
+      [{ op: 'replace', path: [], value: '' }],
+      [{ op: 'replace', path: [], value: value }],
+    ]);
+  }
 });

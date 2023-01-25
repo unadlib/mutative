@@ -4,6 +4,7 @@ import {
   Patches,
   ProxyDraft,
   Options,
+  Operation,
 } from './interface';
 import { dataTypes, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
@@ -131,6 +132,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
       // !case: ignore the case of assigning the original draftable value to a draft
       target.copy![key] = value;
+      target.assignedMap = target.assignedMap ?? new Map();
       target.assignedMap.set(key, false);
       return true;
     }
@@ -144,9 +146,9 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     markChanged(target);
     if (has(target.original, key) && isEqual(value, target.original[key])) {
       // !case: handle the case of assigning the original non-draftable value to a draft
-      target.assignedMap.delete(key);
+      target.assignedMap!.delete(key);
     } else {
-      target.assignedMap.set(key, true);
+      target.assignedMap!.set(key, true);
     }
     target.copy![key] = value;
     markFinalization(target, key, value);
@@ -186,8 +188,9 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       // !case: delete an existing key
       ensureShallowCopy(target);
       markChanged(target);
-      target.assignedMap.set(key, false);
+      target.assignedMap!.set(key, false);
     } else {
+      target.assignedMap = target.assignedMap ?? new Map();
       // The original non-existent key has been deleted
       target.assignedMap.delete(key);
     }
@@ -215,7 +218,6 @@ export function createDraft<T extends object>(createDraftOptions: {
     proxy: null,
     finalities,
     options,
-    assignedMap: new Map(),
     // Mapping of draft Set items to their corresponding draft values.
     setMap:
       type === DraftType.Set
@@ -223,19 +225,19 @@ export function createDraft<T extends object>(createDraftOptions: {
         : undefined,
   };
   // !case: undefined as a draft map key
-  if (Object.hasOwnProperty.call(createDraftOptions, 'key')) {
+  if (key || 'key' in createDraftOptions) {
     proxyDraft.key = key;
   }
   const { proxy, revoke } = Proxy.revocable<any>(
-    Array.isArray(original) ? Object.assign([], proxyDraft) : proxyDraft,
+    type === DraftType.Array ? Object.assign([], proxyDraft) : proxyDraft,
     proxyHandler
   );
-  finalities.revoke.unshift(revoke);
+  finalities.revoke.push(revoke);
   proxyDraft.proxy = proxy;
   if (parentDraft) {
     const target = parentDraft;
-    const oldProxyDraft = getProxyDraft(proxy)!;
-    target.finalities.draft.unshift((patches, inversePatches) => {
+    target.finalities.draft.push((patches, inversePatches) => {
+      const oldProxyDraft = getProxyDraft(proxy)!;
       // if target is a Set draft, `setMap` is the real Set copies proxy mapping.
       const proxyDraft = getProxyDraft(
         get(target.type === DraftType.Set ? target.setMap : target.copy, key!)
@@ -257,7 +259,7 @@ export function createDraft<T extends object>(createDraftOptions: {
   } else {
     // !case: handle the root draft
     const target = getProxyDraft(proxy)!;
-    target.finalities.draft.unshift((patches, inversePatches) => {
+    target.finalities.draft.push((patches, inversePatches) => {
       finalizePatches(target, patches, inversePatches);
     });
   }
@@ -268,21 +270,38 @@ internal.createDraft = createDraft;
 
 export function finalizeDraft<T>(
   result: T,
+  returnedValue: [T] | [],
   patches?: Patches,
-  inversePatches?: Patches
+  inversePatches?: Patches,
+  enableAutoFreeze?: boolean
 ) {
-  const proxyDraft = getProxyDraft(result as any)!;
-  for (const finalize of proxyDraft.finalities.draft) {
-    finalize(patches, inversePatches);
+  const proxyDraft = getProxyDraft(result);
+  const original = proxyDraft?.original ?? result;
+  const hasReturnedValue = !!returnedValue.length;
+  if (proxyDraft?.operated) {
+    while (proxyDraft.finalities.draft.length > 0) {
+      const finalize = proxyDraft.finalities.draft.pop()!;
+      finalize(patches, inversePatches);
+    }
   }
-  const state = proxyDraft.operated ? proxyDraft.copy : proxyDraft.original;
-  revokeProxy(proxyDraft);
-  if (proxyDraft.options.enableAutoFreeze) {
+  const state = hasReturnedValue
+    ? returnedValue[0]
+    : proxyDraft
+    ? proxyDraft.operated
+      ? proxyDraft.copy
+      : proxyDraft.original
+    : result;
+  if (proxyDraft) revokeProxy(proxyDraft);
+  if (enableAutoFreeze) {
     deepFreeze(state);
   }
-  return [state, patches, inversePatches] as [
-    T,
-    Patches | undefined,
-    Patches | undefined
-  ];
+  return [
+    state,
+    patches && hasReturnedValue
+      ? [{ op: Operation.Replace, path: [], value: returnedValue[0] }]
+      : patches,
+    inversePatches && hasReturnedValue
+      ? [{ op: Operation.Replace, path: [], value: original }]
+      : inversePatches,
+  ] as [T, Patches | undefined, Patches | undefined];
 }

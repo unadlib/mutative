@@ -1,6 +1,6 @@
 // @ts-nocheck
 'use strict';
-import { create, original, isDraft } from '../../src';
+import { create, original, isDraft, safeReturn } from '../../src';
 import deepFreeze from 'deep-freeze';
 import * as lodash from 'lodash';
 import { getType } from '../../src/utils';
@@ -37,9 +37,9 @@ function shallowCopy(base: any) {
 
 const isProd = process.env.NODE_ENV === 'production';
 
-// test('immer should have no dependencies', () => {
-//   expect(require('../package.json').dependencies).toBeUndefined();
-// });
+test('should have no dependencies', () => {
+  expect(require('../../package.json').dependencies).toBeUndefined();
+});
 
 runBaseTest('proxy (no freeze)', false, false);
 runBaseTest('proxy (autofreeze)', true, false);
@@ -994,20 +994,24 @@ function runBaseTest(
           value: 1,
           enumerable: false,
         });
-        const nextState = produce(baseState, (s) => {
-          expect(s.foo).toBeTruthy();
-          expect(isEnumerable(s, 'foo')).toBeFalsy();
-          s.bar++;
-          expect(isEnumerable(s, 'foo')).toBeFalsy();
-          s.foo.a++;
-          expect(isEnumerable(s, 'foo')).toBeFalsy();
-        }, {
-          mark: (target, { immutable }) => {
-            if (target === baseState) {
-              return immutable;
-            }
+        const nextState = produce(
+          baseState,
+          (s) => {
+            expect(s.foo).toBeTruthy();
+            expect(isEnumerable(s, 'foo')).toBeFalsy();
+            s.bar++;
+            expect(isEnumerable(s, 'foo')).toBeFalsy();
+            s.foo.a++;
+            expect(isEnumerable(s, 'foo')).toBeFalsy();
           },
-        });
+          {
+            mark: (target, { immutable }) => {
+              if (target === baseState) {
+                return immutable;
+              }
+            },
+          }
+        );
         expect(nextState.foo).toBeTruthy();
         expect(isEnumerable(nextState, 'foo')).toBeFalsy();
       });
@@ -1498,44 +1502,55 @@ function runBaseTest(
       });
 
       // "Upvalues" are variables from a parent scope.
-      // it('does not finalize upvalue drafts', () => {
-      //   produce({ a: {}, b: {} }, (parent) => {
-      //     expect(produce({}, () => parent)).toBe(parent);
-      //     parent.x; // Ensure proxy not revoked.
+      it('does not finalize upvalue drafts', () => {
+        produce({ a: {}, b: {} }, (parent) => {
+          expect(produce({}, () => parent)).toBe(parent);
+          parent.x; // Ensure proxy not revoked.
 
-      //     expect(produce({}, () => [parent])[0]).toBe(parent);
-      //     parent.x; // Ensure proxy not revoked.
+          expect(produce({}, () => [parent])[0]).toBe(parent);
+          parent.x; // Ensure proxy not revoked.
 
-      //     expect(produce({}, () => parent.a)).toBe(parent.a);
-      //     parent.a.x; // Ensure proxy not revoked.
+          expect(produce({}, () => parent.a)).toBe(parent.a);
+          parent.a.x; // Ensure proxy not revoked.
 
-      //     // Modified parent test
-      //     parent.c = 1;
-      //     expect(produce({}, () => [parent.b])[0]).toBe(parent.b);
-      //     parent.b.x; // Ensure proxy not revoked.
-      //   });
-      // });
+          // Modified parent test
+          parent.c = 1;
+          expect(produce({}, () => [parent.b])[0]).toBe(parent.b);
+          parent.b.x; // Ensure proxy not revoked.
+        });
+      });
 
-      // it('works with interweaved Immer instances', () => {
-      //   const options = { useProxies, autoFreeze };
-      //   const one = createPatchedImmer(options);
-      //   const two = createPatchedImmer(options);
-
-      //   const base = {};
-      //   const result = one.produce(base, (s1) =>
-      //     two.produce({ s1 }, (s2) => {
-      //       expect(original(s2.s1)).toBe(s1);
-      //       s2.n = 1;
-      //       s2.s1 = one.produce({ s2 }, (s3) => {
-      //         expect(original(s3.s2)).toBe(s2);
-      //         expect(original(s3.s2.s1)).toBe(s2.s1);
-      //         return s3.s2.s1;
-      //       });
-      //     })
-      //   );
-      //   expect(result.n).toBe(1);
-      //   expect(result.s1).toBe(base);
-      // });
+      it('works with interweaved Immer instances and disable freeze', () => {
+        const base = {};
+        const result = create(base, (s1) =>
+          // ! it's different from mutative
+          safeReturn(
+            create(
+              { s1 },
+              (s2) => {
+                expect(original(s2.s1)).toBe(s1);
+                s2.n = 1;
+                s2.s1 = create(
+                  { s2 },
+                  (s3) => {
+                    expect(original(s3.s2)).toBe(s2);
+                    expect(original(s3.s2.s1)).toBe(s2.s1);
+                    return s3.s2.s1;
+                  },
+                  // ! it's different from mutative
+                  { enableAutoFreeze: false }
+                );
+              },
+              {
+                // ! it's different from mutative
+                enableAutoFreeze: false,
+              }
+            )
+          )
+        );
+        expect(result.n).toBe(1);
+        expect(result.s1).toBe(base);
+      });
     });
 
     if (useProxies)
@@ -1582,22 +1597,7 @@ function runBaseTest(
       const incrementor = create(function () {
         expect(this).toBe(undefined);
       });
-      expect(() => incrementor({})).not.toThrowError();
-      // ! throw error
-      [
-        null,
-        undefined,
-        1,
-        0,
-        true,
-        false,
-        '',
-        'string',
-        Symbol('symbol'),
-        () => {},
-      ].forEach((value) => {
-        expect(() => incrementor(value)).toThrowError();
-      });
+      incrementor();
     });
 
     it('should be possible to use dynamic bound this', () => {
@@ -1743,77 +1743,79 @@ function runBaseTest(
         }).toThrowError("Cannot assign to read only property 'id'");
       });
 
-    // describe('recipe functions', () => {
-    //   it('can return a new object', () => {
-    //     const base = { x: 3 };
-    //     const res = produce(base, (d) => {
-    //       return { x: d.x + 1 };
-    //     });
-    //     expect(res).not.toBe(base);
-    //     expect(res).toEqual({ x: 4 });
-    //   });
+    describe('recipe functions', () => {
+      it('can return a new object', () => {
+        const base = { x: 3 };
+        const res = produce(base, (d) => {
+          return { x: d.x + 1 };
+        });
+        expect(res).not.toBe(base);
+        expect(res).toEqual({ x: 4 });
+      });
 
-    //   it('can return the draft', () => {
-    //     const base = { x: 3 };
-    //     const res = produce(base, (d) => {
-    //       d.x = 4;
-    //       return d;
-    //     });
-    //     expect(res).not.toBe(base);
-    //     expect(res).toEqual({ x: 4 });
-    //   });
+      it('can return the draft', () => {
+        const base = { x: 3 };
+        const res = produce(base, (d) => {
+          d.x = 4;
+          return d;
+        });
+        expect(res).not.toBe(base);
+        expect(res).toEqual({ x: 4 });
+      });
 
-    //   it('can return an unmodified child draft', () => {
-    //     const base = { a: {} };
-    //     const res = produce(base, (d) => {
-    //       return d.a;
-    //     });
-    //     expect(res).toBe(base.a);
-    //   });
+      it('can return an unmodified child draft', () => {
+        const base = { a: {} };
+        const res = produce(base, (d) => {
+          return d.a;
+        });
+        expect(res).toBe(base.a);
+      });
 
-    //   // TODO: Avoid throwing if only the child draft was modified.
-    //   it('cannot return a modified child draft', () => {
-    //     const base = { a: {} };
-    //     expect(() => {
-    //       produce(base, (d) => {
-    //         d.a.b = 1;
-    //         return d.a;
-    //       });
-    //     }).toThrowErrorMatchingSnapshot();
-    //   });
+      // TODO: Avoid throwing if only the child draft was modified.
+      it('cannot return a modified child draft', () => {
+        const base = { a: {} };
+        expect(() => {
+          produce(base, (d) => {
+            d.a.b = 1;
+            return d.a;
+          });
+        }).toThrowErrorMatchingSnapshot();
+      });
 
-    //   it('can return a frozen object', () => {
-    //     const res = deepFreeze([{ x: 3 }]);
-    //     expect(produce({}, () => res)).toBe(res);
-    //   });
+      it('can return a frozen object', () => {
+        const res = deepFreeze([{ x: 3 }]);
+        expect(produce({}, () => res)).toBe(res);
+      });
 
-    //   it('can return an object with two references to another object', () => {
-    //     const next = produce({}, (d) => {
-    //       const obj = {};
-    //       return { obj, arr: [obj] };
-    //     });
-    //     expect(next.obj).toBe(next.arr[0]);
-    //   });
+      it('can return an object with two references to another object', () => {
+        const next = produce({}, (d) => {
+          const obj = {};
+          return { obj, arr: [obj] };
+        });
+        expect(next.obj).toBe(next.arr[0]);
+      });
 
-    //   it('can return an object with two references to an unmodified draft', () => {
-    //     const base = { a: {} };
-    //     const next = produce(base, (d) => {
-    //       return [d.a, d.a];
-    //     });
-    //     expect(next[0]).toBe(base.a);
-    //     expect(next[0]).toBe(next[1]);
-    //   });
+      it('can return an object with two references to an unmodified draft', () => {
+        const base = { a: {} };
+        const next = produce(base, (d) => {
+          // ! it's different from mutative
+          return safeReturn([d.a, d.a]);
+        });
+        expect(next[0]).toBe(base.a);
+        expect(next[0]).toBe(next[1]);
+      });
 
-    //   it('cannot return an object that references itself', () => {
-    //     const res = {};
-    //     // @ts-ignore
-    //     res.self = res;
-    //     expect(() => {
-    //       // @ts-ignore
-    //       produce(res, () => res.self);
-    //     }).toThrowErrorMatchingSnapshot();
-    //   });
-    // });
+      it('can return an object that references itself', () => {
+        const res = {};
+        // @ts-ignore
+        res.self = res;
+        expect(() => {
+          // @ts-ignore
+          produce(res, () => res.self);
+          // ! it's different from mutative
+        }).not.toThrowError();
+      });
+    });
 
     describe('async recipe function', () => {
       it('can modify the draft', () => {
@@ -1901,52 +1903,52 @@ function runBaseTest(
       }).toThrowErrorMatchingSnapshot();
     });
 
-    // it.skip('should fix #117 - 1', () => {
-    //   const reducer = (state, action) =>
-    //     produce(state, (draft) => {
-    //       switch (action.type) {
-    //         case 'SET_STARTING_DOTS':
-    //           return draft.availableStartingDots.map((a) => a);
-    //         default:
-    //           break;
-    //       }
-    //     });
-    //   const base = {
-    //     availableStartingDots: [
-    //       { dots: 4, count: 1 },
-    //       { dots: 3, count: 2 },
-    //       { dots: 2, count: 3 },
-    //       { dots: 1, count: 4 },
-    //     ],
-    //   };
-    //   const next = reducer(base, { type: 'SET_STARTING_DOTS' });
-    //   expect(next).toEqual(base.availableStartingDots);
-    //   expect(next).not.toBe(base.availableStartingDots);
-    // });
+    it('should fix #117 - 1', () => {
+      const reducer = (state, action) =>
+        produce(state, (draft) => {
+          switch (action.type) {
+            case 'SET_STARTING_DOTS':
+              return safeReturn(draft.availableStartingDots.map((a) => a));
+            default:
+              break;
+          }
+        });
+      const base = {
+        availableStartingDots: [
+          { dots: 4, count: 1 },
+          { dots: 3, count: 2 },
+          { dots: 2, count: 3 },
+          { dots: 1, count: 4 },
+        ],
+      };
+      const next = reducer(base, { type: 'SET_STARTING_DOTS' });
+      expect(next).toEqual(base.availableStartingDots);
+      expect(next).not.toBe(base.availableStartingDots);
+    });
 
-    // it.skip('should fix #117 - 2', () => {
-    //   const reducer = (state, action) =>
-    //     produce(state, (draft) => {
-    //       switch (action.type) {
-    //         case 'SET_STARTING_DOTS':
-    //           return {
-    //             dots: draft.availableStartingDots.map((a) => a),
-    //           };
-    //         default:
-    //           break;
-    //       }
-    //     });
-    //   const base = {
-    //     availableStartingDots: [
-    //       { dots: 4, count: 1 },
-    //       { dots: 3, count: 2 },
-    //       { dots: 2, count: 3 },
-    //       { dots: 1, count: 4 },
-    //     ],
-    //   };
-    //   const next = reducer(base, { type: 'SET_STARTING_DOTS' });
-    //   expect(next).toEqual({ dots: base.availableStartingDots });
-    // });
+    it('should fix #117 - 2', () => {
+      const reducer = (state, action) =>
+        produce(state, (draft) => {
+          switch (action.type) {
+            case 'SET_STARTING_DOTS':
+              return safeReturn({
+                dots: draft.availableStartingDots.map((a) => a),
+              });
+            default:
+              break;
+          }
+        });
+      const base = {
+        availableStartingDots: [
+          { dots: 4, count: 1 },
+          { dots: 3, count: 2 },
+          { dots: 2, count: 3 },
+          { dots: 1, count: 4 },
+        ],
+      };
+      const next = reducer(base, { type: 'SET_STARTING_DOTS' });
+      expect(next).toEqual({ dots: base.availableStartingDots });
+    });
 
     it('cannot always detect noop assignments - 0', () => {
       const baseState = { x: { y: 3 } };
@@ -2025,27 +2027,27 @@ function runBaseTest(
       else expect(nextState).toBe(baseState);
     });
 
-    // it('cannot produce undefined by returning undefined', () => {
-    //   const base = 3;
-    //   expect(produce(base, () => 4)).toBe(4);
-    //   expect(produce(base, () => null)).toBe(null);
-    //   expect(produce(base, () => undefined)).toBe(3);
-    //   expect(produce(base, () => {})).toBe(3);
-    //   expect(produce(base, () => nothing)).toBe(undefined);
+    it('cannot produce undefined by returning undefined', () => {
+      const base = 3;
+      expect(create(base, () => 4)).toBe(4);
+      expect(create(base, () => null)).toBe(null);
+      expect(create(base, () => undefined)).toBe(3);
+      expect(create(base, () => {})).toBe(3);
+      expect(create(base, () => safeReturn(undefined))).toBe(undefined);
 
-    //   expect(produce({}, () => undefined)).toEqual({});
-    //   expect(produce({}, () => nothing)).toBe(undefined);
-    //   expect(produce(3, () => nothing)).toBe(undefined);
+      expect(create({}, () => undefined)).toEqual({});
+      expect(create({}, () => safeReturn(undefined))).toBe(undefined);
+      expect(create(3, () => safeReturn(undefined))).toBe(undefined);
 
-    //   expect(produce(() => undefined)({})).toEqual({});
-    //   expect(produce(() => nothing)({})).toBe(undefined);
-    //   expect(produce(() => nothing)(3)).toBe(undefined);
-    // });
+      expect(create(() => undefined)({})).toEqual({});
+      expect(create(() => safeReturn(undefined))({})).toBe(undefined);
+      expect(create(() => safeReturn(undefined))(3)).toBe(undefined);
+    });
 
-    // describe('base state type', () => {
-    //   if (!global.USES_BUILD) testObjectTypes(produce);
-    //   testLiteralTypes(produce);
-    // });
+    describe('base state type', () => {
+      // testObjectTypes(produce);
+      testLiteralTypes(produce);
+    });
 
     afterEach(() => {
       expect(baseState).toBe(origBaseState);
@@ -2154,24 +2156,24 @@ function runBaseTest(
         expect(isDraft(state.a)).toBeFalsy();
       });
     });
-    // it('returns false for objects returned by the producer', () => {
-    //   const object = produce([], () => {
-    //     //
-    //   });
-    //   expect(isDraft(object)).toBeFalsy();
-    // });
-    // it('returns false for arrays returned by the producer', () => {
-    //   const array = produce({}, (_) => []);
-    //   expect(isDraft(array)).toBeFalsy();
-    // });
-    // it('returns false for object drafts returned by the producer', () => {
-    //   const object = produce({}, (state) => state);
-    //   expect(isDraft(object)).toBeFalsy();
-    // });
-    // it('returns false for array drafts returned by the producer', () => {
-    //   const array = produce([], (state) => state);
-    //   expect(isDraft(array)).toBeFalsy();
-    // });
+    it('returns false for objects returned by the producer', () => {
+      const object = produce([], () => {
+        //
+      });
+      expect(isDraft(object)).toBeFalsy();
+    });
+    it('returns false for arrays returned by the producer', () => {
+      const array = produce({}, (_) => []);
+      expect(isDraft(array)).toBeFalsy();
+    });
+    it('returns false for object drafts returned by the producer', () => {
+      const object = produce({}, (state) => state);
+      expect(isDraft(object)).toBeFalsy();
+    });
+    it('returns false for array drafts returned by the producer', () => {
+      const array = produce([], (state) => state);
+      expect(isDraft(array)).toBeFalsy();
+    });
   });
 
   describe(`complex nesting map / set / object`, () => {
@@ -2642,11 +2644,7 @@ function testLiteralTypes(produce) {
             produce(value, (draft) => {
               draft.foo = true;
             })
-          ).toThrowError(
-            isProd
-              ? '[Immer] minified error nr: 21'
-              : 'produce can only be called on things that are draftable'
-          );
+          ).toThrowError();
         });
       } else {
         it('does not create a draft', () => {

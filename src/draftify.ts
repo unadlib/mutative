@@ -1,27 +1,16 @@
 import { Finalities, Options, Patches, Result } from './interface';
 import { createDraft, finalizeDraft } from './draft';
 import { isDraftable } from './utils';
+import { dataTypes } from './constant';
 
 export function draftify<
   T extends object,
   O extends boolean = false,
   F extends boolean = false
->(baseState: T, _options?: Options<O, F>): [T, () => Result<T, O, F>] {
-  const mark = _options?.mark;
-  const enablePatches = _options?.enablePatches ?? false;
-  const strict = _options?.strict ?? false;
-  const enableAutoFreeze = _options?.enableAutoFreeze ?? false;
-  const options = {
-    enableAutoFreeze,
-    mark,
-    strict,
-    enablePatches,
-  };
-  if (!isDraftable(baseState, options)) {
-    throw new Error(
-      'create() only supports plain object, array, set, and map.'
-    );
-  }
+>(
+  baseState: T,
+  options: Options<O, F>
+): [T, (returnedValue: [T] | []) => Result<T, O, F>] {
   const finalities: Finalities = {
     draft: [],
     revoke: [],
@@ -29,23 +18,34 @@ export function draftify<
   };
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
-  if (enablePatches) {
+  if (options.enablePatches) {
     patches = [];
     inversePatches = [];
   }
-  const draft = createDraft({
-    original: baseState,
-    parentDraft: null,
-    finalities,
-    options,
-  });
+  const isMutable =
+    options.mark?.(baseState, dataTypes) === dataTypes.mutable ||
+    !isDraftable(baseState, options);
+  const draft = isMutable
+    ? baseState
+    : createDraft({
+        original: baseState,
+        parentDraft: null,
+        finalities,
+        options,
+      });
   return [
     draft,
-    () => {
+    (returnedValue: [T] | [] = []) => {
       const [finalizedState, finalizedPatches, finalizedInversePatches] =
-        finalizeDraft(draft, patches, inversePatches);
+        finalizeDraft(
+          draft,
+          returnedValue,
+          patches,
+          inversePatches,
+          options.enableAutoFreeze
+        );
       return (
-        enablePatches
+        options.enablePatches
           ? [finalizedState, finalizedPatches, finalizedInversePatches]
           : finalizedState
       ) as Result<T, O, F>;

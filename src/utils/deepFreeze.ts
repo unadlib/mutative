@@ -1,5 +1,5 @@
 import { DraftType } from '../interface';
-import { getType } from './draft';
+import { getType, isDraft } from './draft';
 
 function isFreezable(value: any) {
   return value && typeof value === 'object' && !Object.isFrozen(value);
@@ -10,7 +10,7 @@ function throwFrozenError() {
 }
 
 export function deepFreeze(target: any) {
-  if (Object.isFrozen(target)) return;
+  if (Object.isFrozen(target) || isDraft(target)) return;
   const type = getType(target);
   switch (type) {
     case DraftType.Map:

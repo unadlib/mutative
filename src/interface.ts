@@ -32,8 +32,8 @@ export interface ProxyDraft<T = any> {
   options: Options<any, any>;
   parent?: ProxyDraft | null;
   key?: string | number | symbol;
-  setMap?: Map<object, ProxyDraft>;
-  assignedMap: Map<any, boolean>;
+  setMap?: Map<any, ProxyDraft>;
+  assignedMap?: Map<any, boolean>;
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
 }
 
@@ -46,7 +46,7 @@ export type Patch = {
 export type Patches = Patch[];
 
 export type Result<
-  T extends object,
+  T extends any,
   O extends boolean,
   F extends boolean
 > = O extends true
@@ -56,11 +56,11 @@ export type Result<
   : T;
 
 export type CreateResult<
-  T extends object,
+  T extends any,
   O extends boolean,
   F extends boolean,
-  R extends void | Promise<void>
-> = R extends Promise<void> ? Promise<Result<T, O, F>> : Result<T, O, F>;
+  R extends void | Promise<void> | T | Promise<T>
+> = R extends Promise<void> | Promise<T> ? Promise<Result<T, O, F>> : Result<T, O, F>;
 
 type BaseMark = null | undefined | DataType;
 type MarkWithCopy = BaseMark | (() => any);
@@ -72,7 +72,7 @@ export type Mark<O extends boolean, F extends boolean> = (
 
 export interface Options<O extends boolean, F extends boolean> {
   /**
-   * Forbid accessing non-draftable values in strict mode
+   * In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.
    */
   strict?: boolean;
   /**

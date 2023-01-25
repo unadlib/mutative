@@ -80,16 +80,16 @@ function runTests(name: any, useProxies: any) {
         expect(isFrozen(next.a)).toBeTruthy();
       });
 
-      // it('a new object replaces the entire draft', () => {
-      //   const obj = { a: { b: {} } };
-      //   const next = create({}, () => {}, , {
-      //     enableAutoFreeze: true
-      //   });
-      //   expect(next).toBe(obj);
-      //   expect(isFrozen(next)).toBeTruthy();
-      //   expect(isFrozen(next.a)).toBeTruthy();
-      //   expect(isFrozen(next.a.b)).toBeTruthy();
-      // });
+      it('a new object replaces the entire draft', () => {
+        const obj = { a: { b: {} } };
+        const next = create({}, () => obj, {
+          enableAutoFreeze: true,
+        }) as any;
+        expect(next).toBe(obj);
+        expect(isFrozen(next)).toBeTruthy();
+        expect(isFrozen(next.a)).toBeTruthy();
+        expect(isFrozen(next.a.b)).toBeTruthy();
+      });
 
       it('a new object is added to the root draft', () => {
         const base = {};
@@ -132,25 +132,24 @@ function runTests(name: any, useProxies: any) {
         expect(isFrozen(next.a.b.c)).toBeTruthy();
       });
 
-      // it('a nested draft is returned', () => {
-      //   const base = { a: {} };
-      //   // @ts-ignore
-      //   const next = create(base, (draft) => draft, {
-      //     enableAutoFreeze: true,
-      //   });
-      //   expect(next.a).toBe(base.a);
-      //   expect(isFrozen(next.a)).toBeTruthy();
-      // });
+      it('a nested draft is returned', () => {
+        const base = { a: {} };
+        // @ts-expect-error
+        const next = create(base, (draft) => draft.a, {
+          enableAutoFreeze: true,
+        });
+        expect(next).toBe(base.a);
+        expect(isFrozen(next)).toBeTruthy();
+      });
 
-      // it('the base state is returned', () => {
-      //   const base = {};
-      //   // @ts-ignore
-      //   const next = create(base, () => base, {
-      //     enableAutoFreeze: true,
-      //   });
-      //   expect(next).toBe(base);
-      //   expect(isFrozen(next)).toBeTruthy();
-      // });
+      it('the base state is returned', () => {
+        const base = {};
+        const next = create(base, () => base, {
+          enableAutoFreeze: true,
+        });
+        expect(next).toBe(base);
+        expect(isFrozen(next)).toBeTruthy();
+      });
 
       it('the producer is a no-op', () => {
         const base = { a: {} };
@@ -162,24 +161,27 @@ function runTests(name: any, useProxies: any) {
         expect(isFrozen(next.a)).toBeTruthy();
       });
 
-      // it('the root draft is returned', () => {
-      //   const base = { a: {} };
-      //   // @ts-ignore
-      //   const next = create(base, (draft) => draft, {
-      //     enableAutoFreeze: true,
-      //   });
-      //   expect(next).toBe(base);
-      //   expect(isFrozen(next)).toBeTruthy();
-      //   expect(isFrozen(next.a)).toBeTruthy();
-      // });
+      it('the root draft is returned', () => {
+        const base = { a: {} };
+        const next = create(base, (draft) => draft, {
+          enableAutoFreeze: true,
+        });
+        expect(next).toBe(base);
+        expect(isFrozen(next)).toBeTruthy();
+        expect(isFrozen(next.a)).toBeTruthy();
+      });
 
-      // it('a new object replaces a primitive base', () => {
-      //   const obj = { a: {} };
-      //   const next = create(null, () => obj);
-      //   expect(next).toBe(obj);
-      //   expect(isFrozen(next)).toBeTruthy();
-      //   expect(isFrozen(next.a)).toBeTruthy();
-      // });
+      it('a new object replaces a primitive base', () => {
+        const obj = { a: {} };
+        // @ts-expect-error
+        const next = create(null, () => obj, {
+          enableAutoFreeze: true,
+        });
+        expect(next).toBe(obj);
+        expect(isFrozen(next)).toBeTruthy();
+        // @ts-expect-error
+        expect(isFrozen(next.a)).toBeTruthy();
+      });
     });
 
     it('can handle already frozen trees', () => {
