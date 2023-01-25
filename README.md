@@ -391,4 +391,23 @@ const state = apply(nextState, inversePatches);
 expect(state).toEqual(baseState);
 ```
 
-TBD
+3. Return `undefined`
+
+```ts
+import produce, { nothing } from 'immer';
+
+const nextState = produce(baseState, (draft) => {
+  return nothing;
+});
+```
+
+Use Mutative
+
+```ts
+import { create, safeReturn } from 'mutative';
+
+const nextState = create(baseState, (draft) => {
+  return safeReturn(undefined);
+});
+```
+
