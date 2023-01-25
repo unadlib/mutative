@@ -41,15 +41,15 @@ export function getPath(
   path: any[] = []
 ): (string | number | object)[] {
   if (Object.hasOwnProperty.call(target, 'key'))
-    path.unshift(
+    path.push(
       target.parent!.type === DraftType.Set
-        ? Array.from(target.parent!.setMap!.keys()).indexOf(target.key as any)
+        ? Array.from(target.parent!.setMap!.keys()).indexOf(target.key)
         : target.key
     );
   if (target.parent) {
     return getPath(target.parent, path);
   }
-  return path;
+  return path.reverse();
 }
 
 export function getType(target: any) {

@@ -32,7 +32,7 @@ export interface ProxyDraft<T = any> {
   options: Options<any, any>;
   parent?: ProxyDraft | null;
   key?: string | number | symbol;
-  setMap?: Map<object, ProxyDraft>;
+  setMap?: Map<any, ProxyDraft>;
   assignedMap?: Map<any, boolean>;
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
 }
