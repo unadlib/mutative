@@ -74,8 +74,6 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 | Non-global config         |       ✅ |  ❌   |
 | Support IE browser        |       ❌ |  ✅   |
 
-> Mutative draft functions don't allow return value (except for `void` or `Promise<void>`), but Immer is allowed.
-
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 
 ## Installation
@@ -133,6 +131,10 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 - strict - `boolean`, the default is false.
 
   > Forbid accessing non-draftable values in strict mode(unless using `unsafe()`).
+
+  > It is recommended to enable `strict` in development mode and disable `strict` in production mode. This will ensure safe returns and also keep good performance in the production build.
+
+  > If the return value is mixed drafts or `undefined`, then use `safeReturn()` wrapper.
 
 - enablePatches - `boolean`, the default is false.
 
@@ -268,6 +270,18 @@ const state = create(baseState, (draft) => {
 });
 ```
 
+### `safeReturn()`
+
+It is used as a safe return value to ensure that this value replaces the finalized value.
+
+```ts
+const baseState = { foo: 'bar' };
+const state = create(baseState as { foo: string } | undefined, (draft) => {
+  return safeReturn(undefined);
+});
+expect(state).toBe(undefined);
+```
+
 ### Using TypeScript
 
 - `castDraft()`
@@ -296,11 +310,7 @@ Mutative optimization focus is on shallow copy optimization, more complete lazy 
 
 Yes. Unless you have to be compatible with Internet Explorer, Mutative supports almost all of Immer features, and you can easily migrate from Immer to Mutative.
 
-> Migration is also not possible for React Native that does not support Proxy. React Native uses a new JS engine during refactoring - Hermes, and it (if < v0.59 or when using the Hermes engine on React Native < v0.64) does [not support Proxy on Android](https://github.com/facebook/hermes/issues/33), but [React Native v0.64  with the Hermes engine support Proxy](https://reactnative.dev/blog/2021/03/12/version-0.64#hermes-with-proxy-support).
-
-- Why return values are not supported?
-
-If it is supported, there is an additional performance loss of traversing the returned object tree. Also Immer has draft [escape issues](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts#L327) for return values.
+> Migration is also not possible for React Native that does not support Proxy. React Native uses a new JS engine during refactoring - Hermes, and it (if < v0.59 or when using the Hermes engine on React Native < v0.64) does [not support Proxy on Android](https://github.com/facebook/hermes/issues/33), but [React Native v0.64 with the Hermes engine support Proxy](https://reactnative.dev/blog/2021/03/12/version-0.64#hermes-with-proxy-support).
 
 - Can Mutative be integrated with Redux?
 

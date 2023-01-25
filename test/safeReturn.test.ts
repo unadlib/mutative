@@ -357,3 +357,11 @@ test('deep draft', () => {
   });
   expect(state).toEqual({ a: { b: { c: 1 } } });
 });
+
+test('case', () => {
+  const baseState = { foo: 'bar' };
+  const state = create(baseState as { foo: string } | undefined, (draft) => {
+    return safeReturn(undefined);
+  });
+  expect(state).toBe(undefined);
+});

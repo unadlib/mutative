@@ -1,5 +1,8 @@
 export const safeReturnValue: any[] = [];
 
+/**
+ * It is used as a safe return value to ensure that this value replaces the finalized value.
+ */
 export function safeReturn<T extends object | undefined>(value: T): T {
   if (arguments.length === 0) {
     throw new Error('safeReturn() must be called with a value.');
