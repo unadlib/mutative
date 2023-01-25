@@ -1,26 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`#466 mapChangeBug 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "map",
       "d",
       "a",
     ],
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "map",
       "c",
       "a",
     ],
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "map",
       "b",
       "a",
@@ -30,28 +30,28 @@ Array [
 `;
 
 exports[`#466 mapChangeBug 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "map",
       "d",
       "a",
     ],
     "value": true,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "map",
       "c",
       "a",
     ],
     "value": true,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "map",
       "b",
       "a",
@@ -62,21 +62,21 @@ Array [
 `;
 
 exports[`#468 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       0,
       "id",
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       1,
     ],
-    "value": Object {
+    "value": {
       "id": 1,
     },
   },
@@ -84,18 +84,18 @@ Array [
 `;
 
 exports[`#468 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       0,
       "id",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "length",
     ],
     "value": 1,
@@ -104,10 +104,10 @@ Array [
 `;
 
 exports[`#648 assigning object to itself should not change patches 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "obj",
       "value",
     ],
@@ -117,10 +117,10 @@ Array [
 `;
 
 exports[`#648 assigning object to itself should not change patches 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "obj",
       "value",
     ],
@@ -130,10 +130,10 @@ Array [
 `;
 
 exports[`#876 Ensure empty patch set for atomic set+delete on Map 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foo",
     ],
   },
@@ -141,10 +141,10 @@ Array [
 `;
 
 exports[`#876 Ensure empty patch set for atomic set+delete on Map 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foo",
     ],
     "value": "baz",
@@ -152,15 +152,15 @@ Array [
 ]
 `;
 
-exports[`#876 Ensure empty patch set for atomic set+delete on Map 3`] = `Array []`;
+exports[`#876 Ensure empty patch set for atomic set+delete on Map 3`] = `[]`;
 
-exports[`#876 Ensure empty patch set for atomic set+delete on Map 4`] = `Array []`;
+exports[`#876 Ensure empty patch set for atomic set+delete on Map 4`] = `[]`;
 
 exports[`#879 delete item from array - 2 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       2,
     ],
     "value": undefined,
@@ -169,10 +169,10 @@ Array [
 `;
 
 exports[`#879 delete item from array - 2 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       2,
     ],
     "value": 3,
@@ -181,10 +181,10 @@ Array [
 `;
 
 exports[`#879 delete item from array 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": undefined,
@@ -193,10 +193,10 @@ Array [
 `;
 
 exports[`#879 delete item from array 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": 2,
@@ -205,10 +205,10 @@ Array [
 `;
 
 exports[`array 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       0,
     ],
     "value": "new str",
@@ -217,10 +217,10 @@ Array [
 `;
 
 exports[`array 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "length",
     ],
     "value": 0,
@@ -229,237 +229,237 @@ Array [
 `;
 
 exports[`array 3`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr10",
       1,
     ],
     "value": undefined,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr9",
       3,
     ],
     "value": undefined,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr9",
       4,
     ],
     "value": undefined,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr9",
       5,
     ],
     "value": undefined,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr9",
       6,
     ],
     "value": undefined,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr9",
       7,
     ],
     "value": undefined,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr9",
       8,
     ],
     "value": undefined,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr9",
       9,
     ],
     "value": undefined,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr9",
       10,
     ],
     "value": 10,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr8",
       "length",
     ],
     "value": 0,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr7",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr7",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr6",
       0,
     ],
     "value": "c",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr6",
       2,
     ],
     "value": "a",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr5",
       0,
     ],
     "value": "b",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr5",
       1,
     ],
     "value": "c",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr5",
       "length",
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr4",
       0,
     ],
     "value": 0,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr4",
       1,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr4",
       2,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr4",
       3,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr3",
       "length",
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr2",
       3,
     ],
     "value": "d",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       0,
       "a",
     ],
     "value": 0,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr1",
       1,
     ],
-    "value": Object {
+    "value": {
       "a": 2,
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr",
       2,
     ],
     "value": 7,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr",
       3,
     ],
     "value": 8,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr",
       4,
     ],
     "value": 9,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr",
       5,
     ],
@@ -469,179 +469,179 @@ Array [
 `;
 
 exports[`array 4`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr10",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr9",
       "length",
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr8",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr8",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr8",
       2,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr7",
       0,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr7",
       1,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr6",
       0,
     ],
     "value": "a",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr6",
       2,
     ],
     "value": "c",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr5",
       0,
     ],
     "value": "a",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr5",
       1,
     ],
     "value": "b",
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr5",
       2,
     ],
     "value": "c",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr4",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr4",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr4",
       2,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr4",
       "length",
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr3",
       2,
     ],
     "value": "c",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr2",
       "length",
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       0,
       "a",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       "length",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr",
       2,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr",
       "length",
     ],
@@ -651,76 +651,76 @@ Array [
 `;
 
 exports[`array 5`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr4",
       "length",
     ],
     "value": 0,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr3",
       "length",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       "length",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr2",
       "length",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr0",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr0",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str0",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr0",
       2,
     ],
-    "value": Object {
+    "value": {
       "bar": "str0",
     },
   },
@@ -728,90 +728,90 @@ Array [
 `;
 
 exports[`array 6`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr4",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr4",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr3",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr1",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr2",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr0",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str0",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr0",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str0",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr0",
       "length",
     ],
@@ -821,19 +821,19 @@ Array [
 `;
 
 exports[`array length with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str0",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "length",
     ],
@@ -843,20 +843,20 @@ Array [
 `;
 
 exports[`array length with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "f",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
@@ -864,19 +864,19 @@ Array [
 `;
 
 exports[`array pop with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str0",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "length",
     ],
@@ -886,20 +886,20 @@ Array [
 `;
 
 exports[`array pop with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "f",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
@@ -907,23 +907,23 @@ Array [
 `;
 
 exports[`array setter with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str0",
     },
   },
@@ -931,20 +931,20 @@ Array [
 `;
 
 exports[`array setter with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "f",
     ],
   },
@@ -952,19 +952,19 @@ Array [
 `;
 
 exports[`array shift with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str0",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "length",
     ],
@@ -974,20 +974,20 @@ Array [
 `;
 
 exports[`array shift with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "f",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
@@ -995,19 +995,19 @@ Array [
 `;
 
 exports[`array splice with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str0",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "length",
     ],
@@ -1017,20 +1017,20 @@ Array [
 `;
 
 exports[`array splice with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "f",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
@@ -1038,27 +1038,27 @@ Array [
 `;
 
 exports[`array with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "f",
       "baz",
     ],
     "value": "new str3",
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar1",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str2",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "length",
     ],
@@ -1068,28 +1068,28 @@ Array [
 `;
 
 exports[`array with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "f",
       "baz",
     ],
     "value": "str",
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foobar1",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
@@ -1097,28 +1097,28 @@ Array [
 `;
 
 exports[`array with ref 3`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {},
+    "value": {},
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       1,
     ],
-    "value": Object {
+    "value": {
       "baz": "new str0",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "f",
     ],
   },
@@ -1126,21 +1126,21 @@ Array [
 `;
 
 exports[`array with ref 4`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "length",
     ],
     "value": 0,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
@@ -1148,10 +1148,10 @@ Array [
 `;
 
 exports[`arrays - NESTED splice should should result in remove op. 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "b",
       "c",
@@ -1163,10 +1163,10 @@ Array [
 `;
 
 exports[`arrays - NESTED splice should should result in remove op. 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "b",
       "c",
@@ -1178,10 +1178,10 @@ Array [
 `;
 
 exports[`arrays - delete 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
       1,
       "c",
@@ -1191,10 +1191,10 @@ Array [
 `;
 
 exports[`arrays - delete 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       1,
       "c",
@@ -1205,18 +1205,18 @@ Array [
 `;
 
 exports[`arrays - modify and shrink 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "length",
     ],
@@ -1226,18 +1226,18 @@ Array [
 `;
 
 exports[`arrays - modify and shrink 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
@@ -1247,42 +1247,42 @@ Array [
 `;
 
 exports[`arrays - multiple prepend 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 5,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       3,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       4,
     ],
@@ -1292,34 +1292,34 @@ Array [
 `;
 
 exports[`arrays - multiple prepend 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "length",
     ],
@@ -1329,31 +1329,31 @@ Array [
 `;
 
 exports[`arrays - multiple splice 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       2,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       4,
     ],
     "value": 0,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "length",
     ],
     "value": 5,
@@ -1362,38 +1362,38 @@ Array [
 `;
 
 exports[`arrays - multiple splice 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       2,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       4,
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       5,
     ],
     "value": 5,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       6,
     ],
     "value": 0,
@@ -1402,10 +1402,10 @@ Array [
 `;
 
 exports[`arrays - pop twice 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "length",
     ],
@@ -1415,18 +1415,18 @@ Array [
 `;
 
 exports[`arrays - pop twice 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
@@ -1436,34 +1436,34 @@ Array [
 `;
 
 exports[`arrays - prepend 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       3,
     ],
@@ -1473,34 +1473,34 @@ Array [
 `;
 
 exports[`arrays - prepend 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "length",
     ],
@@ -1510,18 +1510,18 @@ Array [
 `;
 
 exports[`arrays - prepend then splice middle 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
@@ -1531,18 +1531,18 @@ Array [
 `;
 
 exports[`arrays - prepend then splice middle 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
@@ -1552,18 +1552,18 @@ Array [
 `;
 
 exports[`arrays - push multiple 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       3,
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       4,
     ],
@@ -1573,10 +1573,10 @@ Array [
 `;
 
 exports[`arrays - push multiple 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "length",
     ],
@@ -1586,34 +1586,34 @@ Array [
 `;
 
 exports[`arrays - splice (expand) 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
     "value": 5,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       3,
     ],
     "value": 6,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       4,
     ],
@@ -1623,26 +1623,26 @@ Array [
 `;
 
 exports[`arrays - splice (expand) 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "length",
     ],
@@ -1652,26 +1652,26 @@ Array [
 `;
 
 exports[`arrays - splice (shrink) 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 6,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
     "value": 5,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "length",
     ],
@@ -1681,34 +1681,34 @@ Array [
 `;
 
 exports[`arrays - splice (shrink) 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       3,
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       4,
     ],
@@ -1718,18 +1718,18 @@ Array [
 `;
 
 exports[`arrays - splice middle 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "length",
     ],
@@ -1739,18 +1739,18 @@ Array [
 `;
 
 exports[`arrays - splice middle 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
@@ -1760,18 +1760,18 @@ Array [
 `;
 
 exports[`arrays - splice middle then prepend 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
@@ -1781,18 +1781,18 @@ Array [
 `;
 
 exports[`arrays - splice middle then prepend 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
@@ -1802,10 +1802,10 @@ Array [
 `;
 
 exports[`arrays - splice should should result in remove op. 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "length",
     ],
     "value": 1,
@@ -1814,10 +1814,10 @@ Array [
 `;
 
 exports[`arrays - splice should should result in remove op. 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": 2,
@@ -1826,10 +1826,10 @@ Array [
 `;
 
 exports[`arrays - truncate 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "length",
     ],
@@ -1839,18 +1839,18 @@ Array [
 `;
 
 exports[`arrays - truncate 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       2,
     ],
@@ -1860,10 +1860,10 @@ Array [
 `;
 
 exports[`change then delete property 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
@@ -1871,10 +1871,10 @@ Array [
 `;
 
 exports[`change then delete property 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": 1,
@@ -1883,10 +1883,10 @@ Array [
 `;
 
 exports[`deeply nested map (with changes) 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "x",
     ],
@@ -1895,9 +1895,9 @@ Array [
       "y" => 2,
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
@@ -1906,17 +1906,17 @@ Array [
 `;
 
 exports[`deeply nested map (with changes) 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "a",
       "x",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
@@ -1929,21 +1929,21 @@ Array [
 `;
 
 exports[`deeply nested object (with changes) 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "x",
     ],
-    "value": Object {
+    "value": {
       "c": 2,
       "y": 2,
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
@@ -1952,21 +1952,21 @@ Array [
 `;
 
 exports[`deeply nested object (with changes) 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "a",
       "x",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
-    "value": Object {
+    "value": {
       "c": 1,
       "d": 1,
     },
@@ -1975,10 +1975,10 @@ Array [
 `;
 
 exports[`delete 1 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
@@ -1986,13 +1986,13 @@ Array [
 `;
 
 exports[`delete 1 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
-    "value": Object {
+    "value": {
       "y": 4,
     },
   },
@@ -2000,10 +2000,10 @@ Array [
 `;
 
 exports[`delete 2 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
@@ -2011,10 +2011,10 @@ Array [
 `;
 
 exports[`delete 2 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": 1,
@@ -2023,10 +2023,10 @@ Array [
 `;
 
 exports[`delete 3 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
       "y",
     ],
@@ -2035,10 +2035,10 @@ Array [
 `;
 
 exports[`delete 3 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       "y",
     ],
@@ -2048,21 +2048,21 @@ Array [
 `;
 
 exports[`delete 5 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
-      Object {
+      {
         "prop": "val1",
       },
     ],
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
-      Object {
+      {
         "prop": "val2",
       },
     ],
@@ -2071,22 +2071,22 @@ Array [
 `;
 
 exports[`delete 5 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
-      Object {
+      {
         "prop": "val1",
       },
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
-      Object {
+      {
         "prop": "val2",
       },
     ],
@@ -2096,10 +2096,10 @@ Array [
 `;
 
 exports[`delete 6 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       0,
     ],
     "value": "x",
@@ -2108,10 +2108,10 @@ Array [
 `;
 
 exports[`delete 6 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       0,
     ],
     "value": "x",
@@ -2120,10 +2120,10 @@ Array [
 `;
 
 exports[`delete 7 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
@@ -2133,10 +2133,10 @@ Array [
 `;
 
 exports[`delete 7 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
       0,
     ],
@@ -2146,42 +2146,42 @@ Array [
 `;
 
 exports[`enablePatches and assign with ref array 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       0,
       "a",
     ],
     "value": 444,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr0",
       1,
     ],
-    "value": Object {
+    "value": {
       "a": 333,
       "c": 333,
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "arr0",
       2,
     ],
-    "value": Array [
-      Object {
+    "value": [
+      {
         "a": 444,
       },
     ],
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
@@ -2190,31 +2190,31 @@ Array [
 `;
 
 exports[`enablePatches and assign with ref array 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       0,
       "a",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr0",
       "length",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
-    "value": Object {
+    "value": {
       "c": 1,
     },
   },
@@ -2222,49 +2222,49 @@ Array [
 `;
 
 exports[`enablePatches and assign with ref object 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "arr",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "arr",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "b",
       "c",
     ],
     "value": 333,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
-    "value": Object {
+    "value": {
       "c": 333,
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x1",
     ],
-    "value": Object {
+    "value": {
       "c": 333,
     },
   },
@@ -2272,34 +2272,34 @@ Array [
 `;
 
 exports[`enablePatches and assign with ref object 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "arr",
       "length",
     ],
     "value": 0,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "b",
       "c",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x1",
     ],
   },
@@ -2307,50 +2307,50 @@ Array [
 `;
 
 exports[`enablePatches and assign/delete with ref object 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "arr",
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
       "arr",
       1,
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
-    "value": Object {
+    "value": {
       "c": 444,
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x1",
     ],
-    "value": Object {
+    "value": {
       "c": 444,
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
-    "value": Object {
+    "value": {
       "f": 1,
     },
   },
@@ -2358,35 +2358,35 @@ Array [
 `;
 
 exports[`enablePatches and assign/delete with ref object 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "arr",
       "length",
     ],
     "value": 0,
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x1",
     ],
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
-    "value": Object {
+    "value": {
       "c": 1,
     },
   },
@@ -2394,54 +2394,54 @@ Array [
 `;
 
 exports[`map 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map3",
       "a",
     ],
-    "value": Object {
+    "value": {
       "bar": "new str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "map2",
       "c",
     ],
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "map1",
       "a",
     ],
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "map1",
       "c",
     ],
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map",
       "a",
       "bar",
     ],
     "value": "new str",
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "map",
       "b",
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
@@ -2449,59 +2449,59 @@ Array [
 `;
 
 exports[`map 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map3",
       "a",
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "map2",
       "c",
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "map1",
       "a",
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "map1",
       "c",
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map",
       "a",
       "bar",
     ],
     "value": "str",
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "map",
       "b",
     ],
@@ -2510,19 +2510,19 @@ Array [
 `;
 
 exports[`map with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str0",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foobar",
       "a",
     ],
@@ -2531,20 +2531,20 @@ Array [
 `;
 
 exports[`map with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "f",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       "a",
     ],
-    "value": Object {
+    "value": {
       "baz": "str0",
     },
   },
@@ -2552,20 +2552,20 @@ Array [
 `;
 
 exports[`minimum amount of changes 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "y",
     ],
-    "value": Object {
+    "value": {
       "a": 2,
     },
   },
@@ -2573,20 +2573,20 @@ Array [
 `;
 
 exports[`minimum amount of changes 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": 3,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "y",
     ],
-    "value": Object {
+    "value": {
       "a": 4,
     },
   },
@@ -2594,10 +2594,10 @@ Array [
 `;
 
 exports[`nested change in array 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       0,
       0,
       "b",
@@ -2608,10 +2608,10 @@ Array [
 `;
 
 exports[`nested change in array 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       0,
       0,
       "b",
@@ -2622,10 +2622,10 @@ Array [
 `;
 
 exports[`nested change in map 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
@@ -2635,10 +2635,10 @@ Array [
 `;
 
 exports[`nested change in map 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
@@ -2648,10 +2648,10 @@ Array [
 `;
 
 exports[`nested change in object 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
@@ -2661,10 +2661,10 @@ Array [
 `;
 
 exports[`nested change in object 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "a",
       "b",
     ],
@@ -2674,19 +2674,19 @@ Array [
 `;
 
 exports[`nested map (no changes) 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": Map {
       "b" => 1,
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "a",
     ],
   },
@@ -2694,16 +2694,16 @@ Array [
 `;
 
 exports[`nested map (no changes) 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
     ],
     "value": Map {
@@ -2714,10 +2714,10 @@ Array [
 `;
 
 exports[`nested map (with changes) 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": Map {
@@ -2725,9 +2725,9 @@ Array [
       "y" => 2,
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "a",
     ],
   },
@@ -2735,16 +2735,16 @@ Array [
 `;
 
 exports[`nested map (with changes) 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
     ],
     "value": Map {
@@ -2756,19 +2756,19 @@ Array [
 `;
 
 exports[`nested object (no changes) 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
-    "value": Object {
+    "value": {
       "b": 1,
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "a",
     ],
   },
@@ -2776,19 +2776,19 @@ Array [
 `;
 
 exports[`nested object (no changes) 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
     ],
-    "value": Object {
+    "value": {
       "b": 1,
     },
   },
@@ -2796,20 +2796,20 @@ Array [
 `;
 
 exports[`nested object (with changes) 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
-    "value": Object {
+    "value": {
       "b": 2,
       "y": 2,
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "a",
     ],
   },
@@ -2817,19 +2817,19 @@ Array [
 `;
 
 exports[`nested object (with changes) 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "a",
     ],
-    "value": Object {
+    "value": {
       "b": 1,
       "c": 1,
     },
@@ -2838,23 +2838,23 @@ Array [
 `;
 
 exports[`object - assign ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foo",
       "bar1",
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
@@ -2862,19 +2862,19 @@ Array [
 `;
 
 exports[`object - assign ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foo",
       "bar1",
     ],
@@ -2883,10 +2883,10 @@ Array [
 `;
 
 exports[`object 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foo",
       "bar",
     ],
@@ -2896,10 +2896,10 @@ Array [
 `;
 
 exports[`object 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foo",
       "bar",
     ],
@@ -2909,22 +2909,22 @@ Array [
 `;
 
 exports[`object assign ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foo",
       "bar",
     ],
     "value": "new str",
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       "foo",
     ],
-    "value": Object {
+    "value": {
       "bar": "new str",
     },
   },
@@ -2932,18 +2932,18 @@ Array [
 `;
 
 exports[`object assign ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foo",
       "bar",
     ],
     "value": "str",
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foobar",
       "foo",
     ],
@@ -2952,10 +2952,10 @@ Array [
 `;
 
 exports[`object delete key 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foo",
       "bar",
     ],
@@ -2964,10 +2964,10 @@ Array [
 `;
 
 exports[`object delete key 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foo",
       "bar",
     ],
@@ -2977,23 +2977,23 @@ Array [
 `;
 
 exports[`object setter with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str0",
     },
   },
@@ -3001,20 +3001,20 @@ Array [
 `;
 
 exports[`object setter with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "f",
     ],
   },
@@ -3022,10 +3022,10 @@ Array [
 `;
 
 exports[`object with class 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "baz",
     ],
@@ -3035,10 +3035,10 @@ Array [
 `;
 
 exports[`object with class 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "foobar",
       "baz",
     ],
@@ -3048,19 +3048,19 @@ Array [
 `;
 
 exports[`object with delete 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foobar",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar1",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str2",
     },
   },
@@ -3068,19 +3068,19 @@ Array [
 `;
 
 exports[`object with delete 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foobar1",
     ],
   },
@@ -3088,27 +3088,27 @@ Array [
 `;
 
 exports[`object with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "f",
       "baz",
     ],
     "value": "new str3",
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foobar",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar1",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str2",
     },
   },
@@ -3116,27 +3116,27 @@ Array [
 `;
 
 exports[`object with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "f",
       "baz",
     ],
     "value": "str",
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
     ],
-    "value": Object {
+    "value": {
       "baz": "str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foobar1",
     ],
   },
@@ -3144,21 +3144,21 @@ Array [
 `;
 
 exports[`patches issue 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foo",
       "bar",
     ],
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "e",
     ],
-    "value": Object {
-      "ffff": Object {
+    "value": {
+      "ffff": {
         "a": 2,
       },
     },
@@ -3167,20 +3167,20 @@ Array [
 `;
 
 exports[`patches issue 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foo",
       "bar",
     ],
-    "value": Object {
+    "value": {
       "a": 1,
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "e",
     ],
   },
@@ -3188,122 +3188,122 @@ Array [
 `;
 
 exports[`patches mutate 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "items",
     ],
-    "value": Array [],
+    "value": [],
   },
 ]
 `;
 
 exports[`patches mutate 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "items",
     ],
-    "value": Array [],
+    "value": [],
   },
 ]
 `;
 
-exports[`same value replacement - 1 1`] = `Array []`;
+exports[`same value replacement - 1 1`] = `[]`;
 
-exports[`same value replacement - 1 2`] = `Array []`;
+exports[`same value replacement - 1 2`] = `[]`;
 
-exports[`same value replacement - 2 1`] = `Array []`;
+exports[`same value replacement - 2 1`] = `[]`;
 
-exports[`same value replacement - 2 2`] = `Array []`;
+exports[`same value replacement - 2 2`] = `[]`;
 
-exports[`same value replacement - 3 1`] = `Array []`;
+exports[`same value replacement - 3 1`] = `[]`;
 
-exports[`same value replacement - 3 2`] = `Array []`;
+exports[`same value replacement - 3 2`] = `[]`;
 
-exports[`same value replacement - 4 1`] = `Array []`;
+exports[`same value replacement - 4 1`] = `[]`;
 
-exports[`same value replacement - 4 2`] = `Array []`;
+exports[`same value replacement - 4 2`] = `[]`;
 
-exports[`same value replacement - 4 3`] = `Array []`;
+exports[`same value replacement - 4 3`] = `[]`;
 
-exports[`same value replacement - 4 4`] = `Array []`;
+exports[`same value replacement - 4 4`] = `[]`;
 
-exports[`same value replacement - 5 1`] = `Array []`;
+exports[`same value replacement - 5 1`] = `[]`;
 
-exports[`same value replacement - 5 2`] = `Array []`;
+exports[`same value replacement - 5 2`] = `[]`;
 
-exports[`same value replacement - 6 1`] = `Array []`;
+exports[`same value replacement - 6 1`] = `[]`;
 
-exports[`same value replacement - 6 2`] = `Array []`;
+exports[`same value replacement - 6 2`] = `[]`;
 
-exports[`same value replacement(array) - 2 1`] = `Array []`;
+exports[`same value replacement(array) - 2 1`] = `[]`;
 
-exports[`same value replacement(array) - 2 2`] = `Array []`;
+exports[`same value replacement(array) - 2 2`] = `[]`;
 
-exports[`same value replacement(array) - 2 3`] = `Array []`;
+exports[`same value replacement(array) - 2 3`] = `[]`;
 
-exports[`same value replacement(array) - 2 4`] = `Array []`;
+exports[`same value replacement(array) - 2 4`] = `[]`;
 
-exports[`same value replacement(map) - 2 1`] = `Array []`;
+exports[`same value replacement(map) - 2 1`] = `[]`;
 
-exports[`same value replacement(map) - 2 2`] = `Array []`;
+exports[`same value replacement(map) - 2 2`] = `[]`;
 
-exports[`same value replacement(set) - 2 1`] = `Array []`;
+exports[`same value replacement(set) - 2 1`] = `[]`;
 
-exports[`same value replacement(set) - 2 2`] = `Array []`;
+exports[`same value replacement(set) - 2 2`] = `[]`;
 
 exports[`set 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set3",
       2,
     ],
-    "value": Object {
+    "value": {
       "bar": "new str1",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set1",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set1",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1111",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
@@ -3311,54 +3311,54 @@ Array [
 `;
 
 exports[`set 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1111",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set1",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set1",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set3",
       2,
     ],
-    "value": Object {
+    "value": {
       "bar": "new str1",
     },
   },
@@ -3366,27 +3366,27 @@ Array [
 `;
 
 exports[`set value and pop the value (array) - 2 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       0,
     ],
-    "value": Object {},
+    "value": {},
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       2,
     ],
-    "value": Object {
+    "value": {
       "x": 1,
     },
   },
@@ -3394,51 +3394,51 @@ Array [
 `;
 
 exports[`set value and pop the value (array) - 2 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       0,
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       1,
     ],
-    "value": Object {
+    "value": {
       "x": 1,
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       2,
     ],
-    "value": Object {},
+    "value": {},
   },
 ]
 `;
 
 exports[`set with ref 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "f",
     ],
-    "value": Object {
+    "value": {
       "baz": "new str0",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {
+    "value": {
       "baz": "str0",
     },
   },
@@ -3446,20 +3446,20 @@ Array [
 `;
 
 exports[`set with ref 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "foobar",
       0,
     ],
-    "value": Object {
+    "value": {
       "baz": "str0",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "f",
     ],
   },
@@ -3467,10 +3467,10 @@ Array [
 `;
 
 exports[`sets - add - 1 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": 2,
@@ -3479,10 +3479,10 @@ Array [
 `;
 
 exports[`sets - add - 1 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": 2,
@@ -3491,10 +3491,10 @@ Array [
 `;
 
 exports[`sets - add, delete, add - 1 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": 2,
@@ -3503,10 +3503,10 @@ Array [
 `;
 
 exports[`sets - add, delete, add - 1 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       1,
     ],
     "value": 2,
@@ -3514,23 +3514,23 @@ Array [
 ]
 `;
 
-exports[`sets - add, delete, add - 2 1`] = `Array []`;
+exports[`sets - add, delete, add - 2 1`] = `[]`;
 
-exports[`sets - add, delete, add - 2 2`] = `Array []`;
+exports[`sets - add, delete, add - 2 2`] = `[]`;
 
 exports[`sets - mutate - 1 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       1,
       "val",
     ],
     "value": "you",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       0,
       "val",
     ],
@@ -3540,18 +3540,18 @@ Array [
 `;
 
 exports[`sets - mutate - 1 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       1,
       "val",
     ],
     "value": "will",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       0,
       "val",
     ],
@@ -3561,10 +3561,10 @@ Array [
 `;
 
 exports[`simple array 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       0,
       "a",
@@ -3575,10 +3575,10 @@ Array [
 `;
 
 exports[`simple array 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "arr1",
       0,
       "a",
@@ -3589,10 +3589,10 @@ Array [
 `;
 
 exports[`simple assignment - 1 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": 4,
@@ -3601,10 +3601,10 @@ Array [
 `;
 
 exports[`simple assignment - 1 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": 3,
@@ -3613,10 +3613,10 @@ Array [
 `;
 
 exports[`simple assignment - 2 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "y",
     ],
@@ -3626,10 +3626,10 @@ Array [
 `;
 
 exports[`simple assignment - 2 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "y",
     ],
@@ -3639,10 +3639,10 @@ Array [
 `;
 
 exports[`simple assignment - 3 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
       "y",
@@ -3653,10 +3653,10 @@ Array [
 `;
 
 exports[`simple assignment - 3 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       0,
       "y",
@@ -3667,10 +3667,10 @@ Array [
 `;
 
 exports[`simple assignment - 4 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "y",
     ],
@@ -3680,10 +3680,10 @@ Array [
 `;
 
 exports[`simple assignment - 4 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "y",
     ],
@@ -3693,10 +3693,10 @@ Array [
 `;
 
 exports[`simple assignment - 5 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "y",
     ],
@@ -3706,10 +3706,10 @@ Array [
 `;
 
 exports[`simple assignment - 5 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
       "y",
     ],
@@ -3719,17 +3719,17 @@ Array [
 `;
 
 exports[`simple assignment - 6 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": 2,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "y",
     ],
     "value": 3,
@@ -3738,17 +3738,17 @@ Array [
 `;
 
 exports[`simple assignment - 6 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": 1,
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "y",
     ],
   },
@@ -3756,22 +3756,22 @@ Array [
 `;
 
 exports[`simple assignment - 7 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
-      Object {
+      {
         "prop": "val1",
       },
     ],
     "value": 5,
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
-      Object {
+      {
         "prop": "val2",
       },
     ],
@@ -3781,22 +3781,22 @@ Array [
 `;
 
 exports[`simple assignment - 7 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "x",
-      Object {
+      {
         "prop": "val1",
       },
     ],
     "value": 4,
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
-      Object {
+      {
         "prop": "val2",
       },
     ],
@@ -3805,10 +3805,10 @@ Array [
 `;
 
 exports[`simple delete 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "x",
     ],
   },
@@ -3816,10 +3816,10 @@ Array [
 `;
 
 exports[`simple delete 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "x",
     ],
     "value": 2,
@@ -3828,23 +3828,23 @@ Array [
 `;
 
 exports[`simple map 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map",
       "a",
       "bar",
     ],
     "value": "new str",
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "map",
       "b",
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
@@ -3852,19 +3852,19 @@ Array [
 `;
 
 exports[`simple map 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map",
       "a",
       "bar",
     ],
     "value": "str",
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "map",
       "b",
     ],
@@ -3873,72 +3873,72 @@ Array [
 `;
 
 exports[`simple set 1`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "set",
       1,
       "bar",
     ],
     "value": "new str1",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "set",
       0,
       "bar",
     ],
     "value": "new str0",
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "new str0",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "new str1",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set",
       2,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1",
     },
   },
@@ -3946,69 +3946,69 @@ Array [
 `;
 
 exports[`simple set 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set",
       2,
     ],
-    "value": Object {
+    "value": {
       "bar": "str1",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "new str1",
     },
   },
-  Object {
+  {
     "op": "remove",
-    "path": Array [
+    "path": [
       "set",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "new str0",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set",
       1,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "add",
-    "path": Array [
+    "path": [
       "set",
       0,
     ],
-    "value": Object {
+    "value": {
       "bar": "str",
     },
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "set",
       1,
       "bar",
     ],
     "value": "str",
   },
-  Object {
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "set",
       0,
       "bar",

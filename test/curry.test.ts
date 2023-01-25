@@ -336,10 +336,10 @@ describe('Currying', () => {
     );
     const [state, patches, inversePatches] = producer(baseState);
     expect(patches).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "op": "replace",
-          "path": Array [
+          "path": [
             "foo",
             "bar",
           ],
@@ -348,10 +348,10 @@ describe('Currying', () => {
       ]
     `);
     expect(inversePatches).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "op": "replace",
-          "path": Array [
+          "path": [
             "foo",
             "bar",
           ],

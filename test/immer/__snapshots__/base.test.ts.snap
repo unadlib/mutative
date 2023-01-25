@@ -153,18 +153,18 @@ exports[`base functionality - proxy (patch listener) throws when Object.setProto
 exports[`base functionality - proxy (patch listener) throws when the draft is modified and another object is returned 1`] = `"Either the value is returned as a new non-draft value, or only the draft is modified without returning any value."`;
 
 exports[`complex nesting map / set / object modify deep object 1`] = `
-Object {
+{
   "map": Map {
     "set1" => Set {
-      Object {
+      {
         "a": 2,
       },
-      Object {
+      {
         "b": 2,
       },
     },
     "set2" => Set {
-      Object {
+      {
         "c": 3,
       },
     },
@@ -173,10 +173,10 @@ Object {
 `;
 
 exports[`complex nesting map / set / object modify deep object 2`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map",
       "set1",
       0,
@@ -188,18 +188,18 @@ Array [
 `;
 
 exports[`complex nesting map / set / object modify deep object 3`] = `
-Object {
+{
   "map": Map {
     "set1" => Set {
-      Object {
+      {
         "a": 2,
       },
-      Object {
+      {
         "b": 2,
       },
     },
     "set2" => Set {
-      Object {
+      {
         "c": 3,
       },
     },
@@ -208,10 +208,10 @@ Object {
 `;
 
 exports[`complex nesting map / set / object modify deep object 4`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map",
       "set1",
       0,
@@ -223,18 +223,18 @@ Array [
 `;
 
 exports[`complex nesting map / set / object modify deep object 5`] = `
-Object {
+{
   "map": Map {
     "set1" => Set {
-      Object {
+      {
         "a": 2,
       },
-      Object {
+      {
         "b": 2,
       },
     },
     "set2" => Set {
-      Object {
+      {
         "c": 3,
       },
     },
@@ -243,10 +243,10 @@ Object {
 `;
 
 exports[`complex nesting map / set / object modify deep object 6`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map",
       "set1",
       0,
@@ -258,18 +258,18 @@ Array [
 `;
 
 exports[`complex nesting map / set / object modify deep object 7`] = `
-Object {
+{
   "map": Map {
     "set1" => Set {
-      Object {
+      {
         "a": 2,
       },
-      Object {
+      {
         "b": 2,
       },
     },
     "set2" => Set {
-      Object {
+      {
         "c": 3,
       },
     },
@@ -278,10 +278,10 @@ Object {
 `;
 
 exports[`complex nesting map / set / object modify deep object 8`] = `
-Array [
-  Object {
+[
+  {
     "op": "replace",
-    "path": Array [
+    "path": [
       "map",
       "set1",
       0,

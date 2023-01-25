@@ -237,21 +237,21 @@ test('Producers can update Maps', () => {
   // With different content obviously
   expect(usersById_v1).toMatchInlineSnapshot(`Map {}`);
   expect(usersById_v2).toMatchInlineSnapshot(`
-		Map {
-		  "michel" => Object {
-		    "country": "NL",
-		    "name": "Michel Weststrate",
-		  },
-		}
-	`);
+    Map {
+      "michel" => {
+        "country": "NL",
+        "name": "Michel Weststrate",
+      },
+    }
+  `);
   expect(usersById_v3).toMatchInlineSnapshot(`
-		Map {
-		  "michel" => Object {
-		    "country": "UK",
-		    "name": "Michel Weststrate",
-		  },
-		}
-	`);
+    Map {
+      "michel" => {
+        "country": "UK",
+        "name": "Michel Weststrate",
+      },
+    }
+  `);
   // The old one was never modified
   expect(usersById_v1.size).toBe(0);
   // And trying to change a Map outside a producers is going to: NO!
