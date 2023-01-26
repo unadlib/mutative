@@ -59,7 +59,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 - **Immutable and mutable data markable**
 - **Strict mode for safer mutable data access**
 - **Support for JSON patches**
-- **Support for Reducer**
+- **Support for reducer**
 
 ## Difference between Mutative and Immer
 
@@ -75,13 +75,26 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 
-> Mutative Size: `4.16KB` with minified and gzipped. The size of the Immer is `4.67 KB` for the same features.
+> Mutative size is `4.16KB` with minified and gzipped. Immer size with same features is `4.67 KB`.
 
 ## Installation
 
+Yarn
+
 ```sh
-yarn install mutative # npm install mutative
+yarn add mutative
 ```
+
+NPM
+
+```sh
+npm install mutative
+```
+
+CDN
+
+- Unpkg: `<script src="https://unpkg.com/mutative"></script>`
+- JSDelivr: `<script src="https://cdn.jsdelivr.net/npm/mutative"></script>`
 
 ## Usage
 
@@ -137,13 +150,13 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
 - enablePatches - `boolean`, the default is false.
 
-  > Enable patch, and return the patches and inversePatches.
+  > Enable patch, and return the patches/inversePatches.
 
 - enableAutoFreeze - `boolean`, the default is false.
 
   > Enable autoFreeze, and return frozen state.
 
-- mark - `() => ('mutable'|'immutable'|function)`
+- mark - `(target) => ('mutable'|'immutable'|function)`
   > Set a mark to determine if the object is mutable or if an instance is an immutable, and it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
 
 #### `create()` - Currying
@@ -169,7 +182,7 @@ const state = producer(baseState);
 
 ### `apply()`
 
-Use `apply()` for patches to get the new state.
+Use `apply()` for applying patches to get the new state.
 
 ```ts
 import { create, apply } from 'mutative';
@@ -198,7 +211,7 @@ expect(prevState).toEqual(baseState);
 
 ### `current()`
 
-Get the current value in the draft.
+Get the current value from a draft.
 
 ```ts
 const baseState = {
@@ -215,7 +228,7 @@ const state = create(baseState, (draft) => {
 
 ### `original()`
 
-Get the original value in the draft.
+Get the original value from a draft.
 
 ```ts
 const baseState = {
@@ -246,6 +259,7 @@ const state = create(
     unsafe(() => {
       draft.date.setFullYear(2000);
     });
+    // or return the mutable data:
     // const date = unsafe(() => draft.date);
   },
   {
@@ -256,7 +270,7 @@ const state = create(
 
 ### `isDraft()`
 
-Check if it is a draft.
+Check if a value is a draft.
 
 ```ts
 const baseState = {
@@ -316,7 +330,7 @@ Yes. Unless you have to be compatible with Internet Explorer, Mutative supports 
 
 - Can Mutative be integrated with Redux?
 
-Yes.
+Yes. Mutative supports return values for reducer, and `redux-toolkit` is considering support for [configurable `produce()`](https://github.com/reduxjs/redux-toolkit/pull/3074).
 
 ## Migration from Immer to Mutative
 
@@ -415,7 +429,7 @@ const nextState = create(baseState, (draft) => {
 
 ## Contributing
 
-Mutative's goal is to provide efficient immutable updates with a focus on performance improvements and better APIs as a way to bring a better development experience. We are still working on it and welcome PRs that may help Mutative.
+Mutative goal is to provide efficient and immutable updates. The focus is on performance improvements and providing better APIs for better development experiences. We are still working on it and welcome PRs that may help Mutative.
 
 Development Workflow:
 

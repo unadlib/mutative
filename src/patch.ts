@@ -112,6 +112,9 @@ function generateArrayPatches(
     });
   }
   if (original.length < copy.length) {
+    // https://www.rfc-editor.org/rfc/rfc6902#appendix-A.4
+    // For performance, here we only generate an operation that replaces the length of the array,
+    // which is inconsistent with JSON Patch specification
     inversePatches.push({
       op: Operation.Replace,
       path: basePath.concat(['length']),

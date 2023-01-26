@@ -78,8 +78,8 @@ function create(arg0: any, arg1: any, arg2?: any): any {
     };
   }
   let base = arg0;
-  let mutate = arg1;
-  let options = arg2;
+  let mutate = arg1 as (...args: any[]) => any;
+  let options = arg2 as Options<any, any>;
   if (typeof arg1 !== 'function') {
     options = arg1;
   }
@@ -96,7 +96,7 @@ function create(arg0: any, arg1: any, arg2?: any): any {
   const enablePatches = options?.enablePatches ?? false;
   const strict = options?.strict ?? false;
   const enableAutoFreeze = options?.enableAutoFreeze ?? false;
-  const _options = {
+  const _options: Options<any, any> = {
     enableAutoFreeze,
     mark,
     strict,
@@ -121,7 +121,7 @@ function create(arg0: any, arg1: any, arg2?: any): any {
     }
     return [draft, finalize];
   }
-  let result;
+  let result: any;
   try {
     result = mutate(draft);
   } catch (error) {
