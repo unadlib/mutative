@@ -39,7 +39,7 @@ export type AssertFun = <Left, Right>(
   right: Assert<Right, Test<Left, Right>>
 ) => Right;
 
-export const assert: AssertFun = x => x as any;
+export const assert: AssertFun = (x) => x as any;
 
 /**
  * Placeholder value followed by "as T"

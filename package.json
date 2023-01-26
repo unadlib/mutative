@@ -39,7 +39,8 @@
     "build:doc": "rimraf docs && typedoc --out docs src/index.ts --readme none",
     "commit": "yarn git-cz",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "analyze": "size-limit --why",
+    "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\""
   },
   "size-limit": [
     {
@@ -87,7 +88,9 @@
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.32.1",
     "immer": "^9.0.18",
     "immutable": "^4.0.0",
     "jest": "^29.4.0",

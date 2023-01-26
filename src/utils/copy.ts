@@ -33,7 +33,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
   } else if (
     options?.mark &&
     ((markResult = options.mark(original, dataTypes)),
-    typeof markResult !== 'undefined') &&
+    markResult !== undefined) &&
     markResult !== dataTypes.mutable
   ) {
     if (markResult === dataTypes.immutable) {

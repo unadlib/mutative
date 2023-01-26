@@ -15,7 +15,7 @@ export function handleReturnValue<T extends object>(value: T, warning = false) {
   forEach(value, (key, item, source) => {
     const proxyDraft = getProxyDraft(item);
     if (proxyDraft) {
-      if (warning) {
+      if (__DEV__ && warning) {
         console.warn(
           `The return value contains drafts, please use safeReturn() to wrap the return value.`
         );

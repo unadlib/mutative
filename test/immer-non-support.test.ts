@@ -59,7 +59,7 @@ test('Unexpected operation check of Set draft', () => {
         // @ts-ignore
         draft.x = 1;
       });
-    }).toThrowError(`'set' draft does not support any property assignment.`);
+    }).toThrowError(`Map/Set draft does not support any property assignment.`);
   }
 });
 
@@ -83,7 +83,7 @@ test('Unexpected operation check of Map draft', () => {
         // @ts-ignore
         draft.x = 1;
       });
-    }).toThrowError(`'map' draft does not support any property assignment.`);
+    }).toThrowError(`Map/Set draft does not support any property assignment.`);
   }
 });
 

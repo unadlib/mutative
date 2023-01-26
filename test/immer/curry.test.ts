@@ -61,11 +61,17 @@ function runTests(name: any, useProxies: any) {
       );
       // ! different from immer
       // @ts-ignore
-      expect(reducer({ hello: 'world' }, 3)).toEqual({ hello: 'world', index: 3 });
+      expect(reducer({ hello: 'world' }, 3)).toEqual({
+        hello: 'world',
+        index: 3,
+      });
       expect(reducer({}, 3)).toEqual({ index: 3 });
       // ! different from immer
       // @ts-ignore
-      expect(reducer({ hello: 'world' })).toEqual({ hello: 'world', index: undefined });
+      expect(reducer({ hello: 'world' })).toEqual({
+        hello: 'world',
+        index: undefined,
+      });
     });
 
     it('can has fun with change detection', () => {

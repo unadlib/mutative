@@ -30,9 +30,6 @@ produce(dataSource, (draft) => {
 
 console.timeEnd('immer - object: update');
 
-
-
-
 console.time('create - array: 50k');
 const dataSource1 = [...Array(50000).keys()].map((key) => [
   key,
@@ -56,6 +53,3 @@ produce(f, (draft) => {
 });
 
 console.timeEnd('immer - array: update');
-
-
-

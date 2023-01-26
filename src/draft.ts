@@ -109,7 +109,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
   set(target: ProxyDraft, key: string | number | symbol, value: any) {
     if (target.type === DraftType.Set || target.type === DraftType.Map) {
       throw new Error(
-        `'${target.type}' draft does not support any property assignment.`
+        `Map/Set draft does not support any property assignment.`
       );
     }
     if (

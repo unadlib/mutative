@@ -1,10 +1,10 @@
 import { dataTypes } from './constant';
 
 export const enum DraftType {
-  Object = 'object',
-  Array = 'array',
-  Map = 'map',
-  Set = 'set',
+  Object,
+  Array,
+  Map,
+  Set,
 }
 
 export const Operation = {
@@ -60,7 +60,9 @@ export type CreateResult<
   O extends boolean,
   F extends boolean,
   R extends void | Promise<void> | T | Promise<T>
-> = R extends Promise<void> | Promise<T> ? Promise<Result<T, O, F>> : Result<T, O, F>;
+> = R extends Promise<void> | Promise<T>
+  ? Promise<Result<T, O, F>>
+  : Result<T, O, F>;
 
 type BaseMark = null | undefined | DataType;
 type MarkWithCopy = BaseMark | (() => any);
