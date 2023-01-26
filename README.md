@@ -415,10 +415,16 @@ const nextState = create(baseState, (draft) => {
 
 ## Contributing
 
-Development Workflow:
+ Mutative's goal is to provide efficient immutable updates with a focus on performance improvements and better APIs as a way to bring a better development experience. We are still working on it and welcome PRs that may help Mutative.
 
-TBD
+Development Workflow:
+- Clone Mutative repo.
+- Run `yarn install` to install all the dependencies.
+- Run `yarn prettier` to format the code.
+- `yarn test --watch` runs an interactive test watcher.
+- Run `yarn commit` to make a git commit. 
 
 ## License
 
 Mutative is [MIT licensed](https://github.com/unadlib/mutative/blob/main/LICENSE).
+
