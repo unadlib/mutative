@@ -59,8 +59,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 - **Immutable and mutable data markable**
 - **Strict mode for safer mutable data access**
 - **Support for JSON patches**
-
-> Mutative Size: 4.11 kB with all dependencies, minified and gzipped.
+- **Support for Reducer**
 
 ## Difference between Mutative and Immer
 
@@ -75,6 +74,8 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 | Support IE browser        |       ❌ |  ✅   |
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
+
+> Mutative Size: `4.16KB` with minified and gzipped. The size of the Immer is `4.67 KB` for the same features.
 
 ## Installation
 
