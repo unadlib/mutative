@@ -411,3 +411,12 @@ const nextState = create(baseState, (draft) => {
 });
 ```
 
+## Contributing
+
+Development Workflow:
+
+TBD
+
+## License
+
+Mutative is [MIT licensed](https://github.com/unadlib/mutative/blob/main/LICENSE).
