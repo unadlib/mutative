@@ -64,7 +64,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 
 ## Difference between Mutative and Immer
 
-| -                         | Mutative | Immer |
+|                           | Mutative | Immer |
 | :------------------------ | -------: | :---: |
 | Custom shallow copy       |       ✅ |  ❌   |
 | Strict mode               |       ✅ |  ❌   |
@@ -130,11 +130,9 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
 - strict - `boolean`, the default is false.
 
-  > Forbid accessing non-draftable values in strict mode(unless using `unsafe()`).
+  > Forbid accessing non-draftable values in strict mode(unless using [unsafe()](#unsafe)).
 
-  > It is recommended to enable `strict` in development mode and disable `strict` in production mode. This will ensure safe returns and also keep good performance in the production build.
-
-  > If the return value is mixed drafts or `undefined`, then use `safeReturn()` wrapper.
+  > It is recommended to enable `strict` in development mode and disable `strict` in production mode. This will ensure safe returns and also keep good performance in the production build. If the return value is mixed drafts or `undefined`, then use [safeReturn()](#safereturn).
 
 - enablePatches - `boolean`, the default is false.
 
@@ -247,6 +245,7 @@ const state = create(
     unsafe(() => {
       draft.date.setFullYear(2000);
     });
+    // const date = unsafe(() => draft.date);
   },
   {
     strict: true,
@@ -272,15 +271,17 @@ const state = create(baseState, (draft) => {
 
 ### `safeReturn()`
 
-It is used as a safe return value to ensure that this value replaces the finalized value.
+It is used as a safe return value to ensure that this value replaces the finalized draft value or use it to return `undefined` explicitly.
 
 ```ts
-const baseState = { foo: 'bar' };
-const state = create(baseState as { foo: string } | undefined, (draft) => {
+const baseState = { id: 'test' };
+const state = create(baseState as { id: string } | undefined, (draft) => {
   return safeReturn(undefined);
 });
 expect(state).toBe(undefined);
 ```
+
+> You don't need to use `safeReturn()` when the return value doesn't have any draft.
 
 ### Using TypeScript
 
