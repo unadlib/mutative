@@ -334,13 +334,11 @@ Yes. Mutative supports return values for reducer, and `redux-toolkit` is conside
 
 ## Migration from Immer to Mutative
 
+1. `produce()` -> `create()`
+
 Mutative auto freezing option is disabled by default, Immer auto freezing option is enabled by default (if disabled, Immer performance will have a more huge drop).
 
 > You need to check if auto freezing has any impact on your project. If it depends on auto freezing, you can enable it yourself in Mutative.
-
-### `produce()` -> `create()` {.tabset .tabset-fade}
-
-#### Immer
 
 ```ts
 import produce from 'immer';
@@ -351,7 +349,7 @@ const nextState = produce(baseState, (draft) => {
 });
 ```
 
-#### Mutative
+Use Mutative
 
 ```ts
 import { create } from 'mutative';
