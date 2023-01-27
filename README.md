@@ -157,7 +157,7 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
   > Enable autoFreeze, and return frozen state.
 
 - mark - `(target) => ('mutable'|'immutable'|function)`
-  > Set a mark to determine if the object is mutable or if an instance is an immutable, and it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
+  > Set a mark to determine if the value is mutable or if an instance is an immutable, and it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
 
 #### `create()` - Currying
 
@@ -283,6 +283,21 @@ const state = create(baseState, (draft) => {
   expect(isDraft(draft.list)).toBeTruthy();
 });
 ```
+### `isDraftable()`
+
+Check if a value is draftable
+
+```ts
+const baseState = {
+  date: new Date(),
+  list: [{ text: 'todo' }],
+};
+
+expect(isDraftable(baseState.date)).toBeFalsy();
+expect(isDraftable(baseState.list)).toBeTruthy();
+```
+
+> You can set a mark to determine if the value is draftable, and the mark function should be the same as passing in `create()` mark option.
 
 ### `safeReturn()`
 

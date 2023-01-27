@@ -1,4 +1,4 @@
-import { DraftType, Options, ProxyDraft } from '../interface';
+import { DraftType, Mark, ProxyDraft } from '../interface';
 import { dataTypes, PROXY_DRAFT } from '../constant';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
@@ -22,7 +22,10 @@ export function getValue<T extends object>(value: T): T {
   return proxyDraft ? proxyDraft.copy ?? proxyDraft.original : value;
 }
 
-export function isDraftable(value: any, options?: Options<any, any>) {
+/**
+ * Check if a value is draftable
+ */
+export function isDraftable(value: any, options?: { mark?: Mark<any, any> }) {
   if (!value || typeof value !== 'object') return false;
   let markResult: any;
   return (

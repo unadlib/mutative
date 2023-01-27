@@ -1,4 +1,4 @@
-import { create, original, current, apply } from '../src';
+import { create, original, current, apply, isDraftable, isDraft } from '../src';
 import { PROXY_DRAFT } from '../src/constant';
 
 test('check object type', () => {
@@ -2128,4 +2128,42 @@ test('check Primitive type with returning, patches, freeze and async', async () 
       [{ op: 'replace', path: [], value: value }],
     ]);
   }
+});
+
+test('base isDraft()', () => {
+  const baseState = {
+    date: new Date(),
+    list: [{ text: 'todo' }],
+  };
+
+  const state = create(baseState, (draft) => {
+    expect(isDraft(draft.date)).toBeFalsy();
+    expect(isDraft(draft.list)).toBeTruthy();
+  });
+})
+
+test('base isDraftable()', () => {
+  const baseState = {
+    date: new Date(),
+    list: [{ text: 'todo' }],
+  };
+
+  expect(isDraftable(baseState.date)).toBeFalsy();
+  expect(isDraftable(baseState.list)).toBeTruthy();
+});
+
+test('base isDraftable() with option', () => {
+  const baseState = {
+    date: new Date(),
+    list: [{ text: 'todo' }],
+  };
+
+  expect(
+    isDraftable(baseState.date, {
+      mark: (target, { immutable }) => {
+        if (target instanceof Date) return immutable;
+      },
+    })
+  ).toBeTruthy();
+  expect(isDraftable(baseState.list)).toBeTruthy();
 });
