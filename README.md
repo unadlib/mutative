@@ -172,7 +172,7 @@ const state = finalize();
 - create `producer`
 
 ```ts
-const producer = create(() => {
+const producer = create((draft) => {
   draft.foobar.bar = 'baz';
 });
 const state = producer(baseState);
