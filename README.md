@@ -338,7 +338,7 @@ Mutative auto freezing option is disabled by default, Immer auto freezing option
 
 > You need to check if auto freezing has any impact on your project. If it depends on auto freezing, you can enable it yourself in Mutative.
 
-### `produce()` -> `create()`{.tabset}
+### `produce()` -> `create()` {.tabset .tabset-fade}
 
 #### Immer
 
