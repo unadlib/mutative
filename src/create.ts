@@ -1,4 +1,4 @@
-import { CreateResult, Draft, Options, Result } from './interface';
+import { CreateResult, Draft, Options, PatchesOptions, Result } from './interface';
 import { draftify } from './draftify';
 import {
   getProxyDraft,
@@ -35,7 +35,7 @@ import { safeReturnValue } from './safeReturn';
 function create<
   T extends any,
   F extends boolean = false,
-  O extends boolean = false,
+  O extends PatchesOptions = false,
   R extends void | Promise<void> | T | Promise<T> = void
 >(
   base: T,
@@ -45,7 +45,7 @@ function create<
 function create<
   T extends any,
   F extends boolean = false,
-  O extends boolean = false,
+  O extends PatchesOptions = false,
   R extends void | Promise<void> = void
 >(
   base: T,
@@ -56,7 +56,7 @@ function create<
   T extends any,
   P extends any[] = [],
   F extends boolean = false,
-  O extends boolean = false,
+  O extends PatchesOptions = false,
   R extends void | Promise<void> = void
 >(
   mutate: (draft: Draft<T>, ...args: P) => R,
@@ -64,7 +64,7 @@ function create<
 ): (base: T, ...args: P) => CreateResult<T, O, F, R>;
 function create<
   T extends any,
-  O extends boolean = false,
+  O extends PatchesOptions = false,
   F extends boolean = false
 >(base: T, options?: Options<O, F>): [T, () => Result<T, O, F>];
 function create(arg0: any, arg1: any, arg2?: any): any {

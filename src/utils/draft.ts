@@ -95,3 +95,24 @@ export function revokeProxy(proxyDraft: ProxyDraft | null) {
     revoke();
   }
 }
+
+export function escapePath(path: string[], pathAsArray: boolean) {
+  return pathAsArray
+    ? path
+    : ['']
+        .concat(path)
+        .map((_item) => {
+          const item = `${_item}`;
+          if (item.indexOf('/') === -1 && item.indexOf('~') === -1) return item;
+          return item.replace(/~/g, '~0').replace(/\//g, '~1');
+        })
+        .join('/');
+}
+
+export function unescapePath(path: string | (string | number)[]) {
+  if (Array.isArray(path)) return path;
+  return path
+    .split('/')
+    .map((_item) => _item.replace(/~1/g, '/').replace(/~0/g, '~'))
+    .slice(1);
+}
