@@ -87,69 +87,6 @@ test('Unexpected operation check of Map draft', () => {
   }
 });
 
-// https://github.com/immerjs/immer/issues/936
-test("[936] immer failed case- Nested and chained produce usage results in error: Cannot perform 'get' on a proxy that has been revoked", () => {
-  {
-    setAutoFreeze(true);
-    const state = {
-      foo: {
-        bar: {
-          baz: 1,
-        },
-      },
-    };
-    const newState = produce(state, (draft) => {
-      draft.foo = produce(draft.foo, (fooDraft) => {
-        // @ts-ignore
-        fooDraft.baz = fooDraft.bar.baz;
-      });
-      draft.foo = produce(draft.foo, (fooDraft) => {
-        /* another produce call makes this fail */
-        /* no actual mutation necessary to make this happen */
-      });
-    });
-    expect(() => {
-      JSON.stringify(newState);
-    }).toThrowError();
-  }
-
-  {
-    const state = {
-      foo: {
-        bar: {
-          baz: 1,
-        },
-      },
-    };
-    const newState = create(
-      state,
-      (draft) => {
-        draft.foo = create(
-          draft.foo,
-          (fooDraft) => {
-            // @ts-ignore
-            fooDraft.baz = fooDraft.bar.baz;
-          },
-          {
-            enableAutoFreeze: true,
-          }
-        );
-        // draft.foo = create(draft.foo, fooDraft => {
-        //   /* another produce call makes this fail */
-        //   /* no actual mutation necessary to make this happen */
-        // })
-      },
-      {
-        enableAutoFreeze: true,
-      }
-    );
-
-    expect(() => {
-      JSON.stringify(newState);
-    }).not.toThrowError();
-  }
-});
-
 test('immer failed case - freeze Map key', () => {
   {
     setAutoFreeze(true);

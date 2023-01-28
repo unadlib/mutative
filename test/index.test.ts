@@ -2140,7 +2140,7 @@ test('base isDraft()', () => {
     expect(isDraft(draft.date)).toBeFalsy();
     expect(isDraft(draft.list)).toBeTruthy();
   });
-})
+});
 
 test('base isDraftable()', () => {
   const baseState = {
@@ -2166,4 +2166,81 @@ test('base isDraftable() with option', () => {
     })
   ).toBeTruthy();
   expect(isDraftable(baseState.list)).toBeTruthy();
+});
+
+test("Nested and chained produce usage results in error: Cannot perform 'get' on a proxy that has been revoked", () => {
+  const state = {
+    foo: {
+      bar: {
+        baz: 1,
+      },
+    },
+  };
+  const newState = create(
+    state,
+    (draft) => {
+      draft.foo = create(
+        draft.foo,
+        (fooDraft) => {
+          // @ts-ignore
+          fooDraft.baz = fooDraft.bar.baz;
+        },
+        {
+          enableAutoFreeze: true,
+        }
+      );
+      // draft.foo = create(draft.foo, fooDraft => {
+      //   /* another produce call makes this fail */
+      //   /* no actual mutation necessary to make this happen */
+      // })
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+
+  expect(() => {
+    JSON.stringify(newState);
+  }).not.toThrowError();
+});
+
+test('when nesting patches and changing the level of tree structure data', () => {
+  const state = {
+    id: 0,
+    type: 'root',
+    children: [{ id: 2, type: 'node', value: 'A' }],
+  };
+  const createGroup = (children: any) => {
+    return { id: 3, children, groupName: '' };
+  };
+
+  const [_nextState, _patches, _inversePatches] = create(
+    state,
+    (_state) => {
+      const node = _state.children[0];
+      _state.children.splice(0, 1);
+      const group = createGroup([node]);
+      // @ts-expect-error
+      _state.children.splice(0, 0, group);
+
+      const [__nextState, __patches, __inversePatches] = create(
+        _state,
+        (__state) => {
+          // @ts-expect-error
+          const value = __state.children[0].children[0].value;
+          // @ts-expect-error
+          __state.children[0].groupName = value + ' Group';
+        },
+        {
+          enablePatches: true,
+        }
+      );
+      apply(_state, __patches);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+
+  expect(() => JSON.stringify(_nextState)).not.toThrowError();
 });
