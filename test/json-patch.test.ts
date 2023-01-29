@@ -2,8 +2,8 @@ import { compare } from 'fast-json-patch';
 import { apply, create } from '../src';
 
 test('', () => {
-  const stateA = { '/a': { '/~1a/~1b': 1 } };
-  const stateB = { '/a': { '/~1a/~1b': 2 } };
+  const stateA = { '/a': { '/~1a/~1b': [1, 2, 3] } };
+  const stateB = { '/a': { '/~1a/~1b': [3, 2, 1] } };
   expect(apply(stateA, compare(stateA, stateB) as any)).toEqual(stateB);
 });
 

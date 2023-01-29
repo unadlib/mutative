@@ -34,7 +34,10 @@ export function apply<T extends object, F extends boolean = false>(
   let i: number;
   for (i = patches.length - 1; i >= 0; i -= 1) {
     const { value, op, path } = patches[i];
-    if (!path.length && op === Operation.Replace) {
+    if (
+      (!path.length && op === Operation.Replace) ||
+      (path === '' && op === Operation.Add)
+    ) {
       state = value;
       break;
     }
