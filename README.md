@@ -21,7 +21,7 @@ This is why Mutative was created.
 
 ## Mutative vs Immer Performance
 
-Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)).
+Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v0.3.2 vs Immer v9.0.18]
 
 ```
 Naive handcrafted reducer - No Freeze x 3,713 ops/sec ±0.86% (89 runs sampled)
@@ -57,7 +57,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 - **Optional freezing state**
 - **Custom shallow copy**
 - **Immutable and mutable data markable**
-- **Strict mode for safer mutable data access**
+- **Safer mutable data access in strict mode**
 - **Support for JSON patches**
 - **Support for reducer**
 
@@ -335,7 +335,7 @@ Mutative is a library that relies heavily on the use of the Proxy object, which 
 
 - Why does Mutative have such good performance?
 
-Mutative optimization focus is on shallow copy optimization, more complete lazy drafts, finalization process optimization, and more.
+Mutative optimization focus on shallow copy optimization, more complete lazy drafts, finalization process optimization, and more.
 
 - I'm already using Immer, can I migrate smoothly to Mutative?
 

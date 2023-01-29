@@ -1,6 +1,7 @@
 import { DraftType, Operation, Patches, ProxyDraft } from './interface';
 import {
   cloneIfNeeded,
+  escapePath,
   finalizeAssigned,
   get,
   getPath,
@@ -77,9 +78,10 @@ function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
   basePath: any[],
   patches: Patches,
-  inversePatches: Patches
+  inversePatches: Patches,
+  pathAsArray: boolean
 ) {
-  let { original, assignedMap } = proxyState;
+  let { original, assignedMap, options } = proxyState;
   let copy = proxyState.copy!;
   if (copy.length < original.length) {
     [original, copy] = [copy, original];
@@ -87,7 +89,8 @@ function generateArrayPatches(
   }
   for (let index = 0; index < original.length; index += 1) {
     if (assignedMap!.get(index.toString()) && copy[index] !== original[index]) {
-      const path = basePath.concat([index]);
+      const _path = basePath.concat([index]);
+      const path = escapePath(_path, pathAsArray);
       patches.push({
         op: Operation.Replace,
         path,
@@ -103,7 +106,8 @@ function generateArrayPatches(
     }
   }
   for (let index = original.length; index < copy.length; index += 1) {
-    const path = basePath.concat([index]);
+    const _path = basePath.concat([index]);
+    const path = escapePath(_path, pathAsArray);
     patches.push({
       op: Operation.Add,
       path,
@@ -115,11 +119,25 @@ function generateArrayPatches(
     // https://www.rfc-editor.org/rfc/rfc6902#appendix-A.4
     // For performance, here we only generate an operation that replaces the length of the array,
     // which is inconsistent with JSON Patch specification
-    inversePatches.push({
-      op: Operation.Replace,
-      path: basePath.concat(['length']),
-      value: original.length,
-    });
+    const { arrayLengthAssignment = true } = options.enablePatches;
+    if (arrayLengthAssignment) {
+      const _path = basePath.concat(['length']);
+      const path = escapePath(_path, pathAsArray);
+      inversePatches.push({
+        op: Operation.Replace,
+        path,
+        value: original.length,
+      });
+    } else {
+      for (let index = copy.length; original.length < index; index -= 1) {
+        const _path = basePath.concat([index - 1]);
+        const path = escapePath(_path, pathAsArray);
+        inversePatches.push({
+          op: Operation.Remove,
+          path,
+        });
+      }
+    }
   }
 }
 
@@ -127,7 +145,8 @@ function generatePatchesFromAssigned(
   { original, copy, assignedMap }: ProxyDraft<Record<string, any>>,
   basePath: any[],
   patches: Patches,
-  inversePatches: Patches
+  inversePatches: Patches,
+  pathAsArray: boolean
 ) {
   assignedMap!.forEach((assignedValue, key) => {
     const originalValue = get(original, key);
@@ -138,7 +157,8 @@ function generatePatchesFromAssigned(
       ? Operation.Replace
       : Operation.Add;
     if (isEqual(originalValue, value) && op === Operation.Replace) return;
-    const path = basePath.concat(key);
+    const _path = basePath.concat(key);
+    const path = escapePath(_path, pathAsArray);
     patches.push(op === Operation.Remove ? { op, path } : { op, path, value });
     inversePatches.push(
       op === Operation.Add
@@ -154,12 +174,14 @@ function generateSetPatches(
   { original, copy }: ProxyDraft<Set<any>>,
   basePath: any[],
   patches: Patches,
-  inversePatches: Patches
+  inversePatches: Patches,
+  pathAsArray: boolean
 ) {
   let index = 0;
   original.forEach((value: any) => {
     if (!copy!.has(value)) {
-      const path = basePath.concat([index]);
+      const _path = basePath.concat([index]);
+      const path = escapePath(_path, pathAsArray);
       patches.push({
         op: Operation.Remove,
         path,
@@ -176,7 +198,8 @@ function generateSetPatches(
   index = 0;
   copy!.forEach((value: any) => {
     if (!original.has(value)) {
-      const path = basePath.concat([index]);
+      const _path = basePath.concat([index]);
+      const path = escapePath(_path, pathAsArray);
       patches.push({
         op: Operation.Add,
         path,
@@ -198,6 +221,7 @@ export function generatePatches(
   patches: Patches,
   inversePatches: Patches
 ) {
+  const { pathAsArray = true } = proxyState.options.enablePatches;
   switch (proxyState.type) {
     case DraftType.Object:
     case DraftType.Map:
@@ -205,16 +229,24 @@ export function generatePatches(
         proxyState,
         basePath,
         patches,
-        inversePatches
+        inversePatches,
+        pathAsArray
       );
     case DraftType.Array:
       return generateArrayPatches(
         proxyState,
         basePath,
         patches,
-        inversePatches
+        inversePatches,
+        pathAsArray
       );
     case DraftType.Set:
-      return generateSetPatches(proxyState, basePath, patches, inversePatches);
+      return generateSetPatches(
+        proxyState,
+        basePath,
+        patches,
+        inversePatches,
+        pathAsArray
+      );
   }
 }

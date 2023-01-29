@@ -15,6 +15,19 @@ export const Operation = {
 
 export type DataType = keyof typeof dataTypes;
 
+export type PatchesOptions =
+  | boolean
+  | {
+      /**
+       * If true, the path will be an array, otherwise it is a string.
+       */
+      pathAsArray?: boolean;
+      /**
+       * If true, the array length will be included in the patches, otherwise no include array length.
+       */
+      arrayLengthAssignment?: boolean;
+    };
+
 export interface Finalities {
   draft: ((patches?: Patches, inversePatches?: Patches) => void)[];
   revoke: (() => void)[];
@@ -37,27 +50,27 @@ export interface ProxyDraft<T = any> {
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
 }
 
-export type Patch = {
+export type Patch<P extends PatchesOptions> = {
   op: typeof Operation[keyof typeof Operation];
-  path: (string | number)[];
+  path: P extends { pathAsArray: false } ? string : (string | number)[];
   value?: any;
 };
 
-export type Patches = Patch[];
+export type Patches<P extends PatchesOptions = any> = Patch<P>[];
 
 export type Result<
   T extends any,
-  O extends boolean,
+  O extends PatchesOptions,
   F extends boolean
-> = O extends true
-  ? [F extends true ? Immutable<T> : T, Patches, Patches]
+> = O extends true | object
+  ? [F extends true ? Immutable<T> : T, Patches<O>, Patches<O>]
   : F extends true
   ? Immutable<T>
   : T;
 
 export type CreateResult<
   T extends any,
-  O extends boolean,
+  O extends PatchesOptions,
   F extends boolean,
   R extends void | Promise<void> | T | Promise<T>
 > = R extends Promise<void> | Promise<T>
@@ -67,12 +80,12 @@ export type CreateResult<
 type BaseMark = null | undefined | DataType;
 type MarkWithCopy = BaseMark | (() => any);
 
-export type Mark<O extends boolean, F extends boolean> = (
+export type Mark<O extends PatchesOptions, F extends boolean> = (
   target: any,
   types: typeof dataTypes
-) => O extends true ? BaseMark : F extends true ? BaseMark : MarkWithCopy;
+) => O extends true | object ? BaseMark : F extends true ? BaseMark : MarkWithCopy;
 
-export interface Options<O extends boolean, F extends boolean> {
+export interface Options<O extends PatchesOptions, F extends boolean> {
   /**
    * In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.
    */

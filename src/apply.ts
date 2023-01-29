@@ -1,5 +1,5 @@
 import { Draft, Options, Patches, DraftType, Operation } from './interface';
-import { deepClone, get, getType, isDraft } from './utils';
+import { deepClone, get, getType, isDraft, unescapePath } from './utils';
 import { create } from './create';
 
 /**
@@ -34,7 +34,10 @@ export function apply<T extends object, F extends boolean = false>(
   let i: number;
   for (i = patches.length - 1; i >= 0; i -= 1) {
     const { value, op, path } = patches[i];
-    if (!path.length && op === Operation.Replace) {
+    if (
+      (!path.length && op === Operation.Replace) ||
+      (path === '' && op === Operation.Add)
+    ) {
       state = value;
       break;
     }
@@ -44,7 +47,8 @@ export function apply<T extends object, F extends boolean = false>(
   }
   const mutate = (draft: Draft<T>) => {
     patches.forEach((patch) => {
-      const { path, op } = patch;
+      const { path: _path, op } = patch;
+      const path = unescapePath(_path);
       let base: any = draft;
       for (let index = 0; index < path.length - 1; index += 1) {
         const parentType = getType(base);

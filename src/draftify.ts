@@ -1,11 +1,11 @@
-import { Finalities, Options, Patches, Result } from './interface';
+import { Finalities, Options, Patches, PatchesOptions, Result } from './interface';
 import { createDraft, finalizeDraft } from './draft';
 import { isDraftable } from './utils';
 import { dataTypes } from './constant';
 
 export function draftify<
   T extends object,
-  O extends boolean = false,
+  O extends PatchesOptions = false,
   F extends boolean = false
 >(
   baseState: T,
