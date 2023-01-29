@@ -69,11 +69,7 @@ export function apply<T extends object, F extends boolean = false>(
           key
         );
         if (typeof base !== 'object') {
-          throw new Error(
-            `Cannot apply patch at '${
-              Array.isArray(path) ? path.join('/') : path
-            }'.`
-          );
+          throw new Error(`Cannot apply patch at '${path.join('/')}'.`);
         }
       }
 
