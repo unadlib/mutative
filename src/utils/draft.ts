@@ -96,6 +96,7 @@ export function revokeProxy(proxyDraft: ProxyDraft | null) {
   }
 }
 
+// handle JSON Pointer path with spec https://www.rfc-editor.org/rfc/rfc6901
 export function escapePath(path: string[], pathAsArray: boolean) {
   return pathAsArray
     ? path

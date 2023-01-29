@@ -19,11 +19,11 @@ export type PatchesOptions =
   | boolean
   | {
       /**
-       * If true, the path will be an array, otherwise it is a string.
+       * The default value is `true`. If it's `true`, the path will be an array, otherwise it is a string.
        */
       pathAsArray?: boolean;
       /**
-       * If true, the array length will be included in the patches, otherwise no include array length.
+       * The default value is `true`. If it's `true`, the array length will be included in the patches, otherwise no include array length.
        */
       arrayLengthAssignment?: boolean;
     };
@@ -83,7 +83,11 @@ type MarkWithCopy = BaseMark | (() => any);
 export type Mark<O extends PatchesOptions, F extends boolean> = (
   target: any,
   types: typeof dataTypes
-) => O extends true | object ? BaseMark : F extends true ? BaseMark : MarkWithCopy;
+) => O extends true | object
+  ? BaseMark
+  : F extends true
+  ? BaseMark
+  : MarkWithCopy;
 
 export interface Options<O extends PatchesOptions, F extends boolean> {
   /**

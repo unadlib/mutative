@@ -148,9 +148,11 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
   > It is recommended to enable `strict` in development mode and disable `strict` in production mode. This will ensure safe returns and also keep good performance in the production build. If the return value is mixed drafts or `undefined`, then use [safeReturn()](#safereturn).
 
-- enablePatches - `boolean`, the default is false.
+- enablePatches - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean; }`, the default is false.
 
   > Enable patch, and return the patches/inversePatches.
+
+  > If you need to set the shape of the generated patch in more detail, then you can set `pathAsArray` and `arrayLengthAssignment`。`pathAsArray` default value is `true`, if it's `true`, the path will be an array, otherwise it is a string; `arrayLengthAssignment` default value is `true`, if it's `true`, the array length will be included in the patches, otherwise no include array length(**NOTE**: If `arrayLengthAssignment` is `false`, it is fully compatible with JSON Patch spec, but it may have additional performance loss).
 
 - enableAutoFreeze - `boolean`, the default is false.
 
@@ -283,6 +285,7 @@ const state = create(baseState, (draft) => {
   expect(isDraft(draft.list)).toBeTruthy();
 });
 ```
+
 ### `isDraftable()`
 
 Check if a value is draftable
@@ -312,6 +315,8 @@ expect(state).toBe(undefined);
 ```
 
 > You don't need to use `safeReturn()` when the return value doesn't have any draft.
+
+[View more API docs](./docs/README.md).
 
 ### Using TypeScript
 
