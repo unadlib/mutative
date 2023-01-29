@@ -1,4 +1,10 @@
-import { Finalities, Options, Patches, PatchesOptions, Result } from './interface';
+import {
+  Finalities,
+  Options,
+  Patches,
+  PatchesOptions,
+  Result,
+} from './interface';
 import { createDraft, finalizeDraft } from './draft';
 import { isDraftable } from './utils';
 import { dataTypes } from './constant';

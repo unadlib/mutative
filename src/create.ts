@@ -1,4 +1,10 @@
-import { CreateResult, Draft, Options, PatchesOptions, Result } from './interface';
+import {
+  CreateResult,
+  Draft,
+  Options,
+  PatchesOptions,
+  Result,
+} from './interface';
 import { draftify } from './draftify';
 import {
   getProxyDraft,
