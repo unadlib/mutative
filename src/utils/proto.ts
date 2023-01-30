@@ -1,5 +1,3 @@
-/* eslint-disable no-useless-return */
-/* eslint-disable consistent-return */
 export function has(target: object, key: PropertyKey) {
   return target instanceof Map
     ? target.has(key)

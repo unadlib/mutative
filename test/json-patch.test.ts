@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { compare } from 'fast-json-patch';
 import { apply, create } from '../src';
 

@@ -1,3 +1,6 @@
+/* eslint-disable arrow-body-style */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable no-param-reassign */
 import { create, original, current, apply, isDraftable, isDraft } from '../src';
 import { PROXY_DRAFT } from '../src/constant';
 

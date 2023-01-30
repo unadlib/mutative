@@ -1,5 +1,3 @@
-/* eslint-disable no-shadow */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DraftType, ProxyDraft } from '../interface';
 import { ensureShallowCopy } from './copy';
 import { get, getProxyDraft, isDraft, isDraftable, set } from './draft';

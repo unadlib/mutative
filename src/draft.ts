@@ -1,10 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-shadow */
-/* eslint-disable no-restricted-globals */
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-use-before-define */
-/* eslint-disable no-nested-ternary */
-/* eslint-disable @typescript-eslint/ban-types */
 import {
   DraftType,
   Finalities,

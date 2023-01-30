@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable prefer-destructuring */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-lone-blocks */
 import { produce, enableMapSet, setAutoFreeze, Immutable } from 'immer';
 import { create } from '../src';
 

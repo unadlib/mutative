@@ -1,5 +1,3 @@
-/* eslint-disable no-return-assign */
-/* eslint-disable no-param-reassign */
 import { Draft, Options, Patches, DraftType, Operation } from './interface';
 import { deepClone, get, getType, isDraft, unescapePath } from './utils';
 import { create } from './create';

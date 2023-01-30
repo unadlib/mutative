@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ProxyDraft } from './interface';
 import { dataTypes, iteratorSymbol } from './constant';
 import { internal } from './internal';

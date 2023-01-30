@@ -1,3 +1,6 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-param-reassign */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { create } from '../src';
 
 test('custom shallow copy without checking in prod mode', () => {

@@ -1,8 +1,3 @@
-/* eslint-disable guard-for-in */
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-cond-assign */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-else-return */
 import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';

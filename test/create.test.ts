@@ -1,3 +1,10 @@
+/* eslint-disable no-promise-executor-return */
+/* eslint-disable lines-between-class-members */
+/* eslint-disable consistent-return */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-plusplus */
 import { create, isDraft } from '../src';
 
 describe('base', () => {
@@ -918,19 +925,19 @@ describe('freeze', () => {
     expect(state.bar).not.toBe(data.bar);
     expect(state.list).not.toBe(data.list);
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state.bar.a = 3;
     }).toThrowError();
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state.list.push({ id: 3 });
     }).toThrowError();
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state.list[0].id = 3;
     }).toThrowError();
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state.list[1].id = 3;
     }).toThrowError();
 
@@ -946,15 +953,15 @@ describe('freeze', () => {
       }
     );
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state1.list[0].id = 3;
     }).toThrowError();
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state1.list[1].id = 3;
     }).toThrowError();
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state1.bar.a = 4;
     }).toThrowError();
     expect(() => {
@@ -983,15 +990,15 @@ describe('freeze', () => {
     });
     expect(state).not.toBe(data);
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state.set.add(4);
     }).toThrowError();
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state.set.delete(1);
     }).toThrowError();
     expect(() => {
-      //@ts-expect-error
+      // @ts-expect-error
       state.set.clear();
     }).toThrowError();
   });

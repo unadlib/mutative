@@ -1,10 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable default-case */
-/* eslint-disable consistent-return */
-/* eslint-disable no-nested-ternary */
-/* eslint-disable no-use-before-define */
-/* eslint-disable no-param-reassign */
-/* eslint-disable prefer-const */
 import { DraftType, Operation, Patches, ProxyDraft } from './interface';
 import {
   cloneIfNeeded,

@@ -1,3 +1,8 @@
+/* eslint-disable no-shadow */
+/* eslint-disable prefer-regex-literals */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable consistent-return */
+/* eslint-disable no-param-reassign */
 import { create, unsafe } from '../src';
 
 test('base with strict mode', () => {

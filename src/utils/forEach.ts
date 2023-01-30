@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DraftType } from '../interface';
 import { getType } from './draft';
 

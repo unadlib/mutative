@@ -1,3 +1,13 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-self-assign */
+/* eslint-disable no-lone-blocks */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prefer-const */
+/* eslint-disable no-plusplus */
+/* eslint-disable no-shadow */
+/* eslint-disable prefer-destructuring */
+/* eslint-disable no-param-reassign */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { create, apply } from '../src';
 import { deepClone } from '../src/utils';
 

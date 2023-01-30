@@ -1,7 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable no-shadow */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-nested-ternary */
 import { DraftType } from './interface';
 import {
   forEach,

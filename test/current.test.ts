@@ -1,3 +1,7 @@
+/* eslint-disable prefer-destructuring */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable consistent-return */
+/* eslint-disable no-param-reassign */
 import { create, current, isDraft } from '../src';
 
 describe('current', () => {

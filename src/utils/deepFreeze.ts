@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-multi-assign */
 import { DraftType } from '../interface';
 import { getType, isDraft } from './draft';
 

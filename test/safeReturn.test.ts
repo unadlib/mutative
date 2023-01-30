@@ -1,3 +1,11 @@
+/* eslint-disable symbol-description */
+/* eslint-disable object-shorthand */
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable arrow-body-style */
+/* eslint-disable no-self-assign */
+/* eslint-disable no-param-reassign */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { create, safeReturn } from '../src';
 
 test('base', () => {

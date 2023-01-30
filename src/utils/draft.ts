@@ -1,10 +1,3 @@
-/* eslint-disable no-use-before-define */
-/* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
-/* eslint-disable no-return-assign */
-/* eslint-disable no-param-reassign */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-self-compare */
-/* eslint-disable no-else-return */
 import { DraftType, Mark, ProxyDraft } from '../interface';
 import { dataTypes, PROXY_DRAFT } from '../constant';
 
