@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Options } from './interface';
 import { isDraftable } from './utils';
 

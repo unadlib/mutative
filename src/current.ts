@@ -1,3 +1,7 @@
+/* eslint-disable no-console */
+/* eslint-disable no-shadow */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-nested-ternary */
 import { DraftType } from './interface';
 import {
   forEach,
@@ -24,7 +28,9 @@ export function handleReturnValue<T extends object>(value: T, warning = false) {
       if (source instanceof Set) {
         const arr = Array.from(source);
         source.clear();
-        arr.forEach((item) => source.add(key === item ? currentValue : item));
+        arr.forEach((_item) =>
+          source.add(key === _item ? currentValue : _item)
+        );
       } else {
         set(source, key, currentValue);
       }

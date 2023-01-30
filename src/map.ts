@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { dataTypes, iteratorSymbol } from './constant';
 import { internal } from './internal';
 import { markFinalization } from './patch';

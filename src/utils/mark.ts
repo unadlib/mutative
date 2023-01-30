@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { ProxyDraft } from '../interface';
 
 export function markChanged(proxyDraft: ProxyDraft) {

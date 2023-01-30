@@ -1,4 +1,5 @@
-export const safeReturnValue: any[] = [];
+/* eslint-disable no-console */
+export const safeReturnValue: unknown[] = [];
 
 /**
  * It is used as a safe return value to ensure that this value replaces the finalized value.

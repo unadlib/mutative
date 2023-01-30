@@ -1,3 +1,6 @@
+/* eslint-disable func-names */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
 import {
   CreateResult,
   Draft,
@@ -83,8 +86,8 @@ function create(arg0: any, arg1: any, arg2?: any): any {
       );
     };
   }
-  let base = arg0;
-  let mutate = arg1 as (...args: any[]) => any;
+  const base = arg0;
+  const mutate = arg1 as (...args: any[]) => any;
   let options = arg2 as Options<any, any>;
   if (typeof arg1 !== 'function') {
     options = arg1;

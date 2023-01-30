@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-shadow */
 import { dataTypes } from './constant';
 
 export const enum DraftType {

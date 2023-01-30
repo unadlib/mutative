@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ProxyDraft } from './interface';
 import { dataTypes, iteratorSymbol } from './constant';
 import { internal } from './internal';
@@ -38,7 +39,7 @@ const getNextIterator =
       const proxy = internal.createDraft({
         original: key,
         parentDraft: target,
-        key: key,
+        key,
         finalities: target.finalities,
         options: target.options,
       });
