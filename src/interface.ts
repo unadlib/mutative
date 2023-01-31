@@ -55,24 +55,23 @@ export interface ProxyDraft<T = any> {
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
 }
 
+interface IPatch {
+  op: typeof Operation[keyof typeof Operation];
+  value?: any;
+}
+
 export type Patch<P extends PatchesOptions = any> = P extends {
   pathAsArray: false;
 }
-  ? {
-      op: typeof Operation[keyof typeof Operation];
+  ? IPatch & {
       path: string;
-      value?: any;
     }
   : P extends true | object
-  ? {
-      op: typeof Operation[keyof typeof Operation];
+  ? IPatch & {
       path: (string | number)[];
-      value?: any;
     }
-  : {
-      op: typeof Operation[keyof typeof Operation];
+  : IPatch & {
       path: string | (string | number)[];
-      value?: any;
     };
 
 export type Patches<P extends PatchesOptions = any> = Patch<P>[];
