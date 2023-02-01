@@ -58,7 +58,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 - **Custom shallow copy**
 - **Immutable and mutable data markable**
 - **Safer mutable data access in strict mode**
-- **Support for JSON patches**
+- **Support for JSON Patch spec**
 - **Support for reducer**
 
 ## Difference between Mutative and Immer

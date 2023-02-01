@@ -1,3 +1,4 @@
+/* eslint-disable prefer-template */
 // @ts-nocheck
 import fs from 'fs';
 import { Suite } from 'benchmark';
@@ -10,6 +11,8 @@ import produce, {
   setUseProxies,
 } from 'immer';
 import { create } from '../..';
+
+process.env.NODE_ENV = 'production';
 
 const result = [
   {
@@ -55,7 +58,7 @@ const suite = new Suite();
 suite
   .add(
     'Naive handcrafted reducer - No Freeze',
-    function () {
+    () => {
       const state = {
         ...baseState,
         arr: [...baseState.arr, i],
@@ -71,7 +74,7 @@ suite
   )
   .add(
     'Mutative - No Freeze(by default)',
-    function () {
+    () => {
       const state = create(baseState, (draft) => {
         draft.arr.push(i);
         draft.map[i] = i;
@@ -86,7 +89,7 @@ suite
   )
   .add(
     'Immer - No Freeze',
-    function () {
+    () => {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
         draft.map[i] = i;
@@ -103,7 +106,7 @@ suite
   )
   .add(
     'Mutative - Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
         (draft) => {
@@ -125,7 +128,7 @@ suite
   )
   .add(
     'Immer - Freeze(by default)',
-    function () {
+    () => {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
         draft.map[i] = i;
@@ -142,7 +145,7 @@ suite
   )
   .add(
     'Mutative - Patches and No Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
         (draft) => {
@@ -164,7 +167,7 @@ suite
   )
   .add(
     'Immer - Patches and No Freeze',
-    function () {
+    () => {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr.push(i);
         draft.map[i] = i;
@@ -182,7 +185,7 @@ suite
   )
   .add(
     'Mutative - Patches and Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
         (draft) => {
@@ -204,7 +207,7 @@ suite
   )
   .add(
     'Immer - Patches and Freeze',
-    function () {
+    () => {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr.push(i);
         draft.map[i] = i;
@@ -220,7 +223,7 @@ suite
       },
     }
   )
-  .on('cycle', function (event) {
+  .on('cycle', (event) => {
     console.log(String(event.target));
     const [name] = event.target.name.split(' - ');
     const index = result.findIndex((i) => i[''] === name);
