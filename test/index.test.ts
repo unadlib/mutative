@@ -1,3 +1,5 @@
+/* eslint-disable prefer-template */
+/* eslint-disable no-unused-expressions */
 /* eslint-disable arrow-body-style */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-param-reassign */
@@ -1291,19 +1293,19 @@ test('base freeze', () => {
   expect(state.bar).not.toBe(data.bar);
   expect(state.list).not.toBe(data.list);
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state.bar.a = 3;
   }).toThrowError();
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state.list.push({ id: 3 });
   }).toThrowError();
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state.list[0].id = 3;
   }).toThrowError();
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state.list[1].id = 3;
   }).toThrowError();
 
@@ -1319,15 +1321,15 @@ test('base freeze', () => {
     }
   );
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state1.list[0].id = 3;
   }).toThrowError();
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state1.list[1].id = 3;
   }).toThrowError();
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state1.bar.a = 4;
   }).toThrowError();
   expect(() => {
@@ -1356,15 +1358,15 @@ test('base set freeze', () => {
   });
   expect(state).not.toBe(data);
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state.set.add(4);
   }).toThrowError();
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state.set.delete(1);
   }).toThrowError();
   expect(() => {
-    //@ts-expect-error
+    // @ts-expect-error
     state.set.clear();
   }).toThrowError();
 });
@@ -2058,7 +2060,7 @@ test('check Primitive type with returning and patches', () => {
     ).toEqual([
       '',
       [{ op: 'replace', path: [], value: '' }],
-      [{ op: 'replace', path: [], value: value }],
+      [{ op: 'replace', path: [], value }],
     ]);
   });
 });
@@ -2093,7 +2095,7 @@ test('check Primitive type with returning, patches and freeze', () => {
     ).toEqual([
       '',
       [{ op: 'replace', path: [], value: '' }],
-      [{ op: 'replace', path: [], value: value }],
+      [{ op: 'replace', path: [], value }],
     ]);
   });
 });
@@ -2128,7 +2130,7 @@ test('check Primitive type with returning, patches, freeze and async', async () 
     ).toEqual([
       '',
       [{ op: 'replace', path: [], value: '' }],
-      [{ op: 'replace', path: [], value: value }],
+      [{ op: 'replace', path: [], value }],
     ]);
   }
 });
@@ -2246,4 +2248,20 @@ test('when nesting patches and changing the level of tree structure data', () =>
   );
 
   expect(() => JSON.stringify(_nextState)).not.toThrowError();
+});
+
+test('Set assignment should not have an additional key', () => {
+  const data = { x: new Set([{ a: 1 }]) } as any;
+  const state = create(data, (draft) => {
+    const array = Array.from(draft.x) as any;
+    array[0].a = 2;
+  });
+  expect(Object.keys(state.x).length).toBe(0);
+  expect(data).not.toBe(state);
+  expect(data.x).not.toBe(state.x);
+  expect(Array.from(data.x)[0]).not.toBe(Array.from(state.x)[0]);
+  // @ts-expect-error
+  expect(Array.from(data.x)[0].a).toBe(1);
+  // @ts-expect-error
+  expect(Array.from(state.x)[0].a).toBe(2);
 });
