@@ -3,10 +3,10 @@ import {
   cloneIfNeeded,
   escapePath,
   finalizeAssigned,
+  finalizeSetValue,
   get,
   getPath,
   getProxyDraft,
-  getValue,
   has,
   isDraftable,
   isEqual,
@@ -18,12 +18,6 @@ export function finalizePatches(
   patches?: Patches,
   inversePatches?: Patches
 ) {
-  if (target.type === DraftType.Set && target.copy) {
-    target.copy.clear();
-    target.setMap!.forEach((value) => {
-      target.copy!.add(getValue(value));
-    });
-  }
   const shouldFinalize =
     target.operated &&
     target.assignedMap &&
@@ -52,6 +46,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         if (proxyDraft.copy) {
           updatedValue = proxyDraft.copy;
         }
+        finalizeSetValue(target);
         finalizePatches(target, patches, inversePatches);
         set(copy, key, updatedValue);
       }

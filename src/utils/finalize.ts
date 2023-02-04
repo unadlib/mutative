@@ -1,6 +1,13 @@
 import { DraftType, ProxyDraft } from '../interface';
 import { ensureShallowCopy } from './copy';
-import { get, getProxyDraft, isDraft, isDraftable, set } from './draft';
+import {
+  get,
+  getProxyDraft,
+  getValue,
+  isDraft,
+  isDraftable,
+  set,
+} from './draft';
 import { forEach } from './forEach';
 
 export function handleValue(target: any, handledSet: WeakSet<any>) {
@@ -21,11 +28,7 @@ export function handleValue(target: any, handledSet: WeakSet<any>) {
       const updatedValue = proxyDraft.assignedMap?.size
         ? proxyDraft.copy
         : proxyDraft.original;
-      if (isSet) {
-        setMap!.set(key, updatedValue);
-      } else {
-        set(target, key, updatedValue);
-      }
+      set(isSet ? setMap! : target, key, updatedValue);
     } else {
       handleValue(value, handledSet);
     }
@@ -50,5 +53,14 @@ export function finalizeAssigned(proxyDraft: ProxyDraft, key: PropertyKey) {
     copy
   ) {
     handleValue(get(copy, key), proxyDraft.finalities.handledSet);
+  }
+}
+
+export function finalizeSetValue(target: ProxyDraft) {
+  if (target.type === DraftType.Set && target.copy) {
+    target.copy.clear();
+    target.setMap!.forEach((value) => {
+      target.copy!.add(getValue(value));
+    });
   }
 }

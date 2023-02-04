@@ -26,6 +26,7 @@ import {
   get,
   set,
   revokeProxy,
+  finalizeSetValue,
 } from './utils';
 import { finalizePatches, markFinalization } from './patch';
 import { checkReadable } from './unsafe';
@@ -239,17 +240,18 @@ export function createDraft<T extends object>(createDraftOptions: {
     target.finalities.draft.push((patches, inversePatches) => {
       const oldProxyDraft = getProxyDraft(proxy)!;
       // if target is a Set draft, `setMap` is the real Set copies proxy mapping.
-      const proxyDraft = getProxyDraft(
-        get(target.type === DraftType.Set ? target.setMap : target.copy, key!)
-      );
+      const copy = target.type === DraftType.Set ? target.setMap : target.copy;
+      const draft = get(copy, key!);
+      const proxyDraft = getProxyDraft(draft);
       if (proxyDraft) {
         // assign the updated value to the copy object
         let updatedValue = proxyDraft.original;
         if (proxyDraft.operated) {
-          updatedValue = getValue(get(target.copy, key!));
+          updatedValue = getValue(draft);
         }
+        finalizeSetValue(proxyDraft);
         finalizePatches(proxyDraft, patches, inversePatches);
-        set(target.copy, key!, updatedValue);
+        set(copy, key!, updatedValue);
       }
       // !case: handle the deleted key
       oldProxyDraft.callbacks?.forEach((callback) => {
@@ -260,6 +262,7 @@ export function createDraft<T extends object>(createDraftOptions: {
     // !case: handle the root draft
     const target = getProxyDraft(proxy)!;
     target.finalities.draft.push((patches, inversePatches) => {
+      finalizeSetValue(target);
       finalizePatches(target, patches, inversePatches);
     });
   }
