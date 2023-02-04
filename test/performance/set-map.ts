@@ -8,7 +8,7 @@ import produce, {
   enablePatches,
   enableMapSet,
 } from 'immer';
-import { create } from '../../src';
+import { create } from '../..';
 import { measure } from './measure';
 
 const MAX = 10;

@@ -5,7 +5,7 @@ import produce, { setAutoFreeze, setUseProxies, enableAllPlugins } from 'immer';
 import lodash from 'lodash';
 import * as Immutable from 'immutable';
 import { measure } from './measure';
-import { create } from '../../src';
+import { create } from '../..';
 
 const { cloneDeep } = lodash;
 

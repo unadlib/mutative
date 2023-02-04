@@ -7,7 +7,7 @@ import produce, {
   produceWithPatches,
   enablePatches,
 } from 'immer';
-import { create } from '../../src';
+import { create } from '../..';
 import { measure } from './measure';
 
 const MAX = 1;

@@ -34,7 +34,7 @@
     "performance:big-object": "cd test/performance && ts-node big-object.ts",
     "performance:sample": "cd test/performance && ts-node sample.ts",
     "performance:array-object": "cd test/performance && ts-node array-object.ts",
-    "performance": "yarn perf && yarn performance:basic && yarn performance:set-map && yarn performance:big-object && yarn performance:sample && yarn performance:array-object",
+    "performance": "yarn build && yarn perf && yarn performance:basic && yarn performance:set-map && yarn performance:big-object && yarn performance:sample && yarn performance:array-object",
     "build": "tsdx build --format esm,cjs,umd && cp dist/mutative.esm.js dist/mutative.esm.mjs",
     "build:doc": "rimraf docs && typedoc --out docs src/index.ts --readme none",
     "commit": "yarn git-cz",

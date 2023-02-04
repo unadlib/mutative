@@ -7,7 +7,7 @@ import { List, Record } from 'immutable';
 import Seamless from 'seamless-immutable';
 import deepFreeze from 'deep-freeze';
 import { measure } from './measure';
-import { create } from '../../src';
+import { create } from '../..';
 
 const { cloneDeep } = lodash;
 

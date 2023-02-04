@@ -7,7 +7,7 @@ import produce, {
   produceWithPatches,
   enablePatches,
 } from 'immer';
-import { create } from '../../src';
+import { create } from '../..';
 
 // https://github.com/immerjs/immer/issues/867 by default
 console.time('create - object: 5k');
