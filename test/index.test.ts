@@ -2558,9 +2558,10 @@ test('circular reference - set - 2 - 1', () => {
 
 test('circular reference - map - 1', () => {
   const base = { a: { b: { c: 1 } } };
+  const key = Symbol(1);
   const data = new Map([
     [null, null],
-    [1, base],
+    [key, base],
   ]);
   // @ts-ignore
   base.a.b.c1 = base.a.b;
@@ -2569,14 +2570,14 @@ test('circular reference - map - 1', () => {
       data,
       (draft) => {
         // @ts-expect-error
-        draft.get(1).a.b.c = 2;
+        draft.get(key).a.b.c = 2;
       },
       {
         enableAutoFreeze: true,
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `"Forbids circular reference: ~/1/a/b"`
+    `"Forbids circular reference: ~/[Symbol(1)]/a/b"`
   );
 });
 

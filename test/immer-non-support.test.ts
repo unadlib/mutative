@@ -268,3 +268,38 @@ test('Unexpected access to getter property in irrelevant plain objects', () => {
     expect(isAgeGetterCalled).toBe(false);
   }
 });
+
+test('circular reference', () => {
+  {
+    const data = { a: { b: { c: 1 } } };
+    // @ts-expect-error
+    data.a.b.c1 = data.a.b;
+
+    setAutoFreeze(true);
+
+    expect(() => {
+      produce(data, () => {
+        //
+      });
+    }).not.toThrowError();
+  }
+
+  {
+    const data = { a: { b: { c: 1 } } };
+    // @ts-expect-error
+    data.a.b.c1 = data.a.b;
+    expect(() => {
+      create(
+        data,
+        (draft) => {
+          //
+        },
+        {
+          enableAutoFreeze: true,
+        }
+      );
+    }).toThrowErrorMatchingInlineSnapshot(
+      `"Forbids circular reference: ~/a/b"`
+    );
+  }
+});
