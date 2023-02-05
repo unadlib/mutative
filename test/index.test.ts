@@ -2265,3 +2265,24 @@ test('Set assignment should not have an additional key', () => {
   // @ts-expect-error
   expect(Array.from(state.x)[0].a).toBe(2);
 });
+
+test('circular reference', () => {
+  const data = { a: { b: { c: 1 } } };
+  // @ts-expect-error
+  data.a.b.c1 = data.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        draft.a.b.c = 2;
+        // @ts-expect-error
+        draft.a2 = 1;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(
+    `"Forbids circular reference: ~.a.b.c1"`
+  );
+});

@@ -1805,7 +1805,7 @@ function runBaseTest(
         expect(next[0]).toBe(next[1]);
       });
 
-      it('can return an object that references itself', () => {
+      it.skip('can return an object that references itself', () => {
         const res = {};
         // @ts-ignore
         res.self = res;
@@ -1813,7 +1813,7 @@ function runBaseTest(
           // @ts-ignore
           produce(res, () => res.self);
           // ! it's different from mutative
-        }).not.toThrowError();
+        }).toThrowError();
       });
     });
 

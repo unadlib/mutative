@@ -48,6 +48,11 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         }
         finalizeSetValue(target);
         finalizePatches(target, patches, inversePatches);
+        if (__DEV__ && target.options.enableAutoFreeze) {
+          target.options.updatedValues =
+            target.options.updatedValues ?? new WeakMap();
+          target.options.updatedValues.set(updatedValue, proxyDraft.original);
+        }
         set(copy, key, updatedValue);
       }
     });

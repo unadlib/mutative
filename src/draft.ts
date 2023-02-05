@@ -251,6 +251,11 @@ export function createDraft<T extends object>(createDraftOptions: {
         }
         finalizeSetValue(proxyDraft);
         finalizePatches(proxyDraft, patches, inversePatches);
+        if (__DEV__ && target.options.enableAutoFreeze) {
+          target.options.updatedValues =
+            target.options.updatedValues ?? new WeakMap();
+          target.options.updatedValues.set(updatedValue, proxyDraft.original);
+        }
         set(copy, key!, updatedValue);
       }
       // !case: handle the deleted key
@@ -296,7 +301,7 @@ export function finalizeDraft<T>(
     : result;
   if (proxyDraft) revokeProxy(proxyDraft);
   if (enableAutoFreeze) {
-    deepFreeze(state);
+    deepFreeze(state, proxyDraft?.options.updatedValues);
   }
   return [
     state,
