@@ -156,7 +156,7 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
 - enableAutoFreeze - `boolean`, the default is false.
 
-  > Enable autoFreeze, and return frozen state.
+  > Enable autoFreeze, and return frozen state, and enable circular reference checking only in `development` mode.
 
 - mark - `(target) => ('mutable'|'immutable'|function)`
   > Set a mark to determine if the value is mutable or if an instance is an immutable, and it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
