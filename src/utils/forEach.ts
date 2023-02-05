@@ -14,7 +14,15 @@ export function forEach<T extends object>(
     });
     return;
   }
-  (target as Map<any, any> | Set<any> | Array<any>).forEach(
-    (entry: any, index: any) => iter(index, entry, target)
+  if (getType(target) === DraftType.Array) {
+    let index = 0;
+    for (const entry of target as any[]) {
+      iter(index, entry, target);
+      index += 1;
+    }
+    return;
+  }
+  (target as Map<any, any> | Set<any>).forEach((entry: any, index: any) =>
+    iter(index, entry, target)
   );
 }

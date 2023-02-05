@@ -2266,7 +2266,7 @@ test('Set assignment should not have an additional key', () => {
   expect(Array.from(state.x)[0].a).toBe(2);
 });
 
-test('circular reference', () => {
+test('circular reference - object - 1', () => {
   const data = { a: { b: { c: 1 } } };
   // @ts-expect-error
   data.a.b.c1 = data.a.b;
@@ -2283,7 +2283,130 @@ test('circular reference', () => {
   }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
 });
 
-test('circular reference', () => {
+test('circular reference - object - 1 - 1', () => {
+  const data = { a: { b: { c: 1 } } };
+  // @ts-expect-error
+  data.a.b.c1 = data.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+});
+
+test('circular reference - object - 2', () => {
+  const data = { a: { b: { c: 1 } } };
+  // @ts-expect-error
+  data.a.b.c1 = data.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        draft.a.b.c = 2;
+        // @ts-expect-error
+        draft.a.a2 = 1;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+});
+
+test('circular reference - object - 2 - 1', () => {
+  const data = { a: { b: { c: 1 } } };
+  // @ts-expect-error
+  data.a.b.c1 = data.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+});
+
+test('circular reference - object - 3', () => {
+  const data = { a: { b: { c: 1 } } };
+  // @ts-expect-error
+  data.a.b.c1 = data.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        // @ts-expect-error
+        draft.a.a2 = 1;
+        draft.a.b.c = 2;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+});
+
+test('circular reference - object - 3 - 1', () => {
+  const data = { a: { b: { c: 1 } } };
+  // @ts-expect-error
+  data.a.b.c1 = data.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+});
+
+test('circular reference - object - 4', () => {
+  const data = { a: { b: { c: 1 } } };
+  // @ts-expect-error
+  data.c1 = data;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        draft.a.b.c = 2;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/c1"`);
+});
+
+test('circular reference - object - 4 - 1', () => {
+  const data = { a: { b: { c: 1 } } };
+  // @ts-expect-error
+  data.c1 = data;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+});
+
+test('circular reference - array - 1', () => {
   const data = [null, { a: { b: { c: 1 } } }];
   // @ts-expect-error
   data[1].a.b = data[1].a;
@@ -2293,13 +2416,277 @@ test('circular reference', () => {
       (draft) => {
         // @ts-expect-error
         draft[1].a.b.c = 2;
-        // draft.a2 = 1;
       },
       {
         enableAutoFreeze: true,
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/1/a"`);
+});
+
+test('circular reference - array - 1 - 1', () => {
+  const data = [null, { a: { b: { c: 1 } } }];
+  // @ts-expect-error
+  data[1].a.b = data[1].a;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/1/a"`);
+});
+
+test('circular reference - array - 2', () => {
+  const data = [null, { a: { b: { c: 1 } } }];
+  // @ts-expect-error
+  data.push(data);
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        // @ts-expect-error
+        draft[1].a.b.c = 2;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/2"`);
+});
+
+test('circular reference - array - 2 - 1', () => {
+  const data = [null, { a: { b: { c: 1 } } }];
+  // @ts-expect-error
+  data.push(data);
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+});
+
+test('circular reference - set - 1', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Set([null, base]);
+  // @ts-expect-error
+  base.a.b.c1 = base.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        const arr = Array.from(draft);
+        // @ts-expect-error
+        arr[1].a.b.c = 2;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(
+    `"Forbids circular reference: ~/1/a/b"`
+  );
+});
+
+test('circular reference - set - 1 - 1', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Set([null, base]);
+  // @ts-expect-error
+  base.a.b.c1 = base.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(
+    `"Forbids circular reference: ~/1/a/b"`
+  );
+});
+
+test('circular reference - set - 2', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Set([null, base]);
+  // @ts-ignore
+  data.add(data);
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        const arr = Array.from(draft);
+        // @ts-expect-error
+        arr[1].a.b.c = 2;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/2"`);
+});
+
+test('circular reference - set - 2 - 1', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Set([null, base]);
+  // @ts-ignore
+  data.add(data);
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+});
+
+test('circular reference - map - 1', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Map([
+    [null, null],
+    [1, base],
+  ]);
+  // @ts-ignore
+  base.a.b.c1 = base.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        // @ts-expect-error
+        draft.get(1).a.b.c = 2;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(
+    `"Forbids circular reference: ~/1/a/b"`
+  );
+});
+
+test('circular reference - map - 1 - 1', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Map([
+    [null, null],
+    [1, base],
+  ]);
+  // @ts-ignore
+  base.a.b.c1 = base.a.b;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(
+    `"Forbids circular reference: ~/1/a/b"`
+  );
+});
+
+test('circular reference - map - 2', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Map([
+    [null, null],
+    [1, base],
+  ]);
+  // @ts-ignore
+  data.set(data, data);
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        // @ts-expect-error
+        draft.get(1).a.b.c = 2;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/2"`);
+});
+
+test('circular reference - map - 2 - 1', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Map([
+    [null, null],
+    [1, base],
+  ]);
+  // @ts-ignore
+  data.set(data, data);
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+});
+
+test('circular reference - map - 3', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Map([
+    [null, null],
+    [1, base],
+  ]);
+  // @ts-ignore
+  data.set(data, {});
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        // @ts-expect-error
+        draft.get(1).a.b.c = 2;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/2"`);
+});
+
+test('circular reference - map - 3 - 1', () => {
+  const base = { a: { b: { c: 1 } } };
+  const data = new Map([
+    [null, null],
+    [1, base],
+  ]);
+  // @ts-ignore
+  data.set(data, {});
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        //
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
 });
 
 test('can return an object that references itself', () => {
@@ -2309,5 +2696,5 @@ test('can return an object that references itself', () => {
   expect(() => {
     // @ts-expect-error
     create(res, (draft) => res.self, { enableAutoFreeze: true });
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~"`);
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
 });
