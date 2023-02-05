@@ -10,12 +10,12 @@ function throwFrozenError() {
 
 export function deepFreeze(
   target: any,
-  key?: any,
+  subKey?: any,
   updatedValues?: WeakMap<any, any>,
   stack?: any[],
   keys?: any[]
 ) {
-  if (__DEV__ && typeof target === 'object') {
+  if (__DEV__) {
     updatedValues = updatedValues ?? new WeakMap();
     stack = stack ?? [];
     keys = keys ?? [];
@@ -23,23 +23,29 @@ export function deepFreeze(
       ? updatedValues.get(target)
       : target;
     if (stack.length > 0) {
-      if (stack.includes(value)) {
+      if (value && typeof value === 'object' && stack.includes(value)) {
         if (stack[0] === value) {
-          throw new Error(`Forbids circular reference: ~]`);
+          throw new Error(`Forbids circular reference: ~`);
         }
         throw new Error(
-          `Forbids circular reference: ~.${keys
+          `Forbids circular reference: ~/${keys
             .slice(0, stack.indexOf(value))
-            .join('.')}`
+            .join('/')}`
         );
       }
       stack.push(value);
-      keys.push(key);
+      keys.push(subKey);
     } else {
       stack.push(value);
     }
   }
-  if (Object.isFrozen(target) || isDraft(target)) return;
+  if (Object.isFrozen(target) || isDraft(target)) {
+    if (__DEV__) {
+      stack!.pop();
+      keys!.pop();
+    }
+    return;
+  }
   const type = getType(target);
   switch (type) {
     case DraftType.Map:
@@ -57,10 +63,9 @@ export function deepFreeze(
       break;
     case DraftType.Array:
       Object.freeze(target);
-      let i = 0;
-      for (const value of target) {
-        deepFreeze(value, i++, updatedValues, stack, keys);
-      }
+      target.forEach((value: any, index: number) => {
+        deepFreeze(value, index, updatedValues, stack, keys);
+      });
       break;
     default:
       Object.freeze(target);
@@ -70,6 +75,8 @@ export function deepFreeze(
         deepFreeze(value, name, updatedValues, stack, keys);
       });
   }
-  stack?.pop();
-  keys?.pop();
+  if (__DEV__) {
+    stack!.pop();
+    keys!.pop();
+  }
 }

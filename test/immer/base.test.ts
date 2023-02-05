@@ -7,6 +7,9 @@ import { getType } from '../../src/utils';
 import { PROXY_DRAFT } from '../../src/constant';
 import { DraftType } from '../../src/interface';
 
+let _enableAutoFreeze: any = null;
+let _enablePatches: any = null;
+
 jest.setTimeout(1000);
 
 function shallowCopy(base: any) {
@@ -56,6 +59,10 @@ function runBaseTest(
   enableAutoFreeze: boolean,
   enablePatches: boolean
 ) {
+  // @ts-expect-error
+  _enableAutoFreeze = enableAutoFreeze;
+  // @ts-expect-error
+  _enablePatches = enablePatches;
   const autoFreeze = enableAutoFreeze;
   const useProxies = true;
   const produce: any = (data, callback, options) => {
@@ -1805,15 +1812,28 @@ function runBaseTest(
         expect(next[0]).toBe(next[1]);
       });
 
-      it.skip('can return an object that references itself', () => {
+      it('can return an object that references itself', () => {
         const res = {};
         // @ts-ignore
         res.self = res;
-        expect(() => {
-          // @ts-ignore
-          produce(res, () => res.self);
-          // ! it's different from mutative
-        }).toThrowError();
+        if (_enableAutoFreeze) {
+          expect(() => {
+            // @ts-ignore
+            create(res, () => res.self, {
+              enableAutoFreeze: _enableAutoFreeze,
+              enablePatches: _enablePatches,
+            });
+          }).toThrowError();
+        } else {
+          expect(() => {
+            // @ts-ignore
+            create(res, () => res.self, {
+              enableAutoFreeze: _enableAutoFreeze,
+              enablePatches: _enablePatches,
+            });
+            // ! it's different from mutative
+          }).not.toThrowError();
+        }
       });
     });
 

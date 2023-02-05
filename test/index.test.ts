@@ -2275,14 +2275,39 @@ test('circular reference', () => {
       data,
       (draft) => {
         draft.a.b.c = 2;
-        // @ts-expect-error
-        draft.a2 = 1;
       },
       {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(
-    `"Forbids circular reference: ~.a.b.c1"`
-  );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+});
+
+test('circular reference', () => {
+  const data = [null, { a: { b: { c: 1 } } }];
+  // @ts-expect-error
+  data[1].a.b = data[1].a;
+  expect(() => {
+    create(
+      data,
+      (draft) => {
+        // @ts-expect-error
+        draft[1].a.b.c = 2;
+        // draft.a2 = 1;
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/1/a"`);
+});
+
+test('can return an object that references itself', () => {
+  const res = {};
+  // @ts-expect-error
+  res.self = res;
+  expect(() => {
+    // @ts-expect-error
+    create(res, (draft) => res.self, { enableAutoFreeze: true });
+  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~"`);
 });
