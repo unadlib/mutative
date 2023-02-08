@@ -23,6 +23,7 @@
   },
   "plugins": ["prettier", "@typescript-eslint"],
   "rules": {
+    "no-case-declarations": "off",
     "no-useless-return": "off",
     "no-self-compare": "off",
     "no-multi-assign": "off",

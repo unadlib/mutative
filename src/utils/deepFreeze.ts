@@ -1,6 +1,3 @@
-/* eslint-disable no-case-declarations */
-/* eslint-disable no-unused-expressions */
-/* eslint-disable no-bitwise */
 import { DraftType } from '../interface';
 import { getType, isDraft } from './draft';
 
