@@ -10,17 +10,25 @@ import produce, {
   setAutoFreeze,
   setUseProxies,
 } from 'immer';
+import QuickChart from 'quickchart-js';
 import { create } from '../..';
 
+const labels = [];
 const result = [
   {
-    '': 'Mutative',
+    label: 'Mutative',
+    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+    data: [],
   },
   {
-    '': 'Immer',
+    label: 'Immer',
+    backgroundColor: 'rgba(0, 255, 0, 0.5)',
+    data: [],
   },
   {
-    '': 'Naive handcrafted reducer',
+    label: 'Naive handcrafted reducer',
+    backgroundColor: 'rgba(255, 0, 0, 0.5)',
+    data: [],
   },
 ];
 
@@ -71,7 +79,7 @@ suite
     }
   )
   .add(
-    'Mutative - No Freeze(by default)',
+    'Mutative - No Freeze',
     () => {
       const state = create(baseState, (draft) => {
         draft.arr.push(i);
@@ -125,7 +133,7 @@ suite
     }
   )
   .add(
-    'Immer - Freeze(by default)',
+    'Immer - Freeze',
     () => {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
@@ -223,9 +231,10 @@ suite
   )
   .on('cycle', (event) => {
     console.log(String(event.target));
-    const [name] = event.target.name.split(' - ');
-    const index = result.findIndex((i) => i[''] === name);
-    result[index][event.target.name] = Math.round(event.target.hz);
+    const [name, field] = event.target.name.split(' - ');
+    if (!labels.includes(field)) labels.push(field);
+    const item = result.find(({ label }) => label === name);
+    item.data[labels.indexOf(field)] = Math.round(event.target.hz);
   })
   .on('complete', function () {
     console.log('The fastest method is ' + this.filter('fastest').map('name'));
@@ -233,23 +242,49 @@ suite
   .run({ async: false });
 
 try {
-  // Mutative vs Immer Performance
-  // Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better.
-  const fields = [];
-  result.forEach((item) => {
-    fields.push(...Object.keys(item).slice(1));
-  });
-  result.forEach((item) => {
-    fields.forEach((field) => {
-      if (!(field in item)) {
-        item[field] = '-';
-      }
-    });
-  });
-  const csv = parse(result, {
-    fields: ['', ...fields.reverse()],
-  });
-  fs.writeFileSync('benchmark.csv', csv);
+  const config = {
+    type: 'horizontalBar',
+    data: {
+      labels,
+      datasets: result,
+    },
+    options: {
+      title: {
+        display: true,
+        text: 'Mutative vs Immer Performance',
+      },
+      legend: {
+        position: 'bottom',
+      },
+      elements: {
+        rectangle: {
+          borderWidth: 1,
+        },
+      },
+      scales: {
+        xAxes: [
+          {
+            display: true,
+            scaleLabel: {
+              display: true,
+              fontSize: 10,
+              labelString:
+                'Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better.',
+            },
+          },
+        ],
+      },
+      plugins: {
+        datalabels: {
+          anchor: 'center',
+          align: 'center',
+        },
+      },
+    },
+  };
+  const chart = new QuickChart();
+  chart.setConfig(config);
+  console.log(chart.getUrl());
 } catch (err) {
   console.error(err);
 }
