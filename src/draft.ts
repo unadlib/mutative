@@ -97,9 +97,11 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         finalities: target.finalities,
         options: target.options,
       });
+      // !case: support for custom shallow copy function
       if (typeof markResult === 'function') {
         const subProxyDraft = getProxyDraft(target.copy![key])!;
         ensureShallowCopy(subProxyDraft);
+        // Trigger a custom shallow copy to update to a new copy
         markChanged(subProxyDraft);
         return subProxyDraft.copy;
       }
