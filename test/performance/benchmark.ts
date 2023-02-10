@@ -1,6 +1,7 @@
 /* eslint-disable prefer-template */
 // @ts-nocheck
 import fs from 'fs';
+import https from 'https';
 import { Suite } from 'benchmark';
 import { parse } from 'json2csv';
 import deepFreeze from 'deep-freeze';
@@ -232,6 +233,7 @@ suite
   .on('cycle', (event) => {
     console.log(String(event.target));
     const [name, field] = event.target.name.split(' - ');
+    if (name === 'Immer') console.log();
     if (!labels.includes(field)) labels.push(field);
     const item = result.find(({ label }) => label === name);
     item.data[labels.indexOf(field)] = Math.round(event.target.hz);
@@ -278,13 +280,23 @@ try {
         datalabels: {
           anchor: 'center',
           align: 'center',
+          font: {
+            size: 8,
+          },
         },
       },
     },
   };
   const chart = new QuickChart();
   chart.setConfig(config);
-  console.log(chart.getUrl());
+  const file = fs.createWriteStream('benchmark.jpg');
+  https.get(chart.getUrl(), (response) => {
+    response.pipe(file);
+    file.on('finish', () => {
+      file.close();
+      console.log('update benchmark');
+    });
+  });
 } catch (err) {
   console.error(err);
 }

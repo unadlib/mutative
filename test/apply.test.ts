@@ -8,7 +8,7 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { create, apply } from '../src';
+import { create, apply, Patches } from '../src';
 import { deepClone } from '../src/utils';
 
 function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
@@ -1245,4 +1245,23 @@ test('unexpected - patches', () => {
   }).toThrowError(
     `Patching reserved attributes like __proto__ and constructor is not allowed.`
   );
+});
+
+test('type check', () => {
+  let state: Record<string, unknown>;
+  let patches: Patches | undefined;
+
+  [state, patches] = create(
+    {} as any,
+    (draft) => {
+      draft.a = 1;
+      draft.b = draft.a;
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  expect(state).toEqual({ a: 1, b: 1 });
+  const key = patches![0].path;
+  expect(Array.isArray(key)).toBe('string');
 });
