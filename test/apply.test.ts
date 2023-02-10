@@ -1263,5 +1263,5 @@ test('type check', () => {
   );
   expect(state).toEqual({ a: 1, b: 1 });
   const key = patches![0].path;
-  expect(Array.isArray(key)).toBe('string');
+  expect(Array.isArray(key)).toBeTruthy();
 });
