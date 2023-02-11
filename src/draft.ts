@@ -117,21 +117,21 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         `Map/Set draft does not support any property assignment.`
       );
     }
-    // if (
-    //   target.type === DraftType.Array &&
-    //   key !== 'length' &&
-    //   isNaN(Number(key))
-    // ) {
-    //   throw new Error(
-    //     `Only supports setting array indices and the 'length' property.`
-    //   );
-    // }
-    // const desc = getDescriptor(latest(target), key);
-    // if (desc?.set) {
-    //   // !case: cover the case of setter
-    //   desc.set.call(target.proxy, value);
-    //   return true;
-    // }
+    if (
+      target.type === DraftType.Array &&
+      key !== 'length' &&
+      isNaN(Number(key))
+    ) {
+      throw new Error(
+        `Only supports setting array indices and the 'length' property.`
+      );
+    }
+    const desc = getDescriptor(latest(target), key);
+    if (desc?.set) {
+      // !case: cover the case of setter
+      desc.set.call(target.proxy, value);
+      return true;
+    }
     const current = peek(latest(target), key);
     const currentProxyDraft = getProxyDraft(current);
     if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
