@@ -1,6 +1,6 @@
 import { dataTypes, iteratorSymbol } from './constant';
 import { internal } from './internal';
-import { markFinalization } from './patch';
+import { generatePatches } from './patch';
 import { checkReadable } from './unsafe';
 import {
   ensureShallowCopy,
@@ -9,6 +9,7 @@ import {
   isEqual,
   latest,
   markChanged,
+  markFinalization,
 } from './utils';
 
 export const mapHandler = {
@@ -27,7 +28,7 @@ export const mapHandler = {
       markChanged(target);
       target.assignedMap!.set(key, true);
       target.copy.set(key, value);
-      markFinalization(target, key, value);
+      markFinalization(target, key, value, generatePatches);
     }
     return this;
   },

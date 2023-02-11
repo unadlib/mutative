@@ -27,9 +27,11 @@ import {
   set,
   revokeProxy,
   finalizeSetValue,
+  markFinalization,
+  finalizePatches,
 } from './utils';
-import { finalizePatches, markFinalization } from './patch';
 import { checkReadable } from './unsafe';
+import { generatePatches } from './patch';
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
@@ -115,21 +117,21 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         `Map/Set draft does not support any property assignment.`
       );
     }
-    if (
-      target.type === DraftType.Array &&
-      key !== 'length' &&
-      isNaN(Number(key))
-    ) {
-      throw new Error(
-        `Only supports setting array indices and the 'length' property.`
-      );
-    }
-    const desc = getDescriptor(latest(target), key);
-    if (desc?.set) {
-      // !case: cover the case of setter
-      desc.set.call(target.proxy, value);
-      return true;
-    }
+    // if (
+    //   target.type === DraftType.Array &&
+    //   key !== 'length' &&
+    //   isNaN(Number(key))
+    // ) {
+    //   throw new Error(
+    //     `Only supports setting array indices and the 'length' property.`
+    //   );
+    // }
+    // const desc = getDescriptor(latest(target), key);
+    // if (desc?.set) {
+    //   // !case: cover the case of setter
+    //   desc.set.call(target.proxy, value);
+    //   return true;
+    // }
     const current = peek(latest(target), key);
     const currentProxyDraft = getProxyDraft(current);
     if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
@@ -154,7 +156,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       target.assignedMap!.set(key, true);
     }
     target.copy![key] = value;
-    markFinalization(target, key, value);
+    markFinalization(target, key, value, generatePatches);
     return true;
   },
   has(target: ProxyDraft, key: string | symbol) {
@@ -252,7 +254,7 @@ export function createDraft<T extends object>(createDraftOptions: {
           updatedValue = getValue(draft);
         }
         finalizeSetValue(proxyDraft);
-        finalizePatches(proxyDraft, patches, inversePatches);
+        finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
         if (__DEV__ && target.options.enableAutoFreeze) {
           target.options.updatedValues =
             target.options.updatedValues ?? new WeakMap();
@@ -270,7 +272,7 @@ export function createDraft<T extends object>(createDraftOptions: {
     const target = getProxyDraft(proxy)!;
     target.finalities.draft.push((patches, inversePatches) => {
       finalizeSetValue(target);
-      finalizePatches(target, patches, inversePatches);
+      finalizePatches(target, generatePatches, patches, inversePatches);
     });
   }
   return proxy;

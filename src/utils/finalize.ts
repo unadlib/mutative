@@ -1,11 +1,13 @@
-import { DraftType, ProxyDraft } from '../interface';
+import { DraftType, Patches, ProxyDraft } from '../interface';
 import { ensureShallowCopy } from './copy';
 import {
   get,
+  getPath,
   getProxyDraft,
   getValue,
   isDraft,
   isDraftable,
+  isEqual,
   set,
 } from './draft';
 import { forEach } from './forEach';
@@ -56,11 +58,85 @@ export function finalizeAssigned(proxyDraft: ProxyDraft, key: PropertyKey) {
   }
 }
 
+export type GeneratePatches = (
+  proxyState: ProxyDraft,
+  basePath: any[],
+  patches: Patches,
+  inversePatches: Patches
+) => void;
+
 export function finalizeSetValue(target: ProxyDraft) {
   if (target.type === DraftType.Set && target.copy) {
     target.copy.clear();
     target.setMap!.forEach((value) => {
       target.copy!.add(getValue(value));
+    });
+  }
+}
+
+export function finalizePatches(
+  target: ProxyDraft,
+  generatePatches: GeneratePatches,
+  patches?: Patches,
+  inversePatches?: Patches
+) {
+  const shouldFinalize =
+    target.operated &&
+    target.assignedMap &&
+    target.assignedMap.size > 0 &&
+    !target.finalized;
+  if (shouldFinalize) {
+    if (patches && inversePatches) {
+      const basePath = getPath(target);
+      generatePatches(target, basePath, patches, inversePatches);
+    }
+    target.finalized = true;
+  }
+}
+
+export function markFinalization(
+  target: ProxyDraft,
+  key: any,
+  value: any,
+  generatePatches: GeneratePatches
+) {
+  const proxyDraft = getProxyDraft(value);
+  if (proxyDraft) {
+    // !case: assign the draft value
+    if (!proxyDraft.callbacks) {
+      proxyDraft.callbacks = [];
+    }
+    proxyDraft.callbacks.push((patches, inversePatches) => {
+      const copy = target.type === DraftType.Set ? target.setMap : target.copy;
+      if (isEqual(get(copy, key), value)) {
+        let updatedValue = proxyDraft.original;
+        if (proxyDraft.copy) {
+          updatedValue = proxyDraft.copy;
+        }
+        finalizeSetValue(target);
+        finalizePatches(target, generatePatches, patches, inversePatches);
+        if (__DEV__ && target.options.enableAutoFreeze) {
+          target.options.updatedValues =
+            target.options.updatedValues ?? new WeakMap();
+          target.options.updatedValues.set(updatedValue, proxyDraft.original);
+        }
+        set(copy, key, updatedValue);
+      }
+    });
+    if (target.options.enableAutoFreeze) {
+      // !case: assign the draft value in cross draft tree
+      if (proxyDraft.finalities !== target.finalities) {
+        target.options.enableAutoFreeze = false;
+      }
+    }
+  }
+  if (isDraftable(value, target.options)) {
+    // !case: assign the non-draft value
+    target.finalities.draft.push(() => {
+      const copy = target.type === DraftType.Set ? target.setMap : target.copy;
+      if (isEqual(get(copy, key), value)) {
+        finalizeAssigned(target, key);
+      }
     });
   }
 }

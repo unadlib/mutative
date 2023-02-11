@@ -6,9 +6,10 @@ import {
   getProxyDraft,
   isDraftable,
   markChanged,
+  markFinalization,
 } from './utils';
 import { checkReadable } from './unsafe';
-import { markFinalization } from './patch';
+import { generatePatches } from './patch';
 
 const getNextIterator =
   (
@@ -77,7 +78,7 @@ export const setHandler = {
       markChanged(target);
       target.assignedMap!.set(value, true);
       target.setMap!.set(value, value);
-      markFinalization(target, value, value);
+      markFinalization(target, value, value, generatePatches);
     }
     return this;
   },
