@@ -11,6 +11,33 @@
 import { create, apply, Patches } from '../src';
 import { deepClone } from '../src/utils';
 
+test('classic case', () => {
+  const data = {
+    a: {
+      c: 1,
+    },
+    b: 2,
+  };
+  const [state, patches, inversePatches] = create(
+    data,
+    (draft) => {
+      const a = draft.a;
+      // @ts-expect-error
+      delete draft.a;
+      a.c = 2;
+      // @ts-expect-error
+      draft.a1 = a;
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  const prevState = apply(state, inversePatches);
+  expect(prevState).toEqual(data);
+  const nextState = apply(data, patches);
+  expect(nextState).toEqual(state);
+});
+
 function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
   const [state, patches, inversePatches] = create(data as any, fn, {
     enablePatches: true,
