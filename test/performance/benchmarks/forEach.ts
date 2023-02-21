@@ -1,3 +1,5 @@
+/* eslint-disable prefer-template */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-nocheck
 import fs from 'fs';
 import { Suite } from 'benchmark';
@@ -43,7 +45,7 @@ const suite = new Suite();
 suite
   .add(
     'Naive handcrafted reducer - No Freeze',
-    function () {
+    () => {
       const state = {
         ...baseState,
         arr: [],
@@ -65,7 +67,7 @@ suite
   )
   .add(
     'Mutative - No Freeze(by default)',
-    function () {
+    () => {
       const state = create(baseState, (draft) => {
         for (const item of draft.arr) {
           item.a = 1;
@@ -84,7 +86,7 @@ suite
   )
   .add(
     'Immer - No Freeze',
-    function () {
+    () => {
       const state = produce(baseState, (draft: any) => {
         for (const item of draft.arr) {
           item.a = 1;
@@ -105,7 +107,7 @@ suite
   )
   .add(
     'Mutative - Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
         (draft) => {
@@ -131,7 +133,7 @@ suite
   )
   .add(
     'Immer - Freeze(by default)',
-    function () {
+    () => {
       const state = produce(baseState, (draft: any) => {
         for (const item of draft.arr) {
           item.a = 1;
@@ -152,7 +154,7 @@ suite
   )
   .add(
     'Mutative - Patches and No Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
         (draft) => {
@@ -178,7 +180,7 @@ suite
   )
   .add(
     'Immer - Patches and No Freeze',
-    function () {
+    () => {
       const state = produceWithPatches(baseState, (draft: any) => {
         for (const item of draft.arr) {
           item.a = 1;
@@ -200,7 +202,7 @@ suite
   )
   .add(
     'Mutative - Patches and Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
         (draft) => {
@@ -226,7 +228,7 @@ suite
   )
   .add(
     'Immer - Patches and Freeze',
-    function () {
+    () => {
       const state = produceWithPatches(baseState, (draft: any) => {
         for (const item of draft.arr) {
           item.a = 1;
@@ -246,7 +248,7 @@ suite
       },
     }
   )
-  .on('cycle', function (event) {
+  .on('cycle', (event) => {
     console.log(String(event.target));
   })
   .on('complete', function () {

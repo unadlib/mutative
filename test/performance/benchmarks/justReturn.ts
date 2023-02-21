@@ -1,3 +1,6 @@
+/* eslint-disable prefer-template */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-unused-expressions */
 // @ts-nocheck
 import fs from 'fs';
 import { Suite } from 'benchmark';
@@ -43,7 +46,7 @@ const suite = new Suite();
 suite
   .add(
     'Mutative - No Freeze(by default)',
-    function () {
+    () => {
       const state = create(baseState, (draft) => {
         draft.arr;
         return {
@@ -60,7 +63,7 @@ suite
   )
   .add(
     'Immer - No Freeze',
-    function () {
+    () => {
       const state = produce(baseState, (draft: any) => {
         draft.arr;
         return {
@@ -79,7 +82,7 @@ suite
   )
   .add(
     'Mutative - Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
         (draft) => {
@@ -103,7 +106,7 @@ suite
   )
   .add(
     'Immer - Freeze(by default)',
-    function () {
+    () => {
       const state = produce(baseState, (draft: any) => {
         draft.arr;
         return {
@@ -122,7 +125,7 @@ suite
   )
   .add(
     'Mutative - Patches and No Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
         (draft) => {
@@ -146,7 +149,7 @@ suite
   )
   .add(
     'Immer - Patches and No Freeze',
-    function () {
+    () => {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr;
         return {
@@ -166,7 +169,7 @@ suite
   )
   .add(
     'Mutative - Patches and Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
         (draft) => {
@@ -190,7 +193,7 @@ suite
   )
   .add(
     'Immer - Patches and Freeze',
-    function () {
+    () => {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr;
         return {
@@ -208,7 +211,7 @@ suite
       },
     }
   )
-  .on('cycle', function (event) {
+  .on('cycle', (event) => {
     console.log(String(event.target));
   })
   .on('complete', function () {

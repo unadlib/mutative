@@ -1,3 +1,5 @@
+/* eslint-disable prefer-template */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-nocheck
 import fs from 'fs';
 import { Suite } from 'benchmark';
@@ -43,14 +45,14 @@ const suite = new Suite();
 suite
   .add(
     'Mutative - No Freeze(by default)',
-    function () {
-      const state = create(baseState, (draft) => {
-        return safeReturn({
+    () => {
+      const state = create(baseState, (draft) =>
+        safeReturn({
           ...baseState,
           arr: [...draft.arr, i],
           map: { ...draft.map, [i]: { i } },
-        });
-      });
+        })
+      );
     },
     {
       onStart: () => {
@@ -61,14 +63,12 @@ suite
   )
   .add(
     'Immer - No Freeze',
-    function () {
-      const state = produce(baseState, (draft: any) => {
-        return {
-          ...baseState,
-          arr: [...draft.arr, i],
-          map: { ...draft.map, [i]: { i } },
-        };
-      });
+    () => {
+      const state = produce(baseState, (draft: any) => ({
+        ...baseState,
+        arr: [...draft.arr, i],
+        map: { ...draft.map, [i]: { i } },
+      }));
     },
     {
       onStart: () => {
@@ -81,16 +81,15 @@ suite
   )
   .add(
     'Mutative - Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
-        (draft) => {
-          return safeReturn({
+        (draft) =>
+          safeReturn({
             ...baseState,
             arr: [...draft.arr, i],
             map: { ...draft.map, [i]: { i } },
-          });
-        },
+          }),
         {
           enableAutoFreeze: true,
           enablePatches: false,
@@ -106,14 +105,12 @@ suite
   )
   .add(
     'Immer - Freeze(by default)',
-    function () {
-      const state = produce(baseState, (draft: any) => {
-        return {
-          ...baseState,
-          arr: [...draft.arr, i],
-          map: { ...draft.map, [i]: { i } },
-        };
-      });
+    () => {
+      const state = produce(baseState, (draft: any) => ({
+        ...baseState,
+        arr: [...draft.arr, i],
+        map: { ...draft.map, [i]: { i } },
+      }));
     },
     {
       onStart: () => {
@@ -126,16 +123,15 @@ suite
   )
   .add(
     'Mutative - Patches and No Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
-        (draft) => {
-          return safeReturn({
+        (draft) =>
+          safeReturn({
             ...baseState,
             arr: [...draft.arr, i],
             map: { ...draft.map, [i]: { i } },
-          });
-        },
+          }),
         {
           enableAutoFreeze: false,
           enablePatches: true,
@@ -151,14 +147,12 @@ suite
   )
   .add(
     'Immer - Patches and No Freeze',
-    function () {
-      const state = produceWithPatches(baseState, (draft: any) => {
-        return {
-          ...baseState,
-          arr: [...draft.arr, i],
-          map: { ...draft.map, [i]: { i } },
-        };
-      });
+    () => {
+      const state = produceWithPatches(baseState, (draft: any) => ({
+        ...baseState,
+        arr: [...draft.arr, i],
+        map: { ...draft.map, [i]: { i } },
+      }));
     },
     {
       onStart: () => {
@@ -172,16 +166,15 @@ suite
   )
   .add(
     'Mutative - Patches and Freeze',
-    function () {
+    () => {
       const state = create(
         baseState,
-        (draft) => {
-          return safeReturn({
+        (draft) =>
+          safeReturn({
             ...baseState,
             arr: [...draft.arr, i],
             map: { ...draft.map, [i]: { i } },
-          });
-        },
+          }),
         {
           enableAutoFreeze: true,
           enablePatches: true,
@@ -197,14 +190,12 @@ suite
   )
   .add(
     'Immer - Patches and Freeze',
-    function () {
-      const state = produceWithPatches(baseState, (draft: any) => {
-        return {
-          ...baseState,
-          arr: [...draft.arr, i],
-          map: { ...draft.map, [i]: { i } },
-        };
-      });
+    () => {
+      const state = produceWithPatches(baseState, (draft: any) => ({
+        ...baseState,
+        arr: [...draft.arr, i],
+        map: { ...draft.map, [i]: { i } },
+      }));
     },
     {
       onStart: () => {
@@ -216,7 +207,7 @@ suite
       },
     }
   )
-  .on('cycle', function (event) {
+  .on('cycle', (event) => {
     console.log(String(event.target));
   })
   .on('complete', function () {

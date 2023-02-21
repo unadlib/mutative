@@ -40,7 +40,7 @@ Immer - Patches and Freeze x 245 ops/sec ±0.39% (90 runs sampled)
 The fastest method is Mutative - No Freeze
 ```
 
-Run `yarn benchmark` to reproduce them locally.
+Run `yarn benchmark` to measure performance.
 
 > OS: macOS 12.6, CPU: Apple M1 Max, Node.js: 16.14.2
 
@@ -52,14 +52,14 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 
 ## Features and Benefits
 
-- **Mutation makes immutable updates**
-- **Support apply patches**
-- **Optional freezing state**
-- **Custom shallow copy**
-- **Immutable and mutable data markable**
-- **Safer mutable data access in strict mode**
-- **Support for JSON Patch spec**
-- **Support for reducer**
+- **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
+- **High performance** - 10x faster than immer by default, even faster than naive handcrafted reducer.
+- **Optional freezing state** - No freezing of immutable data by default.
+- **Support for JSON Patch** - Full compliance with JSON Patch specification.
+- **Custom shallow copy** - Support for more types of immutable data.
+- **Support mark for immutable and mutable data** - Allows for non-invasive marking.
+- **Safer mutable data access in strict mode** - It brings more secure immutable updates.
+- **Support for reducer** - Support Redux and any other immutable state library.
 
 ## Difference between Mutative and Immer
 
