@@ -81,7 +81,7 @@
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
     "benchmark": "^2.1.4",
-    "commitizen": "^4.2.4",
+    "commitizen": "^4.3.0",
     "coveralls": "^3.1.1",
     "deep-freeze": "^0.0.1",
     "eslint": "^8.11.0",
