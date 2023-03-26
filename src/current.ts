@@ -1,4 +1,4 @@
-import { DraftType } from './interface';
+import { DraftType, ProxyDraft } from './interface';
 import {
   forEach,
   get,
@@ -11,13 +11,20 @@ import {
   shallowCopy,
 } from './utils';
 
-export function handleReturnValue<T extends object>(value: T, warning = false) {
+export function handleReturnValue<T extends object>(
+  rootDraft: ProxyDraft<any> | undefined,
+  value: T,
+  warning = false
+) {
+  let isContainDraft = false;
   forEach(value, (key, item, source) => {
     const proxyDraft = getProxyDraft(item);
-    if (proxyDraft) {
+    // just handle the draft which is created by the same rootDraft
+    if (proxyDraft && proxyDraft?.finalities === rootDraft?.finalities) {
+      isContainDraft = true;
       if (__DEV__ && warning) {
         console.warn(
-          `The return value contains drafts, please use safeReturn() to wrap the return value.`
+          `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
         );
       }
       const currentValue = proxyDraft.original;
@@ -31,9 +38,14 @@ export function handleReturnValue<T extends object>(value: T, warning = false) {
         set(source, key, currentValue);
       }
     } else if (typeof item === 'object' && item !== null) {
-      handleReturnValue(item, warning);
+      handleReturnValue(rootDraft, item, warning);
     }
   });
+  if (__DEV__ && warning && !isContainDraft) {
+    console.warn(
+      `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`
+    );
+  }
 }
 
 function getCurrent(target: any) {

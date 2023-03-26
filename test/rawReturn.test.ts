@@ -6,7 +6,7 @@
 /* eslint-disable no-self-assign */
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { create, safeReturn } from '../src';
+import { create, isDraft, rawReturn } from '../src';
 
 test('base', () => {
   const base = 3;
@@ -15,47 +15,47 @@ test('base', () => {
   expect(create(base, () => null)).toBe(null);
   expect(create(base, () => undefined)).toBe(3);
   expect(create(base, () => {})).toBe(3);
-  expect(create(base, () => safeReturn(undefined))).toBe(undefined);
+  expect(create(base, () => rawReturn(undefined))).toBe(undefined);
 
   expect(create({}, () => undefined)).toEqual({});
-  expect(create({}, () => safeReturn(undefined))).toBe(undefined);
-  expect(create(3, () => safeReturn(undefined))).toBe(undefined);
+  expect(create({}, () => rawReturn(undefined))).toBe(undefined);
+  expect(create(3, () => rawReturn(undefined))).toBe(undefined);
 
   expect(create(() => undefined)({})).toEqual({});
-  expect(create(() => safeReturn(undefined))({})).toBe(undefined);
-  expect(create(() => safeReturn(undefined))(3)).toBe(undefined);
+  expect(create(() => rawReturn(undefined))({})).toBe(undefined);
+  expect(create(() => rawReturn(undefined))(3)).toBe(undefined);
 });
 
 test('base enableAutoFreeze: true', () => {
   create(
     { a: { b: 1 } },
     (draft) => {
-      return safeReturn({
+      return {
         a: draft.a,
-      });
+      };
     },
     { enableAutoFreeze: true }
   );
 });
 
-test('base enableAutoFreeze: true - without safeReturn()', () => {
+test('base enableAutoFreeze: true - with rawReturn()', () => {
   expect(() => {
     create(
       { a: { b: 1 } },
       (draft) => {
-        return {
+        return rawReturn({
           a: draft.a,
-        };
+        });
       },
       { enableAutoFreeze: true }
     );
   }).toThrowError();
 });
 
-describe.each([{ useSafeReturn: true }, { useSafeReturn: false }])(
-  'check Primitive type $useSafeReturn',
-  ({ useSafeReturn }) => {
-    test(`useSafeReturn ${useSafeReturn}: check Primitive type with returning`, () => {
+describe.each([{ useRawReturn: true }, { useRawReturn: false }])(
+  'check Primitive type $useRawReturn',
+  ({ useRawReturn }) => {
+    test(`useRawReturn ${useRawReturn}: check Primitive type with returning`, () => {
       [
         -1,
         1,
@@ -72,13 +72,13 @@ describe.each([{ useSafeReturn: true }, { useSafeReturn: false }])(
       ].forEach((value: any) => {
         expect(
           create(value, (draft) => {
-            return useSafeReturn ? safeReturn(undefined) : '';
+            return useRawReturn ? rawReturn(undefined) : '';
           })
-        ).toBe(useSafeReturn ? undefined : '');
+        ).toBe(useRawReturn ? undefined : '');
       });
     });
 
-    test(`useSafeReturn ${useSafeReturn}: check Primitive type with returning and patches`, () => {
+    test(`useRawReturn ${useRawReturn}: check Primitive type with returning and patches`, () => {
       [
         -1,
         1,
@@ -98,21 +98,21 @@ describe.each([{ useSafeReturn: true }, { useSafeReturn: false }])(
           create(
             value,
             (draft) => {
-              return useSafeReturn ? safeReturn(undefined) : '';
+              return useRawReturn ? rawReturn(undefined) : '';
             },
             {
               enablePatches: true,
             }
           )
         ).toEqual([
-          useSafeReturn ? undefined : '',
-          [{ op: 'replace', path: [], value: useSafeReturn ? undefined : '' }],
+          useRawReturn ? undefined : '',
+          [{ op: 'replace', path: [], value: useRawReturn ? undefined : '' }],
           [{ op: 'replace', path: [], value: value }],
         ]);
       });
     });
 
-    test(`useSafeReturn ${useSafeReturn}: check Primitive type with returning, patches and freeze`, () => {
+    test(`useRawReturn ${useRawReturn}: check Primitive type with returning, patches and freeze`, () => {
       [
         -1,
         1,
@@ -132,7 +132,7 @@ describe.each([{ useSafeReturn: true }, { useSafeReturn: false }])(
           create(
             value,
             (draft) => {
-              return useSafeReturn ? safeReturn(undefined) : '';
+              return useRawReturn ? rawReturn(undefined) : '';
             },
             {
               enableAutoFreeze: true,
@@ -140,14 +140,14 @@ describe.each([{ useSafeReturn: true }, { useSafeReturn: false }])(
             }
           )
         ).toEqual([
-          useSafeReturn ? undefined : '',
-          [{ op: 'replace', path: [], value: useSafeReturn ? undefined : '' }],
+          useRawReturn ? undefined : '',
+          [{ op: 'replace', path: [], value: useRawReturn ? undefined : '' }],
           [{ op: 'replace', path: [], value: value }],
         ]);
       });
     });
 
-    test(`useSafeReturn ${useSafeReturn}: check Primitive type with returning, patches, freeze and async`, async () => {
+    test(`useRawReturn ${useRawReturn}: check Primitive type with returning, patches, freeze and async`, async () => {
       for (const value of [
         -1,
         1,
@@ -167,7 +167,7 @@ describe.each([{ useSafeReturn: true }, { useSafeReturn: false }])(
           await create(
             value,
             async (draft) => {
-              return useSafeReturn ? safeReturn(undefined) : '';
+              return useRawReturn ? rawReturn(undefined) : '';
             },
             {
               enableAutoFreeze: true,
@@ -175,8 +175,8 @@ describe.each([{ useSafeReturn: true }, { useSafeReturn: false }])(
             }
           )
         ).toEqual([
-          useSafeReturn ? undefined : '',
-          [{ op: 'replace', path: [], value: useSafeReturn ? undefined : '' }],
+          useRawReturn ? undefined : '',
+          [{ op: 'replace', path: [], value: useRawReturn ? undefined : '' }],
           [{ op: 'replace', path: [], value: value }],
         ]);
       }
@@ -187,16 +187,16 @@ describe.each([{ useSafeReturn: true }, { useSafeReturn: false }])(
 test('error args', () => {
   expect(() =>
     // @ts-expect-error
-    create(3, () => safeReturn(undefined, undefined))
+    create(3, () => rawReturn(undefined, undefined))
   ).toThrowErrorMatchingInlineSnapshot(
-    `"safeReturn() must be called with one argument."`
+    `"rawReturn() must be called with one argument."`
   );
 
   expect(() =>
     // @ts-expect-error
-    create({}, () => safeReturn())
+    create({}, () => rawReturn())
   ).toThrowErrorMatchingInlineSnapshot(
-    `"safeReturn() must be called with a value."`
+    `"rawReturn() must be called with a value."`
   );
 
   const logSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
@@ -215,9 +215,9 @@ test('error args', () => {
     true,
     Symbol('foo'),
   ].forEach((value: any) => {
-    create({}, () => safeReturn(value));
+    create({}, () => rawReturn(value));
     expect(logSpy).toHaveBeenCalledWith(
-      'safeReturn() must be called with an object or undefined, other types do not need to be returned via safeReturn().'
+      'rawReturn() must be called with an object or `undefined`, other types do not need to be returned via rawReturn().'
     );
     logSpy.mockClear();
   });
@@ -225,49 +225,53 @@ test('error args', () => {
   logSpy.mockReset();
 });
 
-test('check warning in strict mode', () => {
+test('check warning rawReturn() in strict mode', () => {
   class Foo {
     a?: any;
   }
   const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
   [
     (draft: any) => {
-      return {
+      return rawReturn({
         a: draft.a,
-      };
+      });
     },
     (draft: any) => {
-      return [draft.a];
+      return rawReturn([draft.a]);
     },
     (draft: any) => {
-      return new Map([
-        [
+      return rawReturn(
+        new Map([
+          [
+            1,
+            {
+              a: draft.a,
+            },
+          ],
+        ])
+      );
+    },
+    (draft: any) => {
+      return rawReturn(
+        new Set([
           1,
           {
             a: draft.a,
           },
-        ],
-      ]);
-    },
-    (draft: any) => {
-      return new Set([
-        1,
-        {
-          a: draft.a,
-        },
-      ]);
+        ])
+      );
     },
     (draft: any) => {
       const foo = new Foo();
       foo.a = draft.a;
-      return foo;
+      return rawReturn(foo);
     },
   ].forEach((callback: any) => {
     create({ a: { b: 1 } }, callback, {
       strict: true,
     });
     expect(warnSpy).toHaveBeenCalledWith(
-      `The return value contains drafts, please use safeReturn() to wrap the return value.`
+      `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
     );
     warnSpy.mockClear();
   });
@@ -283,20 +287,36 @@ test('return parent draft', () => {
     })
   ).toEqual({ a: 2 });
 });
+test('mix more type draft without rawReturn()', () => {
+  [
+    (draft: any) => ({
+      a: {
+        b: draft.a,
+      },
+    }),
+    (draft: any) => [{ c: draft.a }],
+    (draft: any) => new Map([[1, draft.a]]),
+    (draft: any) => new Set([1, draft.a]),
+  ].forEach((callback: any) => {
+    expect(() => create({ a: { b: 1 } }, callback)).not.toThrowError();
+  });
+});
 
-test('mix more type draft', () => {
+test('mix more type draft with rawReturn()', () => {
   [
     (draft: any) =>
-      safeReturn({
+      rawReturn({
         a: {
           b: draft.a,
         },
       }),
-    (draft: any) => safeReturn([{ c: draft.a }]),
-    (draft: any) => safeReturn(new Map([[1, draft.a]])),
-    (draft: any) => safeReturn(new Set([1, draft.a])),
+    (draft: any) => rawReturn([{ c: draft.a }]),
+    (draft: any) => rawReturn(new Map([[1, draft.a]])),
+    (draft: any) => rawReturn(new Set([1, draft.a])),
   ].forEach((callback: any) => {
-    expect(() => create({ a: { b: 1 } }, callback)).not.toThrowError();
+    expect(() =>
+      expect(create({ a: { b: 1 } }, callback)).toEqual({})
+    ).toThrowError();
   });
 });
 
@@ -317,11 +337,9 @@ test(`safe returning with non-enumerable or symbolic properties`, () => {
   const state2: any = create(
     state,
     (draft) => {
-      return safeReturn(
-        Object.assign(component, {
-          [key]: draft,
-        })
-      ) as any;
+      return Object.assign(component, {
+        [key]: draft,
+      }) as any;
     },
     {
       enableAutoFreeze: true,
@@ -350,7 +368,7 @@ test('works with interweaved Immer instances with disable Freeze', () => {
         enableAutoFreeze: false,
       }
     );
-    return safeReturn(f);
+    return f;
   });
   // @ts-expect-error
   expect(result.s1).toBe(base);
@@ -359,9 +377,9 @@ test('works with interweaved Immer instances with disable Freeze', () => {
 test('deep draft', () => {
   const state = create({ a: { b: { c: 1 } } }, (draft) => {
     draft.a.b.c;
-    return safeReturn({
+    return {
       a: draft.a,
-    });
+    };
   });
   expect(state).toEqual({ a: { b: { c: 1 } } });
 });
@@ -369,7 +387,46 @@ test('deep draft', () => {
 test('case', () => {
   const baseState = { foo: 'bar' };
   const state = create(baseState as { foo: string } | undefined, (draft) => {
-    return safeReturn(undefined);
+    return rawReturn(undefined);
   });
   expect(state).toBe(undefined);
+});
+
+test('does not finalize upvalue drafts', () => {
+  create({ a: {}, b: {} }, (parent) => {
+    expect(create({}, () => parent)).toBe(parent);
+    // @ts-ignore
+    parent.x; // Ensure proxy not revoked.
+
+    // @ts-ignore
+    expect(create({}, () => [parent])[0]).toBe(parent);
+    // @ts-ignore
+    parent.x; // Ensure proxy not revoked.
+
+    expect(create({}, () => parent.a)).toBe(parent.a);
+    // @ts-ignore
+
+    parent.a.x; // Ensure proxy not revoked.
+    // @ts-ignore
+    // Modified parent test
+    parent.c = 1;
+    // @ts-ignore
+    expect(create({}, () => [parent.b])[0]).toBe(parent.b);
+    // @ts-ignore
+    parent.b.x; // Ensure proxy not revoked.
+  });
+});
+
+test('mixed draft', () => {
+  const baseState = { a: 1, b: { c: 1 } };
+  const state = create(baseState, (draft) => {
+    if (draft.b.c === 1) {
+      return {
+        ...draft,
+        a: 2,
+      };
+    }
+  });
+  expect(state).toEqual({ a: 2, b: { c: 1 } });
+  expect(isDraft(state.b)).toBeFalsy();
 });

@@ -12,7 +12,7 @@ import produce, {
   setAutoFreeze,
   setUseProxies,
 } from 'immer';
-import { create, safeReturn } from '../../..';
+import { create, rawReturn } from '../../..';
 
 const getData = () => {
   const baseState: { arr: any[]; map: Record<string, any> } = {
@@ -49,9 +49,9 @@ suite
     () => {
       const state = create(baseState, (draft) => {
         draft.arr;
-        return {
+        return rawReturn({
           ...baseState,
-        };
+        });
       });
     },
     {
@@ -87,9 +87,9 @@ suite
         baseState,
         (draft) => {
           draft.arr;
-          return {
+          return rawReturn({
             ...baseState,
-          };
+          });
         },
         {
           enableAutoFreeze: true,
@@ -130,9 +130,9 @@ suite
         baseState,
         (draft) => {
           draft.arr;
-          return {
+          return rawReturn({
             ...baseState,
-          };
+          });
         },
         {
           enableAutoFreeze: false,
@@ -174,9 +174,9 @@ suite
         baseState,
         (draft) => {
           draft.arr;
-          return {
+          return rawReturn({
             ...baseState,
-          };
+          });
         },
         {
           enableAutoFreeze: true,

@@ -11,7 +11,7 @@ import produce, {
   setAutoFreeze,
   setUseProxies,
 } from 'immer';
-import { create, safeReturn } from '../../..';
+import { create } from '../../..';
 
 const getData = () => {
   const baseState: { arr: any[]; map: Record<string, any> } = {
@@ -46,13 +46,11 @@ suite
   .add(
     'Mutative - No Freeze(by default)',
     () => {
-      const state = create(baseState, (draft) =>
-        safeReturn({
-          ...baseState,
-          arr: [...draft.arr, i],
-          map: { ...draft.map, [i]: { i } },
-        })
-      );
+      const state = create(baseState, (draft) => ({
+        ...baseState,
+        arr: [...draft.arr, i],
+        map: { ...draft.map, [i]: { i } },
+      }));
     },
     {
       onStart: () => {
@@ -84,12 +82,11 @@ suite
     () => {
       const state = create(
         baseState,
-        (draft) =>
-          safeReturn({
-            ...baseState,
-            arr: [...draft.arr, i],
-            map: { ...draft.map, [i]: { i } },
-          }),
+        (draft) => ({
+          ...baseState,
+          arr: [...draft.arr, i],
+          map: { ...draft.map, [i]: { i } },
+        }),
         {
           enableAutoFreeze: true,
           enablePatches: false,
@@ -126,12 +123,11 @@ suite
     () => {
       const state = create(
         baseState,
-        (draft) =>
-          safeReturn({
-            ...baseState,
-            arr: [...draft.arr, i],
-            map: { ...draft.map, [i]: { i } },
-          }),
+        (draft) => ({
+          ...baseState,
+          arr: [...draft.arr, i],
+          map: { ...draft.map, [i]: { i } },
+        }),
         {
           enableAutoFreeze: false,
           enablePatches: true,
@@ -169,12 +165,11 @@ suite
     () => {
       const state = create(
         baseState,
-        (draft) =>
-          safeReturn({
-            ...baseState,
-            arr: [...draft.arr, i],
-            map: { ...draft.map, [i]: { i } },
-          }),
+        (draft) => ({
+          ...baseState,
+          arr: [...draft.arr, i],
+          map: { ...draft.map, [i]: { i } },
+        }),
         {
           enableAutoFreeze: true,
           enablePatches: true,

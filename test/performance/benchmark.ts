@@ -1,3 +1,4 @@
+/* eslint-disable import/no-relative-packages */
 /* eslint-disable prefer-template */
 // @ts-nocheck
 import fs from 'fs';
@@ -5,13 +6,13 @@ import https from 'https';
 import { Suite } from 'benchmark';
 import { parse } from 'json2csv';
 import deepFreeze from 'deep-freeze';
-import produce, {
+import QuickChart from 'quickchart-js';
+import {
+  produce,
   enablePatches,
   produceWithPatches,
   setAutoFreeze,
-  setUseProxies,
-} from 'immer';
-import QuickChart from 'quickchart-js';
+} from '../../../temp/immer/dist';
 import { create } from '../..';
 
 const labels = [];
@@ -105,7 +106,7 @@ suite
     {
       onStart: () => {
         setAutoFreeze(false);
-        setUseProxies(true);
+        // setUseProxies(true);
         i = Math.random();
         baseState = getData();
       },
@@ -144,7 +145,7 @@ suite
     {
       onStart: () => {
         setAutoFreeze(true);
-        setUseProxies(true);
+        // setUseProxies(true);
         i = Math.random();
         baseState = getData();
       },
@@ -183,7 +184,7 @@ suite
     {
       onStart: () => {
         setAutoFreeze(false);
-        setUseProxies(true);
+        // setUseProxies(true);
         enablePatches();
         i = Math.random();
         baseState = getData();
@@ -223,7 +224,7 @@ suite
     {
       onStart: () => {
         setAutoFreeze(true);
-        setUseProxies(true);
+        // setUseProxies(true);
         enablePatches();
         i = Math.random();
         baseState = getData();

@@ -14,7 +14,7 @@ import {
   revokeProxy,
 } from './utils';
 import { current, handleReturnValue } from './current';
-import { safeReturnValue } from './safeReturn';
+import { RAW_RETURN_SYMBOL } from './constant';
 
 /**
  * `create(baseState, callback, options)` to create the next state
@@ -108,7 +108,6 @@ function create(arg0: any, arg1: any, arg2?: any): any {
     strict,
     enablePatches,
   };
-  safeReturnValue.length = 0;
   if (
     !isDraftable(state, _options) &&
     typeof state === 'object' &&
@@ -146,16 +145,17 @@ function create(arg0: any, arg1: any, arg2?: any): any {
           `Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.`
         );
       }
-      if (safeReturnValue.length) {
-        const _value = safeReturnValue.pop();
-        if (typeof value === 'object' && value !== null) {
-          handleReturnValue(value);
+      const rawReturnValue = value?.[RAW_RETURN_SYMBOL] as [any] | undefined;
+      if (rawReturnValue) {
+        const _value = rawReturnValue[0];
+        if (_options.strict && typeof value === 'object' && value !== null) {
+          handleReturnValue(proxyDraft, value, true);
         }
         return finalize([_value]);
       }
       if (value !== undefined) {
-        if (_options.strict && typeof value === 'object' && value !== null) {
-          handleReturnValue(value, true);
+        if (typeof value === 'object' && value !== null) {
+          handleReturnValue(proxyDraft, value);
         }
         return finalize([value]);
       }
