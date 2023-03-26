@@ -11,12 +11,14 @@ import {
   shallowCopy,
 } from './utils';
 
-export function handleReturnValue<T extends object>(
-  rootDraft: ProxyDraft<any> | undefined,
-  value: T,
-  warning = false
-) {
-  let isContainDraft = false;
+export function handleReturnValue<T extends object>(options: {
+  rootDraft: ProxyDraft<any> | undefined;
+  value: T;
+  useRawReturn?: boolean;
+  isContainDraft?: boolean;
+  isRoot?: boolean;
+}) {
+  const { rootDraft, value, useRawReturn = false, isRoot = true } = options;
   forEach(value, (key, item, source) => {
     const proxyDraft = getProxyDraft(item);
     // just handle the draft which is created by the same rootDraft
@@ -25,12 +27,7 @@ export function handleReturnValue<T extends object>(
       rootDraft &&
       proxyDraft.finalities === rootDraft.finalities
     ) {
-      isContainDraft = true;
-      if (__DEV__ && warning) {
-        console.warn(
-          `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
-        );
-      }
+      options.isContainDraft = true;
       const currentValue = proxyDraft.original;
       if (source instanceof Set) {
         const arr = Array.from(source);
@@ -42,13 +39,22 @@ export function handleReturnValue<T extends object>(
         set(source, key, currentValue);
       }
     } else if (typeof item === 'object' && item !== null) {
-      handleReturnValue(rootDraft, item, warning);
+      options.value = item;
+      options.isRoot = false;
+      handleReturnValue(options);
     }
   });
-  if (__DEV__ && warning && !isContainDraft) {
-    console.warn(
-      `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`
-    );
+  if (__DEV__ && isRoot) {
+    if (!options.isContainDraft)
+      console.warn(
+        `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`
+      );
+
+    if (useRawReturn) {
+      console.warn(
+        `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
+      );
+    }
   }
 }
 

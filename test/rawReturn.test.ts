@@ -8,6 +8,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { create, isDraft, rawReturn } from '../src';
 
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
 test('base', () => {
   const base = 3;
   expect(create(base, () => 4)).toBe(4);
@@ -418,6 +422,7 @@ test('does not finalize upvalue drafts', () => {
 });
 
 test('mixed draft', () => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
   const baseState = { a: 1, b: { c: 1 } };
   const state = create(baseState, (draft) => {
     if (draft.b.c === 1) {
@@ -429,4 +434,75 @@ test('mixed draft', () => {
   });
   expect(state).toEqual({ a: 2, b: { c: 1 } });
   expect(isDraft(state.b)).toBeFalsy();
+  expect(console.warn).toBeCalledTimes(0);
+});
+
+test('mixed draft with rawReturn()', () => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const baseState = { a: 1, b: { c: 1 } };
+  const state = create(baseState, (draft) => {
+    if (draft.b.c === 1) {
+      return rawReturn({
+        ...draft,
+        a: 2,
+      });
+    }
+  });
+  expect(() => {
+    JSON.stringify(state);
+  }).toThrowError();
+  expect(() => {
+    isDraft(state.b);
+  }).toThrowError();
+  expect(console.warn).toBeCalledTimes(0);
+});
+
+test('mixed draft with rawReturn() and strict mode', () => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const baseState = { a: 1, b: { c: 1 } };
+  const state = create(
+    baseState,
+    (draft) => {
+      if (draft.b.c === 1) {
+        return rawReturn({
+          ...draft,
+          a: 2,
+        });
+      }
+    },
+    {
+      strict: true,
+    }
+  );
+  expect(state).toEqual({ a: 2, b: { c: 1 } });
+  expect(isDraft(state.b)).toBeFalsy();
+  expect(console.warn).toBeCalledTimes(1);
+  expect(console.warn).toBeCalledWith(
+    `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
+  );
+});
+
+test('no mixed draft with strict mode', () => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const baseState = { a: 1, b: { c: 1 } };
+  const state = create(
+    baseState,
+    (draft) => {
+      if (draft.b.c === 1) {
+        return {
+          ...baseState,
+          a: 2,
+        };
+      }
+    },
+    {
+      strict: true,
+    }
+  );
+  expect(state).toEqual({ a: 2, b: { c: 1 } });
+  expect(isDraft(state.b)).toBeFalsy();
+  expect(console.warn).toBeCalledTimes(1);
+  expect(console.warn).toBeCalledWith(
+    `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`
+  );
 });

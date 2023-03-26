@@ -149,13 +149,13 @@ function create(arg0: any, arg1: any, arg2?: any): any {
       if (rawReturnValue) {
         const _value = rawReturnValue[0];
         if (_options.strict && typeof value === 'object' && value !== null) {
-          handleReturnValue(proxyDraft, value, true);
+          handleReturnValue({ rootDraft: proxyDraft, value, useRawReturn: true });
         }
         return finalize([_value]);
       }
       if (value !== undefined) {
         if (typeof value === 'object' && value !== null) {
-          handleReturnValue(proxyDraft, value);
+          handleReturnValue({ rootDraft: proxyDraft, value });
         }
         return finalize([value]);
       }
