@@ -1522,7 +1522,7 @@ function runBaseTest(
 
           // Modified parent test
           parent.c = 1;
-          expect(produce({}, () => [parent.b])[0]).toBe(parent.b);
+          expect(produce(null, () => [parent.b])[0]).toBe(parent.b);
           parent.b.x; // Ensure proxy not revoked.
         });
       });

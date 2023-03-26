@@ -20,7 +20,11 @@ export function handleReturnValue<T extends object>(
   forEach(value, (key, item, source) => {
     const proxyDraft = getProxyDraft(item);
     // just handle the draft which is created by the same rootDraft
-    if (proxyDraft && proxyDraft?.finalities === rootDraft?.finalities) {
+    if (
+      proxyDraft &&
+      rootDraft &&
+      proxyDraft.finalities === rootDraft.finalities
+    ) {
       isContainDraft = true;
       if (__DEV__ && warning) {
         console.warn(
