@@ -146,7 +146,7 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
   > Forbid accessing non-draftable values in strict mode(unless using [unsafe()](#unsafe)).
 
-  > It is recommended to enable `strict` in development mode and disable `strict` in production mode. This will ensure safe returns and also keep good performance in the production build. If the return value is mixed drafts or `undefined`, then use [safeReturn()](#safereturn).
+  > It is recommended to enable `strict` in development mode and disable `strict` in production mode. This will ensure safe explicit returns and also keep good performance in the production build. If the value that does not mix any current draft or is `undefined` is returned, then use [rawReturn()](#rawreturn).
 
 - enablePatches - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean; }`, the default is false.
 
@@ -302,19 +302,56 @@ expect(isDraftable(baseState.list)).toBeTruthy();
 
 > You can set a mark to determine if the value is draftable, and the mark function should be the same as passing in `create()` mark option.
 
-### `safeReturn()`
+### `rawReturn()`
 
-It is used as a safe return value to ensure that this value replaces the finalized draft value or use it to return `undefined` explicitly.
+For return values that do not contain any drafts, you can use `rawReturn()` to wrap this return value to improve performance. It ensure that the return value is only returned explicitly.
 
 ```ts
 const baseState = { id: 'test' };
 const state = create(baseState as { id: string } | undefined, (draft) => {
-  return safeReturn(undefined);
+  return rawReturn(undefined);
 });
 expect(state).toBe(undefined);
 ```
 
-> You don't need to use `safeReturn()` when the return value doesn't have any draft.
+> You don't need to use `rawReturn()` when the return value have any draft.
+
+```ts
+const baseState = { a: 1, b: { c: 1 } };
+const state = create(baseState, (draft) => {
+  if (draft.b.c === 1) {
+    return {
+      ...draft,
+      a: 2,
+    };
+  }
+});
+expect(state).toEqual({ a: 2, b: { c: 1 } });
+expect(isDraft(state.b)).toBeFalsy();
+```
+
+ If you use `rawReturn()`, we recommend that you enable `strict` mode in development.
+
+```ts
+const baseState = { a: 1, b: { c: 1 } };
+const state = create(
+  baseState,
+  (draft) => {
+    if (draft.b.c === 1) {
+      return rawReturn({
+        ...draft,
+        a: 2,
+      });
+    }
+  },
+  {
+    strict: true,
+  }
+);
+// it will warn `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.` in strict mode.
+expect(state).toEqual({ a: 2, b: { c: 1 } });
+expect(isDraft(state.b)).toBeFalsy();
+```
 
 [View more API docs](./docs/README.md).
 
@@ -440,10 +477,10 @@ const nextState = produce(baseState, (draft) => {
 Use Mutative
 
 ```ts
-import { create, safeReturn } from 'mutative';
+import { create, rawReturn } from 'mutative';
 
 const nextState = create(baseState, (draft) => {
-  return safeReturn(undefined);
+  return rawReturn(undefined);
 });
 ```
 

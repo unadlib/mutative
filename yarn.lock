@@ -6347,10 +6347,10 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha512-UVU9dibq2JcFWxQPA6KCqj5O42VOmAY3zQUfEKxU0KpTGXwNoCjkX1e13eHNvw/xPynt6pU0rZ1htjWTNTSXsg==
 
-jsdoc-tests@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/jsdoc-tests/-/jsdoc-tests-0.1.1.tgz#c5f9c25b365a599c3830f5b21fb2b07146485612"
-  integrity sha512-l6IflN82QMMlLX9/RBcdYFWnmZl3FnXe2kPl8S4DldHrt6AlsEkD7iQnPEerEpbx0IQhjAKM52kiD6YUeOp5JA==
+jsdoc-tests@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/jsdoc-tests/-/jsdoc-tests-1.1.0.tgz#e353b65f284df07d1ff15ca1a43be951bce1c5fd"
+  integrity sha512-kXWJm517vOlAHResJ813eyDpC32pGsfOfzlx+2ftJAAsiAp6eSBdiOBEU6Oa5PDALR+FmOc8WJ2kYRYgT35isw==
   dependencies:
     "@babel/parser" "^7.12.7"
     markdown-it "^12.0.2"

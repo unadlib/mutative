@@ -5,8 +5,7 @@ import {
   Immutable,
   apply,
   castDraft,
-  castImmutable,
-  safeReturn,
+  rawReturn,
 } from '../../src';
 
 interface State {
@@ -269,12 +268,12 @@ it('can produce an undefined value', () => {
   const base = { a: 0 } as State;
 
   // Return only nothing.
-  let result = create(base, (_) => safeReturn(undefined));
+  let result = create(base, (_) => rawReturn(undefined));
   assert(result, _ as State);
 
   // Return maybe nothing.
   let result2 = create(base, (draft) => {
-    if (draft?.a ?? 0 > 0) return safeReturn(undefined);
+    if (draft?.a ?? 0 > 0) return rawReturn(undefined);
   });
   assert(result2, _ as State);
 });
@@ -742,21 +741,21 @@ it('infers async curried', async () => {
   {
     // nothing allowed
     const res = create(base as State | undefined, (draft) => {
-      return safeReturn(undefined);
+      return rawReturn(undefined);
     });
     assert(res, _ as State | undefined);
   }
   {
     // as any
     const res = create(base as State, (draft) => {
-      return safeReturn(undefined);
+      return rawReturn(undefined);
     });
     assert(res, _ as State);
   }
   {
     // nothing not allowed
     create(base as State, (draft) => {
-      return safeReturn(undefined);
+      return rawReturn(undefined);
     });
   }
   {

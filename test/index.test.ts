@@ -2697,5 +2697,5 @@ test('can return an object that references itself', () => {
   expect(() => {
     // @ts-expect-error
     create(res, (draft) => res.self, { enableAutoFreeze: true });
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+  }).toThrowErrorMatchingInlineSnapshot(`"Maximum call stack size exceeded"`);
 });

@@ -1,6 +1,6 @@
 // @ts-nocheck
 'use strict';
-import { create, original, isDraft, safeReturn } from '../../src';
+import { create, original, isDraft, rawReturn } from '../../src';
 import deepFreeze from 'deep-freeze';
 import * as lodash from 'lodash';
 import { getType } from '../../src/utils';
@@ -1522,7 +1522,7 @@ function runBaseTest(
 
           // Modified parent test
           parent.c = 1;
-          expect(produce({}, () => [parent.b])[0]).toBe(parent.b);
+          expect(produce(null, () => [parent.b])[0]).toBe(parent.b);
           parent.b.x; // Ensure proxy not revoked.
         });
       });
@@ -1531,28 +1531,26 @@ function runBaseTest(
         const base = {};
         const result = create(base, (s1) =>
           // ! it's different from mutative
-          safeReturn(
-            create(
-              { s1 },
-              (s2) => {
-                expect(original(s2.s1)).toBe(s1);
-                s2.n = 1;
-                s2.s1 = create(
-                  { s2 },
-                  (s3) => {
-                    expect(original(s3.s2)).toBe(s2);
-                    expect(original(s3.s2.s1)).toBe(s2.s1);
-                    return s3.s2.s1;
-                  },
-                  // ! it's different from mutative
-                  { enableAutoFreeze: false }
-                );
-              },
-              {
+          create(
+            { s1 },
+            (s2) => {
+              expect(original(s2.s1)).toBe(s1);
+              s2.n = 1;
+              s2.s1 = create(
+                { s2 },
+                (s3) => {
+                  expect(original(s3.s2)).toBe(s2);
+                  expect(original(s3.s2.s1)).toBe(s2.s1);
+                  return s3.s2.s1;
+                },
                 // ! it's different from mutative
-                enableAutoFreeze: false,
-              }
-            )
+                { enableAutoFreeze: false }
+              );
+            },
+            {
+              // ! it's different from mutative
+              enableAutoFreeze: false,
+            }
           )
         );
         expect(result.n).toBe(1);
@@ -1805,8 +1803,7 @@ function runBaseTest(
       it('can return an object with two references to an unmodified draft', () => {
         const base = { a: {} };
         const next = produce(base, (d) => {
-          // ! it's different from mutative
-          return safeReturn([d.a, d.a]);
+          return [d.a, d.a];
         });
         expect(next[0]).toBe(base.a);
         expect(next[0]).toBe(next[1]);
@@ -1928,7 +1925,7 @@ function runBaseTest(
         produce(state, (draft) => {
           switch (action.type) {
             case 'SET_STARTING_DOTS':
-              return safeReturn(draft.availableStartingDots.map((a) => a));
+              return draft.availableStartingDots.map((a) => a);
             default:
               break;
           }
@@ -1951,9 +1948,9 @@ function runBaseTest(
         produce(state, (draft) => {
           switch (action.type) {
             case 'SET_STARTING_DOTS':
-              return safeReturn({
+              return {
                 dots: draft.availableStartingDots.map((a) => a),
-              });
+              };
             default:
               break;
           }
@@ -2053,15 +2050,15 @@ function runBaseTest(
       expect(create(base, () => null)).toBe(null);
       expect(create(base, () => undefined)).toBe(3);
       expect(create(base, () => {})).toBe(3);
-      expect(create(base, () => safeReturn(undefined))).toBe(undefined);
+      expect(create(base, () => rawReturn(undefined))).toBe(undefined);
 
       expect(create({}, () => undefined)).toEqual({});
-      expect(create({}, () => safeReturn(undefined))).toBe(undefined);
-      expect(create(3, () => safeReturn(undefined))).toBe(undefined);
+      expect(create({}, () => rawReturn(undefined))).toBe(undefined);
+      expect(create(3, () => rawReturn(undefined))).toBe(undefined);
 
       expect(create(() => undefined)({})).toEqual({});
-      expect(create(() => safeReturn(undefined))({})).toBe(undefined);
-      expect(create(() => safeReturn(undefined))(3)).toBe(undefined);
+      expect(create(() => rawReturn(undefined))({})).toBe(undefined);
+      expect(create(() => rawReturn(undefined))(3)).toBe(undefined);
     });
 
     describe('base state type', () => {
