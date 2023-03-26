@@ -149,7 +149,11 @@ function create(arg0: any, arg1: any, arg2?: any): any {
       if (rawReturnValue) {
         const _value = rawReturnValue[0];
         if (_options.strict && typeof value === 'object' && value !== null) {
-          handleReturnValue({ rootDraft: proxyDraft, value, useRawReturn: true });
+          handleReturnValue({
+            rootDraft: proxyDraft,
+            value,
+            useRawReturn: true,
+          });
         }
         return finalize([_value]);
       }

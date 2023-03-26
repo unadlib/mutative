@@ -31,7 +31,7 @@ export function rawReturn<T extends object | undefined>(value: T): T {
     (typeof value !== 'object' || value === null)
   ) {
     console.warn(
-      'rawReturn() must be called with an object or `undefined`, other types do not need to be returned via rawReturn().'
+      'rawReturn() must be called with an object(including plain object, arrays, Set, Map, etc.) or `undefined`, other types do not need to be returned via rawReturn().'
     );
   }
   return {

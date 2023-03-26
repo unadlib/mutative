@@ -221,7 +221,7 @@ test('error args', () => {
   ].forEach((value: any) => {
     create({}, () => rawReturn(value));
     expect(logSpy).toHaveBeenCalledWith(
-      'rawReturn() must be called with an object or `undefined`, other types do not need to be returned via rawReturn().'
+      'rawReturn() must be called with an object(including plain object, arrays, Set, Map, etc.) or `undefined`, other types do not need to be returned via rawReturn().'
     );
     logSpy.mockClear();
   });
