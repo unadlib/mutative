@@ -12,7 +12,13 @@ import {
   enablePatches,
   produceWithPatches,
   setAutoFreeze,
-} from '../../../temp/immer/dist';
+} from 'immer';
+// import {
+//   produce,
+//   enablePatches,
+//   produceWithPatches,
+//   setAutoFreeze,
+// } from '../../../temp/immer/dist';
 import { create } from '../..';
 
 const labels = [];
