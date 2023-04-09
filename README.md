@@ -71,7 +71,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 | Non-invasive marking      |       ✅ |  ❌   |
 | Complete freeze data      |       ✅ |  ❌   |
 | Non-global config         |       ✅ |  ❌   |
-| Support IE browser        |       ❌ |  ✅   |
+| async draft function      |       ✅ |  ❌   |
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 
@@ -330,7 +330,7 @@ expect(state).toEqual({ a: 2, b: { c: 1 } });
 expect(isDraft(state.b)).toBeFalsy();
 ```
 
- If you use `rawReturn()`, we recommend that you enable `strict` mode in development.
+If you use `rawReturn()`, we recommend that you enable `strict` mode in development.
 
 ```ts
 const baseState = { a: 1, b: { c: 1 } };
