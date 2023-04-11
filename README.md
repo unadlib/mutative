@@ -24,18 +24,18 @@ This is why Mutative was created.
 Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v0.5.0 vs Immer v9.0.21]
 
 ```
-Naive handcrafted reducer - No Freeze x 4,310 ops/sec ±1.21% (93 runs sampled)
-Mutative - No Freeze x 6,217 ops/sec ±1.48% (91 runs sampled)
-Immer - No Freeze x 7.65 ops/sec ±0.35% (24 runs sampled)
+Naive handcrafted reducer - No Freeze x 3,712 ops/sec ±0.61% (94 runs sampled)
+Mutative - No Freeze x 5,242 ops/sec ±1.84% (94 runs sampled)
+Immer - No Freeze x 7.67 ops/sec ±0.36% (24 runs sampled)
 
-Mutative - Freeze x 846 ops/sec ±0.21% (99 runs sampled)
-Immer - Freeze x 321 ops/sec ±0.65% (92 runs sampled)
+Mutative - Freeze x 825 ops/sec ±1.35% (97 runs sampled)
+Immer - Freeze x 317 ops/sec ±0.75% (91 runs sampled)
 
-Mutative - Patches and No Freeze x 765 ops/sec ±1.23% (94 runs sampled)
-Immer - Patches and No Freeze x 7.65 ops/sec ±0.50% (24 runs sampled)
+Mutative - Patches and No Freeze x 753 ops/sec ±0.13% (95 runs sampled)
+Immer - Patches and No Freeze x 7.65 ops/sec ±0.26% (24 runs sampled)
 
-Mutative - Patches and Freeze x 420 ops/sec ±0.66% (94 runs sampled)
-Immer - Patches and Freeze x 245 ops/sec ±0.39% (90 runs sampled)
+Mutative - Patches and Freeze x 414 ops/sec ±1.41% (93 runs sampled)
+Immer - Patches and Freeze x 241 ops/sec ±0.68% (89 runs sampled)
 
 The fastest method is Mutative - No Freeze
 ```
@@ -59,7 +59,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 - **Custom shallow copy** - Support for more types of immutable data.
 - **Support mark for immutable and mutable data** - Allows for non-invasive marking.
 - **Safer mutable data access in strict mode** - It brings more secure immutable updates.
-- **Support for reducer** - Support Redux and any other immutable state library.
+- **Support for reducer** - Support reducer function and any other immutable state library.
 
 ## Difference between Mutative and Immer
 
