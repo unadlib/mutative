@@ -21,21 +21,21 @@ This is why Mutative was created.
 
 ## Mutative vs Immer Performance
 
-Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v0.5.0 vs Immer v9.0.21]
+Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v0.5.0 vs Immer v10.0.1]
 
 ```
-Naive handcrafted reducer - No Freeze x 3,712 ops/sec ±0.61% (94 runs sampled)
-Mutative - No Freeze x 5,242 ops/sec ±1.84% (94 runs sampled)
-Immer - No Freeze x 7.67 ops/sec ±0.36% (24 runs sampled)
+Naive handcrafted reducer - No Freeze x 4,258 ops/sec ±1.14% (89 runs sampled)
+Mutative - No Freeze x 6,421 ops/sec ±1.73% (91 runs sampled)
+Immer - No Freeze x 5.11 ops/sec ±0.78% (17 runs sampled)
 
-Mutative - Freeze x 825 ops/sec ±1.35% (97 runs sampled)
-Immer - Freeze x 317 ops/sec ±0.75% (91 runs sampled)
+Mutative - Freeze x 838 ops/sec ±0.31% (96 runs sampled)
+Immer - Freeze x 365 ops/sec ±0.57% (94 runs sampled)
 
-Mutative - Patches and No Freeze x 753 ops/sec ±0.13% (95 runs sampled)
-Immer - Patches and No Freeze x 7.65 ops/sec ±0.26% (24 runs sampled)
+Mutative - Patches and No Freeze x 762 ops/sec ±1.16% (94 runs sampled)
+Immer - Patches and No Freeze x 5.05 ops/sec ±0.26% (17 runs sampled)
 
-Mutative - Patches and Freeze x 414 ops/sec ±1.41% (93 runs sampled)
-Immer - Patches and Freeze x 241 ops/sec ±0.68% (89 runs sampled)
+Mutative - Patches and Freeze x 411 ops/sec ±0.46% (92 runs sampled)
+Immer - Patches and Freeze x 266 ops/sec ±0.69% (92 runs sampled)
 
 The fastest method is Mutative - No Freeze
 ```
@@ -74,8 +74,6 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 | async draft function      |       ✅ |  ❌   |
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
-
-> Mutative size is `4.39KB` with minified and gzipped. Immer size with same features is `4.67 KB`.
 
 ## Installation
 
