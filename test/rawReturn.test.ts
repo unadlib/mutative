@@ -14,6 +14,7 @@ afterEach(() => {
 
 test('base', () => {
   const base = 3;
+  // @ts-ignore
   expect(create(base, () => 4)).toBe(4);
   // @ts-expect-error
   expect(create(base, () => null)).toBe(null);
