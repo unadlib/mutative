@@ -31,7 +31,16 @@ describe('base', () => {
   });
 
   test('delete key in object', () => {
-    const data = {
+    const data: {
+      foo: {
+        bar?: {
+          b: string;
+        };
+      };
+      foobar: {
+        bar: string;
+      };
+    } = {
       foo: {
         bar: {
           b: 'str',
@@ -43,8 +52,7 @@ describe('base', () => {
     };
 
     const state = create(data, (draft) => {
-      draft.foo.bar.b = 'new str';
-      // @ts-ignore
+      draft.foo.bar!.b = 'new str';
       delete draft.foo.bar;
     });
     expect(state).toEqual({ foo: {}, foobar: { bar: 'str' } });
@@ -264,8 +272,7 @@ describe('base', () => {
     };
 
     const state = create(data, (draft) => {
-      // @ts-ignore
-      draft.list.copyWithin(-2);
+      draft.list.copyWithin(-2, 0);
     });
     expect(state).toEqual({ bar: {}, list: [1, 2, 3, 1, 2] });
     expect(state).not.toBe(data);
@@ -280,7 +287,6 @@ describe('base', () => {
     };
 
     const state = create(data, (draft) => {
-      // @ts-ignore
       draft.list.copyWithin(0, 3);
     });
     expect(state).toEqual({ bar: {}, list: [4, 5, 3, 4, 5] });
@@ -296,7 +302,6 @@ describe('base', () => {
     };
 
     const state = create(data, (draft) => {
-      // @ts-ignore
       draft.list.copyWithin(0, 3, 4);
     });
     expect(state).toEqual({ bar: {}, list: [4, 2, 3, 4, 5] });
@@ -312,7 +317,6 @@ describe('base', () => {
     };
 
     const state = create(data, (draft) => {
-      // @ts-ignore
       draft.list.copyWithin(-2, -3, -1);
     });
     expect(state).toEqual({ bar: {}, list: [1, 2, 3, 3, 4] });
@@ -328,7 +332,6 @@ describe('base', () => {
     };
 
     const state = create(data, (draft) => {
-      // @ts-ignore
       draft.list.copyWithin(-3, -3);
     });
     expect(state).toEqual({ bar: {}, list: [1, 2, 3, 4, 5] });
@@ -495,7 +498,7 @@ describe('base', () => {
     const b = {};
     const data = {
       bar: {},
-      map: new Map([
+      map: new Map<Record<string, any>, Record<string, any>>([
         [a, {}],
         [b, {}],
         [{}, {}],
@@ -504,12 +507,9 @@ describe('base', () => {
 
     const state = create(data, (draft) => {
       const iterator = draft.map.values();
-      // @ts-ignore
       iterator.next().value.x = 1;
       for (const [key, item] of draft.map) {
-        // @ts-ignore
         if (item.x === 1) {
-          // @ts-ignore
           item.c = 2;
         }
       }
@@ -536,7 +536,7 @@ describe('base', () => {
     const b = {};
     const data = {
       bar: {},
-      set: new Set([a, b]),
+      set: new Set<Record<string, any>>([a, b]),
     };
 
     const state = create(data, (draft) => {
@@ -544,9 +544,7 @@ describe('base', () => {
       const [first] = draft.set.values();
       expect(draft.set.has(first)).toBeTruthy();
       for (const item of draft.set) {
-        // @ts-ignore
         if (item.x === 1) {
-          // @ts-ignore
           item.c = 2;
         }
       }
@@ -596,7 +594,15 @@ describe('no updates', () => {
     expect(state).toBe(data);
   });
   test('object delete', () => {
-    const data = {
+    const data: {
+      foo: {
+        bar: string;
+      };
+      foobar: {
+        baz: string;
+      };
+      foobar1?: number;
+    } = {
       foo: {
         bar: 'str',
       },
@@ -606,7 +612,6 @@ describe('no updates', () => {
     };
 
     const state = create(data, (draft) => {
-      // @ts-ignore
       delete draft.foobar1;
     });
     expect(state).toBe(data);
@@ -1934,24 +1939,21 @@ test('can work with own computed props', () => {
 
   expect(nextState.x).toBe(2);
   expect(nextState.y).toBe(3);
-  // @ts-ignore
   nextState.y = 4; // decoupled now!
   expect(nextState.y).toBe(4);
   expect(nextState.x).toBe(2);
-  // @ts-ignore
-  expect(Object.getOwnPropertyDescriptor(nextState, 'y').value).toBe(4);
+  expect(Object.getOwnPropertyDescriptor(nextState, 'y')!.value).toBe(4);
 });
 
 test('set a Set value', () => {
   const data = {
-    set: new Set([1, 2, 3]),
+    set: new Set<any>([1, 2, 3]),
     bar: {
       baz: 'str',
     },
   };
 
   const state = create(data, (draft) => {
-    // @ts-ignore
     draft.set = new Set([draft.bar, 1, 2, 3]);
   });
   const fistItem = state.set.values().next().value;
@@ -1961,9 +1963,8 @@ test('set a Set value', () => {
 
 test('Set with enable patches in root', () => {
   const [state, patches, inversePatches] = create(
-    new Set([1, 2]),
+    new Set<any>([1, 2]),
     (draft) => {
-      // @ts-ignore
       draft.add({});
     },
     {

@@ -112,74 +112,95 @@ describe('current', () => {
 });
 
 test('nested draft', () => {
-  create(
-    {
-      c: {
-        a: 1,
-      },
+  type Data = {
+    f: {
+      f: {
+        f: {
+          a: number;
+        };
+      };
+    };
+  };
+  type State = {
+    c: {
+      a: number;
+    };
+    d: {
+      d: number | Data;
+    };
+    map: Map<
+      string,
+      {
+        d: {
+          d: number | Data;
+        };
+      }
+    >;
+    set: Set<{
       d: {
-        d: 1,
-      },
-      map: new Map([
-        [
-          'd',
-          {
-            d: {
-              d: 1,
-            },
-          },
-        ],
-      ]),
-
-      set: new Set([
+        d: number;
+      };
+    }>;
+  };
+  const baseState: State = {
+    c: {
+      a: 1,
+    },
+    d: {
+      d: 1,
+    },
+    map: new Map([
+      [
+        'd',
         {
           d: {
             d: 1,
           },
         },
-      ]),
-    },
-    (draft) => {
-      draft.c.a = 2;
-      // @ts-ignore
-      draft.d.d = {
-        f: {
-          f: {
-            f: draft.c,
-          },
-        },
-      };
-      // @ts-ignore
-      draft.map.get('d')!.d.d = {
-        f: {
-          f: {
-            f: draft.c,
-          },
-        },
-      };
-      // @ts-ignore
-      draft.set.values().next().value.d.d = {
-        f: {
-          f: {
-            f: draft.c,
-          },
-        },
-      };
+      ],
+    ]),
 
-      const d = current(draft.d);
-      const map = current(draft.map);
-      const set = current(draft.set);
-      // @ts-ignore
-      expect(d.d.f.f.f).toEqual({ a: 2 });
-      // @ts-ignore
-      expect(isDraft(d.d.f.f.f)).toBeFalsy();
-      // @ts-ignore
-      expect(map.get('d').d.d.f.f.f).toEqual({ a: 2 });
-      // @ts-ignore
-      expect(isDraft(map.get('d').d.d.f.f.f)).toBeFalsy();
-      const f = set.values().next().value.d.d.f.f.f;
-      expect(f).toEqual({ a: 2 });
-      expect(isDraft(f)).toBeFalsy();
-    }
-  );
+    set: new Set([
+      {
+        d: {
+          d: 1,
+        },
+      },
+    ]),
+  };
+  create(baseState, (draft) => {
+    draft.c.a = 2;
+    draft.d.d = {
+      f: {
+        f: {
+          f: draft.c,
+        },
+      },
+    };
+    draft.map.get('d')!.d.d = {
+      f: {
+        f: {
+          f: draft.c,
+        },
+      },
+    };
+    draft.set.values().next().value.d.d = {
+      f: {
+        f: {
+          f: draft.c,
+        },
+      },
+    };
+
+    const d = current(draft.d);
+    const map = current(draft.map);
+    const set = current(draft.set);
+    expect((d.d as Data).f.f.f).toEqual({ a: 2 });
+    expect(isDraft((d.d as Data).f.f.f)).toBeFalsy();
+    expect((map.get('d')!.d.d as Data).f.f.f).toEqual({ a: 2 });
+    expect(isDraft((map.get('d')!.d.d as Data).f.f.f)).toBeFalsy();
+    const f = set.values().next().value.d.d.f.f.f;
+    expect(f).toEqual({ a: 2 });
+    expect(isDraft(f)).toBeFalsy();
+  });
 });

@@ -13,10 +13,8 @@ afterEach(() => {
 });
 
 test('base', () => {
-  const base = 3;
-  // @ts-ignore
+  const base = 3 as number | null;
   expect(create(base, () => 4)).toBe(4);
-  // @ts-expect-error
   expect(create(base, () => null)).toBe(null);
   expect(create(base, () => undefined)).toBe(3);
   expect(create(base, () => {})).toBe(3);
@@ -398,26 +396,22 @@ test('case', () => {
 });
 
 test('does not finalize upvalue drafts', () => {
-  create({ a: {}, b: {} }, (parent) => {
-    expect(create({}, () => parent)).toBe(parent);
-    // @ts-ignore
+  const baseState: {
+    a: Record<string, any>;
+    b: Record<string, any>;
+    x?: any;
+    c?: number;
+  } = { a: {}, b: {} };
+  create(baseState, (parent) => {
+    expect(create({} as any, () => parent)).toBe(parent);
     parent.x; // Ensure proxy not revoked.
-
-    // @ts-ignore
-    expect(create({}, () => [parent])[0]).toBe(parent);
-    // @ts-ignore
+    expect(create({} as any, () => [parent])[0]).toBe(parent);
     parent.x; // Ensure proxy not revoked.
-
-    expect(create({}, () => parent.a)).toBe(parent.a);
-    // @ts-ignore
-
+    expect(create({} as any, () => parent.a)).toBe(parent.a);
     parent.a.x; // Ensure proxy not revoked.
-    // @ts-ignore
     // Modified parent test
     parent.c = 1;
-    // @ts-ignore
-    expect(create({}, () => [parent.b])[0]).toBe(parent.b);
-    // @ts-ignore
+    expect(create({} as any, () => [parent.b])[0]).toBe(parent.b);
     parent.b.x; // Ensure proxy not revoked.
   });
 });
