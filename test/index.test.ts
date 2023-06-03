@@ -30,10 +30,11 @@ test('check array type', () => {
 });
 
 test('no update object with NaN', () => {
-  const data = {};
+  const data: {
+    n?: undefined;
+  } = {};
 
   const state = create(data, (draft) => {
-    // @ts-ignore
     draft.n = undefined;
   });
   expect(state).not.toBe(data);
@@ -52,7 +53,7 @@ test('check array options error', () => {
   const data = [1, 2, 3];
   expect(() => {
     create(data, (draft) => {
-      // @ts-ignore
+      // @ts-expect-error
       draft.foo = 'new str';
     });
   }).toThrowError(
@@ -511,7 +512,16 @@ test('update for set', () => {
 });
 
 test('delete key in object', () => {
-  const data = {
+  const data: {
+    foo: {
+      bar?: {
+        b: string;
+      };
+    };
+    foobar: {
+      bar: string;
+    };
+  } = {
     foo: {
       bar: {
         b: 'str',
@@ -525,8 +535,7 @@ test('delete key in object', () => {
   const [state, patches, inversePatches] = create(
     data,
     (draft) => {
-      draft.foo.bar.b = 'new str';
-      // @ts-ignore
+      draft.foo.bar!.b = 'new str';
       delete draft.foo.bar;
     },
     {
@@ -566,26 +575,67 @@ test('object case1', () => {
 
 test('object case2', () => {
   const d = { e: 1 };
-  const baseState = { a: { b: { c: { d } } }, f: { d } };
+  type State = {
+    a: {
+      b: {
+        c: {
+          d: {
+            e: number;
+          };
+        };
+      };
+    };
+    f: {
+      d: {
+        e: number;
+      };
+    };
+    x?: {
+      c: {
+        d: {
+          e: number;
+        };
+      };
+    };
+  };
+  const baseState: State = { a: { b: { c: { d } } }, f: { d } };
   const state = create(baseState, (draft) => {
     const a = draft.a.b;
-    // @ts-ignore
     draft.x = a;
     a.c.d.e = 2;
   });
-  // @ts-ignore
   expect(state.x === state.a.b).toBeTruthy();
 });
 
 test('object case3', () => {
   const d = { e: 1 };
-  const baseState = { a: { c: { e: 2 }, b: { c: { d } } }, f: { d } };
+  type State = {
+    a: {
+      c: {
+        e: number;
+      };
+      b: {
+        c: {
+          d: {
+            e: number;
+          };
+        };
+      };
+    };
+    f: {
+      d: {
+        e: number;
+      };
+    };
+    x?: {
+      e: number;
+    };
+  };
+  const baseState: State = { a: { c: { e: 2 }, b: { c: { d } } }, f: { d } };
   const state = create(baseState, (draft) => {
     const a = draft.a.c;
-    // @ts-ignore
     draft.x = a;
     const c = draft.a.b;
-    // @ts-ignore
     c.c.d.e = 2;
   });
   expect(state).toEqual({
@@ -593,9 +643,7 @@ test('object case3', () => {
     f: { d: { e: 1 } },
     x: { e: 2 },
   });
-  // @ts-ignore
   expect(state.x).toEqual(state.a.c);
-  // @ts-ignore
   expect(state.x).toBe(state.a.c);
 });
 
@@ -1070,8 +1118,7 @@ test('base array copyWithin 0', () => {
   };
 
   const state = create(data, (draft) => {
-    // @ts-ignore
-    draft.list.copyWithin(-2);
+    draft.list.copyWithin(-2, 0);
   });
   expect(state).toEqual({ bar: {}, list: [1, 2, 3, 1, 2] });
   expect(state).not.toBe(data);
@@ -1086,7 +1133,6 @@ test('base array copyWithin 1', () => {
   };
 
   const state = create(data, (draft) => {
-    // @ts-ignore
     draft.list.copyWithin(0, 3);
   });
   expect(state).toEqual({ bar: {}, list: [4, 5, 3, 4, 5] });
@@ -1102,7 +1148,6 @@ test('base array copyWithin 2', () => {
   };
 
   const state = create(data, (draft) => {
-    // @ts-ignore
     draft.list.copyWithin(0, 3, 4);
   });
   expect(state).toEqual({ bar: {}, list: [4, 2, 3, 4, 5] });
@@ -1118,7 +1163,6 @@ test('base array copyWithin 3', () => {
   };
 
   const state = create(data, (draft) => {
-    // @ts-ignore
     draft.list.copyWithin(-2, -3, -1);
   });
   expect(state).toEqual({ bar: {}, list: [1, 2, 3, 3, 4] });
@@ -1134,7 +1178,6 @@ test('base array copyWithin 4', () => {
   };
 
   const state = create(data, (draft) => {
-    // @ts-ignore
     draft.list.copyWithin(-3, -3);
   });
   expect(state).toEqual({ bar: {}, list: [1, 2, 3, 4, 5] });
@@ -1333,6 +1376,7 @@ test('base freeze', () => {
     state1.bar.a = 4;
   }).toThrowError();
   expect(() => {
+    // `state1.list` is not frozen, because `state1` has been changed in the previous step
     // just check runtime mutable
     // @ts-ignore
     state1.list.push({ id: 4 });
@@ -1415,7 +1459,7 @@ test('base map with deep object', () => {
   const b = {};
   const data = {
     bar: {},
-    map: new Map([
+    map: new Map<Record<string, any>, Record<string, any>>([
       [a, {}],
       [b, {}],
       [{}, {}],
@@ -1423,12 +1467,9 @@ test('base map with deep object', () => {
   };
 
   const state = create(data, (draft) => {
-    // @ts-ignore
     draft.map.values().next().value.x = 1;
     for (const [key, item] of draft.map) {
-      // @ts-ignore
       if (item.x === 1) {
-        // @ts-ignore
         item.c = 2;
       }
     }
@@ -1451,7 +1492,7 @@ test('base set deep object', () => {
   const b = {};
   const data = {
     bar: {},
-    set: new Set([a, b]),
+    set: new Set<Record<string, any>>([a, b]),
   };
 
   const state = create(
@@ -1461,9 +1502,7 @@ test('base set deep object', () => {
       const [first] = draft.set.values();
       expect(draft.set.has(first)).toBeTruthy();
       for (const item of draft.set) {
-        // @ts-ignore
         if (item.x === 1) {
-          // @ts-ignore
           item.c = 2;
         }
       }
@@ -2174,7 +2213,14 @@ test('base isDraftable() with option', () => {
 });
 
 test("Nested and chained produce usage results in error: Cannot perform 'get' on a proxy that has been revoked", () => {
-  const state = {
+  const state: {
+    foo: {
+      bar: {
+        baz: number;
+      };
+      baz?: number;
+    };
+  } = {
     foo: {
       bar: {
         baz: 1,
@@ -2187,7 +2233,6 @@ test("Nested and chained produce usage results in error: Cannot perform 'get' on
       draft.foo = create(
         draft.foo,
         (fooDraft) => {
-          // @ts-ignore
           fooDraft.baz = fooDraft.bar.baz;
         },
         {
@@ -2520,15 +2565,13 @@ test('circular reference - set - 1 - 1', () => {
 
 test('circular reference - set - 2', () => {
   const base = { a: { b: { c: 1 } } };
-  const data = new Set([null, base]);
-  // @ts-ignore
+  const data = new Set<any>([null, base]);
   data.add(data);
   expect(() => {
     create(
       data,
       (draft) => {
         const arr = Array.from(draft);
-        // @ts-expect-error
         arr[1].a.b.c = 2;
       },
       {
@@ -2540,8 +2583,7 @@ test('circular reference - set - 2', () => {
 
 test('circular reference - set - 2 - 1', () => {
   const base = { a: { b: { c: 1 } } };
-  const data = new Set([null, base]);
-  // @ts-ignore
+  const data = new Set<any>([null, base]);
   data.add(data);
   expect(() => {
     create(
@@ -2557,20 +2599,27 @@ test('circular reference - set - 2 - 1', () => {
 });
 
 test('circular reference - map - 1', () => {
-  const base = { a: { b: { c: 1 } } };
+  const base: {
+    a: {
+      b: {
+        c: number;
+        c1?: {
+          c: number;
+        };
+      };
+    };
+  } = { a: { b: { c: 1 } } };
   const key = Symbol(1);
   const data = new Map([
     [null, null],
     [key, base],
   ]);
-  // @ts-ignore
   base.a.b.c1 = base.a.b;
   expect(() => {
     create(
       data,
       (draft) => {
-        // @ts-expect-error
-        draft.get(key).a.b.c = 2;
+        draft.get(key)!.a.b.c = 2;
       },
       {
         enableAutoFreeze: true,
@@ -2582,12 +2631,20 @@ test('circular reference - map - 1', () => {
 });
 
 test('circular reference - map - 1 - 1', () => {
-  const base = { a: { b: { c: 1 } } };
+  const base: {
+    a: {
+      b: {
+        c: number;
+        c1?: {
+          c: number;
+        };
+      };
+    };
+  } = { a: { b: { c: 1 } } };
   const data = new Map([
     [null, null],
     [1, base],
   ]);
-  // @ts-ignore
   base.a.b.c1 = base.a.b;
   expect(() => {
     create(
@@ -2606,17 +2663,15 @@ test('circular reference - map - 1 - 1', () => {
 
 test('circular reference - map - 2', () => {
   const base = { a: { b: { c: 1 } } };
-  const data = new Map([
+  const data = new Map<any, any>([
     [null, null],
     [1, base],
   ]);
-  // @ts-ignore
   data.set(data, data);
   expect(() => {
     create(
       data,
       (draft) => {
-        // @ts-expect-error
         draft.get(1).a.b.c = 2;
       },
       {
@@ -2628,11 +2683,10 @@ test('circular reference - map - 2', () => {
 
 test('circular reference - map - 2 - 1', () => {
   const base = { a: { b: { c: 1 } } };
-  const data = new Map([
+  const data = new Map<any, any>([
     [null, null],
     [1, base],
   ]);
-  // @ts-ignore
   data.set(data, data);
   expect(() => {
     create(
@@ -2649,17 +2703,15 @@ test('circular reference - map - 2 - 1', () => {
 
 test('circular reference - map - 3', () => {
   const base = { a: { b: { c: 1 } } };
-  const data = new Map([
+  const data = new Map<any, any>([
     [null, null],
     [1, base],
   ]);
-  // @ts-ignore
   data.set(data, {});
   expect(() => {
     create(
       data,
       (draft) => {
-        // @ts-expect-error
         draft.get(1).a.b.c = 2;
       },
       {
@@ -2671,11 +2723,10 @@ test('circular reference - map - 3', () => {
 
 test('circular reference - map - 3 - 1', () => {
   const base = { a: { b: { c: 1 } } };
-  const data = new Map([
+  const data = new Map<any, any>([
     [null, null],
     [1, base],
   ]);
-  // @ts-ignore
   data.set(data, {});
   expect(() => {
     create(

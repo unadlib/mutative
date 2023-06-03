@@ -1758,26 +1758,67 @@ describe('class instance ', () => {
 
 test('object case2', () => {
   const d = { e: 1 };
-  const baseState = { a: { b: { c: { d } } }, f: { d } };
+  type State = {
+    a: {
+      b: {
+        c: {
+          d: {
+            e: number;
+          };
+        };
+      };
+    };
+    f: {
+      d: {
+        e: number;
+      };
+    };
+    x?: {
+      c: {
+        d: {
+          e: number;
+        };
+      };
+    };
+  };
+  const baseState: State = { a: { b: { c: { d } } }, f: { d } };
   const state = create(baseState, (draft) => {
     const a = draft.a.b;
-    // @ts-ignore
     draft.x = a;
     a.c.d.e = 2;
   });
-  // @ts-ignore
   expect(state.x === state.a.b).toBeTruthy();
 });
 
 test('cross case1', () => {
   const d = { e: 1 };
-  const baseState = { a: { c: { e: 2 }, b: { c: { d } } }, f: { d } };
+  type State = {
+    a: {
+      c: {
+        e: number;
+      };
+      b: {
+        c: {
+          d: {
+            e: number;
+          };
+        };
+      };
+    };
+    f: {
+      d: {
+        e: number;
+      };
+    };
+    x?: {
+      e: number;
+    };
+  };
+  const baseState: State = { a: { c: { e: 2 }, b: { c: { d } } }, f: { d } };
   const state = create(baseState, (draft) => {
     const a = draft.a.c;
-    // @ts-ignore
     draft.x = a;
     const c = draft.a.b;
-    // @ts-ignore
     c.c.d.e = 2;
   });
   expect(state).toEqual({
@@ -1785,9 +1826,7 @@ test('cross case1', () => {
     f: { d: { e: 1 } },
     x: { e: 2 },
   });
-  // @ts-ignore
   expect(state.x).toEqual(state.a.c);
-  // @ts-ignore
   expect(state.x).toBe(state.a.c);
 });
 
