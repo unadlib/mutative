@@ -21,6 +21,8 @@ This is why Mutative was created.
 
 ## Mutative vs Immer Performance
 
+> Mutative passed all of Immer's test cases.
+
 Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v0.5.0 vs Immer v10.0.1]
 
 ```
