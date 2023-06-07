@@ -174,10 +174,10 @@ const state = finalize();
 - create `producer`
 
 ```ts
-const producer = create((draft) => {
+const produce = create((draft) => {
   draft.foobar.bar = 'baz';
 });
-const state = producer(baseState);
+const state = produce(baseState);
 ```
 
 > They also all support set options such as `const [draft, finalize] = create(baseState, { enableAutoFreeze: true });`
@@ -370,10 +370,6 @@ expect(isDraft(state.b)).toBeFalsy();
 - [use-mutative](https://github.com/unadlib/use-mutative)
 
 ## FAQs
-
-- Why doesn't Mutative support IE?
-
-Mutative is a library that relies heavily on the use of the Proxy object, which is a feature of modern web browsers that allows the interception of various operations on objects. As such, Mutative may not be fully compatible with older browsers that do not support the Proxy object, such as Internet Explorer. However, these older browsers make up a very small percentage of the overall browser market, so the impact on compatibility is likely minimal.
 
 - Why does Mutative have such good performance?
 
