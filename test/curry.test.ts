@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable consistent-return */
 /* eslint-disable no-param-reassign */
-import { create, current } from '../src';
+import { create, current, Draft } from '../src';
 
 describe('Currying', () => {
   const getBaseState = () => ({
@@ -370,6 +370,24 @@ describe('Currying', () => {
         bar: 'baz',
       },
       list: [],
+    });
+  });
+
+  test('base create(baseState', () => {
+    const baseState = {
+      foo: 'bar',
+      list: [{ text: 'todo' }],
+    };
+
+    const produce = create((draft: Draft<typeof baseState>) => {
+      draft.foo = 'foobar';
+      draft.list.push({ text: 'learning' });
+    });
+    const state = produce(baseState);
+    expect(state).not.toBe(baseState);
+    expect(state).toEqual({
+      foo: 'foobar',
+      list: [{ text: 'todo' }, { text: 'learning' }],
     });
   });
 });

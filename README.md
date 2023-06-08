@@ -171,6 +171,8 @@ draft.foobar.bar = 'baz';
 const state = finalize();
 ```
 
+> Support set options such as `const [draft, finalize] = create(baseState, { enableAutoFreeze: true });`
+
 - create `producer`
 
 ```ts
@@ -180,7 +182,7 @@ const produce = create((draft) => {
 const state = produce(baseState);
 ```
 
-> They also all support set options such as `const [draft, finalize] = create(baseState, { enableAutoFreeze: true });`
+> Also support set options such as `const produce = create((draft) => {}, { enableAutoFreeze: true });`
 
 ### `apply()`
 
