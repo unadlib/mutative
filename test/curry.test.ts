@@ -390,6 +390,95 @@ describe('Currying', () => {
       list: [{ text: 'todo' }, { text: 'learning' }],
     });
   });
+
+  test('base create(baseState with options enableAutoFreeze', () => {
+    const baseState = {
+      foo: 'bar',
+      list: [{ text: 'todo' }],
+    };
+
+    const produce = create(
+      (draft: Draft<typeof baseState>) => {
+        draft.foo = 'foobar';
+        draft.list.push({ text: 'learning' });
+      },
+      {
+        enableAutoFreeze: true,
+      }
+    );
+    const state = produce(baseState);
+    expect(state).not.toBe(baseState);
+    expect(state).toEqual({
+      foo: 'foobar',
+      list: [{ text: 'todo' }, { text: 'learning' }],
+    });
+    expect(Object.isFrozen(state)).toBeTruthy();
+  });
+
+  test('base create(baseState with options enablePatches', () => {
+    const baseState = {
+      foo: 'bar',
+      list: [{ text: 'todo' }],
+    };
+
+    const produce = create(
+      (draft: Draft<typeof baseState>) => {
+        draft.foo = 'foobar';
+        draft.list.push({ text: 'learning' });
+      },
+      {
+        enableAutoFreeze: true,
+        enablePatches: true,
+      }
+    );
+    const [state, patches, inversePatches] = produce(baseState);
+    expect(state).not.toBe(baseState);
+    expect(state).toEqual({
+      foo: 'foobar',
+      list: [{ text: 'todo' }, { text: 'learning' }],
+    });
+    expect(Object.isFrozen(state)).toBeTruthy();
+    expect(patches).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": {
+            "text": "learning",
+          },
+        },
+        {
+          "op": "replace",
+          "path": [
+            "foo",
+          ],
+          "value": "foobar",
+        },
+      ]
+    `);
+    expect(inversePatches).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            "length",
+          ],
+          "value": 1,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "foo",
+          ],
+          "value": "bar",
+        },
+      ]
+    `);
+  });
 });
 
 test(`check Primitive type`, () => {
