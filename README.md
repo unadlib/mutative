@@ -120,6 +120,15 @@ Use `create()` for more advanced features by [setting `options`](#createstate-fn
 
 ## APIs
 
+- [`create()`](#create)
+- [`apply()`](#apply)
+- [`current()`](#current)
+- [`original()`](#original)
+- [`unsafe()`](#unsafe)
+- [`isDraft()`](#isDraft)
+- [`isDraftable()`](#isDraftable)
+- [`rawReturn()`](#rawReturn)
+
 ### `create()`
 
 Use `create()` for draft mutation to get a new state, which also supports currying.
@@ -357,17 +366,17 @@ expect(isDraft(state.b)).toBeFalsy();
 
 [View more API docs](./docs/README.md).
 
-### Using TypeScript
+## Using TypeScript
 
 - `castDraft()`
 - `castImmutable()`
-- `Mutable<T>`
+- `Draft<T>`
 - `Immutable<T>`
 - `Patches`
 - `Patch`
 - `Options<O, F>`
 
-### Integration with React
+## Integration with React
 
 - [use-mutative](https://github.com/unadlib/use-mutative)
 

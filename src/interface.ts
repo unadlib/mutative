@@ -51,7 +51,7 @@ export interface ProxyDraft<T = any> {
 }
 
 interface IPatch {
-  op: typeof Operation[keyof typeof Operation];
+  op: (typeof Operation)[keyof typeof Operation];
   value?: any;
 }
 
