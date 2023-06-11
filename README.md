@@ -65,15 +65,16 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 
 ## Difference between Mutative and Immer
 
-|                           | Mutative | Immer |
-| :------------------------ | -------: | :---: |
-| Custom shallow copy       |       ✅ |  ❌   |
-| Strict mode               |       ✅ |  ❌   |
-| No data freeze by default |       ✅ |  ❌   |
-| Non-invasive marking      |       ✅ |  ❌   |
-| Complete freeze data      |       ✅ |  ❌   |
-| Non-global config         |       ✅ |  ❌   |
-| async draft function      |       ✅ |  ❌   |
+|                                       | Mutative | Immer |
+| :------------------------------------ | -------: | :---: |
+| Custom shallow copy                   |       ✅ |  ❌   |
+| Strict mode                           |       ✅ |  ❌   |
+| No data freeze by default             |       ✅ |  ❌   |
+| Non-invasive marking                  |       ✅ |  ❌   |
+| Complete freeze data                  |       ✅ |  ❌   |
+| Non-global config                     |       ✅ |  ❌   |
+| async draft function                  |       ✅ |  ❌   |
+| Fully compatible with JSON Patch spec |       ✅ |  ❌   |
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 
