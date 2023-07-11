@@ -1,55 +1,77 @@
 // @ts-nocheck
-'use strict';
-
-import produce, {
-  setAutoFreeze,
-  setUseProxies,
-  produceWithPatches,
-  enablePatches,
-} from 'immer';
+import { produce } from 'immer';
 import { create } from '../..';
 
+const objKeySize = 5000;
+const objLength = objKeySize - 1;
+
+const arrSize = 50000;
+const arrLength = arrSize - 1;
 // https://github.com/immerjs/immer/issues/867 by default
-console.time('create - object: 5k');
+console.time(`create - object: ${objKeySize}`);
 const dataSource = Object.fromEntries(
-  [...Array(50000).keys()].map((key) => [key, { key, data: { value: key } }])
+  [...Array(objKeySize).keys()].map((key) => [
+    key,
+    { key, data: { value: key } },
+  ])
 );
-console.timeEnd('create - object: 5k');
+console.timeEnd(`create - object: ${objKeySize}`);
 
-console.time('mutative - object: update');
+console.time(`reducer - object: ${objKeySize}`);
+{
+  const _dataSource = {
+    ...dataSource,
+    [objLength]: { key: objLength, data: { value: objLength } },
+  };
+}
+console.timeEnd(`reducer - object: ${objKeySize}`);
+
+console.time(`mutative - object: update: ${objKeySize}`);
 create(dataSource, (draft) => {
-  draft[1000].data.value = 100;
+  draft[objLength].data.value = objLength;
 });
 
-console.timeEnd('mutative - object: update');
+console.timeEnd(`mutative - object: update: ${objKeySize}`);
 
-console.time('immer - object: update');
-produce(dataSource, (draft) => {
-  draft[1000].data.value = 100;
+const a = produce(dataSource, () => {});
+console.time(`immer - object: update: ${objKeySize}`);
+produce(a, (draft) => {
+  draft[objLength].data.value = objLength;
 });
 
-console.timeEnd('immer - object: update');
+console.timeEnd(`immer - object: update: ${objKeySize}`);
 
-console.time('create - array: 50k');
-const dataSource1 = [...Array(50000).keys()].map((key) => [
+console.log('===========================');
+
+console.time(`create - array: ${arrSize}`);
+const dataSource1 = [...Array(arrSize).keys()].map((key) => [
   key,
   { key, data: { value: key } },
 ]);
-console.timeEnd('create - array: 50k');
+console.timeEnd(`create - array: ${arrSize}`);
 
-console.time('mutative - array: update');
+console.time(`reducer - array: ${arrSize}`);
+{
+  const _dataSource = [
+    ...dataSource1.slice(0, arrLength),
+    [arrLength, { key: arrLength, data: { value: arrLength } }],
+  ];
+}
+console.timeEnd(`reducer - array: ${arrSize}`);
+
+console.time(`mutative - array: update: ${arrSize}`);
 create(dataSource1, (draft) => {
   // @ts-ignore
-  draft[1000][1].data.value = 100;
+  draft[arrLength][1].data.value = arrLength;
 });
 
-console.timeEnd('mutative - array: update');
+console.timeEnd(`mutative - array: update: ${arrSize}`);
 
 const f = produce(dataSource1, () => {});
-console.time('immer - array: update');
+console.time(`immer - array: update: ${arrSize}`);
 produce(f, (draft) => {
   // @ts-ignore
-  draft[1000][1].data.value = 100;
+  draft[arrLength][1].data.value = arrLength;
 });
 
-console.timeEnd('immer - array: update');
+console.timeEnd(`immer - array: update: ${arrSize}`);
