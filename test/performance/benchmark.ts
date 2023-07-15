@@ -278,7 +278,7 @@ try {
               display: true,
               fontSize: 10,
               labelString:
-                'Measure(ops/sec) to update 50K arrays and 1K objects, bigger the better.',
+                'Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better.',
             },
           },
         ],

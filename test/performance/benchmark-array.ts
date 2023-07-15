@@ -52,7 +52,7 @@ const config = {
   options: {
     title: {
       display: true,
-      text: 'Reducer vs Mutative performance - Object',
+      text: 'Reducer vs Mutative performance - Array',
     },
     scales: {
       xAxes: [
@@ -60,7 +60,7 @@ const config = {
           display: true,
           scaleLabel: {
             display: true,
-            labelString: 'Number of object items',
+            labelString: 'Number of array items',
           },
         },
       ],
@@ -82,10 +82,7 @@ const run = (size: number) => {
   const getData = (size: number) =>
     Array(size)
       .fill(1)
-      .reduce(
-        (i, _, key) => Object.assign(i, { [key]: { value: key } }),
-        {} as Record<string, { value: number }>
-      );
+      .map((_, key) => ({ value: key }));
 
   const suite = new Suite();
 
@@ -110,10 +107,7 @@ const run = (size: number) => {
     .add(
       'Naive handcrafted reducer',
       () => {
-        const state = {
-          ...baseState,
-          0: { value: i },
-        };
+        const state = [{ value: i }, ...baseState.slice(1, baseState.length)];
       },
       {
         onStart: () => {
@@ -172,12 +166,12 @@ const run = (size: number) => {
 try {
   const chart = new QuickChart();
   chart.setConfig(config);
-  const file = fs.createWriteStream('benchmark-object.jpg');
+  const file = fs.createWriteStream('benchmark-array.jpg');
   https.get(chart.getUrl(), (response) => {
     response.pipe(file);
     file.on('finish', () => {
       file.close();
-      console.log('update benchmark-object');
+      console.log('update benchmark-array');
     });
   });
 } catch (err) {
