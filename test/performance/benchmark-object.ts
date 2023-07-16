@@ -83,7 +83,7 @@ const run = (size: number) => {
     Array(size)
       .fill(1)
       .reduce(
-        (i, _, key) => Object.assign(i, { [key]: { value: key } }),
+        (acc, _, key) => Object.assign(acc, { [`key${key}`]: { value: key } }),
         {} as Record<string, { value: number }>
       );
 
@@ -97,7 +97,7 @@ const run = (size: number) => {
       'Mutative',
       () => {
         const state = create(baseState, (draft) => {
-          draft[0].value = i;
+          draft.key0.value = i;
         });
       },
       {
@@ -112,7 +112,10 @@ const run = (size: number) => {
       () => {
         const state = {
           ...baseState,
-          0: { value: i },
+          key0: {
+            ...baseState.key0,
+            value: i,
+          },
         };
       },
       {
@@ -126,7 +129,7 @@ const run = (size: number) => {
     //   'Immer',
     //   () => {
     //     const state = produce(baseState, (draft: any) => {
-    //       draft[0].value = i;
+    //       draft.key0.value = i;
     //     });
     //   },
     //   {

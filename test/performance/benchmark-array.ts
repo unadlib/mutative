@@ -107,7 +107,10 @@ const run = (size: number) => {
     .add(
       'Naive handcrafted reducer',
       () => {
-        const state = [{ value: i }, ...baseState.slice(1, baseState.length)];
+        const state = [
+          { ...baseState[0], value: i },
+          ...baseState.slice(1, baseState.length),
+        ];
       },
       {
         onStart: () => {

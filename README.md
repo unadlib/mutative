@@ -5,9 +5,61 @@
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-**Mutative** - A JavaScript library for efficient immutable updates, 10x faster than Immer by default, even faster than naive handcrafted reducer.
+**Mutative** - A JavaScript library for efficient immutable updates, more than 3x faster than hand-written reducers.
 
-![Benchmark](benchmark.jpg)
+## Mutative vs Reducer Benchmark
+
+- Mutative by objects
+
+```ts
+const state = create(baseState, (draft) => {
+  draft.key0.value = i;
+});
+```
+
+- Naive handcrafted reducer by objects
+
+```ts
+const state = {
+  ...baseState,
+  key0: {
+    ...baseState.key0,
+    value: i,
+  },
+};
+```
+
+![Benchmark by Object](benchmark-object.jpg)
+
+> Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
+
+**Mutative is up to 3x faster than naive handcrafted reducer for updating immutable objects, and more than 3x faster for updating immutable arrays.**
+
+<details>
+<summary>Benchmark by Array</summary>
+
+Naive handcrafted reducer
+
+```ts
+const state = [
+  { ...baseState[0], value: i },
+  ...baseState.slice(1, baseState.length),
+];
+```
+
+Mutative
+
+```ts
+const state = create(baseState, (draft) => {
+  draft[0].value = i;
+});
+```
+
+![Benchmark by Object](benchmark-array.jpg)
+
+> Measure(seconds) to update the 1K-100K items arrays, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
+
+</details>
 
 ## Motivation
 
@@ -25,19 +77,21 @@ This is why Mutative was created.
 
 Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v0.5.0 vs Immer v10.0.1]
 
+![Benchmark](benchmark.jpg)
+
 ```
-Naive handcrafted reducer - No Freeze x 4,258 ops/sec ±1.14% (89 runs sampled)
-Mutative - No Freeze x 6,421 ops/sec ±1.73% (91 runs sampled)
-Immer - No Freeze x 5.11 ops/sec ±0.78% (17 runs sampled)
+Naive handcrafted reducer - No Freeze x 3,692 ops/sec ±1.28% (95 runs sampled)
+Mutative - No Freeze x 5,425 ops/sec ±1.70% (93 runs sampled)
+Immer - No Freeze x 5.08 ops/sec ±0.58% (17 runs sampled)
 
-Mutative - Freeze x 838 ops/sec ±0.31% (96 runs sampled)
-Immer - Freeze x 365 ops/sec ±0.57% (94 runs sampled)
+Mutative - Freeze x 818 ops/sec ±1.49% (96 runs sampled)
+Immer - Freeze x 357 ops/sec ±0.79% (92 runs sampled)
 
-Mutative - Patches and No Freeze x 762 ops/sec ±1.16% (94 runs sampled)
-Immer - Patches and No Freeze x 5.05 ops/sec ±0.26% (17 runs sampled)
+Mutative - Patches and No Freeze x 746 ops/sec ±0.83% (96 runs sampled)
+Immer - Patches and No Freeze x 5.08 ops/sec ±0.25% (17 runs sampled)
 
-Mutative - Patches and Freeze x 411 ops/sec ±0.46% (92 runs sampled)
-Immer - Patches and Freeze x 266 ops/sec ±0.69% (92 runs sampled)
+Mutative - Patches and Freeze x 408 ops/sec ±0.28% (96 runs sampled)
+Immer - Patches and Freeze x 264 ops/sec ±0.59% (91 runs sampled)
 
 The fastest method is Mutative - No Freeze
 ```
