@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-**Mutative** - A JavaScript library for efficient immutable updates, more than 3x faster than hand-written reducers.
+**Mutative** - A JavaScript library for efficient immutable updates, up to 2x-6x faster than reducers.
 
 ## Mutative vs Reducer Benchmark
 
@@ -33,7 +33,7 @@ const state = {
 
 > Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
 
-**Mutative is up to 3x faster than naive handcrafted reducer for updating immutable objects, and more than 3x faster for updating immutable arrays.**
+**Mutative is up to 2x faster than naive handcrafted reducer for updating immutable objects, and up to 6x faster for updating immutable arrays.**
 
 <details>
 <summary>Benchmark by Array</summary>

@@ -52,7 +52,7 @@ const config = {
   options: {
     title: {
       display: true,
-      text: 'Reducer vs Mutative performance - Object',
+      text: 'Mutative vs Reducers performance - Object',
     },
     scales: {
       xAxes: [
