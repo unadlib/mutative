@@ -21,7 +21,7 @@ import {
 // } from '../../../temp/immer/dist';
 import { create } from '../..';
 
-const config = {
+const config: Parameters<QuickChart['setConfig']>[0] = {
   type: 'line',
   data: {
     labels: [],

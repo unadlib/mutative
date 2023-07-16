@@ -5,21 +5,14 @@
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-**Mutative** - A JavaScript library for efficient immutable updates, up to 2x-6x faster than reducers.
+**Mutative** - A JavaScript library for efficient immutable updates, up to 2x-6x faster than naive handcrafted reducer.
 
-## Mutative vs Reducer Benchmark
+Benchmark by objects: 
 
-- Mutative by objects
-
-```ts
-const state = create(baseState, (draft) => {
-  draft.key0.value = i;
-});
-```
-
-- Naive handcrafted reducer by objects
+- Naive handcrafted reducer
 
 ```ts
+// baseState type: Record<string, { value: number }>
 const state = {
   ...baseState,
   key0: {
@@ -29,6 +22,14 @@ const state = {
 };
 ```
 
+- Mutative
+
+```ts
+const state = create(baseState, (draft) => {
+  draft.key0.value = i;
+});
+```
+
 ![Benchmark by Object](benchmark-object.jpg)
 
 > Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
@@ -36,18 +37,19 @@ const state = {
 **Mutative is up to 2x faster than naive handcrafted reducer for updating immutable objects, and up to 6x faster for updating immutable arrays.**
 
 <details>
-<summary>Benchmark by Array</summary>
+<summary>Benchmark by Array: </summary>
 
-Naive handcrafted reducer
+- Naive handcrafted reducer
 
 ```ts
+// baseState type: { value: number }[]
 const state = [
   { ...baseState[0], value: i },
   ...baseState.slice(1, baseState.length),
 ];
 ```
 
-Mutative
+- Mutative
 
 ```ts
 const state = create(baseState, (draft) => {
@@ -55,9 +57,9 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-![Benchmark by Object](benchmark-array.jpg)
+![Benchmark by Array](benchmark-array.jpg)
 
-> Measure(seconds) to update the 1K-100K items arrays, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
+> Measure(seconds) to update the 1K-100K items array, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
 
 </details>
 
