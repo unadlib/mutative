@@ -7,7 +7,7 @@
 
 **Mutative** - A JavaScript library for efficient immutable updates, up to 2x-6x faster than naive handcrafted reducer.
 
-Benchmark by objects: 
+Benchmark by object: 
 
 - Naive handcrafted reducer
 
@@ -30,14 +30,14 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-![Benchmark by Object](benchmark-object.jpg)
+![Benchmark by object](benchmark-object.jpg)
 
-> Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
+> Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-object.ts)). 
 
 **Mutative is up to 2x faster than naive handcrafted reducer for updating immutable objects, and up to 6x faster for updating immutable arrays.**
 
 <details>
-<summary>Benchmark by Array: </summary>
+<summary>Benchmark by array: </summary>
 
 - Naive handcrafted reducer
 
@@ -57,7 +57,7 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-![Benchmark by Array](benchmark-array.jpg)
+![Benchmark by array](benchmark-array.jpg)
 
 > Measure(seconds) to update the 1K-100K items array, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
 
