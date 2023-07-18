@@ -34,10 +34,10 @@ const state = create(baseState, (draft) => {
 
 > Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-object.ts)). 
 
-**Mutative is up to 2x faster than naive handcrafted reducer for updating immutable objects, and up to 6x faster for updating immutable arrays.**
+Mutative is up to 2x faster than naive handcrafted reducer for updating immutable objects, and up to 6x faster for updating immutable arrays.
 
 <details>
-<summary>Mutative vs Reducer benchmark by array: </summary>
+<summary><b>Mutative vs Reducer benchmark by array: </b></summary>
 
 - Naive handcrafted reducer
 
