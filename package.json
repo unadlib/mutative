@@ -76,6 +76,8 @@
   },
   "homepage": "https://github.com/unadlib/mutative#readme",
   "devDependencies": {
+    "@size-limit/esbuild": "^8.2.6",
+    "@size-limit/esbuild-why": "^8.2.6",
     "@size-limit/preset-small-lib": "^8.1.0",
     "@size-limit/webpack": "^8.1.0",
     "@size-limit/webpack-why": "^8.1.0",
