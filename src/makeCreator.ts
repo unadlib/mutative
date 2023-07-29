@@ -64,7 +64,9 @@ export const makeCreator: MakeCreator = (arg) => {
     arg !== undefined &&
     Object.prototype.toString.call(arg) !== '[object Object]'
   ) {
-    throw new Error(`Invalid options: ${arg}, 'options' should be an object.`);
+    throw new Error(
+      `Invalid options: ${String(arg)}, 'options' should be an object.`
+    );
   }
   return function create(arg0: any, arg1: any, arg2?: any): any {
     if (typeof arg0 === 'function' && typeof arg1 !== 'function') {
