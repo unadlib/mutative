@@ -28,7 +28,7 @@ Enable autoFreeze, and return frozen state.
 
 #### Defined in
 
-[interface.ts:122](https://github.com/unadlib/mutative/blob/557d56b/src/interface.ts#L122)
+[interface.ts:117](https://github.com/unadlib/mutative/blob/5b264a3/src/interface.ts#L117)
 
 ___
 
@@ -40,7 +40,7 @@ Enable patch, and return the patches and inversePatches.
 
 #### Defined in
 
-[interface.ts:118](https://github.com/unadlib/mutative/blob/557d56b/src/interface.ts#L118)
+[interface.ts:113](https://github.com/unadlib/mutative/blob/5b264a3/src/interface.ts#L113)
 
 ___
 
@@ -53,7 +53,7 @@ And it can also return a shallow copy function(AutoFreeze and Patches should bot
 
 #### Defined in
 
-[interface.ts:127](https://github.com/unadlib/mutative/blob/557d56b/src/interface.ts#L127)
+[interface.ts:122](https://github.com/unadlib/mutative/blob/5b264a3/src/interface.ts#L122)
 
 ___
 
@@ -65,4 +65,4 @@ In strict mode, Forbid accessing non-draftable values and forbid returning a non
 
 #### Defined in
 
-[interface.ts:114](https://github.com/unadlib/mutative/blob/557d56b/src/interface.ts#L114)
+[interface.ts:109](https://github.com/unadlib/mutative/blob/5b264a3/src/interface.ts#L109)

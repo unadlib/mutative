@@ -8,7 +8,7 @@ mutative
 
 - [Options](interfaces/Options.md)
 
-### Type aliases
+### Type Aliases
 
 - [Draft](README.md#draft)
 - [Immutable](README.md#immutable)
@@ -24,11 +24,12 @@ mutative
 - [current](README.md#current)
 - [isDraft](README.md#isdraft)
 - [isDraftable](README.md#isdraftable)
+- [makeCreator](README.md#makecreator)
 - [original](README.md#original)
-- [safeReturn](README.md#safereturn)
+- [rawReturn](README.md#rawreturn)
 - [unsafe](README.md#unsafe)
 
-## Type aliases
+## Type Aliases
 
 ### Draft
 
@@ -42,7 +43,7 @@ mutative
 
 #### Defined in
 
-[interface.ts:167](https://github.com/unadlib/mutative/blob/557d56b/src/interface.ts#L167)
+[interface.ts:162](https://github.com/unadlib/mutative/blob/5b264a3/src/interface.ts#L162)
 
 ___
 
@@ -58,7 +59,7 @@ ___
 
 #### Defined in
 
-[interface.ts:149](https://github.com/unadlib/mutative/blob/557d56b/src/interface.ts#L149)
+[interface.ts:144](https://github.com/unadlib/mutative/blob/5b264a3/src/interface.ts#L144)
 
 ___
 
@@ -74,7 +75,7 @@ ___
 
 #### Defined in
 
-[interface.ts:63](https://github.com/unadlib/mutative/blob/557d56b/src/interface.ts#L63)
+[interface.ts:58](https://github.com/unadlib/mutative/blob/5b264a3/src/interface.ts#L58)
 
 ___
 
@@ -90,7 +91,7 @@ ___
 
 #### Defined in
 
-[interface.ts:77](https://github.com/unadlib/mutative/blob/557d56b/src/interface.ts#L77)
+[interface.ts:72](https://github.com/unadlib/mutative/blob/5b264a3/src/interface.ts#L72)
 
 ## Functions
 
@@ -130,7 +131,7 @@ expect(state).toEqual(apply(baseState, patches));
 | Name | Type |
 | :------ | :------ |
 | `state` | `T` |
-| `patches` | [`Patches`](README.md#patches)<`any`\> |
+| `patches` | [`Patches`](README.md#patches) |
 | `applyOptions?` | `Pick`<[`Options`](interfaces/Options.md)<`boolean`, `F`\>, ``"mark"`` \| ``"strict"`` \| ``"enableAutoFreeze"``\> |
 
 #### Returns
@@ -139,7 +140,7 @@ expect(state).toEqual(apply(baseState, patches));
 
 #### Defined in
 
-[apply.ts:26](https://github.com/unadlib/mutative/blob/557d56b/src/apply.ts#L26)
+[apply.ts:26](https://github.com/unadlib/mutative/blob/5b264a3/src/apply.ts#L26)
 
 ___
 
@@ -167,7 +168,7 @@ Cast a value to an Draft type value.
 
 #### Defined in
 
-[utils/cast.ts:7](https://github.com/unadlib/mutative/blob/557d56b/src/utils/cast.ts#L7)
+[utils/cast.ts:6](https://github.com/unadlib/mutative/blob/5b264a3/src/utils/cast.ts#L6)
 
 ___
 
@@ -195,7 +196,7 @@ Cast a value to an Immutable type value.
 
 #### Defined in
 
-[utils/cast.ts:14](https://github.com/unadlib/mutative/blob/557d56b/src/utils/cast.ts#L14)
+[utils/cast.ts:13](https://github.com/unadlib/mutative/blob/5b264a3/src/utils/cast.ts#L13)
 
 ___
 
@@ -247,9 +248,30 @@ expect(state.arr).toBe(baseState.arr);
 
 #### Defined in
 
-[create.ts:41](https://github.com/unadlib/mutative/blob/557d56b/src/create.ts#L41)
+[makeCreator.ts:25](https://github.com/unadlib/mutative/blob/5b264a3/src/makeCreator.ts#L25)
 
 ▸ **create**<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`<`T`, `O`, `F`, `R`\>
+
+`create(baseState, callback, options)` to create the next state
+
+## Example
+
+```ts
+import { create } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const state = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'str2';
+  },
+);
+
+expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+expect(state).not.toBe(baseState);
+expect(state.foo).not.toBe(baseState.foo);
+expect(state.arr).toBe(baseState.arr);
+```
 
 #### Type parameters
 
@@ -274,9 +296,30 @@ expect(state.arr).toBe(baseState.arr);
 
 #### Defined in
 
-[create.ts:51](https://github.com/unadlib/mutative/blob/557d56b/src/create.ts#L51)
+[makeCreator.ts:35](https://github.com/unadlib/mutative/blob/5b264a3/src/makeCreator.ts#L35)
 
 ▸ **create**<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`: `T`, ...`args`: `P`) => `CreateResult`<`T`, `O`, `F`, `R`\>
+
+`create(baseState, callback, options)` to create the next state
+
+## Example
+
+```ts
+import { create } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const state = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'str2';
+  },
+);
+
+expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+expect(state).not.toBe(baseState);
+expect(state.foo).not.toBe(baseState.foo);
+expect(state.arr).toBe(baseState.arr);
+```
 
 #### Type parameters
 
@@ -299,7 +342,7 @@ expect(state.arr).toBe(baseState.arr);
 
 `fn`
 
-▸ (`base`, ...`args`): `CreateResult`<`T`, `O`, `F`, `R`\>
+▸ (`base`, `...args`): `CreateResult`<`T`, `O`, `F`, `R`\>
 
 ##### Parameters
 
@@ -314,9 +357,30 @@ expect(state.arr).toBe(baseState.arr);
 
 #### Defined in
 
-[create.ts:61](https://github.com/unadlib/mutative/blob/557d56b/src/create.ts#L61)
+[makeCreator.ts:45](https://github.com/unadlib/mutative/blob/5b264a3/src/makeCreator.ts#L45)
 
 ▸ **create**<`T`, `O`, `F`\>(`base`, `options?`): [`T`, () => `Result`<`T`, `O`, `F`\>]
+
+`create(baseState, callback, options)` to create the next state
+
+## Example
+
+```ts
+import { create } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const state = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'str2';
+  },
+);
+
+expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+expect(state).not.toBe(baseState);
+expect(state.foo).not.toBe(baseState.foo);
+expect(state.arr).toBe(baseState.arr);
+```
 
 #### Type parameters
 
@@ -339,7 +403,7 @@ expect(state.arr).toBe(baseState.arr);
 
 #### Defined in
 
-[create.ts:71](https://github.com/unadlib/mutative/blob/557d56b/src/create.ts#L71)
+[makeCreator.ts:55](https://github.com/unadlib/mutative/blob/5b264a3/src/makeCreator.ts#L55)
 
 ___
 
@@ -382,7 +446,7 @@ const state = create(
 
 #### Defined in
 
-[current.ts:81](https://github.com/unadlib/mutative/blob/557d56b/src/current.ts#L81)
+[current.ts:103](https://github.com/unadlib/mutative/blob/5b264a3/src/current.ts#L103)
 
 ___
 
@@ -404,7 +468,7 @@ Check if the value is a draft
 
 #### Defined in
 
-[utils/draft.ts:11](https://github.com/unadlib/mutative/blob/557d56b/src/utils/draft.ts#L11)
+[utils/draft.ts:11](https://github.com/unadlib/mutative/blob/5b264a3/src/utils/draft.ts#L11)
 
 ___
 
@@ -428,7 +492,160 @@ Check if a value is draftable
 
 #### Defined in
 
-[utils/draft.ts:28](https://github.com/unadlib/mutative/blob/557d56b/src/utils/draft.ts#L28)
+[utils/draft.ts:28](https://github.com/unadlib/mutative/blob/5b264a3/src/utils/draft.ts#L28)
+
+___
+
+### makeCreator
+
+▸ **makeCreator**<`_F`, `_O`\>(`options?`): <T, F, O, R\>(`base`: `T`, `mutate`: (`draft`: [`Draft`](README.md#draft)<`T`\>) => `R`, `options?`: [`Options`](interfaces/Options.md)<`O`, `F`\>) => `CreateResult`<`T`, `O`, `F`, `R`\><T, F, O, R\>(`base`: `T`, `mutate`: (`draft`: `T`) => `R`, `options?`: [`Options`](interfaces/Options.md)<`O`, `F`\>) => `CreateResult`<`T`, `O`, `F`, `R`\><T, P, F, O, R\>(`mutate`: (`draft`: [`Draft`](README.md#draft)<`T`\>, ...`args`: `P`) => `R`, `options?`: [`Options`](interfaces/Options.md)<`O`, `F`\>) => (`base`: `T`, ...`args`: `P`) => `CreateResult`<`T`, `O`, `F`, `R`\><T, O, F\>(`base`: `T`, `options?`: [`Options`](interfaces/Options.md)<`O`, `F`\>) => [`T`, () => `Result`<`T`, `O`, `F`\>]
+
+`makeCreator(options)` to make a creator function.
+
+## Example
+
+```ts
+import { makeCreator } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const create = makeCreator({ enableAutoFreeze: true });
+const state = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'str2';
+  },
+);
+
+expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+expect(state).not.toBe(baseState);
+expect(state.foo).not.toBe(baseState.foo);
+expect(state.arr).toBe(baseState.arr);
+expect(Object.isFrozen(state)).toBeTruthy();
+```
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `_F` | extends `boolean` = ``false`` |
+| `_O` | extends `PatchesOptions` = ``false`` |
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `options?` | [`Options`](interfaces/Options.md)<`_O`, `_F`\> |
+
+#### Returns
+
+`fn`
+
+▸ <`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`<`T`, `O`, `F`, `R`\>
+
+##### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `unknown` |
+| `F` | extends `boolean` = `_F` |
+| `O` | extends `PatchesOptions` = `_O` |
+| `R` | extends `unknown` = `void` |
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `base` | `T` |
+| `mutate` | (`draft`: [`Draft`](README.md#draft)<`T`\>) => `R` |
+| `options?` | [`Options`](interfaces/Options.md)<`O`, `F`\> |
+
+##### Returns
+
+`CreateResult`<`T`, `O`, `F`, `R`\>
+
+▸ <`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`<`T`, `O`, `F`, `R`\>
+
+##### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `unknown` |
+| `F` | extends `boolean` = `_F` |
+| `O` | extends `PatchesOptions` = `_O` |
+| `R` | extends `void` \| `Promise`<`void`\> = `void` |
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `base` | `T` |
+| `mutate` | (`draft`: `T`) => `R` |
+| `options?` | [`Options`](interfaces/Options.md)<`O`, `F`\> |
+
+##### Returns
+
+`CreateResult`<`T`, `O`, `F`, `R`\>
+
+▸ <`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`: `T`, ...`args`: `P`) => `CreateResult`<`T`, `O`, `F`, `R`\>
+
+##### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `unknown` |
+| `P` | extends `any`[] = [] |
+| `F` | extends `boolean` = `_F` |
+| `O` | extends `PatchesOptions` = `_O` |
+| `R` | extends `void` \| `Promise`<`void`\> = `void` |
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `mutate` | (`draft`: [`Draft`](README.md#draft)<`T`\>, ...`args`: `P`) => `R` |
+| `options?` | [`Options`](interfaces/Options.md)<`O`, `F`\> |
+
+##### Returns
+
+`fn`
+
+▸ (`base`, `...args`): `CreateResult`<`T`, `O`, `F`, `R`\>
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `base` | `T` |
+| `...args` | `P` |
+
+##### Returns
+
+`CreateResult`<`T`, `O`, `F`, `R`\>
+
+▸ <`T`, `O`, `F`\>(`base`, `options?`): [`T`, () => `Result`<`T`, `O`, `F`\>]
+
+##### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `unknown` |
+| `O` | extends `PatchesOptions` = `_O` |
+| `F` | extends `boolean` = `_F` |
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `base` | `T` |
+| `options?` | [`Options`](interfaces/Options.md)<`O`, `F`\> |
+
+##### Returns
+
+[`T`, () => `Result`<`T`, `O`, `F`\>]
+
+#### Defined in
+
+[makeCreator.ts:19](https://github.com/unadlib/mutative/blob/5b264a3/src/makeCreator.ts#L19)
 
 ___
 
@@ -471,15 +688,30 @@ const state = create(
 
 #### Defined in
 
-[original.ts:21](https://github.com/unadlib/mutative/blob/557d56b/src/original.ts#L21)
+[original.ts:21](https://github.com/unadlib/mutative/blob/5b264a3/src/original.ts#L21)
 
 ___
 
-### safeReturn
+### rawReturn
 
-▸ **safeReturn**<`T`\>(`value`): `T`
+▸ **rawReturn**<`T`\>(`value`): `T`
 
-It is used as a safe return value to ensure that this value replaces the finalized value.
+Use rawReturn() to wrap the return value to skip the draft check and thus improve performance.
+
+## Example
+
+```ts
+import { create, rawReturn } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const state = create(
+  baseState,
+  (draft) => {
+    return rawReturn(baseState);
+  },
+);
+expect(state).toBe(baseState);
+```
 
 #### Type parameters
 
@@ -499,7 +731,7 @@ It is used as a safe return value to ensure that this value replaces the finaliz
 
 #### Defined in
 
-[safeReturn.ts:6](https://github.com/unadlib/mutative/blob/557d56b/src/safeReturn.ts#L6)
+[rawReturn.ts:21](https://github.com/unadlib/mutative/blob/5b264a3/src/rawReturn.ts#L21)
 
 ___
 
@@ -554,4 +786,4 @@ expect(state.foobar.bar).toBe(2);
 
 #### Defined in
 
-[unsafe.ts:53](https://github.com/unadlib/mutative/blob/557d56b/src/unsafe.ts#L53)
+[unsafe.ts:53](https://github.com/unadlib/mutative/blob/5b264a3/src/unsafe.ts#L53)
