@@ -1,3 +1,4 @@
+export { makeCreator } from './makeCreator';
 export { create } from './create';
 export { apply } from './apply';
 export { original } from './original';
