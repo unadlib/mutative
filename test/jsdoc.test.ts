@@ -19,4 +19,7 @@ describe('jsdoc', () => {
   test('rawReturn()', () => {
     jsdocTests('../src/rawReturn.ts', __dirname);
   });
+  test('makeCreator()', () => {
+    jsdocTests('../src/makeCreator.ts', __dirname);
+  });
 });
