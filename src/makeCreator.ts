@@ -58,8 +58,15 @@ type MakeCreator = <
   ): [T, () => Result<T, O, F>];
 };
 
-export const makeCreator: MakeCreator = (arg: any) =>
-  function create(arg0: any, arg1: any, arg2?: any): any {
+export const makeCreator: MakeCreator = (arg) => {
+  if (
+    __DEV__ &&
+    arg !== undefined &&
+    Object.prototype.toString.call(arg) !== '[object Object]'
+  ) {
+    throw new Error(`Invalid options: ${arg}, 'options' should be an object.`);
+  }
+  return function create(arg0: any, arg1: any, arg2?: any): any {
     if (typeof arg0 === 'function' && typeof arg1 !== 'function') {
       return function (this: any, base: any, ...args: any[]) {
         return create(
@@ -76,6 +83,7 @@ export const makeCreator: MakeCreator = (arg: any) =>
       options = arg1;
     }
     if (
+      __DEV__ &&
       options !== undefined &&
       Object.prototype.toString.call(options) !== '[object Object]'
     ) {
@@ -84,14 +92,14 @@ export const makeCreator: MakeCreator = (arg: any) =>
       );
     }
     options = {
-      ...(arg ?? {}),
-      ...(options ?? {}),
+      ...arg,
+      ...options,
     };
     const state = isDraft(base) ? current(base) : base;
-    const mark = options?.mark;
-    const enablePatches = options?.enablePatches ?? false;
-    const strict = options?.strict ?? false;
-    const enableAutoFreeze = options?.enableAutoFreeze ?? false;
+    const mark = options.mark;
+    const enablePatches = options.enablePatches ?? false;
+    const strict = options.strict ?? false;
+    const enableAutoFreeze = options.enableAutoFreeze ?? false;
     const _options: Options<any, any> = {
       enableAutoFreeze,
       mark,
@@ -174,3 +182,4 @@ export const makeCreator: MakeCreator = (arg: any) =>
     }
     return returnValue(result);
   };
+};
