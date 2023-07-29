@@ -39,7 +39,7 @@
     "performance:array-object": "cd test/performance && NODE_ENV='production' ts-node array-object.ts",
     "performance": "yarn build && yarn perf && yarn performance:basic && yarn performance:set-map && yarn performance:big-object && yarn performance:sample && yarn performance:array-object",
     "build": "tsdx build --format esm,cjs,umd && cp dist/mutative.esm.js dist/mutative.esm.mjs",
-    "build:doc": "rimraf docs && typedoc --out docs src/index.ts --readme none",
+    "build:doc": "rimraf docs && typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts --readme none",
     "commit": "yarn git-cz",
     "size": "size-limit",
     "analyze": "size-limit --why",
