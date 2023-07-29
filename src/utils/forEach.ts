@@ -5,11 +5,12 @@ export function forEach<T extends object>(
   target: T,
   iter: (key: string | number | symbol, value: any, source: T) => void
 ) {
-  if (getType(target) === DraftType.Object) {
+  const type = getType(target);
+  if (type === DraftType.Object) {
     Reflect.ownKeys(target).forEach((key) => {
       iter(key, (target as any)[key], target);
     });
-  } else if (getType(target) === DraftType.Array) {
+  } else if (type === DraftType.Array) {
     let index = 0;
     for (const entry of target as any[]) {
       iter(index, entry, target);
