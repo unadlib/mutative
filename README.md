@@ -185,6 +185,7 @@ Use `create()` for more advanced features by [setting `options`](#createstate-fn
 - [`isDraft()`](#isDraft)
 - [`isDraftable()`](#isDraftable)
 - [`rawReturn()`](#rawReturn)
+- [`makeCreator()`](#makeCreator)
 
 ### `create()`
 
@@ -206,7 +207,9 @@ const state = create(baseState, (draft) => {
 
 In this basic example, the changes to the draft are 'mutative' within the draft callback, and `create()` is finally executed with a new immutable state.
 
-#### `create(state, fn, options)` - Then options is optional.
+#### `create(state, fn, options)`
+
+> Then options is optional.
 
 - strict - `boolean`, the default is false.
 
@@ -419,6 +422,26 @@ const state = create(
 // it will warn `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.` in strict mode.
 expect(state).toEqual({ a: 2, b: { c: 1 } });
 expect(isDraft(state.b)).toBeFalsy();
+```
+
+### `makeCreator()`
+
+`makeCreator()` only takes [options](#createstate-fn-options) as the first argument, resulting in a custom `create()` function. 
+
+```ts
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+};
+
+const create = makeCreator({
+  enablePatches: true,
+});
+
+const [state, patches, inversePatches] = create(baseState, (draft) => {
+  draft.foo.bar = 'new str';
+});
 ```
 
 [View more API docs](./docs/README.md).
