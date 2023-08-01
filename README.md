@@ -215,6 +215,8 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
   > Forbid accessing non-draftable values in strict mode(unless using [unsafe()](#unsafe)).
 
+  > When strict mode is enabled, mutable data can only be accessed using [`unsafe()`](#unsafe).
+
   > **It is recommended to enable `strict` in development mode and disable `strict` in production mode.** This will ensure safe explicit returns and also keep good performance in the production build. If the value that does not mix any current draft or is `undefined` is returned, then use [rawReturn()](#rawreturn).
 
 - enablePatches - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean; }`, the default is false.
