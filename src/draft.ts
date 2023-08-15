@@ -260,6 +260,7 @@ export function createDraft<T extends object>(createDraftOptions: {
             target.options.updatedValues ?? new WeakMap();
           target.options.updatedValues.set(updatedValue, proxyDraft.original);
         }
+        // final update value
         set(copy, key!, updatedValue);
       }
       // !case: handle the deleted key

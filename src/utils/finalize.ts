@@ -30,6 +30,7 @@ export function handleValue(target: any, handledSet: WeakSet<any>) {
       const updatedValue = proxyDraft.assignedMap?.size
         ? proxyDraft.copy
         : proxyDraft.original;
+      // final update value
       set(isSet ? setMap! : target, key, updatedValue);
     } else {
       handleValue(value, handledSet);
@@ -120,6 +121,7 @@ export function markFinalization(
             target.options.updatedValues ?? new WeakMap();
           target.options.updatedValues.set(updatedValue, proxyDraft.original);
         }
+        // final update value
         set(copy, key, updatedValue);
       }
     });

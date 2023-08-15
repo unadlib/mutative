@@ -29,6 +29,7 @@ export function handleReturnValue<T extends object>(options: {
     ) {
       options.isContainDraft = true;
       const currentValue = proxyDraft.original;
+      // final update value, but just handle return value
       if (source instanceof Set) {
         const arr = Array.from(source);
         source.clear();

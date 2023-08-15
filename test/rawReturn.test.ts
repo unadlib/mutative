@@ -290,6 +290,42 @@ test('return parent draft', () => {
     })
   ).toEqual({ a: 2 });
 });
+
+test('mix more type draft with rawReturn() and enable strict mode', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  [
+    (draft: any) => ({
+      a: {
+        b: draft.a,
+      },
+    }),
+    (draft: any) => [{ c: draft.a }],
+    (draft: any) => new Map([[1, draft.a]]),
+    (draft: any) => new Set([1, draft.a]),
+  ].forEach((callback: any) => {
+    warn.mockClear();
+    expect(() => {
+      let data: any = create(
+        { a: { b: 1 } },
+        (draft: any) => {
+          return rawReturn(callback(draft));
+        },
+        {
+          strict: true,
+        }
+      );
+      if (data instanceof Set || data instanceof Map) {
+        data = Array.from(data);
+      }
+      JSON.stringify(data);
+    }).not.toThrowError();
+    expect(warn).toHaveBeenCalledWith(
+      `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
+    );
+  });
+  warn.mockRestore();
+});
+
 test('mix more type draft without rawReturn()', () => {
   [
     (draft: any) => ({
@@ -301,7 +337,37 @@ test('mix more type draft without rawReturn()', () => {
     (draft: any) => new Map([[1, draft.a]]),
     (draft: any) => new Set([1, draft.a]),
   ].forEach((callback: any) => {
-    expect(() => create({ a: { b: 1 } }, callback)).not.toThrowError();
+    expect(() => {
+      let data: any = create({ a: { b: 1 } }, (draft: any) => {
+        return callback(draft);
+      });
+      if (data instanceof Set || data instanceof Map) {
+        data = Array.from(data);
+      }
+      JSON.stringify(data);
+    }).not.toThrowError();
+  });
+});
+
+test('mix more type operated draft without rawReturn()', () => {
+  [
+    (draft: any) => ({
+      a: {
+        b: draft.a,
+      },
+    }),
+    (draft: any) => [{ c: draft.a }],
+    (draft: any) => new Map([[1, draft.a]]),
+    (draft: any) => new Set([1, draft.a]),
+  ].forEach((callback: any) => {
+    expect(() => {
+      create({ a: { b: 1 } }, (draft: any) => {
+        draft.a.b += 1;
+        return callback(draft);
+      });
+    }).toThrowError(
+      `Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.`
+    );
   });
 });
 
