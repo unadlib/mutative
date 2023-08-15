@@ -182,10 +182,10 @@ Use `create()` for more advanced features by [setting `options`](#createstate-fn
 - [`current()`](#current)
 - [`original()`](#original)
 - [`unsafe()`](#unsafe)
-- [`isDraft()`](#isDraft)
-- [`isDraftable()`](#isDraftable)
-- [`rawReturn()`](#rawReturn)
-- [`makeCreator()`](#makeCreator)
+- [`isDraft()`](#isdraft)
+- [`isDraftable()`](#isdraftable)
+- [`rawReturn()`](#rawreturn)
+- [`makeCreator()`](#makecreator)
 
 ### `create()`
 
@@ -387,7 +387,7 @@ const state = create(baseState as { id: string } | undefined, (draft) => {
 expect(state).toBe(undefined);
 ```
 
-> You don't need to use `rawReturn()` when the return value have any draft.
+> If the return value mixes drafts, you should not use `rawReturn()`.
 
 ```ts
 const baseState = { a: 1, b: { c: 1 } };

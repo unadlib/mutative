@@ -319,6 +319,7 @@ test('mix more type draft with rawReturn() and enable strict mode', () => {
       }
       JSON.stringify(data);
     }).not.toThrowError();
+    expect(console.warn).toBeCalledTimes(1);
     expect(warn).toHaveBeenCalledWith(
       `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
     );
@@ -519,7 +520,7 @@ test('mixed draft with rawReturn()', () => {
 });
 
 test('mixed draft with rawReturn() and strict mode', () => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
   const baseState = { a: 1, b: { c: 1 } };
   const state = create(
     baseState,
@@ -541,6 +542,7 @@ test('mixed draft with rawReturn() and strict mode', () => {
   expect(console.warn).toBeCalledWith(
     `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
   );
+  warn.mockRestore();
 });
 
 test('no mixed draft with strict mode', () => {
