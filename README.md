@@ -7,7 +7,8 @@
 
 **Mutative** - A JavaScript library for efficient immutable updates, faster than naive handcrafted reducer, and more than 10x faster than Immer.
 
-Mutative vs Reducer benchmark by object: 
+<details>
+<summary><b>Mutative vs Reducer benchmark by object:  </b></summary>
 
 - Naive handcrafted reducer
 
@@ -33,8 +34,9 @@ const state = create(baseState, (draft) => {
 ![Mutative vs Reducer benchmark by object](benchmark-object.jpg)
 
 > Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-object.ts)). 
+</details>
 
-Mutative is up to 2x faster than naive handcrafted reducer for updating immutable objects, and up to 6x faster for updating immutable arrays.
+Mutative is up to 2x faster than naive handcrafted reducer for updating immutable objects.
 
 <details>
 <summary><b>Mutative vs Reducer benchmark by array: </b></summary>
@@ -62,6 +64,8 @@ const state = create(baseState, (draft) => {
 > Measure(seconds) to update the 1K-100K items array, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
 
 </details>
+
+Mutative is up to 6x faster than naive handcrafted reducer for updating immutable arrays.
 
 ## Motivation
 
