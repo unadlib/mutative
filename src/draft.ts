@@ -244,7 +244,7 @@ export function createDraft<T extends object>(createDraftOptions: {
     target.finalities.draft.push((patches, inversePatches) => {
       const oldProxyDraft = getProxyDraft(proxy)!;
       // if target is a Set draft, `setMap` is the real Set copies proxy mapping.
-      const copy = target.type === DraftType.Set ? target.setMap : target.copy;
+      let copy = target.type === DraftType.Set ? target.setMap : target.copy;
       const draft = get(copy, key!);
       const proxyDraft = getProxyDraft(draft);
       if (proxyDraft) {
@@ -259,6 +259,18 @@ export function createDraft<T extends object>(createDraftOptions: {
           target.options.updatedValues =
             target.options.updatedValues ?? new WeakMap();
           target.options.updatedValues.set(updatedValue, proxyDraft.original);
+        }
+        if (
+          proxyDraft.parent?.key !== undefined &&
+          proxyDraft.parent?.parent?.proxy
+        ) {
+          const parent =
+            proxyDraft.parent?.parent?.proxy[proxyDraft.parent?.key];
+          const parentProxyDraft = getProxyDraft(parent);
+          if (parentProxyDraft === undefined) {
+            // !case: handle assigning a non-draft with the same key
+            copy = parent;
+          }
         }
         // final update value
         set(copy, key!, updatedValue);
