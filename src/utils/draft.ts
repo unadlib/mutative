@@ -70,11 +70,6 @@ export function set(target: any, key: PropertyKey, value: any) {
   const type = getType(target);
   if (type === DraftType.Map) {
     target.set(key, value);
-  } else if (type === DraftType.Set) {
-    // !case: handle assigning a non-draft set
-    const keys = Array.from(target);
-    target.clear();
-    keys.forEach((_item) => target.add(key === _item ? value : _item));
   } else {
     target[key] = value;
   }
