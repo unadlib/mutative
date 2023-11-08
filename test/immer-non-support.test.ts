@@ -2,8 +2,16 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-lone-blocks */
-import { produce, enableMapSet, setAutoFreeze, Immutable } from 'immer';
-import { create } from '../src';
+import {
+  produce,
+  enableMapSet,
+  setAutoFreeze,
+  Immutable,
+  produceWithPatches,
+  enablePatches,
+  applyPatches,
+} from 'immer';
+import { create, apply } from '../src';
 
 enableMapSet();
 
@@ -302,4 +310,66 @@ test('circular reference', () => {
       `"Forbids circular reference: ~/a/b"`
     );
   }
+});
+
+test('#18 - set: assigning a non-draft with the same key', () => {
+  const baseState = {
+    array: [
+      {
+        one: {
+          two: {
+            three: 3,
+          },
+        },
+      },
+    ],
+  };
+
+  const created = create(
+    baseState,
+    (draft) => {
+      draft.array[0].one.two.three = 2;
+      const two = draft.array[0].one.two;
+      const one = new Set();
+      // @ts-ignore
+      draft.array = [{ one }];
+      // @ts-ignore
+      one.add(two);
+      // @ts-ignore
+      expect(Array.from(draft.array[0].one)[0].three).toBe(2);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  // @ts-ignore
+  expect(Array.from(created[0].array[0].one)[0].three).toBe(2);
+  expect(apply(baseState, created[1])).toEqual(created[0]);
+  // expect(apply(created[0], created[2])).toEqual(baseState);
+
+  enablePatches();
+  // @ts-ignore
+  const produced = produceWithPatches(baseState, (draft: any) => {
+    draft.array[0].one.two.three = 2;
+    const two = draft.array[0].one.two;
+    const one = new Set();
+    // @ts-ignore
+    draft.array = [{ one }];
+    // @ts-ignore
+    one.add(two);
+    // @ts-ignore
+    expect(Array.from(draft.array[0].one)[0].three).toBe(2);
+  });
+
+  // @ts-ignore
+  expect(() => {
+    // @ts-ignore
+    // eslint-disable-next-line no-unused-expressions
+    Array.from(produced[0].array[0].one)[0].three;
+  }).toThrowError();
+
+  //  @ts-ignore
+  // expect(applyPatches(baseState, produced[1])).toEqual(produced[0]);
+  // @ts-ignore
+  // expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
 });

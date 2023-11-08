@@ -67,7 +67,8 @@ export function get(target: any, key: PropertyKey) {
 }
 
 export function set(target: any, key: PropertyKey, value: any) {
-  if (getType(target) === DraftType.Map) {
+  const type = getType(target);
+  if (type === DraftType.Map) {
     target.set(key, value);
   } else {
     target[key] = value;
