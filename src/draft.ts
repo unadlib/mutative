@@ -261,11 +261,11 @@ export function createDraft<T extends object>(createDraftOptions: {
           target.options.updatedValues.set(updatedValue, proxyDraft.original);
         }
         if (
-          proxyDraft.parent?.key !== undefined &&
-          proxyDraft.parent?.parent?.proxy
+          proxyDraft.parent!.key !== undefined &&
+          proxyDraft.parent!.parent!.proxy
         ) {
           const parent =
-            proxyDraft.parent?.parent?.proxy[proxyDraft.parent?.key];
+            proxyDraft.parent!.parent!.proxy[proxyDraft.parent!.key];
           const parentProxyDraft = getProxyDraft(parent);
           if (parentProxyDraft === undefined) {
             // !case: handle assigning a non-draft with the same key
