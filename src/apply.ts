@@ -52,7 +52,10 @@ export function apply<T extends object, F extends boolean = false>(
       let base: any = draft;
       for (let index = 0; index < path.length - 1; index += 1) {
         const parentType = getType(base);
-        const key = String(path[index]);
+        let key = path[index];
+        if (typeof key !== 'string' && typeof key !== 'number') {
+          key = String(key);
+        }
         if (
           ((parentType === DraftType.Object ||
             parentType === DraftType.Array) &&

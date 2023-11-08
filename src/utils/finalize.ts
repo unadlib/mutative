@@ -27,9 +27,11 @@ export function handleValue(target: any, handledSet: WeakSet<any>) {
     if (isDraft(value)) {
       const proxyDraft = getProxyDraft(value)!;
       ensureShallowCopy(proxyDraft);
-      const updatedValue = proxyDraft.assignedMap?.size
-        ? proxyDraft.copy
-        : proxyDraft.original;
+      // A draft where a child node has been changed, or assigned a value
+      const updatedValue =
+        proxyDraft.assignedMap?.size || proxyDraft.operated
+          ? proxyDraft.copy
+          : proxyDraft.original;
       // final update value
       set(isSet ? setMap! : target, key, updatedValue);
     } else {

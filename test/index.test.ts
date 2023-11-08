@@ -2926,8 +2926,8 @@ test('#18 - map: assigning a non-draft with the same key - enablePatches', () =>
   );
   expect(created[0].map.get(0).one.two).toBe(2);
 
-  // expect(apply(baseState, created[1])).toEqual(created[0]);
-  // expect(apply(created[0], created[2])).toEqual(baseState);
+  expect(apply(baseState, created[1])).toEqual(created[0]);
+  expect(apply(created[0], created[2])).toEqual(baseState);
 });
 
 test('#18 - set: assigning a non-draft with the same key', () => {
@@ -2998,6 +2998,45 @@ test('#18 - array: assigning a non-draft with the same key - enablePatches', () 
     }
   );
   expect(created[0].array[0].one.two).toBe(2);
+
+  expect(apply(baseState, created[1])).toEqual(created[0]);
+  expect(apply(created[0], created[2])).toEqual(baseState);
+});
+
+test('#18: assigning a non-draft with the different key - enablePatches', () => {
+  const baseState = {
+    array: [
+      {
+        one: {
+          two: 3,
+        },
+      },
+    ],
+  };
+
+  const created = create(
+    baseState,
+    (draft) => {
+      draft.array[0].one.two = 2;
+      // @ts-ignore
+      draft.array1 = [0, { c: draft.array[0] }];
+      // @ts-ignore
+      draft.map = [0, new Map([[0, draft.array[0]]])];
+      // @ts-ignore
+      draft.set = [0, new Set([draft.array[0]])];
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  // @ts-ignore
+  expect(created[0].array[0].one.two).toBe(2);
+  // @ts-ignore
+  expect(created[0].array1[1].c.one.two).toBe(2);
+  // @ts-ignore
+  expect(created[0].map[1].get(0).one.two).toBe(2);
+  // @ts-ignore
+  expect(Array.from(created[0].set[1])[0].one.two).toBe(2);
 
   expect(apply(baseState, created[1])).toEqual(created[0]);
   expect(apply(created[0], created[2])).toEqual(baseState);
