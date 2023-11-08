@@ -270,6 +270,10 @@ export function createDraft<T extends object>(createDraftOptions: {
           if (parentProxyDraft === undefined) {
             // !case: handle assigning a non-draft with the same key
             copy = parent;
+            const current = get(copy, key!);
+            if (!getProxyDraft(current)) {
+              updatedValue = current;
+            }
           }
         }
         // final update value

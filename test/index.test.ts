@@ -2848,12 +2848,268 @@ test('#18 - array: assigning a non-draft with the same key - deep3', () => {
 
   const created = create(baseState, (draft) => {
     draft.array[0].one.two.three = 2;
+    const tow = draft.array[0].one.two;
     // @ts-ignore
     draft.array = [{ one: {} }];
-    draft.array[0].one.two = draft.array[0].one.two;
+    draft.array[0].one.two = tow;
+    expect(draft.array[0].one.two.three).toBe(2);
   });
 
   expect(created.array[0].one.two.three).toBe(2);
+});
+
+test('#18 - array: assigning a non-draft with the same key - deep5', () => {
+  const baseState = {
+    array: [
+      {
+        one: {
+          two: {
+            three: 3,
+          },
+        },
+      },
+    ],
+  };
+
+  const created = create(
+    baseState,
+    (draft) => {
+      draft.array[0].one.two.three = 2;
+      const two = draft.array[0].one.two;
+      // @ts-ignore
+      const one = [];
+      // @ts-ignore
+      draft.array1 = [{ one }];
+      // @ts-ignore
+      one.push(two);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+
+  // @ts-ignore
+  expect(Array.from(created[0].array1[0].one)[0].three).toBe(2);
+
+  //  @ts-ignore
+  expect(apply(baseState, created[1])).toEqual(created[0]);
+  // @ts-ignore
+  expect(apply(created[0], created[2])).toEqual(baseState);
+});
+
+test('#18 - object: assigning a non-draft with the same key - deep5', () => {
+  const baseState = {
+    array: [
+      {
+        one: {
+          two: {
+            three: 3,
+          },
+        },
+      },
+    ],
+  };
+
+  const created = create(
+    baseState,
+    (draft) => {
+      draft.array[0].one.two.three = 2;
+      const two = draft.array[0].one.two;
+      // @ts-ignore
+      const one = {};
+      // @ts-ignore
+      draft.array1 = [{ one }];
+      // @ts-ignore
+      one.x = two;
+    },
+    {
+      enablePatches: true,
+    }
+  );
+
+  // @ts-ignore
+  expect(created[0].array1[0].one.x.three).toBe(2);
+
+  //  @ts-ignore
+  expect(apply(baseState, created[1])).toEqual(created[0]);
+  // @ts-ignore
+  expect(apply(created[0], created[2])).toEqual(baseState);
+});
+
+test('#18 - set: assigning a non-draft with the same key - deep5', () => {
+  const baseState = {
+    array: [
+      {
+        one: {
+          two: {
+            three: 3,
+          },
+        },
+      },
+    ],
+  };
+
+  const created = create(
+    baseState,
+    (draft) => {
+      draft.array[0].one.two.three = 2;
+      const two = draft.array[0].one.two;
+      // @ts-ignore
+      const one = new Set();
+      // @ts-ignore
+      draft.array1 = [{ one }];
+      // @ts-ignore
+      one.add(two);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+
+  // @ts-ignore
+  expect(Array.from(created[0].array1[0].one)[0].three).toBe(2);
+
+  //  @ts-ignore
+  expect(apply(baseState, created[1])).toEqual(created[0]);
+  // @ts-ignore
+  expect(apply(created[0], created[2])).toEqual(baseState);
+});
+
+test('#18 - map: assigning a non-draft with the same key - deep5', () => {
+  const baseState = {
+    array: [
+      {
+        one: {
+          two: {
+            three: 3,
+          },
+        },
+      },
+    ],
+  };
+
+  const created = create(
+    baseState,
+    (draft) => {
+      draft.array[0].one.two.three = 2;
+      const two = draft.array[0].one.two;
+      // @ts-ignore
+      const one = new Map();
+      // @ts-ignore
+      draft.array1 = [{ one }];
+      // @ts-ignore
+      one.set(0, two);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+
+  // @ts-ignore
+  expect(Array.from(created[0].array1[0].one.values())[0].three).toBe(2);
+
+  //  @ts-ignore
+  expect(apply(baseState, created[1])).toEqual(created[0]);
+  // @ts-ignore
+  expect(apply(created[0], created[2])).toEqual(baseState);
+});
+
+test('#18 - set: assigning a non-draft with the same key - deep6', () => {
+  const baseState = {
+    array: [
+      {
+        one: {
+          two: {
+            three: 3,
+          },
+        },
+      },
+    ],
+  };
+
+  const created = create(
+    baseState,
+    (draft) => {
+      draft.array[0].one.two.three = 2;
+      const two = draft.array[0].one.two;
+      const one = new Set();
+      // @ts-ignore
+      draft.array = [{ one }];
+      // @ts-ignore
+      one.add(two);
+      // @ts-ignore
+      expect(Array.from(draft.array[0].one.values())[0].three).toBe(2);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+
+  // @ts-ignore
+  expect(Array.from(created[0].array[0].one.values())[0].three).toBe(2);
+
+  //  @ts-ignore
+  expect(apply(baseState, created[1])).toEqual(created[0]);
+  // @ts-ignore
+  // expect(apply(created[0], created[2])).toEqual(baseState);
+});
+
+test('#18 - set: assigning a non-draft with the same key - deep3', () => {
+  const baseState = {
+    array: [
+      {
+        one: {
+          two: {
+            three: 3,
+          },
+        },
+      },
+    ],
+  };
+
+  const created = create(baseState, (draft) => {
+    draft.array[0].one.two.three = 2;
+    const two = draft.array[0].one.two;
+    const one = new Set();
+    // @ts-ignore
+    draft.array = [{ one }];
+    // @ts-ignore
+    one.add(two);
+    // @ts-ignore
+    expect(Array.from(draft.array[0].one)[0].three).toBe(2);
+  });
+
+  // @ts-ignore
+  expect(Array.from(created.array[0].one)[0].three).toBe(2);
+});
+
+test('#18 - set: assigning a non-draft with the same key - deep7', () => {
+  const baseState = {
+    array: [
+      {
+        one: {
+          two: {
+            three: 3,
+          },
+        },
+      },
+    ],
+  };
+
+  const created = create(baseState, (draft) => {
+    draft.array[0].one.two.three = 2;
+    const two = draft.array[0].one.two;
+    const one = new Set();
+    // @ts-ignore
+    draft.array = [0, { one }];
+    // @ts-ignore
+    one.add(two);
+    // @ts-ignore
+    expect(Array.from(draft.array[1].one)[0].three).toBe(2);
+  });
+
+  // @ts-ignore
+  expect(Array.from(created.array[1].one)[0].three).toBe(2);
 });
 
 test('#18 - array: assigning a non-draft with the same key - deep4', () => {
