@@ -3359,3 +3359,15 @@ test('map: assigning a non-draft array', () => {
 
   expect(state.data.size).toBe(0);
 });
+
+test('#20 - Filter does not work correctly when array contains objects', () => {
+  const baseState = {
+    array: [{ x: 1 }],
+  };
+
+  const state = create(baseState, (draft) => {
+    draft.array = draft.array.filter((o) => o.x !== 1);
+  });
+
+  expect(state.array).toEqual([]);
+});
