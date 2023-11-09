@@ -3297,3 +3297,65 @@ test('#18: assigning a non-draft with the different key - enablePatches', () => 
   expect(apply(baseState, created[1])).toEqual(created[0]);
   expect(apply(created[0], created[2])).toEqual(baseState);
 });
+
+test('array: assigning a non-draft array', () => {
+  const baseState = {
+    data: [{ a: true }],
+  };
+
+  const state = create(baseState, (draft) => {
+    const a = draft.data.filter((item) => item.a);
+    // @ts-ignore
+    draft.data = [];
+  });
+
+  expect(state.data.length).toBe(0);
+});
+
+test('object: assigning a non-draft array', () => {
+  const baseState = {
+    data: { a: { b: true } },
+  };
+
+  const state = create(baseState, (draft) => {
+    Object.values(draft.data).forEach((item) => {
+      item.b = false;
+    });
+    // @ts-ignore
+    draft.data = {};
+  });
+
+  expect(Object.values(state.data).length).toBe(0);
+});
+
+test('set: assigning a non-draft array', () => {
+  const baseState = {
+    data: new Set([{ b: true }]),
+  };
+
+  const state = create(baseState, (draft) => {
+    draft.data.forEach((item) => {
+      //
+    });
+    // @ts-ignore
+    draft.data = new Set();
+  });
+
+  expect(state.data.size).toBe(0);
+});
+
+test('map: assigning a non-draft array', () => {
+  const baseState = {
+    data: new Map([[0, { b: true }]]),
+  };
+
+  const state = create(baseState, (draft) => {
+    draft.data.forEach((item) => {
+      //
+    });
+    // @ts-ignore
+    draft.data = new Map();
+  });
+
+  expect(state.data.size).toBe(0);
+});

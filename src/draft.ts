@@ -260,22 +260,6 @@ export function createDraft<T extends object>(createDraftOptions: {
             target.options.updatedValues ?? new WeakMap();
           target.options.updatedValues.set(updatedValue, proxyDraft.original);
         }
-        if (
-          proxyDraft.parent!.key !== undefined &&
-          proxyDraft.parent!.parent!.proxy
-        ) {
-          const parent =
-            proxyDraft.parent!.parent!.proxy[proxyDraft.parent!.key];
-          const parentProxyDraft = getProxyDraft(parent);
-          if (parentProxyDraft === undefined) {
-            // !case: handle assigning a non-draft with the same key
-            copy = parent;
-            const current = get(copy, key!);
-            if (!getProxyDraft(current)) {
-              updatedValue = current;
-            }
-          }
-        }
         // final update value
         set(copy, key!, updatedValue);
       }
