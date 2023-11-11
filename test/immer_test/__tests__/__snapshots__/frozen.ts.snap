@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`auto freeze - proxy will freeze maps 1`] = `"Cannot modify frozen object"`;
+
+exports[`auto freeze - proxy will freeze maps 2`] = `"Cannot modify frozen object"`;
+
+exports[`auto freeze - proxy will freeze maps 3`] = `"Cannot modify frozen object"`;
+
+exports[`auto freeze - proxy will freeze sets 1`] = `"Cannot modify frozen object"`;
+
+exports[`auto freeze - proxy will freeze sets 2`] = `"Cannot modify frozen object"`;
+
+exports[`auto freeze - proxy will freeze sets 3`] = `"Cannot modify frozen object"`;

@@ -127,6 +127,7 @@
   },
   "jest": {
     "preset": "ts-jest",
+    "coveragePathIgnorePatterns": ["<rootDir>/test/"],
     "transform": {
       "\\.[jt]sx?$": [
         "ts-jest",
