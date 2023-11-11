@@ -1,30 +1,29 @@
-'use strict';
-import { create } from '../../src';
-import { deepFreeze } from '../../src/utils';
+// @ts-nocheck
+import {
+  produce,
+  setUseProxies,
+  setAutoFreeze,
+  freeze,
+  enableMapSet,
+} from '../src/immer';
+
+enableMapSet();
 
 const { isFrozen } = Object;
 
 runTests('proxy', true);
-// runTests('es5', false);
 
-function runTests(name: any, useProxies: any) {
+function runTests(name) {
   describe('auto freeze - ' + name, () => {
-    // beforeAll(() => {
-    //   setUseProxies(useProxies);
-    //   setAutoFreeze(true);
-    // });
+    beforeAll(() => {
+      setAutoFreeze(true);
+    });
 
     it('never freezes the base state', () => {
       const base = { arr: [1], obj: { a: 1 } };
-      const next = create(
-        base,
-        (draft) => {
-          draft.arr.push(1);
-        },
-        {
-          enableAutoFreeze: true,
-        }
-      );
+      const next = produce(base, (draft) => {
+        draft.arr.push(1);
+      });
       expect(isFrozen(base)).toBeFalsy();
       expect(isFrozen(base.arr)).toBeFalsy();
       expect(isFrozen(next)).toBeTruthy();
@@ -33,15 +32,9 @@ function runTests(name: any, useProxies: any) {
 
     it('freezes reused base state', () => {
       const base = { arr: [1], obj: { a: 1 } };
-      const next = create(
-        base,
-        (draft) => {
-          draft.arr.push(1);
-        },
-        {
-          enableAutoFreeze: true,
-        }
-      );
+      const next = produce(base, (draft) => {
+        draft.arr.push(1);
+      });
       expect(next.obj).toBe(base.obj);
       expect(isFrozen(next.obj)).toBeTruthy();
     });
@@ -49,32 +42,18 @@ function runTests(name: any, useProxies: any) {
     describe('the result is always auto-frozen when', () => {
       it('the root draft is mutated (and no error is thrown)', () => {
         const base = {};
-        const next = create(
-          base,
-          (draft) => {
-            // @ts-ignore
-            draft.a = 1;
-          },
-          {
-            enableAutoFreeze: true,
-          }
-        );
+        const next = produce(base, (draft) => {
+          draft.a = 1;
+        });
         expect(next).not.toBe(base);
         expect(isFrozen(next)).toBeTruthy();
       });
 
       it('a nested draft is mutated (and no error is thrown)', () => {
         const base = { a: {} };
-        const next = create(
-          base,
-          (draft) => {
-            // @ts-ignore
-            draft.a.b = 1;
-          },
-          {
-            enableAutoFreeze: true,
-          }
-        );
+        const next = produce(base, (draft) => {
+          draft.a.b = 1;
+        });
         expect(next).not.toBe(base);
         expect(isFrozen(next)).toBeTruthy();
         expect(isFrozen(next.a)).toBeTruthy();
@@ -82,9 +61,7 @@ function runTests(name: any, useProxies: any) {
 
       it('a new object replaces the entire draft', () => {
         const obj = { a: { b: {} } };
-        const next = create({}, () => obj, {
-          enableAutoFreeze: true,
-        }) as any;
+        const next = produce({}, () => obj);
         expect(next).toBe(obj);
         expect(isFrozen(next)).toBeTruthy();
         expect(isFrozen(next.a)).toBeTruthy();
@@ -93,69 +70,44 @@ function runTests(name: any, useProxies: any) {
 
       it('a new object is added to the root draft', () => {
         const base = {};
-        const next = create(
-          base,
-          (draft) => {
-            // @ts-ignore
-            draft.a = { b: [] };
-          },
-          {
-            enableAutoFreeze: true,
-          }
-        );
+        const next = produce(base, (draft) => {
+          draft.a = { b: [] };
+        });
         expect(next).not.toBe(base);
         expect(isFrozen(next)).toBeTruthy();
-        // @ts-ignore
         expect(isFrozen(next.a)).toBeTruthy();
-        // @ts-ignore
         expect(isFrozen(next.b)).toBeTruthy();
       });
 
       it('a new object is added to a nested draft', () => {
         const base = { a: {} };
-        const next = create(
-          base,
-          (draft) => {
-            // @ts-ignore
-            draft.a.b = { c: {} };
-          },
-          {
-            enableAutoFreeze: true,
-          }
-        );
+        const next = produce(base, (draft) => {
+          draft.a.b = { c: {} };
+        });
         expect(next).not.toBe(base);
         expect(isFrozen(next)).toBeTruthy();
         expect(isFrozen(next.a)).toBeTruthy();
-        // @ts-ignore
         expect(isFrozen(next.a.b)).toBeTruthy();
-        // @ts-ignore
         expect(isFrozen(next.a.b.c)).toBeTruthy();
       });
 
       it('a nested draft is returned', () => {
         const base = { a: {} };
-        // @ts-expect-error
-        const next = create(base, (draft) => draft.a, {
-          enableAutoFreeze: true,
-        });
+        const next = produce(base, (draft) => draft.a);
         expect(next).toBe(base.a);
         expect(isFrozen(next)).toBeTruthy();
       });
 
       it('the base state is returned', () => {
         const base = {};
-        const next = create(base, () => base, {
-          enableAutoFreeze: true,
-        });
+        const next = produce(base, () => base);
         expect(next).toBe(base);
         expect(isFrozen(next)).toBeTruthy();
       });
 
       it('the producer is a no-op', () => {
         const base = { a: {} };
-        const next = create(base, () => {}, {
-          enableAutoFreeze: true,
-        });
+        const next = produce(base, () => {});
         expect(next).toBe(base);
         expect(isFrozen(next)).toBeTruthy();
         expect(isFrozen(next.a)).toBeTruthy();
@@ -163,9 +115,7 @@ function runTests(name: any, useProxies: any) {
 
       it('the root draft is returned', () => {
         const base = { a: {} };
-        const next = create(base, (draft) => draft, {
-          enableAutoFreeze: true,
-        });
+        const next = produce(base, (draft) => draft);
         expect(next).toBe(base);
         expect(isFrozen(next)).toBeTruthy();
         expect(isFrozen(next.a)).toBeTruthy();
@@ -173,81 +123,50 @@ function runTests(name: any, useProxies: any) {
 
       it('a new object replaces a primitive base', () => {
         const obj = { a: {} };
-        // @ts-expect-error
-        const next = create(null, () => obj, {
-          enableAutoFreeze: true,
-        });
+        const next = produce(null, () => obj);
         expect(next).toBe(obj);
         expect(isFrozen(next)).toBeTruthy();
-        // @ts-expect-error
         expect(isFrozen(next.a)).toBeTruthy();
       });
     });
 
     it('can handle already frozen trees', () => {
-      const a: any[] = [];
-      const b = { a };
+      const a = [];
+      const b = { a: a };
       Object.freeze(a);
       Object.freeze(b);
-      const n = create(
-        b,
-        (draft) => {
-          // @ts-ignore
-          draft.c = true;
-          // @ts-ignore
-          draft.a.push(3);
-        },
-        {
-          enableAutoFreeze: true,
-        }
-      );
+      const n = produce(b, (draft) => {
+        draft.c = true;
+        draft.a.push(3);
+      });
       expect(n).toEqual({ c: true, a: [3] });
     });
 
     it('will freeze maps', () => {
       const base = new Map();
 
-      const res = create(
-        base,
-        (draft) => {
-          draft.set('a', 1);
-        },
-        {
-          enableAutoFreeze: true,
-        }
-      );
-      // @ts-ignore
+      const res = produce(base, (draft) => {
+        draft.set('a', 1);
+      });
       expect(() => res.set('b', 2)).toThrowErrorMatchingSnapshot();
-      // @ts-ignore
       expect(() => res.clear()).toThrowErrorMatchingSnapshot();
-      // @ts-ignore
       expect(() => res.delete('b')).toThrowErrorMatchingSnapshot();
 
       // In draft, still editable
-      expect(
-        create(res, (d) => void d.set('a', 2), {
-          enableAutoFreeze: true,
-        })
-      ).not.toBe(res);
+      expect(produce(res, (d) => void d.set('a', 2))).not.toBe(res);
     });
 
     it('will freeze sets', () => {
       const base = new Set();
-      const res = create(
-        base,
-        (draft) => {
-          base.add(1);
-        },
-        {
-          enableAutoFreeze: true,
-        }
-      );
+      const res = produce(base, (draft) => {
+        base.add(1);
+      });
       expect(() => base.add(2)).toThrowErrorMatchingSnapshot();
       expect(() => base.delete(1)).toThrowErrorMatchingSnapshot();
       expect(() => base.clear()).toThrowErrorMatchingSnapshot();
 
       // In draft, still editable
-      expect(create(res, (d) => void d.add(2))).not.toBe(res);
+      expect(produce(res, (d) => void d.add(2))).not.toBe(res);
     });
 
     it('Map#get() of frozen object will became draftable', () => {
@@ -267,22 +186,16 @@ function runTests(name: any, useProxies: any) {
       };
 
       // This will freeze maps
-      const frozen = create(base, (draft) => {});
+      const frozen = produce(base, (draft) => {});
 
       // https://github.com/immerjs/immer/issues/472
-      create(
-        frozen,
-        (draft) => {
-          ['b', 'c'].forEach((other) => {
-            const m = draft.map.get(other);
-            // @ts-ignore
-            m.delete('a');
-          });
-        },
-        {
-          enableAutoFreeze: true,
-        }
-      );
+      produce(frozen, (draft) => {
+        ['b', 'c'].forEach((other) => {
+          const m = draft.map.get(other);
+
+          m.delete('a');
+        });
+      });
     });
 
     it('never freezes non-enumerable fields #590', () => {
@@ -298,22 +211,13 @@ function runTests(name: any, useProxies: any) {
         x: 1,
       };
 
-      const state2 = create(
-        state,
-        (draft) => {
-          // @ts-ignore
-          draft.ref = component;
-        },
-        {
-          enableAutoFreeze: true,
-        }
-      );
+      const state2 = produce(state, (draft) => {
+        draft.ref = component;
+      });
 
       expect(() => {
-        // @ts-ignore
         state2.ref.state.x++;
       }).not.toThrow();
-      // @ts-ignore
       expect(state2.ref.state.x).toBe(2);
     });
 
@@ -331,22 +235,13 @@ function runTests(name: any, useProxies: any) {
         x: 1,
       };
 
-      const state2 = create(
-        state,
-        (draft) => {
-          // @ts-ignore
-          draft.ref = component;
-        },
-        {
-          enableAutoFreeze: true,
-        }
-      );
+      const state2 = produce(state, (draft) => {
+        draft.ref = component;
+      });
 
       expect(() => {
-        // @ts-ignore
         state2.ref[symbol].x++;
       }).not.toThrow();
-      // @ts-ignore
       expect(state2.ref[symbol].x).toBe(2);
     });
   });
@@ -354,7 +249,7 @@ function runTests(name: any, useProxies: any) {
 
 test('freeze - shallow', () => {
   const obj1 = { hello: { world: true } };
-  const res = Object.freeze(obj1);
+  const res = freeze(obj1);
 
   expect(res).toBe(obj1);
   expect(Object.isFrozen(res)).toBe(true);
@@ -363,10 +258,9 @@ test('freeze - shallow', () => {
 
 test('freeze - deep', () => {
   const obj1 = { hello: { world: true } };
-  deepFreeze(obj1);
+  const res = freeze(obj1, true);
 
-  // expect(res).toBe(obj1);
-  expect(Object.isFrozen(obj1)).toBe(true);
-  // @ts-ignore
-  expect(Object.isFrozen(obj1.hello)).toBe(true);
+  expect(res).toBe(obj1);
+  expect(Object.isFrozen(res)).toBe(true);
+  expect(Object.isFrozen(res.hello)).toBe(true);
 });

@@ -1,12 +1,20 @@
-'use strict';
-import { create, apply, Patches } from '../../src';
+// @ts-nocheck
+import {
+  produce,
+  applyPatches,
+  immerable,
+  produceWithPatches,
+  enableMapSet,
+  enablePatches,
+  setAutoFreeze,
+} from '../src/immer';
+
+enableMapSet();
+enablePatches();
 
 describe('readme example', () => {
   it('works', () => {
-    const baseState: {
-      todo: string;
-      done?: boolean;
-    }[] = [
+    const baseState = [
       {
         todo: 'Learn typescript',
         done: true,
@@ -17,7 +25,7 @@ describe('readme example', () => {
       },
     ];
 
-    const nextState = create(baseState, (draft) => {
+    const nextState = produce(baseState, (draft) => {
       draft.push({ todo: 'Tweet about it' });
       draft[1].done = true;
     });
@@ -47,32 +55,29 @@ describe('readme example', () => {
     // his changes should be updated
     let fork = state;
     // all the changes the user made in the wizard
-    let changes: Patches = [];
+    let changes = [];
     // all the inverse patches
-    let inverseChanges: Patches = [];
+    let inverseChanges = [];
 
-    const [newState, patches, inversePatches] = create(
+    fork = produce(
       fork,
       (draft) => {
         draft.age = 33;
       },
-      {
-        enablePatches: true,
+      // The third argument to produce is a callback to which the patches will be fed
+      (patches, inversePatches) => {
+        changes.push(...patches);
+        inverseChanges.push(...inversePatches);
       }
     );
 
-    fork = newState;
-
-    changes.push(...patches);
-    inverseChanges.push(...inversePatches);
-
     // In the mean time, our original state is updated as well, as changes come in from the server
-    state = create(state, (draft) => {
+    state = produce(state, (draft) => {
       draft.name = 'Michel';
     });
 
     // When the wizard finishes (successfully) we can replay the changes made in the fork onto the *new* state!
-    state = apply(state, changes);
+    state = applyPatches(state, changes);
 
     // state now contains the changes from both code paths!
     expect(state).toEqual({
@@ -81,7 +86,7 @@ describe('readme example', () => {
     });
 
     // Even after finishing the wizard, the user might change his mind...
-    state = apply(state, inverseChanges);
+    state = applyPatches(state, inverseChanges);
     expect(state).toEqual({
       name: 'Michel',
       age: 32,
@@ -94,7 +99,7 @@ describe('readme example', () => {
       tokenSet: new Set(),
     };
 
-    const nextState = create(state, (draft) => {
+    const nextState = produce(state, (draft) => {
       draft.title = draft.title.toUpperCase();
       draft.tokenSet.add('c1342');
     });
@@ -111,8 +116,8 @@ describe('readme example', () => {
       users: new Map([['michel', { name: 'miche', age: 27 }]]),
     };
 
-    const nextState = create(state, (draft) => {
-      draft.users.get('michel')!.name = 'michel';
+    const nextState = produce(state, (draft) => {
+      draft.users.get('michel').name = 'michel';
     });
 
     expect(state).toEqual({
@@ -125,37 +130,25 @@ describe('readme example', () => {
 
   it('supports immerable', () => {
     class Clock {
-      hours: number;
-      minutes: number;
-
       constructor(hours = 0, minutes = 0) {
         this.hours = hours;
         this.minutes = minutes;
       }
 
-      increment(hours: number, minutes = 0) {
-        return create(
-          this,
-          (d) => {
-            d.hours += hours;
-            d.minutes += minutes;
-          },
-          {
-            mark: (target, { immutable }) => {
-              if (target instanceof Clock) {
-                return immutable;
-              }
-            },
-          }
-        );
+      increment(hours, minutes = 0) {
+        return produce(this, (d) => {
+          d.hours += hours;
+          d.minutes += minutes;
+        });
       }
 
       toString() {
-        return `${('' + this.hours).padStart(2, '0')}:${(
+        return `${('' + this.hours).padStart(2, 0)}:${(
           '' + this.minutes
-        ).padStart(2, '0')}`;
+        ).padStart(2, 0)}`;
       }
     }
+    Clock[immerable] = true;
 
     const midnight = new Clock();
     const lunch = midnight.increment(12, 30);
@@ -173,15 +166,12 @@ describe('readme example', () => {
   });
 
   test('produceWithPatches', () => {
-    const result = create(
+    const result = produceWithPatches(
       {
         age: 33,
       },
       (draft) => {
         draft.age++;
-      },
-      {
-        enablePatches: true,
       }
     );
     expect(result).toEqual([
@@ -207,29 +197,19 @@ describe('readme example', () => {
 });
 
 test('Producers can update Maps', () => {
+  setAutoFreeze(true);
   const usersById_v1 = new Map();
 
-  const usersById_v2 = create(
-    usersById_v1,
-    (draft) => {
-      // Modifying a map results in a new map
-      draft.set('michel', { name: 'Michel Weststrate', country: 'NL' });
-    },
-    {
-      enableAutoFreeze: true,
-    }
-  );
+  const usersById_v2 = produce(usersById_v1, (draft) => {
+    // Modifying a map results in a new map
+    draft.set('michel', { name: 'Michel Weststrate', country: 'NL' });
+  });
 
-  const usersById_v3 = create(
-    usersById_v2,
-    (draft) => {
-      // Making a change deep inside a map, results in a new map as well!
-      draft.get('michel').country = 'UK';
-    },
-    {
-      enableAutoFreeze: true,
-    }
-  );
+  const usersById_v3 = produce(usersById_v2, (draft) => {
+    // Making a change deep inside a map, results in a new map as well!
+    draft.get('michel').country = 'UK';
+    debugger;
+  });
 
   // We got a new map each time!
   expect(usersById_v2).not.toBe(usersById_v1);
@@ -237,34 +217,32 @@ test('Producers can update Maps', () => {
   // With different content obviously
   expect(usersById_v1).toMatchInlineSnapshot(`Map {}`);
   expect(usersById_v2).toMatchInlineSnapshot(`
-    Map {
-      "michel" => {
-        "country": "NL",
-        "name": "Michel Weststrate",
-      },
-    }
-  `);
+		Map {
+		  "michel" => {
+		    "country": "NL",
+		    "name": "Michel Weststrate",
+		  },
+		}
+	`);
   expect(usersById_v3).toMatchInlineSnapshot(`
-    Map {
-      "michel" => {
-        "country": "UK",
-        "name": "Michel Weststrate",
-      },
-    }
-  `);
+		Map {
+		  "michel" => {
+		    "country": "UK",
+		    "name": "Michel Weststrate",
+		  },
+		}
+	`);
   // The old one was never modified
   expect(usersById_v1.size).toBe(0);
   // And trying to change a Map outside a producers is going to: NO!
-  // @ts-ignore
   expect(() => usersById_v3.clear()).toThrowErrorMatchingSnapshot();
 });
 
 test('clock class', () => {
   class Clock {
-    hour: number;
-    minute: number;
+    [immerable] = true;
 
-    constructor(hour: number, minute: number) {
+    constructor(hour, minute) {
       this.hour = hour;
       this.minute = minute;
     }
@@ -274,19 +252,9 @@ test('clock class', () => {
     }
 
     tick() {
-      return create(
-        this,
-        (draft) => {
-          draft.minute++;
-        },
-        {
-          mark: (target, { immutable }) => {
-            if (target instanceof Clock) {
-              return immutable;
-            }
-          },
-        }
-      );
+      return produce(this, (draft) => {
+        draft.minute++;
+      });
     }
   }
 

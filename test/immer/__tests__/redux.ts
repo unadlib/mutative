@@ -1,5 +1,5 @@
-import { assert, _ } from './assert';
-import { create, Draft } from '../../src';
+// @ts-nocheck
+import { produce, Draft, assert, _ } from '../src/immer';
 import * as redux from 'redux';
 
 // Mutable Redux
@@ -20,7 +20,7 @@ import * as redux from 'redux';
   /// =============== Actions
 
   const reduceCounterProducer = (state: State = initialState, action: Action) =>
-    create(state, (draftState) => {
+    produce(state, (draftState) => {
       switch (action.type) {
         case 'ADD_TO_COUNTER':
           draftState.counter += action.payload;
@@ -31,19 +31,21 @@ import * as redux from 'redux';
       }
     });
 
-  // const reduceCounterCurriedProducer = create(
-  //   (draftState: State, action: Action) => {
-  //     switch (action.type) {
-  //       case 'ADD_TO_COUNTER':
-  //         draftState.counter += action.payload;
-  //         break;
-  //       case 'SUB_FROM_COUNTER':
-  //         draftState.counter -= action.payload;
-  //         break;
-  //     }
-  //   },
-  //   initialState
-  // );
+  // !!! This is different from immer
+  const reduceCounterCurriedProducer = (
+    state: State = initialState,
+    action: Action
+  ) =>
+    produce(state, (draftState) => {
+      switch (action.type) {
+        case 'ADD_TO_COUNTER':
+          draftState.counter += action.payload;
+          break;
+        case 'SUB_FROM_COUNTER':
+          draftState.counter -= action.payload;
+          break;
+      }
+    });
 
   /// =============== Reducers
 
@@ -51,9 +53,9 @@ import * as redux from 'redux';
     counterReducer: reduceCounterProducer,
   });
 
-  // const curredReduce = redux.combineReducers({
-  //   counterReducer: reduceCounterCurriedProducer,
-  // });
+  const curredReduce = redux.combineReducers({
+    counterReducer: reduceCounterCurriedProducer,
+  });
 
   // reducing the current state to get the next state!
   // console.log(reduce(initialState, addToCounter(12));
@@ -61,7 +63,7 @@ import * as redux from 'redux';
   // ================ store
 
   const store = redux.createStore(reduce);
-  // const curriedStore = redux.createStore(curredReduce);
+  const curriedStore = redux.createStore(curredReduce);
 
   it('#470 works with Redux combine reducers', () => {
     assert(
@@ -70,12 +72,12 @@ import * as redux from 'redux';
         counter: number;
       }
     );
-    // assert(
-    //   curriedStore.getState().counterReducer,
-    //   _ as {
-    //     counter: number;
-    //   }
-    // );
+    assert(
+      curriedStore.getState().counterReducer,
+      _ as {
+        counter: number;
+      }
+    );
   });
 }
 
@@ -101,7 +103,7 @@ import * as redux from 'redux';
       state: State = initialState,
       action: Action
     ) =>
-      create(state, (draftState) => {
+      produce(state, (draftState) => {
         switch (action.type) {
           case 'ADD_TO_COUNTER':
             draftState.counter += action.payload;
@@ -112,19 +114,21 @@ import * as redux from 'redux';
         }
       });
 
-    // const reduceCounterCurriedProducer = create(
-    //   (draftState: Draft<State>, action: Action) => {
-    //     switch (action.type) {
-    //       case 'ADD_TO_COUNTER':
-    //         draftState.counter += action.payload;
-    //         break;
-    //       case 'SUB_FROM_COUNTER':
-    //         draftState.counter -= action.payload;
-    //         break;
-    //     }
-    //   },
-    //   initialState
-    // );
+    // !!! This is different from immer
+    const reduceCounterCurriedProducer = (
+      state: State = initialState,
+      action: Action
+    ) =>
+      produce(state, (draftState) => {
+        switch (action.type) {
+          case 'ADD_TO_COUNTER':
+            draftState.counter += action.payload;
+            break;
+          case 'SUB_FROM_COUNTER':
+            draftState.counter -= action.payload;
+            break;
+        }
+      });
 
     /// =============== Reducers
 
@@ -132,9 +136,9 @@ import * as redux from 'redux';
       counterReducer: reduceCounterProducer,
     });
 
-    // const curredReduce = redux.combineReducers({
-    //   counterReducer: reduceCounterCurriedProducer,
-    // });
+    const curredReduce = redux.combineReducers({
+      counterReducer: reduceCounterCurriedProducer,
+    });
 
     // reducing the current state to get the next state!
     // console.log(reduce(initialState, addToCounter(12));
@@ -142,7 +146,7 @@ import * as redux from 'redux';
     // ================ store
 
     const store = redux.createStore(reduce);
-    // const curriedStore = redux.createStore(curredReduce);
+    const curriedStore = redux.createStore(curredReduce);
 
     it('#470 works with Redux combine readonly reducers', () => {
       assert(
@@ -151,12 +155,12 @@ import * as redux from 'redux';
           readonly counter: number;
         }
       );
-      // assert(
-      //   curriedStore.getState().counterReducer,
-      //   _ as {
-      //     readonly counter: number;
-      //   }
-      // );
+      assert(
+        curriedStore.getState().counterReducer,
+        _ as {
+          readonly counter: number;
+        }
+      );
     });
   }
 }
@@ -175,12 +179,13 @@ it('works with inferred curried reducer', () => {
     count: 3,
   };
 
+  // !!! This is different from immer
   const store = redux.createStore(
-    (state: State = defaultState, action: Action) =>
-      create(state, (draftState) => {
-        if (action.type === 'inc') draftState.count += action.count;
+    (_state: State = defaultState, action: Action) =>
+      produce(_state, (state: State) => {
+        if (action.type === 'inc') state.count += action.count;
         // @ts-expect-error
-        draftState.count2;
+        state.count2;
       })
   );
 
@@ -211,12 +216,13 @@ it('works with inferred curried reducer - readonly', () => {
     count: 3,
   };
 
+  // !!! This is different from immer
   const store = redux.createStore(
-    (state: State = defaultState, action: Action) =>
-      create(state, (draftState: Draft<State>) => {
-        if (action.type === 'inc') draftState.count += action.count;
+    (_state: State = defaultState, action: Action) =>
+      produce(_state, (state: Draft<State>) => {
+        if (action.type === 'inc') state.count += action.count;
         // @ts-expect-error
-        draftState.count2;
+        state.count2;
       })
   );
 

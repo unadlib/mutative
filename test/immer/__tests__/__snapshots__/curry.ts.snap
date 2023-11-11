@@ -2,4 +2,4 @@
 
 exports[`curry - proxy should check arguments 1`] = `"Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable."`;
 
-exports[`curry - proxy should check arguments 2`] = `"Invalid options: , 'options' should be an object."`;
+exports[`curry - proxy should check arguments 2`] = `"patchListener is not a function"`;

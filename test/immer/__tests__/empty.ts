@@ -1,42 +1,25 @@
-import { apply, create } from '../../src';
-import { PROXY_DRAFT } from '../../src/constant';
-import { Patches } from '../../src/interface';
+// @ts-nocheck
+import {
+  produce,
+  produceWithPatches,
+  immerable,
+  enableMapSet,
+  enablePatches,
+  applyPatches,
+} from '../src/immer';
+// import { DRAFT_STATE, Patch } from '../src/internal';
+
+enableMapSet();
+enablePatches();
 
 test('empty stub test', () => {
   expect(true).toBe(true);
 });
 
-// describe('map set - es5', () => {
-//   test('can assign set value', () => {
-//     setUseProxies(false);
-
-//     const baseState = new Map([['x', 1]]);
-//     debugger;
-//     const nextState = create(baseState, (s) => {
-//       s.set('x', 2);
-//     });
-//     expect(baseState.get('x')).toEqual(1);
-//     expect(nextState).not.toBe(baseState);
-//     expect(nextState.get('x')).toEqual(2);
-//   });
-
-//   test('can assign by key', () => {
-//     setUseProxies(false);
-
-//     const baseState = new Map([['x', { a: 1 }]]);
-//     const nextState = create(baseState, (s) => {
-//       s.get('x')!.a++;
-//     });
-//     expect(nextState.get('x')!.a).toEqual(2);
-//     expect(baseState.get('x')!.a).toEqual(1);
-//     expect(nextState).not.toBe(baseState);
-//   });
-// });
-
 describe('map set - proxy', () => {
   test('can assign set value', () => {
     const baseState = new Map([['x', 1]]);
-    const nextState = create(baseState, (s) => {
+    const nextState = produce(baseState, (s) => {
       s.set('x', 2);
     });
     expect(baseState.get('x')).toEqual(1);
@@ -46,7 +29,7 @@ describe('map set - proxy', () => {
 
   test('can assign by key', () => {
     const baseState = new Map([['x', { a: 1 }]]);
-    const nextState = create(baseState, (s) => {
+    const nextState = produce(baseState, (s) => {
       s.get('x')!.a++;
     });
     expect(nextState.get('x')!.a).toEqual(2);
@@ -56,7 +39,7 @@ describe('map set - proxy', () => {
 
   test('deep change bubbles up', () => {
     const baseState = createBaseState();
-    const nextState = create(baseState, (s) => {
+    const nextState = produce(baseState, (s) => {
       s.anObject.nested.yummie = false;
     });
     expect(nextState).not.toBe(baseState);
@@ -69,12 +52,12 @@ describe('map set - proxy', () => {
   it('can assign by key', () => {
     const baseState = createBaseState();
 
-    const nextState = create(baseState, (s) => {
+    const nextState = produce(baseState, (s) => {
       // Map.prototype.set should return the Map itself
       const res = s.aMap.set('force', true);
       // @ts-ignore
-      if (!global.USES_BUILD)
-        expect(res).toBe((s.aMap as any)[PROXY_DRAFT].proxy);
+      // if (!global.USES_BUILD)
+      //   expect(res).toBe((s.aMap as any)[DRAFT_STATE].draft_);
     });
     expect(nextState).not.toBe(baseState);
     expect(nextState.aMap).not.toBe(baseState.aMap);
@@ -84,7 +67,7 @@ describe('map set - proxy', () => {
   it("can use 'delete' to remove items", () => {
     const baseState = createBaseState();
 
-    const nextState = create(baseState, (s) => {
+    const nextState = produce(baseState, (s) => {
       expect(s.aMap.has('jedi')).toBe(true);
       expect(s.aMap.delete('jedi')).toBe(true);
       expect(s.aMap.has('jedi')).toBe(false);
@@ -98,7 +81,7 @@ describe('map set - proxy', () => {
   it("support 'has'", () => {
     const baseState = createBaseState();
 
-    const nextState = create(baseState, (s) => {
+    const nextState = produce(baseState, (s) => {
       expect(s.aMap.has('newKey')).toBe(false);
       s.aMap.set('newKey', true);
       expect(s.aMap.has('newKey')).toBe(true);
@@ -139,6 +122,8 @@ function createBaseState() {
 
 describe('#768', () => {
   class Stock {
+    [immerable] = true;
+
     constructor(public price: number) {}
 
     pushPrice(price: number) {
@@ -158,7 +143,7 @@ describe('#768', () => {
         path: ['stock'],
         value: new Stock(200),
       },
-    ] as Patches;
+    ] as Patch[];
 
     // Start with modified state
     const state = {
@@ -166,27 +151,20 @@ describe('#768', () => {
     };
 
     expect(state.stock.price).toEqual(100);
-
-    const resetState: State = apply(state, errorProducingPatch);
+    expect(state.stock[immerable]).toBeTruthy();
+    // Use patch to "replace" stocks
+    const resetState: State = applyPatches(state, errorProducingPatch);
     expect(state.stock.price).toEqual(100);
     expect(resetState.stock.price).toEqual(200);
+    expect(resetState.stock[immerable]).toBeTruthy();
 
     // Problems come in when resetState is modified
-    const updatedState = create(
-      resetState,
-      (draft) => {
-        draft.stock.pushPrice(300);
-      },
-      {
-        mark: (target, { immutable }) => {
-          if (target instanceof Stock) {
-            return immutable;
-          }
-        },
-      }
-    );
+    const updatedState = produce(resetState, (draft) => {
+      draft.stock.pushPrice(300);
+    });
     expect(state.stock.price).toEqual(100);
     expect(updatedState.stock.price).toEqual(300);
+    expect(updatedState.stock[immerable]).toBeTruthy();
     expect(resetState.stock.price).toEqual(200);
   });
 });

@@ -3371,3 +3371,115 @@ test('#20 - Filter does not work correctly when array contains objects', () => {
 
   expect(state.array).toEqual([]);
 });
+
+test('base - map', () => {
+  const baseState = new Map<any, any>();
+  const state = create(
+    baseState,
+    (draft) => {
+      draft.clear();
+    },
+    {
+      mark: (target) => 'immutable',
+    }
+  );
+  expect(state).toBe(baseState);
+});
+
+test('base - set', () => {
+  const baseState = new Set<any>();
+  const state = create(
+    baseState,
+    (draft) => {
+      draft.clear();
+    },
+    {
+      mark: (target) => 'immutable',
+    }
+  );
+  expect(state).toBe(baseState);
+});
+
+test('base - array', () => {
+  const baseState = <any>[];
+  const state = create(
+    baseState,
+    (draft) => {
+      draft.length = 0;
+    },
+    {
+      mark: (target) => 'immutable',
+    }
+  );
+  expect(state).toBe(baseState);
+});
+
+test('base - object', () => {
+  const baseState = {};
+  const state = create(
+    baseState,
+    (draft) => {
+      // @ts-ignore
+      delete draft.a;
+    },
+    {
+      mark: (target) => 'immutable',
+    }
+  );
+  expect(state).toBe(baseState);
+});
+
+test('base - class', () => {
+  class Base {
+    a = 1;
+  }
+
+  const baseState = new Base();
+
+  const state = create(
+    baseState,
+    (draft) => {
+      draft.a = 2;
+    },
+    {
+      mark: (target) => 'immutable',
+    }
+  );
+
+  expect(state).not.toBe(baseState);
+});
+
+test('works with interweaved Immer instances', () => {
+  const enableAutoFreeze = false;
+  const base: any = {};
+  const result = create(
+    base,
+    (s1: any) =>
+      create(
+        { s1 },
+        (s2: any) => {
+          expect(original(s2.s1)).toBe(s1);
+          s2.n = 1;
+          s2.s1 = create(
+            { s2 },
+            (s3) => {
+              expect(original(s3.s2)).toBe(s2);
+              expect(original(s3.s2.s1)).toBe(s2.s1);
+              return s3.s2.s1;
+            },
+            {
+              enableAutoFreeze,
+            }
+          );
+        },
+        {
+          enableAutoFreeze,
+        }
+      ),
+    {
+      enableAutoFreeze,
+    }
+  );
+  expect(result.n).toBe(1);
+  expect(result.s1).toBe(base);
+});

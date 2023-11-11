@@ -1,29 +1,41 @@
-import { current, isDraft, create, original } from '../../src';
+// @ts-nocheck
+import {
+  setAutoFreeze,
+  current,
+  immerable,
+  isDraft,
+  produce,
+  original,
+  freeze,
+  enableMapSet,
+} from '../src/immer';
+
+enableMapSet();
 
 runTests('proxy', true);
-// runTests("es5", false)
 
 const isProd = process.env.NODE_ENV === 'production';
 
-function runTests(name: any, useProxies: any) {
+function runTests(name) {
   describe('current - ' + name, () => {
-    // beforeAll(() => {
-    // 	setAutoFreeze(true)
-    // 	setUseProxies(useProxies)
-    // })
+    beforeAll(() => {
+      setAutoFreeze(true);
+    });
 
     it('must be called on draft', () => {
       expect(() => {
         current({});
       }).toThrowError(
-        `current() is only used for Draft, parameter: [object Object]`
+        isProd
+          ? '[Immer] minified error nr: 10. Full error at: https://bit.ly/3cXEKWf'
+          : 'current() is only used for Draft, parameter: [object Object]'
       );
     });
 
     it('can handle simple arrays', () => {
       const base = [{ x: 1 }];
       let c;
-      const next = create(base, (draft) => {
+      const next = produce(base, (draft) => {
         expect(current(draft)).toEqual(base);
         draft[0].x++;
         c = current(draft);
@@ -38,7 +50,7 @@ function runTests(name: any, useProxies: any) {
 
     it("won't freeze", () => {
       const base = { x: 1 };
-      const next = create(base, (draft) => {
+      const next = produce(base, (draft) => {
         draft.x++;
         expect(Object.isFrozen(current(draft))).toBe(false);
       });
@@ -46,7 +58,7 @@ function runTests(name: any, useProxies: any) {
 
     it('returns original without changes', () => {
       const base = {};
-      create(base, (draft) => {
+      produce(base, (draft) => {
         expect(original(draft)).toBe(base);
         expect(current(draft)).toBe(base);
       });
@@ -54,8 +66,7 @@ function runTests(name: any, useProxies: any) {
 
     it('can handle property additions', () => {
       const base = {};
-      create(base, (draft) => {
-        // @ts-ignore
+      produce(base, (draft) => {
         draft.x = true;
         const c = current(draft);
         expect(c).not.toBe(base);
@@ -70,8 +81,7 @@ function runTests(name: any, useProxies: any) {
       const base = {
         x: 1,
       };
-      create(base, (draft) => {
-        // @ts-ignore
+      produce(base, (draft) => {
         delete draft.x;
         const c = current(draft);
         expect(c).not.toBe(base);
@@ -84,7 +94,7 @@ function runTests(name: any, useProxies: any) {
       const base = {
         x: 1,
       };
-      create(base, (draft) => {
+      produce(base, (draft) => {
         draft.x++;
         const c = current(draft);
         expect(c).toEqual({
@@ -104,36 +114,77 @@ function runTests(name: any, useProxies: any) {
           z: 2,
         },
         z: {},
+        w: {},
+        ww: freeze({}),
+        a: {
+          b: 2,
+        },
       };
-      create(base, (draft) => {
+      produce(base, (draft) => {
         draft.y.z++;
-        draft.y = {
-          // @ts-ignore
-          nested: draft.y,
+        draft.z = {
+          nested: {
+            z: 3,
+          },
         };
+        draft.a.b = 3;
+        draft.a.b = 2;
         const c = current(draft);
         expect(c).toEqual({
           x: 1,
           y: {
-            nested: {
-              z: 3,
-            },
+            z: 3,
           },
-          z: {},
+          z: { nested: { z: 3 } },
+          w: {},
+          ww: {},
+          a: {
+            b: 2,
+          },
         });
-        // @ts-ignore
-        expect(isDraft(c.y.nested)).toBe(false);
-        // @ts-ignore
-        expect(isDraft(draft.y.nested)).toBe(true);
-        expect(c.z).toBe(base.z);
-        // @ts-ignore
-        expect(c.y.nested).not.toBe(draft.y.nested);
+        expect(isDraft(c)).toBe(false);
+        expect(isDraft(c.y)).toBe(false);
+        expect(isDraft(c.z)).toBe(false);
+        expect(isDraft(c.z.nested)).toBe(false);
+        expect(isDraft(c.z.nested.z)).toBe(false);
+        // this works only with frozen objects, otherwise no way to tell if this was
+        // a new object that was added during the recipe, that might contain drafts.
+        // the recipe or not
+        // !!! This is different from immer
+        expect(c.w).toBe(base.w);
+        expect(c.a).not.toBe(base.a);
+        // was frozen, so recyclable
+        expect(c.ww).toBe(base.ww);
+      });
+    });
+
+    it('will find drafts inside objects - 2', () => {
+      const base = {
+        ar: [
+          {
+            x: 1,
+          },
+          { x: 2 },
+        ],
+      };
+      produce(base, (draft) => {
+        draft.ar[1].x++;
+        draft.ar = [draft.ar[1], draft.ar[0]]; // swap
+        const c = current(draft);
+        expect(c).toEqual({
+          ar: [{ x: 3 }, { x: 1 }],
+        });
+        expect(isDraft(c)).toBe(false);
+        expect(isDraft(c.ar)).toBe(false);
+        expect(isDraft(c.ar[0])).toBe(false);
+        expect(isDraft(c.ar[1])).toBe(false);
+        expect(c.ar[1]).toBe(base.ar[0]);
       });
     });
 
     it('handles map - 1', () => {
       const base = new Map([['a', { x: 1 }]]);
-      create(base, (draft) => {
+      produce(base, (draft) => {
         expect(current(draft)).toBe(base);
         draft.delete('a');
         let c = current(draft);
@@ -141,7 +192,6 @@ function runTests(name: any, useProxies: any) {
         expect(current(draft)).not.toBe(draft);
         expect(c).toEqual(new Map());
         const obj = {};
-        // @ts-ignore
         draft.set('b', obj);
         expect(c).toEqual(new Map());
         expect(current(draft)).toEqual(new Map([['b', obj]]));
@@ -151,13 +201,11 @@ function runTests(name: any, useProxies: any) {
 
     it('handles map - 2', () => {
       const base = new Map([['a', { x: 1 }]]);
-      create(base, (draft) => {
-        // @ts-ignore
+      produce(base, (draft) => {
         draft.get('a').x++;
         const c = current(draft);
         expect(c).not.toBe(base);
         expect(c).toEqual(new Map([['a', { x: 2 }]]));
-        // @ts-ignore
         draft.get('a').x++;
         expect(c).toEqual(new Map([['a', { x: 2 }]]));
       });
@@ -165,7 +213,7 @@ function runTests(name: any, useProxies: any) {
 
     it('handles set', () => {
       const base = new Set([1]);
-      create(base, (draft) => {
+      produce(base, (draft) => {
         expect(current(draft)).toBe(base);
         draft.add(2);
         const c = current(draft);
@@ -180,6 +228,7 @@ function runTests(name: any, useProxies: any) {
 
     it('handles simple class', () => {
       class Counter {
+        [immerable] = true;
         current = 0;
 
         inc() {
@@ -188,31 +237,21 @@ function runTests(name: any, useProxies: any) {
       }
 
       const counter1 = new Counter();
-      create(
-        counter1,
-        (draft) => {
-          expect(current(draft)).toBe(counter1);
-          draft.inc();
-          const c = current(draft);
-          expect(c).not.toBe(draft);
-          expect(c.current).toBe(1);
-          c.inc();
-          expect(c.current).toBe(2);
-          expect(draft.current).toBe(1);
-          draft.inc();
-          draft.inc();
-          expect(c.current).toBe(2);
-          expect(draft.current).toBe(3);
-          expect(c).toBeInstanceOf(Counter);
-        },
-        {
-          mark: (target, { immutable }) => {
-            if (target instanceof Counter) {
-              return immutable;
-            }
-          },
-        }
-      );
+      produce(counter1, (draft) => {
+        expect(current(draft)).toBe(counter1);
+        draft.inc();
+        const c = current(draft);
+        expect(c).not.toBe(draft);
+        expect(c.current).toBe(1);
+        c.inc();
+        expect(c.current).toBe(2);
+        expect(draft.current).toBe(1);
+        draft.inc();
+        draft.inc();
+        expect(c.current).toBe(2);
+        expect(draft.current).toBe(3);
+        expect(c).toBeInstanceOf(Counter);
+      });
     });
   });
 }

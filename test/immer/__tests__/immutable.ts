@@ -1,5 +1,5 @@
-import { assert, _ } from './assert';
-import { create, Immutable, castImmutable } from '../../src';
+// @ts-nocheck
+import { assert, _, produce, Immutable, castImmutable } from '../src/immer';
 
 test('types are ok', () => {
   // array in tuple
@@ -98,7 +98,7 @@ test('types are ok', () => {
   expect(true).toBe(true);
 });
 
-test('#381 create immutable state', () => {
+test('#381 produce immutable state', () => {
   const someState = {
     todos: [
       {
@@ -107,7 +107,7 @@ test('#381 create immutable state', () => {
     ],
   };
 
-  const immutable = castImmutable(create(someState, (_draft) => {}));
+  const immutable = castImmutable(produce(someState, (_draft) => {}));
   assert(
     immutable,
     _ as { readonly todos: ReadonlyArray<{ readonly done: boolean }> }

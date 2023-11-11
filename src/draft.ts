@@ -38,7 +38,13 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (key === PROXY_DRAFT) return target;
     let markResult: any;
     if (target.options.mark) {
-      const value = Reflect.get(target.original, key, receiver);
+      // handle `Uncaught TypeError: Method get Map.prototype.size called on incompatible receiver #<Map>`
+      // or `Uncaught TypeError: Method get Set.prototype.size called on incompatible receiver #<Set>`
+      const value =
+        key === 'size' &&
+        (target.original instanceof Map || target.original instanceof Set)
+          ? Reflect.get(target.original, key)
+          : Reflect.get(target.original, key, receiver);
       markResult = target.options.mark(value, dataTypes);
       if (markResult === dataTypes.mutable) {
         if (target.options.strict) {

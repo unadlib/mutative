@@ -1,5 +1,5 @@
-import { assert, _ } from './assert';
-import { create, Draft, castDraft, original } from '../../src';
+// @ts-nocheck
+import { assert, _, produce, Draft, castDraft, original } from '../src/immer';
 
 // For checking if a type is assignable to its draft type (and vice versa)
 const toDraft: <T>(value: T) => Draft<T> = (x) => x as any;
@@ -304,7 +304,7 @@ test('castDraft', () => {
   };
 
   function markAllFinished(state: State) {
-    create(state, (draft) => {
+    produce(state, (draft) => {
       draft.finishedTodos = castDraft(state.unfinishedTodos);
     });
   }
@@ -312,7 +312,7 @@ test('castDraft', () => {
 
 test('#505 original', () => {
   const baseState = { users: [{ name: 'Richie' }] as const };
-  const nextState = create(baseState, (draftState) => {
+  const nextState = produce(baseState, (draftState) => {
     original(draftState.users) === baseState.users;
   });
 });

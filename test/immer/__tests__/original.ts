@@ -1,5 +1,5 @@
-'use strict';
-import { create, original } from '../../src';
+// @ts-nocheck
+import { produce, original } from '../src/immer';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -10,13 +10,7 @@ describe('original', () => {
   };
 
   it('should return the original from the draft', () => {
-    create(baseState, (draftState) => {
-      expect(original(draftState)).toBe(baseState);
-      expect(original(draftState.a)).toBe(baseState.a);
-      expect(original(draftState.b)).toBe(baseState.b);
-    });
-
-    create(baseState, (draftState) => {
+    produce(baseState, (draftState) => {
       expect(original(draftState)).toBe(baseState);
       expect(original(draftState.a)).toBe(baseState.a);
       expect(original(draftState.b)).toBe(baseState.b);
@@ -24,7 +18,7 @@ describe('original', () => {
   });
 
   it('should return the original from the proxy', () => {
-    create(baseState, (draftState) => {
+    produce(baseState, (draftState) => {
       expect(original(draftState)).toBe(baseState);
       expect(original(draftState.a)).toBe(baseState.a);
       expect(original(draftState.b)).toBe(baseState.b);
@@ -32,28 +26,32 @@ describe('original', () => {
   });
 
   it('should throw undefined for new values on the draft', () => {
-    create(baseState, (draftState) => {
-      // @ts-ignore
+    produce(baseState, (draftState) => {
       draftState.c = {};
-      // @ts-ignore
       draftState.d = 3;
-      // @ts-ignore
       expect(() => original(draftState.c)).toThrowError(
-        `original() is only used for a draft, parameter: [object Object]`
+        isProd
+          ? `[Immer] minified error nr: 15. Full error at: https://bit.ly/3cXEKWf`
+          : `original() is only used for a draft, parameter: [object Object]`
       );
-      // @ts-ignore
       expect(() => original(draftState.d)).toThrowError(
-        `original() is only used for a draft, parameter: 3`
+        isProd
+          ? `[Immer] minified error nr: 15. Full error at: https://bit.ly/3cXEKWf`
+          : `original() is only used for a draft, parameter: 3`
       );
     });
   });
 
   it('should return undefined for an object that is not proxied', () => {
     expect(() => original({})).toThrowError(
-      `original() is only used for a draft, parameter: [object Object]`
+      isProd
+        ? `[Immer] minified error nr: 15. Full error at: https://bit.ly/3cXEKWf`
+        : `original() is only used for a draft, parameter: [object Object]`
     );
     expect(() => original(3)).toThrowError(
-      `original() is only used for a draft, parameter: 3`
+      isProd
+        ? `[Immer] minified error nr: 15. Full error at: https://bit.ly/3cXEKWf`
+        : `original() is only used for a draft, parameter: 3`
     );
   });
 });
