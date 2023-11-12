@@ -2050,3 +2050,21 @@ test(`Don't auto freeze non-enumerable or symbolic properties`, () => {
   // Do not auto freeze non-enumerable or symbolic properties
   expect(Object.isFrozen(state2.ref.state)).toBeFalsy();
 });
+
+test('create options', () => {
+  expect(() => {
+    create(
+      {},
+      () => {
+        //
+      }, // @ts-expect-error
+      () => {
+        //
+      }
+    );
+  }).toThrowErrorMatchingInlineSnapshot(`
+    "Invalid options: () => {
+                //
+            }, 'options' should be an object."
+  `);
+});

@@ -3,7 +3,15 @@
 /* eslint-disable arrow-body-style */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-param-reassign */
-import { create, original, current, apply, isDraftable, isDraft } from '../src';
+import {
+  create,
+  original,
+  current,
+  apply,
+  isDraftable,
+  isDraft,
+  Draft,
+} from '../src';
 import { PROXY_DRAFT } from '../src/constant';
 
 test('check object type', () => {
@@ -3482,4 +3490,64 @@ test('works with interweaved Immer instances', () => {
   );
   expect(result.n).toBe(1);
   expect(result.s1).toBe(base);
+});
+
+test('can return an object with two references to another object', () => {
+  const next = create({} as any, (d) => {
+    const obj = {};
+    return { obj, arr: [obj] };
+  });
+  expect(next.obj).toBe(next.arr[0]);
+});
+
+test('async throw error', async () => {
+  const baseState = {
+    a: { b: 1 },
+  };
+  let state: typeof baseState | undefined;
+  let baseDraft: Draft<typeof baseState>;
+  try {
+    state = await create(baseState, async (draft) => {
+      baseDraft = draft;
+      await Promise.resolve();
+      draft.a.b = 2;
+      throw new Error('error');
+    });
+  } catch (e) {
+    //
+  }
+  expect(state).toBeUndefined();
+  expect(() => baseDraft.a).toThrowErrorMatchingInlineSnapshot(
+    `"Cannot perform 'get' on a proxy that has been revoked"`
+  );
+});
+
+test('mix nested create()', () => {
+  const baseState = {
+    a: { b: 1 },
+  };
+  const baseState0 = {
+    a: { b: 2 },
+  };
+  const state = create(
+    baseState,
+    (draft) => {
+      const next = create(
+        baseState0,
+        (draft0) => {
+          // enableAutoFreeze will be false in this case
+          draft0.a = draft.a;
+        },
+        {
+          enableAutoFreeze: true,
+        }
+      );
+      expect(Object.isFrozen(next.a)).not.toBeTruthy();
+      draft.a = next.a;
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+  expect(Object.isFrozen(state.a)).toBeTruthy();
 });

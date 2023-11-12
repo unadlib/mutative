@@ -1,3 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`Producers can update Maps 4`] = `"Cannot modify frozen object"`;
