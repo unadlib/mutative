@@ -3551,3 +3551,86 @@ test('mix nested create()', () => {
   );
   expect(Object.isFrozen(state.a)).toBeTruthy();
 });
+
+test('preserves non-enumerable properties - useStrictShallowCopy:true', () => {
+  function isEnumerable(base: any, prop: any) {
+    const desc = Object.getOwnPropertyDescriptor(base, prop);
+    return desc?.enumerable;
+  }
+  const baseState = {};
+  // Non-enumerable object property
+  Object.defineProperty(baseState, 'foo', {
+    value: { a: 1 },
+    enumerable: false,
+  });
+  // Non-enumerable primitive property
+  Object.defineProperty(baseState, 'bar', {
+    value: 1,
+    enumerable: false,
+  });
+  // Non-enumerable primitive property that won't modified.
+  Object.defineProperty(baseState, 'baz', {
+    value: 1,
+    enumerable: false,
+  });
+
+  // When using Proxy, even non-enumerable keys will be copied if it's changed.
+  const canReferNonEnumerableProperty = true;
+  const useStrictShallowCopy = true;
+  const nextState: any = create(
+    baseState,
+    (s: any) => {
+      if (canReferNonEnumerableProperty) expect(s.foo).toBeTruthy();
+      // !!! This is different from immer
+      if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
+      if (canReferNonEnumerableProperty) s.bar++;
+      if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
+      if (canReferNonEnumerableProperty) s.foo.a++;
+      if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
+    },
+    {
+      mark: (target) => 'immutable',
+    }
+  );
+  if (canReferNonEnumerableProperty) expect(nextState.foo).toBeTruthy();
+  if (useStrictShallowCopy) expect(isEnumerable(nextState, 'foo')).toBeFalsy();
+  if (useStrictShallowCopy) expect(nextState.baz).toBeTruthy();
+});
+
+test('preserves non-enumerable properties - useStrictShallowCopy:false', () => {
+  function isEnumerable(base: any, prop: any) {
+    const desc = Object.getOwnPropertyDescriptor(base, prop);
+    return desc?.enumerable;
+  }
+  const baseState = {};
+  // Non-enumerable object property
+  Object.defineProperty(baseState, 'foo', {
+    value: { a: 1 },
+    enumerable: false,
+  });
+  // Non-enumerable primitive property
+  Object.defineProperty(baseState, 'bar', {
+    value: 1,
+    enumerable: false,
+  });
+  // Non-enumerable primitive property that won't modified.
+  Object.defineProperty(baseState, 'baz', {
+    value: 1,
+    enumerable: false,
+  });
+
+  // When using Proxy, even non-enumerable keys will be copied if it's changed.
+  const canReferNonEnumerableProperty = false;
+  const useStrictShallowCopy = false;
+  const nextState: any = create(baseState, (s: any) => {
+    if (canReferNonEnumerableProperty) expect(s.foo).toBeTruthy();
+    if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
+    if (canReferNonEnumerableProperty) s.bar++;
+    if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
+    if (canReferNonEnumerableProperty) s.foo.a++;
+    if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
+  });
+  if (canReferNonEnumerableProperty) expect(nextState.foo).toBeTruthy();
+  if (useStrictShallowCopy) expect(isEnumerable(nextState, 'foo')).toBeFalsy();
+  if (useStrictShallowCopy) expect(nextState.baz).toBeTruthy();
+});

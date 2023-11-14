@@ -53,6 +53,7 @@ export const produce = (base: any, recipe: any, patchListener: any) => {
 
 export class Immer {
   constructor(config: any) {
+    setUseStrictShallowCopy(config?.useStrictShallowCopy ?? false);
     setAutoFreeze(config?.autoFreeze ?? true);
   }
 

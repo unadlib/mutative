@@ -37,7 +37,6 @@ for (const autoFreeze of [true, false]) {
     }
   }
 }
-// runBaseTest('name', false, false, false);
 
 class Foo {}
 
@@ -944,7 +943,6 @@ function runBaseTest(name, autoFreeze, useStrictShallowCopy, useListener) {
         const canReferNonEnumerableProperty = useStrictShallowCopy;
         const nextState = produce(baseState, (s) => {
           if (canReferNonEnumerableProperty) expect(s.foo).toBeTruthy();
-          // !!! This is different from immer
           // if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
           if (canReferNonEnumerableProperty) s.bar++;
           // if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
@@ -1359,12 +1357,16 @@ function runBaseTest(name, autoFreeze, useStrictShallowCopy, useListener) {
       });
 
       describe('when base state is a draft', () => {
-        it.skip('always wraps the draft in a new draft', () => {
+        it('always wraps the draft in a new draft', () => {
           produce({}, (parent) => {
             produce(parent, (child) => {
               expect(child).not.toBe(parent);
               expect(isDraft(child)).toBeTruthy();
-              expect(original(child)).toBe(parent);
+              expect(isDraft(parent)).toBeTruthy();
+              expect(isDraft(original(child))).toBeFalsy();
+              // !!! This is different from immer
+              // expect(original(child)).toBe(parent);
+              expect(original(child)).not.toBe(parent);
             });
           });
         });
