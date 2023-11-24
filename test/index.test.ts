@@ -3059,7 +3059,56 @@ test('#18 - set: assigning a non-draft with the same key - deep6', () => {
   //  @ts-ignore
   expect(apply(baseState, created[1])).toEqual(created[0]);
   // @ts-ignore
-  // expect(apply(created[0], created[2])).toEqual(baseState);
+  expect(apply(created[0], created[2])).toEqual(baseState);
+  expect(created).toMatchInlineSnapshot(`
+    [
+      {
+        "array": [
+          {
+            "one": Set {
+              {
+                "three": 2,
+              },
+            },
+          },
+        ],
+      },
+      [
+        {
+          "op": "replace",
+          "path": [
+            "array",
+          ],
+          "value": [
+            {
+              "one": Set {
+                {
+                  "three": 2,
+                },
+              },
+            },
+          ],
+        },
+      ],
+      [
+        {
+          "op": "replace",
+          "path": [
+            "array",
+          ],
+          "value": [
+            {
+              "one": {
+                "two": {
+                  "three": 3,
+                },
+              },
+            },
+          ],
+        },
+      ],
+    ]
+  `);
 });
 
 test('#18 - set: assigning a non-draft with the same key - deep3', () => {

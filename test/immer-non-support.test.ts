@@ -345,7 +345,7 @@ test('#18 - set: assigning a non-draft with the same key', () => {
   // @ts-ignore
   expect(Array.from(created[0].array[0].one)[0].three).toBe(2);
   expect(apply(baseState, created[1])).toEqual(created[0]);
-  // expect(apply(created[0], created[2])).toEqual(baseState);
+  expect(apply(created[0], created[2])).toEqual(baseState);
 
   enablePatches();
   // @ts-ignore
@@ -369,7 +369,7 @@ test('#18 - set: assigning a non-draft with the same key', () => {
   }).toThrowError();
 
   //  @ts-ignore
-  // expect(applyPatches(baseState, produced[1])).toEqual(produced[0]);
+  expect(() => applyPatches(baseState, produced[1])).toThrowError();
   // @ts-ignore
-  // expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
+  expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
 });
