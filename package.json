@@ -117,7 +117,7 @@
     "tslib": "^2.6.2",
     "typedoc": "^0.24.4",
     "typedoc-plugin-markdown": "^3.15.1",
-    "typescript": "^5.2.2",
+    "typescript": "^5.3.2",
     "yargs": "^17.3.1"
   },
   "config": {
@@ -127,7 +127,9 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "coveragePathIgnorePatterns": ["<rootDir>/test/"],
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/test/"
+    ],
     "transform": {
       "\\.[jt]sx?$": [
         "ts-jest",
