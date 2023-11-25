@@ -42,13 +42,19 @@ export function isDraftable(value: any, options?: { mark?: Mark<any, any> }) {
 export function getPath(
   target: ProxyDraft,
   path: any[] = []
-): (string | number | object)[] {
-  if (Object.hasOwnProperty.call(target, 'key'))
+): (string | number | object)[] | null {
+  if (Object.hasOwnProperty.call(target, 'key')) {
+    // check if the parent is a draft and the original value is not equal to the current value
+    const proxyDraft = getProxyDraft(get(target.parent!.copy, target.key!));
+    if (proxyDraft !== null && proxyDraft?.original !== target.original) {
+      return null;
+    }
     path.push(
       target.parent!.type === DraftType.Set
         ? Array.from(target.parent!.setMap!.keys()).indexOf(target.key)
         : target.key
     );
+  }
   if (target.parent) {
     return getPath(target.parent, path);
   }

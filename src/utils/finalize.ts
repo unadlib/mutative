@@ -91,7 +91,9 @@ export function finalizePatches(
   if (shouldFinalize) {
     if (patches && inversePatches) {
       const basePath = getPath(target);
-      generatePatches(target, basePath, patches, inversePatches);
+      if (basePath) {
+        generatePatches(target, basePath, patches, inversePatches);
+      }
     }
     target.finalized = true;
   }

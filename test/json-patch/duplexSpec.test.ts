@@ -1,3 +1,4 @@
+/* eslint-disable prefer-arrow-callback */
 // @ts-nocheck
 import { create, apply } from '../../src';
 

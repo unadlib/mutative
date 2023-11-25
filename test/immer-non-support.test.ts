@@ -312,7 +312,7 @@ test('circular reference', () => {
   }
 });
 
-test('#18 - set: assigning a non-draft with the same key', () => {
+test('#18 - set: assigning a non-draft with the same key - 1', () => {
   const baseState = {
     array: [
       {
@@ -345,7 +345,7 @@ test('#18 - set: assigning a non-draft with the same key', () => {
   // @ts-ignore
   expect(Array.from(created[0].array[0].one)[0].three).toBe(2);
   expect(apply(baseState, created[1])).toEqual(created[0]);
-  // expect(apply(created[0], created[2])).toEqual(baseState);
+  expect(apply(created[0], created[2])).toEqual(baseState);
 
   enablePatches();
   // @ts-ignore
@@ -369,7 +369,40 @@ test('#18 - set: assigning a non-draft with the same key', () => {
   }).toThrowError();
 
   //  @ts-ignore
-  // expect(applyPatches(baseState, produced[1])).toEqual(produced[0]);
+  expect(() => applyPatches(baseState, produced[1])).toThrowError();
   // @ts-ignore
-  // expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
+  expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
+});
+
+test('#18 - set: assigning a non-draft with the same key - 2', () => {
+  const baseState = { c: [{ a: 1 }, { a: 1 }] };
+  enablePatches();
+  // @ts-ignore
+  const produced = produceWithPatches(baseState, (draft) => {
+    const f = draft.c.pop();
+    // @ts-ignore
+    f.a = 2;
+    // @ts-ignore
+    draft.c = new Set([draft.c[0], f]);
+  });
+  //  @ts-ignore
+  expect(() => applyPatches(baseState, produced[1])).toThrowError();
+  // @ts-ignore
+  expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
+
+  const created = create(
+    baseState,
+    (draft) => {
+      const f = draft.c.pop();
+      // @ts-ignore
+      f.a = 2;
+      // @ts-ignore
+      draft.c = new Set([draft.c[0], f]);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  expect(apply(baseState, created[1])).toEqual(created[0]);
+  expect(apply(created[0], created[2])).toEqual(baseState);
 });
