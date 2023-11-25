@@ -1,7 +1,7 @@
 ---
 slug: better-immutability
 title: Mutative - Better Immutability
-authors: endi
+authors: unadlib
 tags: [mutative, immer, immutable update]
 ---
 
