@@ -57,7 +57,7 @@ export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`${siteConfig.title} - A library for efficiently updating immutable data`}
+      title={`${siteConfig.title} - A JavaScript library for efficient immutable updates`}
       description="Efficient immutable updates, faster than naive handcrafted reducer, and more than 10x faster than Immer."
     >
       <HomepageHeader />
