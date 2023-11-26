@@ -30,12 +30,12 @@ function HomepageHeader() {
             className={styles.heroTitleTextHtml}
             dangerouslySetInnerHTML={{
               __html:
-                '<b>Better</b> immutability, <b>Efficient</b> immutable updates',
+                '<b>Better</b> immutability<br/><b>Faster</b> immutable updates',
             }}
           />
         </Heading>
         <div className={styles.indexCtas}>
-          <Link className="button button--primary" to="/docs">
+          <Link className="button button--primary" to="/docs/intro">
             <Translate>Get Started</Translate>
           </Link>
           <span className={styles.indexCtasGitHubButtonWrapper}>
@@ -57,8 +57,8 @@ export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
+      title={`${siteConfig.title} - A library for efficiently updating immutable data`}
+      description="Efficient immutable updates, faster than naive handcrafted reducer, and more than 10x faster than Immer."
     >
       <HomepageHeader />
       <main>
