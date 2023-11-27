@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://mutative.js.org/blog</id>
+    <title>Mutative Blog</title>
+    <updated>2023-10-31T00:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://mutative.js.org/blog"/>
+    <subtitle>Mutative Blog</subtitle>
+    <icon>https://mutative.js.org/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[Announcing Mutative 1.0]]></title>
+        <id>https://mutative.js.org/blog/releases/1.0</id>
+        <link href="https://mutative.js.org/blog/releases/1.0"/>
+        <updated>2023-10-31T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[// TODO]]></summary>
+        <content type="html"><![CDATA[<p>// TODO</p>]]></content>
+        <author>
+            <name>Michael Lin</name>
+            <uri>https://unadlib.github.io</uri>
+        </author>
+        <category label="release" term="release"/>
+    </entry>
+</feed>
