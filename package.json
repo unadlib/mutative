@@ -43,7 +43,9 @@
     "commit": "yarn git-cz",
     "size": "size-limit",
     "analyze": "size-limit --why",
-    "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\""
+    "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "publish:docs": "yarn clean && cd website && GIT_USER=unadlib USE_SSH=true yarn run deploy",
+    "start:docs": "cd website && yarn run start"
   },
   "size-limit": [
     {
