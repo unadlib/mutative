@@ -1,5 +1,6 @@
 import { dataTypes } from '../constant';
 
+const constructorString = Object.prototype.constructor.toString();
 /**
  * Check if the value is a simple object(No prototype chain object or iframe same-origin object),
  * support case: https://github.com/unadlib/mutative/issues/17
@@ -14,8 +15,7 @@ const isSimpleObject = (value: unknown) => {
     prototype.constructor;
   return (
     typeof constructor === 'function' &&
-    Function.toString.call(constructor) ===
-      Object.prototype.constructor.toString()
+    Function.toString.call(constructor) === constructorString
   );
 };
 
