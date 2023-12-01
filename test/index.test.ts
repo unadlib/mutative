@@ -11,6 +11,7 @@ import {
   isDraftable,
   isDraft,
   Draft,
+  markSimpleObject,
 } from '../src';
 import { PROXY_DRAFT } from '../src/constant';
 
@@ -3682,4 +3683,95 @@ test('preserves non-enumerable properties - useStrictShallowCopy:false', () => {
   if (canReferNonEnumerableProperty) expect(nextState.foo).toBeTruthy();
   if (useStrictShallowCopy) expect(isEnumerable(nextState, 'foo')).toBeFalsy();
   if (useStrictShallowCopy) expect(nextState.baz).toBeTruthy();
+});
+
+test('base - Multiple mark config', () => {
+  class Base {
+    a = 1;
+  }
+
+  class Foo {
+    a = 1;
+  }
+
+  const baseState = {
+    base: new Base(),
+    foo: new Foo(),
+    simpleObject: Object.create(null),
+  };
+
+  const state = create(
+    baseState,
+    (draft) => {
+      draft.base.a = 2;
+      draft.foo.a = 2;
+      draft.simpleObject.a = 2;
+    },
+    {
+      mark: [
+        markSimpleObject,
+        (target, types) => {
+          if (target instanceof Base) return types.immutable;
+        },
+      ],
+    }
+  );
+
+  expect(state).not.toBe(baseState);
+  expect(state.base).toEqual({ a: 2 });
+  expect(state.base).not.toBe(baseState.base);
+  expect(state.foo).toEqual({ a: 2 });
+  expect(state.foo).toBe(baseState.foo);
+  expect(state.simpleObject).toEqual({ a: 2 });
+  expect(state.simpleObject).not.toBe(baseState.simpleObject);
+});
+
+test('base check mark function - Multiple mark config', () => {
+  class Base {
+    a = 1;
+  }
+
+  class Foo {
+    a = 1;
+  }
+
+  const baseState = {
+    base: new Base(),
+    foo: new Foo(),
+    simpleObject: Object.create(null),
+  };
+
+  [
+    null,
+    false,
+    true,
+    0,
+    1,
+    'test',
+    '',
+    undefined,
+    {},
+    new Map(),
+    new Set(),
+  ].forEach((item) => {
+    expect(() => {
+      create(
+        baseState,
+        (draft) => {
+          draft.base.a = 2;
+          draft.foo.a = 2;
+          draft.simpleObject.a = 2;
+        },
+        {
+          mark: [
+            // @ts-expect-error
+            item,
+            (target) => {
+              if (target instanceof Base) return 'immutable';
+            },
+          ],
+        }
+      );
+    }).toThrowError();
+  });
 });
