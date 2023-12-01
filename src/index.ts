@@ -10,4 +10,10 @@ export { isDraftable } from './utils/draft';
 export { markSimpleObject } from './utils/marker';
 
 export { castDraft, castImmutable } from './utils/cast';
-export type { Immutable, Draft, Patches, Patch, Options } from './interface';
+export type {
+  Immutable,
+  Draft,
+  Patches,
+  Patch,
+  ExternalOptions as Options,
+} from './interface';

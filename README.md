@@ -33,7 +33,8 @@ const state = create(baseState, (draft) => {
 
 ![Mutative vs Reducer benchmark by object](benchmark-object.jpg)
 
-> Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-object.ts)). 
+> Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-object.ts)).
+
 </details>
 
 Mutative is up to 2x faster than naive handcrafted reducer for updating immutable objects.
@@ -61,7 +62,7 @@ const state = create(baseState, (draft) => {
 
 ![Mutative vs Reducer benchmark by array](benchmark-array.jpg)
 
-> Measure(seconds) to update the 1K-100K items array, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)). 
+> Measure(seconds) to update the 1K-100K items array, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)).
 
 </details>
 
@@ -177,7 +178,7 @@ const state = create(baseState, (draft) => {
 
 The first argument of `create()` is the base state. Mutative drafts it and passes it to the arguments of the draft function, and performs the draft mutation until the draft function finishes, then Mutative will finalize it and produce the new state.
 
-Use `create()` for more advanced features by [setting `options`](#createstate-fn-options---then-options-is-optional).
+Use `create()` for more advanced features by [setting `options`](#createstate-fn-options).
 
 ## APIs
 
@@ -190,6 +191,7 @@ Use `create()` for more advanced features by [setting `options`](#createstate-fn
 - [`isDraftable()`](#isdraftable)
 - [`rawReturn()`](#rawreturn)
 - [`makeCreator()`](#makecreator)
+- [`markSimpleObject()`](#marksimpleobject)
 
 ### `create()`
 
@@ -233,9 +235,10 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
   > Enable autoFreeze, and return frozen state, and enable circular reference checking only in `development` mode.
 
-- mark - `(target) => ('mutable'|'immutable'|function)`
+- mark - `(target) => ('mutable'|'immutable'|function) | (target) => ('mutable'|'immutable'|function)[]`
   > Set a mark to determine if the value is mutable or if an instance is an immutable, and it can also return a shallow copy function(`AutoFreeze` and `Patches` should both be disabled, Some patches operation might not be equivalent).
   > When the mark function is (target) => 'immutable', it means all the objects in the state structure are immutable. In this specific case, you can totally turn on `AutoFreeze` and `Patches`.
+  > `mark` supports multiple marks, and the marks are executed in order, and the first mark that returns a value will be used.
 
 #### `create()` - Currying
 
@@ -433,7 +436,7 @@ expect(isDraft(state.b)).toBeFalsy();
 
 ### `makeCreator()`
 
-`makeCreator()` only takes [options](#createstate-fn-options) as the first argument, resulting in a custom `create()` function. 
+`makeCreator()` only takes [options](#createstate-fn-options) as the first argument, resulting in a custom `create()` function.
 
 ```ts
 const baseState = {
@@ -449,6 +452,32 @@ const create = makeCreator({
 const [state, patches, inversePatches] = create(baseState, (draft) => {
   draft.foo.bar = 'new str';
 });
+```
+
+### `markSimpleObject()`
+
+`markSimpleObject()` is a mark function that marks all objects as immutable.
+
+```ts
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+  simpleObject: Object.create(null),
+};
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'new str';
+    draft.simpleObject.a = 'a';
+  },
+  {
+    mark: markSimpleObject,
+  }
+);
+
+expect(state.simpleObject).not.toBe(baseState.simpleObject);
 ```
 
 [View more API docs](./docs/README.md).
