@@ -17,4 +17,5 @@ export const markSimpleObject = (value: unknown) => {
   if (isSimpleObject(value)) {
     return 'immutable';
   }
+  return;
 };
