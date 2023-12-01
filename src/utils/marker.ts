@@ -1,3 +1,5 @@
+import { dataTypes } from '../constant';
+
 const isSimpleObject = (value: unknown) => {
   const prototype = Object.getPrototypeOf(value);
   if (prototype === null) {
@@ -15,7 +17,7 @@ const isSimpleObject = (value: unknown) => {
 
 export const markSimpleObject = (value: unknown) => {
   if (isSimpleObject(value)) {
-    return 'immutable';
+    return dataTypes.immutable;
   }
   return;
 };
