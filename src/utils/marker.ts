@@ -1,5 +1,9 @@
 import { dataTypes } from '../constant';
 
+/**
+ * Check if the value is a simple object(No prototype chain object or iframe same-origin object),
+ * support case: https://github.com/unadlib/mutative/issues/17
+ */
 const isSimpleObject = (value: unknown) => {
   const prototype = Object.getPrototypeOf(value);
   if (prototype === null) {
