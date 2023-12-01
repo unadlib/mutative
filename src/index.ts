@@ -7,6 +7,7 @@ export { unsafe } from './unsafe';
 export { rawReturn } from './rawReturn';
 export { isDraft } from './utils/draft';
 export { isDraftable } from './utils/draft';
+export { markSimpleObject } from './utils/marker';
 
 export { castDraft, castImmutable } from './utils/cast';
 export type { Immutable, Draft, Patches, Patch, Options } from './interface';

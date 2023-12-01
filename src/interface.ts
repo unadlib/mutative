@@ -122,6 +122,26 @@ export interface Options<O extends PatchesOptions, F extends boolean> {
   mark?: Mark<O, F>;
 }
 
+export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
+  /**
+   * In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.
+   */
+  strict?: boolean;
+  /**
+   * Enable patch, and return the patches and inversePatches.
+   */
+  enablePatches?: O;
+  /**
+   * Enable autoFreeze, and return frozen state.
+   */
+  enableAutoFreeze?: F;
+  /**
+   * Set a mark to determine if the object is mutable or if an instance is an immutable.
+   * And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
+   */
+  mark?: Mark<O, F>[] | Mark<O, F>;
+}
+
 // Exclude `symbol`
 type Primitive = string | number | bigint | boolean | null | undefined;
 

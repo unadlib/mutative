@@ -1,7 +1,9 @@
 import {
   CreateResult,
   Draft,
+  Mark,
   Options,
+  ExternalOptions,
   PatchesOptions,
   Result,
 } from './interface';
@@ -14,13 +16,13 @@ import {
   revokeProxy,
 } from './utils';
 import { current, handleReturnValue } from './current';
-import { RAW_RETURN_SYMBOL } from './constant';
+import { RAW_RETURN_SYMBOL, dataTypes } from './constant';
 
 type MakeCreator = <
   _F extends boolean = false,
   _O extends PatchesOptions = false
 >(
-  options?: Options<_O, _F>
+  options?: ExternalOptions<_O, _F>
 ) => {
   <
     T extends any,
@@ -30,7 +32,7 @@ type MakeCreator = <
   >(
     base: T,
     mutate: (draft: Draft<T>) => R,
-    options?: Options<O, F>
+    options?: ExternalOptions<O, F>
   ): CreateResult<T, O, F, R>;
   <
     T extends any,
@@ -40,7 +42,7 @@ type MakeCreator = <
   >(
     base: T,
     mutate: (draft: T) => R,
-    options?: Options<O, F>
+    options?: ExternalOptions<O, F>
   ): CreateResult<T, O, F, R>;
   <
     T extends any,
@@ -50,11 +52,11 @@ type MakeCreator = <
     R extends void | Promise<void> = void
   >(
     mutate: (draft: Draft<T>, ...args: P) => R,
-    options?: Options<O, F>
+    options?: ExternalOptions<O, F>
   ): (base: T, ...args: P) => CreateResult<T, O, F, R>;
   <T extends any, O extends PatchesOptions = _O, F extends boolean = _F>(
     base: T,
-    options?: Options<O, F>
+    options?: ExternalOptions<O, F>
   ): [T, () => Result<T, O, F>];
 };
 
@@ -104,7 +106,7 @@ export const makeCreator: MakeCreator = (arg) => {
     }
     const base = arg0;
     const mutate = arg1 as (...args: any[]) => any;
-    let options = arg2 as Options<any, any>;
+    let options = arg2;
     if (typeof arg1 !== 'function') {
       options = arg1;
     }
@@ -122,7 +124,22 @@ export const makeCreator: MakeCreator = (arg) => {
       ...options,
     };
     const state = isDraft(base) ? current(base) : base;
-    const mark = options.mark;
+    const mark = Array.isArray(options.mark)
+      ? (((value: unknown, types: typeof dataTypes) => {
+          for (const mark of options.mark as Mark<any, any>[]) {
+            if (__DEV__ && typeof mark !== 'function') {
+              throw new Error(
+                `Invalid mark: ${mark}, 'mark' should be a function.`
+              );
+            }
+            const result = mark(value, types);
+            if (result) {
+              return result;
+            }
+          }
+          return;
+        }) as Mark<any, any>)
+      : options.mark;
     const enablePatches = options.enablePatches ?? false;
     const strict = options.strict ?? false;
     const enableAutoFreeze = options.enableAutoFreeze ?? false;
