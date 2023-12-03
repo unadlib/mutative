@@ -1,25 +1,69 @@
 ---
-sidebar_position: 1
+sidebar_position: 5
 ---
 
-# Comparison with Immer
+# Performance
 
-Mutative is a high-performance immutable update library, and Immer is a popular immutable update library. This page compares the differences between Mutative and Immer.
+Mutative is a high-performance immutable data structure library, it is up to `2x-6x` faster than naive handcrafted reducer and up to `16x` faster than Immer.
 
-## Difference between Mutative and Immer
+## Mutative vs Reducer Performance
 
-|                                       | Mutative | Immer |
-| :------------------------------------ | -------: | :---: |
-| Custom shallow copy                   |       ✅ |  ❌   |
-| Strict mode                           |       ✅ |  ❌   |
-| No data freeze by default             |       ✅ |  ❌   |
-| Non-invasive marking                  |       ✅ |  ❌   |
-| Complete freeze data                  |       ✅ |  ❌   |
-| Non-global config                     |       ✅ |  ❌   |
-| async draft function                  |       ✅ |  ❌   |
-| Fully compatible with JSON Patch spec |       ✅ |  ❌   |
+### Reducer by object
 
-Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
+- Naive handcrafted reducer
+
+```ts
+// baseState type: Record<string, { value: number }>
+const state = {
+  ...baseState,
+  key0: {
+    ...baseState.key0,
+    value: i,
+  },
+};
+```
+
+- Mutative
+
+```ts
+const state = create(baseState, (draft) => {
+  draft.key0.value = i;
+});
+```
+
+![Mutative vs Reducer benchmark by object](img/benchmark-object.jpg)
+
+> Measure(seconds) to update the 1K-100K items object, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-object.ts)).
+
+
+**Mutative is up to `2x` faster than naive handcrafted reducer for updating immutable objects.**
+
+### Reducer by array
+
+- Naive handcrafted reducer
+
+```ts
+// baseState type: { value: number }[]
+const state = [
+  { ...baseState[0], value: i },
+  ...baseState.slice(1, baseState.length),
+];
+```
+
+- Mutative
+
+```ts
+const state = create(baseState, (draft) => {
+  draft[0].value = i;
+});
+```
+
+![Mutative vs Reducer benchmark by array](img/benchmark-array.jpg)
+
+> Measure(seconds) to update the 1K-100K items array, lower is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark-array.ts)).
+
+**Mutative is up to `6x` faster than naive handcrafted reducer for updating immutable arrays.**
+
 
 ## Mutative vs Immer Performance
 
@@ -55,4 +99,3 @@ Immer relies on auto-freeze to be enabled, if auto-freeze is disabled, Immer wil
 So if you are using Immer, you will have to enable auto-freeze for performance. Mutative is disabled auto-freeze by default. With the default configuration of both, we can see the 16x performance gap between Mutative (`6,178 ops/sec`) and Immer (`383 ops/sec`).
 
 Overall, Mutative has a huge performance lead over Immer in [more performance testing scenarios](https://github.com/unadlib/mutative/tree/main/test/performance). Run `yarn performance` to get all the performance results locally.
-

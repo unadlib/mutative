@@ -2,10 +2,10 @@
 sidebar_position: 3
 ---
 
-# Returning new data
+# Returning new state
 
 // todo
 
-## Returning new data
+## Returning new state
 
 // todo

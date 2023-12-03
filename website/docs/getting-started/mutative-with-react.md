@@ -1,7 +1,7 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 ---
 
-# Using Immer with React
+# Using Mutative with React
 
 // todo

@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Marking for mutable and immutable data
+# Marking data structure
 
 // todo
 

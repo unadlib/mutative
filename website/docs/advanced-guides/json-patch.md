@@ -4,6 +4,6 @@ sidebar_position: 1
 
 # JSON Patch
 
-Docusaurus can manage multiple versions of your docs.
+// TODO
 
 ## Create a docs version
