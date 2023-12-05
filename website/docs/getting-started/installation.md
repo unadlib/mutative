@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Mutative is a npm package that can be used in Node.js and browsers, it is also compatible with TypeScript.
 
-## Using Mutative from NPM/Yarn
+## Using Mutative from NPM/Yarn/pnpm
 
 ```bash npm2yarn
 npm install mutative
