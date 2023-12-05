@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 # Usages
@@ -16,9 +16,11 @@ const baseState = {
 };
 
 const state = create(baseState, (draft) => {
-  draft.foo = 'foobar';
   draft.list.push({ text: 'learning' });
 });
+
+expect(state).not.toBe(baseState);
+expect(state.list).not.toBe(baseState.list);
 ```
 
 `create(baseState, (draft) => void, options?: Options): newState`

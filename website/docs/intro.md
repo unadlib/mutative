@@ -8,7 +8,11 @@ sidebar_position: 1
 
 ## What is Mutative?
 
-Writing immutable updates by hand is usually difficult, prone to errors, and cumbersome. Immer helps us write simpler immutable updates with "mutative" logic.
+Mutative can help simplify the updating of immutable data structures, such as those used in React and Redux. It allows you to write code in a mutable way for the draft object, and ultimately it produces a new immutable data structure (the next state), avoiding unnecessary accidental mutations or complex deep updates with spread operations.
+
+## Motivation
+
+Writing immutable updates by hand is usually difficult, prone to errors, and cumbersome. Immer helps us write simpler immutable updates with `mutative` logic.
 
 But its performance issue causes a runtime performance overhead. Immer must have auto-freeze enabled by default(Performance will be worse if auto-freeze is disabled), such immutable state with Immer is not common. In scenarios such as cross-processing, remote data transfer, etc., we have to constantly freeze these immutable data.
 

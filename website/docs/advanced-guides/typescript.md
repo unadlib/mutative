@@ -1,11 +1,17 @@
 ---
-sidebar_position: 3
+sidebar_position: 8
 ---
 
 # Typescript
 
-// todo
+Mutative support is built into the typescript types. You can use the `Draft<T>` and `Immutable<T>` types to annotate your code.
 
-## Using Typescript
+## Using TypeScript
 
-// todo
+- `castDraft()`
+- `castImmutable()`
+- `Draft<T>`
+- `Immutable<T>`
+- `Patches`
+- `Patch`
+- `Options<O, F>`
