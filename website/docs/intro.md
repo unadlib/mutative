@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-**Mutative** - A JavaScript library for efficient immutable updates, faster than naive handcrafted reducer, and more than 10x faster than Immer.
+**Mutative** - A JavaScript library for efficient immutable updates, 2-6x faster than naive handcrafted reducer, and more than 10x faster than Immer.
 
 ## What is Mutative?
 
