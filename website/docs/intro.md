@@ -16,7 +16,7 @@ Writing immutable updates by hand is usually difficult, prone to errors, and cum
 
 But its performance issue causes a runtime performance overhead. Immer must have auto-freeze enabled by default(Performance will be worse if auto-freeze is disabled), such immutable state with Immer is not common. In scenarios such as cross-processing, remote data transfer, etc., we have to constantly freeze these immutable data.
 
-There are more parts that could be improved, such as better type inference, non-intrusive markup, support for more types of immutability, Safer immutability, [more edge cases](test/immer-non-support.test.ts), and so on.
+There are more parts that could be improved, such as better type inference, non-intrusive markup, support for more types of immutability, Safer immutability, [more edge cases](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts), and so on.
 
 This is why Mutative was created.
 
