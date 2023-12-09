@@ -8,6 +8,8 @@ sidebar_position: 10
 
 ## Usage
 
+If you want to mark all objects as immutable(raw object,  plain object without prototype chains or cross-iframe objects with same domain), you can use `markSimpleObject()`.
+
 ```ts
 const baseState = {
   foo: {

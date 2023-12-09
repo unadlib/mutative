@@ -24,15 +24,17 @@ const state = create(baseState, (draft) => {
 
 In this basic example, the changes to the draft are 'mutative' within the draft callback, and `create()` is finally executed with a new immutable state.
 
+## create(state, fn, options) - options
+
 Then options is optional.
 
 - strict - `boolean`, the default is false.
 
-  > Forbid accessing non-draftable values in strict mode(unless using [unsafe()](#unsafe)).
+  > Forbid accessing non-draftable values in strict mode(unless using [unsafe()](/docs/api-reference/unsafe)).
 
-  > When strict mode is enabled, mutable data can only be accessed using [`unsafe()`](#unsafe).
+  > When strict mode is enabled, mutable data can only be accessed using [`unsafe()`](/docs/api-reference/unsafe).
 
-  > **It is recommended to enable `strict` in development mode and disable `strict` in production mode.** This will ensure safe explicit returns and also keep good performance in the production build. If the value that does not mix any current draft or is `undefined` is returned, then use [rawReturn()](#rawreturn).
+  > **It is recommended to enable `strict` in development mode and disable `strict` in production mode.** This will ensure safe explicit returns and also keep good performance in the production build. If the value that does not mix any current draft or is `undefined` is returned, then use [rawReturn()](/docs/api-reference/rawreturn).
 
 - enablePatches - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean; }`, the default is false.
 
@@ -57,4 +59,12 @@ draft.foobar.bar = 'baz';
 const state = finalize();
 ```
 
-> Support set options such as `const [draft, finalize] = create(baseState, { enableAutoFreeze: true });`
+:::tip
+Support set options:
+```ts
+const [draft, finalize] = create(baseState, { enableAutoFreeze: true });
+```
+
+:::
+
+More details about currying, please see [currying](/docs/advanced-guides/currying).

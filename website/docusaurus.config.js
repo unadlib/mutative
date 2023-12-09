@@ -47,8 +47,8 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          sidebarCollapsible: true,
-          sidebarCollapsed: true,
+          sidebarCollapsible: false,
+          sidebarCollapsed: false,
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
           // Please change this to your repo.

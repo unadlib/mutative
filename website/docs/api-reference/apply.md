@@ -27,7 +27,9 @@ const [state, patches, inversePatches] = create(
   }
 );
 
+// you can apply patches to get the new state
 const nextState = apply(baseState, patches);
+
 expect(nextState).toEqual(state);
 const prevState = apply(state, inversePatches);
 expect(prevState).toEqual(baseState);
