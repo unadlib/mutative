@@ -27,4 +27,4 @@ expect(state.list).not.toBe(baseState.list);
 
 The first argument of `create()` is the base state. Mutative drafts it and passes it to the arguments of the draft function, and performs the draft mutation until the draft function finishes, then Mutative will finalize it and produce the new state.
 
-Use `create()` for more advanced features by [setting `options`](#createstate-fn-options).
+Use `create()` for more advanced features by setting [`create()`](/docs/api-reference/create) options.
