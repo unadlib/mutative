@@ -8,9 +8,9 @@ Mutative is based on the Proxy, its core concepts are `draft` and `patch`.
 
 ## Base Workflow
 
-![mutative workflow](img/mutative-workflow.png)
+Mutative Workflow depicted in the image illustrates a three-stage process:
 
-The Mutative Workflow depicted in the image illustrates a three-stage process:
+![mutative workflow](img/mutative-workflow.png)
 
 - The "Current State" represents the initial, unchanged state. 
 - The "Draft" stage indicates a mutable phase where changes are made to a draft, marked in red, showing where modifications are occurring. The dotted lines suggest that these are accessed and drafts are created. 
