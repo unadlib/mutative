@@ -6,11 +6,38 @@ sidebar_position: 3
 
 Mutative is based on the Proxy, its core concepts are `draft` and `patch`.
 
+## Base Workflow
+
+![mutative workflow](img/mutative-workflow.png)
+
+```ts
+const baseState = {
+  a0: {
+    b0: {},
+  },
+  a1: {
+    b1: {},
+    b2: {
+      c0: 0,
+    },
+  },
+  a2: {},
+}
+```
+
+```ts
+const nextState = create(baseState, (draft) => {
+  const { a0 } = draft;
+  expect(isDraft(a0)).toBeTruthy();
+  draft.a1.b2.c0 = 1;
+});
+```
+
 ## Drafts
 
 Using Mutative to produce a new immutable data(next state). 
 
-Mutative creates a draft copy. The `draft` is a mutable `Proxy` object, which behaves the same as the original object. Those mutations are recorded and used to produce the next state once the draft function is done. Additionally, if the patches is enabled, it will also produce a `patches`.
+Mutative creates a draft copy based on the current state. The `draft` is a mutable `Proxy` object, which behaves the same as the original object. Those mutations are recorded and used to produce the next state once the draft function is done. Additionally, if the patches is enabled, it will also produce a `patches`.
 
 ## Patches
 

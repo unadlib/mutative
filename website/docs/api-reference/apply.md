@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # apply()
 
-Use `apply()` for applying patches to get the new state.
+Use `apply()` for applying [patches](/docs/advanced-guides/pathes) to get the new state.
 
 ## Usage
 

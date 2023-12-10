@@ -18,6 +18,8 @@ expect(isDraftable(baseState.date)).toBeFalsy();
 expect(isDraftable(baseState.list)).toBeTruthy();
 ```
 
-> You can set a mark to determine if the value is draftable, and the mark function should be the same as passing in `create()` mark option.
+:::tip
+You can set a mark to determine if the value is draftable, and the mark function should be the same as passing in `create()` mark option.
+:::
 
 

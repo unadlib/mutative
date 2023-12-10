@@ -10,9 +10,7 @@ When [strict mode](/docs/advanced-guides/strict-mode) is enabled, mutable data c
 
 The `unsafe()` provides a means to perform non-standard state mutations which are not typically allowed within the Mutative strict immutability constraints. This API enables direct mutations on draft states or original objects, allowing developers to bypass the protective layers that prevent accidental state mutations.
 
-When used, unsafe() allows for direct assignment and manipulation of properties within a draft state, which can be necessary for certain operations that require a level of flexibility beyond the standard immutable update patterns. For example, it can be used when interacting with complex objects or when integrating with third-party libraries that may not adhere to immutable update patterns.
-
-Key features of the unsafe() API include:
+When used, `unsafe()` allows for direct assignment and manipulation of properties within a draft state, which can be necessary for certain operations that require a level of flexibility beyond the standard immutable update patterns. For example, it can be used when interacting with complex objects or when integrating with third-party libraries that may not adhere to immutable update patterns.
 
 Key features of the `unsafe()` API include:
 

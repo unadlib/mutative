@@ -8,7 +8,7 @@ Get the original value from a draft.
 
 ## Usage
 
-The `original()` API in Mutative is an essential function that allows you to obtain the original state from a draft state. When working with immutable state management, it is often necessary to reference the state before any changes were made to understand the transformations that have occurred. This is where `original()` comes into play.
+The `original()` is an essential function that allows you to obtain the original state from a draft state. When working with immutable state management, it is often necessary to reference the state before any changes were made to understand the transformations that have occurred. This is where `original()` comes into play.
 
 When you make changes to a state using Mutative's drafting system, you are essentially working on a mutable proxy that safely encapsulates changes without affecting the actual state. However, there may be instances where you need to compare the draft to the original, untouched state. The `original()` function provides a direct reference to this untouched state, enabling such comparisons and validations.
 
