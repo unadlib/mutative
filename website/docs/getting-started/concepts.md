@@ -60,6 +60,6 @@ By applying `patches`, immutable updates can be made to an object based on these
 
 ## Mark
 
-If a data structure mixes mutable and immutable data, Mutative supports marking both immutable and mutable data. It allows for non-invasive marking of nodes within this data tree, meaning the original object structure does not require an additional marking symbol. Mutative can maintain the original characteristics of the structure tree's nodes.
+If a data structure mixes mutable and immutable data, Mutative supports marking both immutable and mutable data. It allows for non-invasive marking of nodes within this data tree, meaning the original object structure does not require an additional marking symbol. Mutative can maintain the original characteristics of the structure tree's nodes. And The option allows you to mark the immutable data with custom shallow copy.
 
 It is used to mark the immutable data that needs to be updated, and the mutable data that needs to be accessed. You pass the `mark` option to `create()` to mark the immutable data.
