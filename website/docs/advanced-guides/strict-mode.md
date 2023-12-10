@@ -29,3 +29,33 @@ Key characteristics of strict mode include:
 - **Compatibility with advanced operations**: Even in strict mode, Mutative provides APIs like [`unsafe()`](/docs/api-reference/unsafe) and [`rawReturn()`](/docs/api-reference/rawreturn) that allow developers to explicitly bypass immutability checks when necessary. These APIs must be used with a clear understanding of their implications to ensure they do not compromise the application’s state integrity.
 
 Strict mode is indicative of Mutative's commitment to offering robust, error-resistant state management. It is a testament to the library's philosophy of providing tools that encourage best practices while still offering the flexibility to handle advanced state manipulation scenarios when needed. As such, strict mode is an invaluable feature for developers aiming to build applications with a solid foundation in immutable state management principles.
+
+```ts
+class Foobar {
+  bar = 1;
+}
+
+const foobar = new Foobar();
+const foobar0 = new Foobar();
+const data = {
+  foo: {
+    bar: 'str',
+  },
+  foobar,
+  foobar0,
+};
+
+const state = create(
+  data,
+  (draft) => {
+    unsafe(() => {
+      draft.foobar.bar = 2;
+    });
+    // it will throw an error in strict mode
+    draft.foobar0.bar = 3;
+  },
+  {
+    strict: true,
+  }
+);
+```

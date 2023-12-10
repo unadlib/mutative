@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Using Mutative with React
 
-you can use Mutative with React by using the `useMutative()` hook.
+You can use Mutative with React by using the `useMutative()` hook.
 
 ## use-mutative Hook
 

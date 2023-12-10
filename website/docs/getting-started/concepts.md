@@ -10,6 +10,12 @@ Mutative is based on the Proxy, its core concepts are `draft` and `patch`.
 
 ![mutative workflow](img/mutative-workflow.png)
 
+The Mutative Workflow depicted in the image illustrates a three-stage process:
+
+- The "Current State" represents the initial, unchanged state. 
+- The "Draft" stage indicates a mutable phase where changes are made to a draft, marked in red, showing where modifications are occurring. The dotted lines suggest that these are accessed and drafts are created. 
+- Finally, the "Next State" is the immutable data after the changes are finalized.
+
 ```ts
 const baseState = {
   a0: {
@@ -23,19 +29,26 @@ const baseState = {
   },
   a2: {},
 }
-```
 
-```ts
 const nextState = create(baseState, (draft) => {
   const { a0 } = draft;
+  // If it is draftable, once it has been accessed, it will generate a corresponding draft.
   expect(isDraft(a0)).toBeTruthy();
+  // each node is a draft, and the draft is a proxy object
   draft.a1.b2.c0 = 1;
 });
+
+expect(nextState).not.toBe(baseState);
+expect(nextState.a0).toBe(baseState.a0); // generated draft, but not changed
+expect(nextState.a2).toBe(baseState.a2); // no generated draft, not changed
+expect(nextState.a1).not.toBe(baseState.a1);
+expect(nextState.a1.b2).not.toBe(baseState.a1.b2);
+expect(nextState.a1.b2.c0).toBe(1);
 ```
 
 ## Drafts
 
-Using Mutative to produce a new immutable data(next state). 
+Using Mutative to produce a new immutable data(next state) from intermediate drafts. 
 
 Mutative creates a draft copy based on the current state. The `draft` is a mutable `Proxy` object, which behaves the same as the original object. Those mutations are recorded and used to produce the next state once the draft function is done. Additionally, if the patches is enabled, it will also produce a `patches`.
 

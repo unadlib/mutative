@@ -112,3 +112,7 @@ const nextState = create(baseState, (draft) => {
   return rawReturn(undefined);
 });
 ```
+
+:::tip
+For more on how Mutative differs from Immer, visit [Mutative vs Immer](/docs/extra-topics/comparison-with-immer).
+:::
