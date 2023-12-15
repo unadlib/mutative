@@ -6,13 +6,13 @@ sidebar_position: 1
 
 Mutative is a npm package that can be used in Node.js and browsers, it is also compatible with TypeScript.
 
-## Using Mutative from NPM/Yarn/pnpm
+## Using Mutative from npm/Yarn/pnpm
 
 ```bash npm2yarn
 npm install mutative
 ```
 
-Mutative size is only `4.46 KB` (minified and gzipped), it is very lightweight.
+Mutative size is only `4.12 KB` (minified and gzipped), it is very lightweight.
 
 ## Using Mutative from CDN
 

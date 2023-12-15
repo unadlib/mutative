@@ -58,7 +58,7 @@ export default function Home() {
   return (
     <Layout
       title={`${siteConfig.title} - A JavaScript library for efficient immutable updates`}
-      description="Efficient immutable updates, faster than naive handcrafted reducer, and more than 10x faster than Immer."
+      description="Efficient immutable updates, 2-6x faster than naive handcrafted reducer, and more than 10x faster than Immer."
     >
       <HomepageHeader />
       <main>
