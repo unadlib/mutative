@@ -6,7 +6,7 @@ image: ./img/social-card.jpg
 date: 2023-12-16
 ---
 
-In the world of JavaScript development, managing immutable state efficiently is a cornerstone for high-performance applications. Today, we are excited to introduce Mutative 1.0, a JavaScript library that redefines the way we handle immutable updates. With performance that is 2-6 times faster than naive handcrafted reducers and over 10 times faster than Immer, Mutative 1.0 is set to transform our approach to immutable state management and make it more efficient.
+In the world of JavaScript development, managing immutable state efficiently is a cornerstone for high-performance applications. Today, we are excited to introduce Mutative 1.0, a JavaScript library that redefines the way we handle immutable updates. With performance that is 2-6x faster than naive handcrafted reducers and over 10x faster than Immer, Mutative 1.0 is set to transform our approach to immutable state management and make it more efficient.
 
 Repository: [https://github.com/unadlib/mutative](https://github.com/unadlib/mutative)
 
