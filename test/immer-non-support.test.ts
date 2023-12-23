@@ -406,3 +406,46 @@ test('#18 - set: assigning a non-draft with the same key - 2', () => {
   expect(apply(baseState, created[1])).toEqual(created[0]);
   expect(apply(created[0], created[2])).toEqual(baseState);
 });
+
+test('enablePatches and assign with ref array', () => {
+  const baseState = { a: { b: { c: 1 } }, arr0: [{ a: 1 }], arr1: [{ a: 1 }] };
+  const fn = (draft: any) => {
+    draft.arr0.push(draft.a.b);
+    draft.arr0.push(draft.arr1);
+    draft.a.b.c = 2;
+    draft.a.b.c = 333;
+    delete draft.a.b;
+    draft.arr1[0].a = 222;
+    draft.arr0[1].a = 333;
+    draft.arr0[2][0].a = 444;
+  };
+  {
+    enablePatches();
+    const [state, patches, inversePatches] = produceWithPatches(baseState, fn);
+
+    const mutatedResult = JSON.parse(JSON.stringify(baseState));
+    fn(mutatedResult);
+    expect(state).toEqual(mutatedResult);
+
+    const prevState = applyPatches(state, inversePatches);
+    // !!! it should be equal
+    expect(prevState).not.toEqual(baseState);
+    const nextState = applyPatches(baseState, patches);
+    // !!! it should be equal
+    expect(nextState).not.toEqual(state);
+  }
+  {
+    const [state, patches, inversePatches] = create(baseState, fn, {
+      enablePatches: true,
+    });
+
+    const mutatedResult = JSON.parse(JSON.stringify(baseState));
+    fn(mutatedResult);
+    expect(state).toEqual(mutatedResult);
+
+    const prevState = apply(state, inversePatches);
+    expect(prevState).toEqual(baseState);
+    const nextState = apply(baseState, patches);
+    expect(nextState).toEqual(state);
+  }
+});
