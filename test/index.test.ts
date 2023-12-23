@@ -12,6 +12,7 @@ import {
   isDraft,
   Draft,
   markSimpleObject,
+  rawReturn,
 } from '../src';
 import { PROXY_DRAFT } from '../src/constant';
 
@@ -3774,4 +3775,13 @@ test('base check mark function - Multiple mark config', () => {
       );
     }).toThrowError();
   });
+});
+
+test(`'markSimpleObject' add null check`, () => {
+  const obj = {};
+  const state = create(null as any, () => rawReturn(obj), {
+    mark: markSimpleObject,
+  });
+
+  expect(state).toEqual(obj);
 });
