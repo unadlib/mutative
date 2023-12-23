@@ -6,6 +6,7 @@ const constructorString = Object.prototype.constructor.toString();
  * support case: https://github.com/unadlib/mutative/issues/17
  */
 const isSimpleObject = (value: unknown) => {
+  if (!value || typeof value !== 'object') return false;
   const prototype = Object.getPrototypeOf(value);
   if (prototype === null) {
     return true;
@@ -13,6 +14,9 @@ const isSimpleObject = (value: unknown) => {
   const constructor =
     Object.hasOwnProperty.call(prototype, 'constructor') &&
     prototype.constructor;
+
+  if (constructor === Object) return true;
+
   return (
     typeof constructor === 'function' &&
     Function.toString.call(constructor) === constructorString
