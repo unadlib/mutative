@@ -3785,3 +3785,81 @@ test(`'markSimpleObject' add null check`, () => {
 
   expect(state).toEqual(obj);
 });
+
+test('object with Symbol key at root - 0', () => {
+  const a = Symbol('a');
+  const data: Record<PropertyKey, any> = {
+    [a]: 'str',
+  };
+
+  const state = create(data, (draft) => {
+    expect(draft[a]).toBe('str');
+    draft.foobar = 'str';
+  });
+  expect(state).toEqual({
+    ...data,
+    foobar: 'str',
+  });
+});
+
+test('object with Symbol key at root - 1', () => {
+  const a = Symbol('a');
+  const data: Record<PropertyKey, any> = {
+    [a]: 'str',
+  };
+
+  const state = create(data, (draft) => {
+    draft.foobar = 'str';
+    expect(draft[a]).toBe('str');
+  });
+  expect(state).toEqual({
+    ...data,
+    foobar: 'str',
+  });
+});
+
+test('object with non-enumerable Symbol key at root - 0', () => {
+  const a = Symbol('a');
+  const data: Record<PropertyKey, any> = {};
+
+  Object.defineProperty(data, a, {
+    value: 'str',
+    enumerable: false,
+  });
+
+  const state = create(data, (draft) => {
+    draft.foobar = 'str';
+    expect(draft[a]).toBeUndefined();
+  });
+  expect(state).toEqual({
+    ...data,
+    foobar: 'str',
+  });
+  expect(state).toEqual({
+    foobar: 'str',
+  });
+});
+
+test('object with non-enumerable Symbol key at root - 1', () => {
+  const a = Symbol('a');
+  const data: Record<PropertyKey, any> = {};
+
+  Object.defineProperty(data, a, {
+    value: 'str',
+    enumerable: false,
+  });
+
+  const state = create(data, (draft) => {
+    // it's aligned with immer
+    expect(draft[a]).not.toBeUndefined();
+    expect(draft[a]).toBe('str');
+    draft.foobar = 'str';
+  });
+  expect(state).toEqual({
+    ...data,
+    foobar: 'str',
+  });
+  expect(state).toEqual({
+    foobar: 'str',
+  });
+});
