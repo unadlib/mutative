@@ -909,13 +909,11 @@ function runBaseTest(name, autoFreeze, useStrictShallowCopy, useListener) {
       const test = Symbol('test');
       const baseState = { [test]: true };
       const nextState = produce(baseState, (s) => {
-        // !!! This is different from immer
-        // expect(s[test]).toBeTruthy();
+        expect(s[test]).toBeTruthy();
         s.foo = true;
       });
-      // !!! This is different from immer
       expect(nextState).toEqual({
-        // [test]: true,
+        [test]: true,
         foo: true,
       });
     });

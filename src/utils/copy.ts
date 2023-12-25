@@ -22,6 +22,8 @@ function strictCopy(target: any) {
   return Object.create(Object.getPrototypeOf(target), descriptors);
 }
 
+const propIsEnum = Object.prototype.propertyIsEnumerable;
+
 export function shallowCopy(original: any, options?: Options<any, any>) {
   let markResult: any;
   if (Array.isArray(original)) {
@@ -55,7 +57,12 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
     // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));` by default.
     const copy: Record<string | symbol, any> = {};
     Object.keys(original).forEach((key) => {
-      copy![key] = original[key];
+      copy[key] = original[key];
+    });
+    Object.getOwnPropertySymbols(original).forEach((key) => {
+      if (propIsEnum.call(original, key)) {
+        copy[key] = original[key];
+      }
     });
     return copy;
   } else {
