@@ -518,6 +518,8 @@ Yes. Mutative supports return values for reducer, and `redux-toolkit` is conside
 
 ## Migration from Immer to Mutative
 
+> [mutative-compat](https://github.com/exuanbo/mutative-compat) - Mutative wrapper with full Immer API compatibility, you can use it to quickly migrate from Immer to Mutative.
+
 1. `produce()` -> `create()`
 
 Mutative auto freezing option is disabled by default, Immer auto freezing option is enabled by default (if disabled, Immer performance will have a more huge drop).
