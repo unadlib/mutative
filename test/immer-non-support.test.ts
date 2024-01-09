@@ -1,3 +1,5 @@
+/* eslint-disable symbol-description */
+/* eslint-disable no-unused-expressions */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-param-reassign */
@@ -10,6 +12,7 @@ import {
   produceWithPatches,
   enablePatches,
   applyPatches,
+  setUseStrictShallowCopy,
 } from 'immer';
 import { create, apply } from '../src';
 
@@ -325,9 +328,34 @@ test('#18 - set: assigning a non-draft with the same key - 1', () => {
     ],
   };
 
-  const created = create(
-    baseState,
-    (draft) => {
+  {
+    const created = create(
+      baseState,
+      (draft) => {
+        draft.array[0].one.two.three = 2;
+        const two = draft.array[0].one.two;
+        const one = new Set();
+        // @ts-ignore
+        draft.array = [{ one }];
+        // @ts-ignore
+        one.add(two);
+        // @ts-ignore
+        expect(Array.from(draft.array[0].one)[0].three).toBe(2);
+      },
+      {
+        enablePatches: true,
+      }
+    );
+    // @ts-ignore
+    expect(Array.from(created[0].array[0].one)[0].three).toBe(2);
+    expect(apply(baseState, created[1])).toEqual(created[0]);
+    expect(apply(created[0], created[2])).toEqual(baseState);
+  }
+
+  {
+    enablePatches();
+    // @ts-ignore
+    const produced = produceWithPatches(baseState, (draft: any) => {
       draft.array[0].one.two.three = 2;
       const two = draft.array[0].one.two;
       const one = new Set();
@@ -337,74 +365,56 @@ test('#18 - set: assigning a non-draft with the same key - 1', () => {
       one.add(two);
       // @ts-ignore
       expect(Array.from(draft.array[0].one)[0].three).toBe(2);
-    },
-    {
-      enablePatches: true,
-    }
-  );
-  // @ts-ignore
-  expect(Array.from(created[0].array[0].one)[0].three).toBe(2);
-  expect(apply(baseState, created[1])).toEqual(created[0]);
-  expect(apply(created[0], created[2])).toEqual(baseState);
+    });
 
-  enablePatches();
-  // @ts-ignore
-  const produced = produceWithPatches(baseState, (draft: any) => {
-    draft.array[0].one.two.three = 2;
-    const two = draft.array[0].one.two;
-    const one = new Set();
     // @ts-ignore
-    draft.array = [{ one }];
-    // @ts-ignore
-    one.add(two);
-    // @ts-ignore
-    expect(Array.from(draft.array[0].one)[0].three).toBe(2);
-  });
+    expect(() => {
+      // @ts-ignore
+      // eslint-disable-next-line no-unused-expressions
+      Array.from(produced[0].array[0].one)[0].three;
+    }).toThrowError();
 
-  // @ts-ignore
-  expect(() => {
+    //  @ts-ignore
+    expect(() => applyPatches(baseState, produced[1])).toThrowError();
     // @ts-ignore
-    // eslint-disable-next-line no-unused-expressions
-    Array.from(produced[0].array[0].one)[0].three;
-  }).toThrowError();
-
-  //  @ts-ignore
-  expect(() => applyPatches(baseState, produced[1])).toThrowError();
-  // @ts-ignore
-  expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
+    expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
+  }
 });
 
 test('#18 - set: assigning a non-draft with the same key - 2', () => {
   const baseState = { c: [{ a: 1 }, { a: 1 }] };
-  enablePatches();
-  // @ts-ignore
-  const produced = produceWithPatches(baseState, (draft) => {
-    const f = draft.c.pop();
+  {
+    enablePatches();
     // @ts-ignore
-    f.a = 2;
-    // @ts-ignore
-    draft.c = new Set([draft.c[0], f]);
-  });
-  //  @ts-ignore
-  expect(() => applyPatches(baseState, produced[1])).toThrowError();
-  // @ts-ignore
-  expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
-
-  const created = create(
-    baseState,
-    (draft) => {
+    const produced = produceWithPatches(baseState, (draft) => {
       const f = draft.c.pop();
       // @ts-ignore
       f.a = 2;
       // @ts-ignore
       draft.c = new Set([draft.c[0], f]);
-    },
-    {
-      enablePatches: true,
-    }
-  );
-  expect(apply(baseState, created[1])).toEqual(created[0]);
-  expect(apply(created[0], created[2])).toEqual(baseState);
+    });
+    //  @ts-ignore
+    expect(() => applyPatches(baseState, produced[1])).toThrowError();
+    // @ts-ignore
+    expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
+  }
+  {
+    const created = create(
+      baseState,
+      (draft) => {
+        const f = draft.c.pop();
+        // @ts-ignore
+        f.a = 2;
+        // @ts-ignore
+        draft.c = new Set([draft.c[0], f]);
+      },
+      {
+        enablePatches: true,
+      }
+    );
+    expect(apply(baseState, created[1])).toEqual(created[0]);
+    expect(apply(created[0], created[2])).toEqual(baseState);
+  }
 });
 
 test('enablePatches and assign with ref array', () => {
@@ -447,5 +457,51 @@ test('enablePatches and assign with ref array', () => {
     expect(prevState).toEqual(baseState);
     const nextState = apply(baseState, patches);
     expect(nextState).toEqual(state);
+  }
+});
+
+test('produce leaks proxy objects when symbols are present', () => {
+  {
+    setUseStrictShallowCopy(true);
+    const sym = Symbol();
+
+    let state = {
+      id: 1,
+      [sym]: {},
+    };
+
+    state = produce(state, (draft) => {
+      draft.id = 2;
+      draft[sym];
+    });
+    // it should not throw error
+    expect(() => {
+      state = produce(state, (draft) => {
+        draft.id = 3;
+        draft[sym];
+      });
+    }).toThrowError();
+  }
+  {
+    const sym = Symbol();
+
+    let state = {
+      id: 1,
+      [sym]: {},
+    };
+
+    state = create(state, (draft) => {
+      draft.id = 2;
+      draft[sym];
+    });
+    // it should not throw error
+    expect(() => {
+      state = create(state, (draft) => {
+        draft.id = 3;
+        draft[sym];
+      });
+    }).not.toThrowError();
+    expect(state.id).toBe(3);
+    expect(state[sym]).toEqual({});
   }
 });
