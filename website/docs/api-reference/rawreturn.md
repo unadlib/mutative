@@ -77,4 +77,6 @@ In strict mode, if the return value contains drafts, it will warn:
 ```
 The return value contains drafts, please don't use 'rawReturn()' to wrap the return value
 ```
+
+If the return value may contain a draft, then please do NOT use `rawReturn()` to wrap the return value.
 :::
