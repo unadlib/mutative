@@ -9,6 +9,12 @@
 
 **Mutative** - A JavaScript library for efficient immutable updates, 2-6x faster than naive handcrafted reducer, and more than 10x faster than Immer.
 
+Why are Mutative operations faster than spread operations(naive handcrafted reducer)?
+- <a href="https://betterprogramming.pub/the-reduce-spread-anti-pattern-fc0c1c0b23f6" target="_blank">The Reduce ({…Spread}) Anti-Pattern</a>
+- <a href="https://jonlinnell.co.uk/articles/spread-operator-performance?fbclid=IwAR0mElQwz2aOxl8rcsqoYwkcQDlcXcwuyIsTmTAbmyzrarysS8-BC1lSY9k" target="_blank">How slow is the Spread operator in JavaScript?</a>
+
+---
+
 <details>
 <summary><b>Mutative vs Reducer benchmark by object:  </b></summary>
 
