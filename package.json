@@ -32,6 +32,7 @@
     "benchmark:base": "NODE_ENV='production' ts-node test/performance/benchmark.ts",
     "benchmark:object": "NODE_ENV='production' ts-node test/performance/benchmark-object.ts",
     "benchmark:array": "NODE_ENV='production' ts-node test/performance/benchmark-array.ts",
+    "benchmark:class": "NODE_ENV='production' ts-node test/performance/benchmark-class.ts",
     "performance:basic": "cd test/performance && NODE_ENV='production' ts-node index.ts",
     "performance:set-map": "cd test/performance && NODE_ENV='production' ts-node set-map.ts",
     "performance:big-object": "cd test/performance && NODE_ENV='production' ts-node big-object.ts",
