@@ -3,23 +3,28 @@ import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 
 function strictCopy(target: any) {
-  const descriptors = Object.getOwnPropertyDescriptors(target);
-  Reflect.ownKeys(descriptors).forEach((key: any) => {
-    const desc = descriptors[key];
+  const copy = Object.create(Object.getPrototypeOf(target));
+  Reflect.ownKeys(target).forEach((key: any) => {
+    let desc = Reflect.getOwnPropertyDescriptor(target, key)!;
+    if (desc.enumerable && desc.configurable && desc.writable) {
+      copy[key] = target[key];
+      return;
+    }
     // for freeze
     if (!desc.writable) {
       desc.writable = true;
       desc.configurable = true;
     }
     if (desc.get || desc.set)
-      descriptors[key] = {
+      desc = {
         configurable: true,
         writable: true,
         enumerable: desc.enumerable,
         value: target[key],
       };
+    Reflect.defineProperty(copy, key, desc);
   });
-  return Object.create(Object.getPrototypeOf(target), descriptors);
+  return copy;
 }
 
 const propIsEnum = Object.prototype.propertyIsEnumerable;
