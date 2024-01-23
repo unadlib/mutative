@@ -104,7 +104,7 @@ The fastest method is Mutative - No Freeze
 
 Run `yarn benchmark` to measure performance.
 
-> OS: macOS 12.6, CPU: Apple M1 Max, Node.js: 16.14.2
+> OS: macOS 14.2.1, CPU: Apple M1 Max, Node.js: v20.11.0
 
 Immer relies on auto-freeze to be enabled, if auto-freeze is disabled, Immer will have a huge performance drop and Mutative will have a huge performance lead, especially with large data structures it will have a performance lead of more than 50x.
 
