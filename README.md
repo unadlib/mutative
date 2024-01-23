@@ -9,9 +9,14 @@
 
 **Mutative** - A JavaScript library for efficient immutable updates, 2-6x faster than naive handcrafted reducer, and more than 10x faster than Immer.
 
-Why are Mutative faster than spread operations(naive handcrafted reducer)?
+**Why is Mutative faster than the spread operation(naive handcrafted reducer)?**
+
+The spread operation has performance pitfalls, which can be detailed in the following article:
+
 - <a href="https://betterprogramming.pub/the-reduce-spread-anti-pattern-fc0c1c0b23f6" target="_blank">The Reduce ({…Spread}) Anti-Pattern</a>
 - <a href="https://jonlinnell.co.uk/articles/spread-operator-performance?fbclid=IwAR0mElQwz2aOxl8rcsqoYwkcQDlcXcwuyIsTmTAbmyzrarysS8-BC1lSY9k" target="_blank">How slow is the Spread operator in JavaScript?</a>
+
+And Mutative optimization focus on shallow copy optimization, more complete lazy drafts, finalization process optimization, and more.
 
 ---
 
@@ -90,7 +95,7 @@ This is why Mutative was created.
 
 > Mutative passed all of Immer's test cases.
 
-Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v1.0.0 vs Immer v10.0.3]
+Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v1.0.3 vs Immer v10.0.3]
 
 ![Benchmark](benchmark.jpg)
 
@@ -507,10 +512,6 @@ expect(state.simpleObject).not.toBe(baseState.simpleObject);
 - [use-mutative](https://github.com/unadlib/use-mutative)
 
 ## FAQs
-
-- Why does Mutative have such good performance?
-
-Mutative optimization focus on shallow copy optimization, more complete lazy drafts, finalization process optimization, and more.
 
 - I'm already using Immer, can I migrate smoothly to Mutative?
 
