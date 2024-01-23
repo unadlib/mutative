@@ -3632,7 +3632,6 @@ test('preserves non-enumerable properties - useStrictShallowCopy:true', () => {
     baseState,
     (s: any) => {
       if (canReferNonEnumerableProperty) expect(s.foo).toBeTruthy();
-      // !!! This is different from immer
       if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
       if (canReferNonEnumerableProperty) s.bar++;
       if (useStrictShallowCopy) expect(isEnumerable(s, 'foo')).toBeFalsy();
