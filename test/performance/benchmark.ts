@@ -112,7 +112,7 @@ suite
     {
       onStart: () => {
         setAutoFreeze(false);
-        // setUseProxies(true);
+        //
         i = Math.random();
         baseState = getData();
       },
@@ -151,7 +151,7 @@ suite
     {
       onStart: () => {
         setAutoFreeze(true);
-        // setUseProxies(true);
+        //
         i = Math.random();
         baseState = getData();
       },
@@ -190,7 +190,7 @@ suite
     {
       onStart: () => {
         setAutoFreeze(false);
-        // setUseProxies(true);
+        //
         enablePatches();
         i = Math.random();
         baseState = getData();
@@ -230,7 +230,7 @@ suite
     {
       onStart: () => {
         setAutoFreeze(true);
-        // setUseProxies(true);
+        //
         enablePatches();
         i = Math.random();
         baseState = getData();

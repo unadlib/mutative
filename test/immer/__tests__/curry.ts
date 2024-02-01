@@ -1,7 +1,6 @@
 // @ts-nocheck
 import {
   produce,
-  setUseProxies,
   produceWithPatches,
   enablePatches,
 } from '../src/immer';

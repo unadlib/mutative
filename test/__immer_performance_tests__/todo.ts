@@ -1,24 +1,23 @@
+/* eslint-disable prefer-template */
+/* eslint-disable @typescript-eslint/no-empty-function */
 // @ts-nocheck
 'use strict';
 
-import produce, { setAutoFreeze, setUseProxies, enableAllPlugins } from 'immer';
-import lodash from 'lodash';
-import { List, Record } from 'immutable';
+import { enablePatches, produce, setAutoFreeze } from 'immer';
+import cloneDeep from 'lodash.clonedeep';
+import immutable from 'immutable';
 import Seamless from 'seamless-immutable';
 import deepFreeze from 'deep-freeze';
-import { measure } from './measure';
 import { create } from '../..';
+import { measure } from './measure';
 
-const { cloneDeep } = lodash;
-
-enableAllPlugins();
+const { List, Record } = immutable;
 
 function freeze(x) {
   Object.freeze(x);
   return x;
 }
 
-const time = 20;
 const MAX = 50000;
 const MODIFY_FACTOR = 0.1;
 const baseState = [];
@@ -171,47 +170,40 @@ measure('seamless-immutable + asMutable', () => {
 });
 
 measure(
-  'immer (proxy) - without autofreeze',
+  'immer - without autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(false);
-    return cloneDeep(baseState);
   },
-  (baseState) => {
+  () => {
     produce(baseState, (draft) => {
       for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
         draft[i].done = true;
       }
     });
-  },
-  time
+  }
 );
 
 measure(
-  'immer (proxy) - with autofreeze',
+  'immer - with autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(true);
-    return deepFreeze(cloneDeep(baseState));
   },
-  (frozenBazeState) => {
+  () => {
     produce(frozenBazeState, (draft) => {
       for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
         draft[i].done = true;
       }
     });
-  },
-  time
+  }
 );
 
 measure(
-  'immer (proxy) - without autofreeze - with patch listener',
+  'immer - without autofreeze - with patch listener',
   () => {
-    setUseProxies(true);
+    enablePatches();
     setAutoFreeze(false);
-    return cloneDeep(baseState);
   },
-  (baseState) => {
+  () => {
     produce(
       baseState,
       (draft) => {
@@ -219,20 +211,18 @@ measure(
           draft[i].done = true;
         }
       },
-      function () {}
+      () => {}
     );
-  },
-  time
+  }
 );
 
 measure(
-  'immer (proxy) - with autofreeze - with patch listener',
+  'immer - with autofreeze - with patch listener',
   () => {
-    setUseProxies(true);
+    enablePatches();
     setAutoFreeze(true);
-    return cloneDeep(baseState);
   },
-  (baseState) => {
+  () => {
     produce(
       baseState,
       (draft) => {
@@ -240,108 +230,26 @@ measure(
           draft[i].done = true;
         }
       },
-      function () {}
+      () => {}
     );
-  },
-  time
-);
-
-measure(
-  'immer (es5) - without autofreeze',
-  () => {
-    setUseProxies(false);
-    setAutoFreeze(false);
-    return cloneDeep(baseState);
-  },
-  (baseState) => {
-    produce(baseState, (draft) => {
-      for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
-        draft[i].done = true;
-      }
-    });
-  },
-  time
-);
-
-measure(
-  'immer (es5) - with autofreeze',
-  () => {
-    setUseProxies(false);
-    setAutoFreeze(true);
-    return deepFreeze(cloneDeep(baseState));
-  },
-  (frozenBazeState) => {
-    produce(frozenBazeState, (draft) => {
-      for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
-        draft[i].done = true;
-      }
-    });
-  },
-  time
-);
-
-measure(
-  'immer (es5) - without autofreeze - with patch listener',
-  () => {
-    setUseProxies(false);
-    setAutoFreeze(false);
-    return cloneDeep(baseState);
-  },
-  (baseState) => {
-    produce(
-      baseState,
-      (draft) => {
-        for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
-          draft[i].done = true;
-        }
-      },
-      function () {}
-    );
-  },
-  time
-);
-
-measure(
-  'immer (es5) - with autofreeze - with patch listener',
-  () => {
-    setUseProxies(false);
-    setAutoFreeze(true);
-    return deepFreeze(cloneDeep(baseState));
-  },
-  (frozenBazeState) => {
-    produce(
-      frozenBazeState,
-      (draft) => {
-        for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
-          draft[i].done = true;
-        }
-      },
-      function () {}
-    );
-  },
-  time
+  }
 );
 
 measure(
   'mutative - without autofreeze',
-  () => {
-    return cloneDeep(baseState);
-  },
+  () => cloneDeep(baseState),
   (baseState) => {
     create(baseState, (draft) => {
       for (let i = 0; i < MAX * MODIFY_FACTOR; i++) {
         draft[i].done = true;
       }
     });
-  },
-  time
+  }
 );
 
 measure(
   'mutative - with autofreeze',
-  () => {
-    return deepFreeze(cloneDeep(baseState));
-  },
+  () => deepFreeze(cloneDeep(baseState)),
   (frozenBazeState) => {
     create(
       frozenBazeState,
@@ -354,6 +262,5 @@ measure(
         enableAutoFreeze: true,
       }
     );
-  },
-  time
+  }
 );

@@ -94,7 +94,7 @@ const run = (size: number) => {
       'Mutative',
       () => {
         const state = create(baseState, (draft) => {
-          draft[0].value = i;
+          draft.push({ value: i });
         });
       },
       {
@@ -107,10 +107,7 @@ const run = (size: number) => {
     .add(
       'Naive handcrafted reducer',
       () => {
-        const state = [
-          { ...baseState[0], value: i },
-          ...baseState.slice(1, baseState.length),
-        ];
+        const state = [...baseState, { value: i }];
       },
       {
         onStart: () => {

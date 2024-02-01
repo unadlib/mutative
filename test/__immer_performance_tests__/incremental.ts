@@ -1,15 +1,10 @@
 // @ts-nocheck
 'use strict';
-
-import produce, { setAutoFreeze, setUseProxies, enableAllPlugins } from 'immer';
-import lodash from 'lodash';
-import * as Immutable from 'immutable';
+import { produce, setAutoFreeze } from 'immer';
+import cloneDeep from 'lodash.clonedeep';
+import Immutable from 'immutable';
 import { measure } from './measure';
 import { create } from '../..';
-
-const { cloneDeep } = lodash;
-
-enableAllPlugins();
 
 console.log('\n# incremental - lot of small incremental changes\n');
 
@@ -74,9 +69,8 @@ measure(
 );
 
 measure(
-  'immer (proxy)',
+  'immer',
   () => {
-    setUseProxies(true);
     setAutoFreeze(false);
     return baseState;
   },
@@ -91,27 +85,24 @@ measure(
 );
 
 measure(
-  'immer (es5)',
+  'immer - single produce',
   () => {
-    setUseProxies(false);
     setAutoFreeze(false);
     return baseState;
   },
   (state) => {
-    for (let i = 0; i < MAX; i++) {
-      state = produce(state, (draft) => {
+    produce(state, (draft) => {
+      for (let i = 0; i < MAX; i++) {
         draft.ids.push(i);
         draft.map[i] = createTestObject();
-      });
-    }
+      }
+    });
   }
 );
 
 measure(
   'mutative',
-  () => {
-    return baseState;
-  },
+  () => baseState,
   (baseState) => {
     let state = baseState;
     for (let i = 0; i < MAX; i++) {
@@ -124,44 +115,8 @@ measure(
 );
 
 measure(
-  'immer (proxy) - single produce',
-  () => {
-    setUseProxies(true);
-    setAutoFreeze(false);
-    return baseState;
-  },
-  (state) => {
-    produce(state, (draft) => {
-      for (let i = 0; i < MAX; i++) {
-        draft.ids.push(i);
-        draft.map[i] = createTestObject();
-      }
-    });
-  }
-);
-
-measure(
-  'immer (es5) - single produce',
-  () => {
-    setUseProxies(false);
-    setAutoFreeze(false);
-    return baseState;
-  },
-  (state) => {
-    produce(state, (draft) => {
-      for (let i = 0; i < MAX; i++) {
-        draft.ids.push(i);
-        draft.map[i] = createTestObject();
-      }
-    });
-  }
-);
-
-measure(
   'mutative - single create',
-  () => {
-    return baseState;
-  },
+  () => baseState,
   (state) => {
     create(state, (draft) => {
       for (let i = 0; i < MAX; i++) {

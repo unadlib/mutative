@@ -1,9 +1,9 @@
 // @ts-nocheck
 'use strict';
 
-import { produce, setUseProxies, setAutoFreeze, enableMapSet } from 'immer';
+import { produce, setAutoFreeze, enableMapSet } from 'immer';
 import { create } from '../..';
-import { measure } from './measure';
+import { measure } from '../__immer_performance_tests__/measure';
 import './array-object-first-time';
 
 console.log('----------------------------------------');
@@ -47,7 +47,6 @@ for (let i = 0; i < MAX; i++) {
 measure(
   '[ARRAY] immer (proxy) - without autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(false);
   },
   () => {
@@ -60,7 +59,6 @@ measure(
 measure(
   '[OBJECT] immer (proxy) - without autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(false);
   },
   () => {
@@ -73,7 +71,6 @@ measure(
 measure(
   '[MAP] immer (proxy) - without autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(false);
   },
   () => {
@@ -86,7 +83,6 @@ measure(
 measure(
   '[ARRAY] immer (proxy) - with autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(true);
   },
   () => {
@@ -99,7 +95,6 @@ measure(
 measure(
   '[OBJECT] immer (proxy) - with autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(true);
   },
   () => {
@@ -112,7 +107,6 @@ measure(
 measure(
   '[MAP] immer (proxy) - with autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(true);
   },
   () => {

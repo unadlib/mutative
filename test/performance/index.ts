@@ -1,14 +1,14 @@
 // @ts-nocheck
 'use strict';
 
-import produce, {
+import {
+  produce,
   setAutoFreeze,
-  setUseProxies,
   produceWithPatches,
   enablePatches,
 } from 'immer';
 import { create } from '../..';
-import { measure } from './measure';
+import { measure } from '../__immer_performance_tests__/measure';
 
 const MAX = 1000;
 
@@ -60,7 +60,7 @@ measure(
   'immer - without autoFreeze',
   () => {
     setAutoFreeze(false);
-    setUseProxies(true);
+
     return baseState;
   },
   (baseState: any) => {
@@ -98,7 +98,7 @@ measure(
   'immer - with autoFreeze',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
+
     return baseState;
   },
   (baseState: any) => {
@@ -137,7 +137,7 @@ measure(
   'immer - with patches',
   () => {
     setAutoFreeze(false);
-    setUseProxies(true);
+
     enablePatches();
     return baseState;
   },
@@ -177,7 +177,7 @@ measure(
   'immer - with autoFreeze and patches',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
+
     enablePatches();
     return baseState;
   },
@@ -210,7 +210,7 @@ measure(
   'immer - single without autoFreeze',
   () => {
     setAutoFreeze(false);
-    setUseProxies(true);
+
     return baseState;
   },
   (baseState: any) => {
@@ -248,7 +248,7 @@ measure(
   'immer - single - with autoFreeze',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
+
     return baseState;
   },
   (baseState: any) => {
@@ -286,7 +286,7 @@ measure(
   'immer - single - with enablePatches',
   () => {
     setAutoFreeze(false);
-    setUseProxies(true);
+
     return baseState;
   },
   (baseState: any) => {
@@ -325,7 +325,7 @@ measure(
   'immer - single - with autoFreeze and patches',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
+
     enablePatches();
     return baseState;
   },
@@ -376,7 +376,7 @@ measure(
   'immer - performance 100k key in object by default',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
+
     return object;
   },
   (baseState: any) => {
@@ -423,7 +423,7 @@ measure(
   'immer - performance for 100k items in array by default',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
+
     return data;
   },
   (baseState: any) => {

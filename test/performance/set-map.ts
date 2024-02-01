@@ -1,15 +1,15 @@
 // @ts-nocheck
 'use strict';
 
-import produce, {
+import {
+  produce,
   setAutoFreeze,
-  setUseProxies,
   produceWithPatches,
   enablePatches,
   enableMapSet,
 } from 'immer';
 import { create } from '../..';
-import { measure } from './measure';
+import { measure } from '../__immer_performance_tests__/measure';
 
 const MAX = 10;
 
@@ -76,7 +76,7 @@ measure(
   'immer - without autoFreeze',
   () => {
     setAutoFreeze(false);
-    setUseProxies(true);
+
     return getData();
   },
   (baseState: BaseState) => {
@@ -114,7 +114,7 @@ measure(
   'immer - with autoFreeze',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
+
     return getData();
   },
   (baseState: BaseState) => {
@@ -153,7 +153,7 @@ measure(
   'immer - with autoFreeze and patches',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
+
     enablePatches();
     return getData();
   },
@@ -186,7 +186,6 @@ measure(
   'immer - single - without autoFreeze',
   () => {
     setAutoFreeze(false);
-    setUseProxies(true);
     return getData();
   },
   (baseState: BaseState) => {
@@ -224,7 +223,7 @@ measure(
   'immer - single - with autoFreeze',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
+
     return getData();
   },
   (baseState: BaseState) => {
@@ -262,7 +261,7 @@ measure(
   'immer - single - with patches',
   () => {
     setAutoFreeze(false);
-    setUseProxies(true);
+
     enablePatches();
     return getData();
   },
@@ -302,7 +301,6 @@ measure(
   'immer - single - with autoFreeze and patches',
   () => {
     setAutoFreeze(true);
-    setUseProxies(true);
     enablePatches();
     return getData();
   },

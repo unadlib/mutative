@@ -1,7 +1,6 @@
 // @ts-nocheck
 import {
   produce,
-  setUseProxies,
   setAutoFreeze,
   freeze,
   enableMapSet,

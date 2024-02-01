@@ -1,9 +1,9 @@
 // @ts-nocheck
 'use strict';
 
-import { produce, setUseProxies, setAutoFreeze, enableMapSet } from 'immer';
+import { produce, setAutoFreeze, enableMapSet } from 'immer';
 import { create } from '../..';
-import { measure } from './measure';
+import { measure } from '../__immer_performance_tests__/measure';
 
 enableMapSet();
 // produce the base state
@@ -44,7 +44,6 @@ const getData = () => {
 measure(
   '[FIRST-TIME][ARRAY] immer (proxy) - without autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(false);
     return getData().arrayBaseState;
   },
@@ -58,7 +57,6 @@ measure(
 measure(
   '[FIRST-TIME][OBJECT] immer (proxy) - without autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(false);
     return getData().objectBaseState;
   },
@@ -72,7 +70,6 @@ measure(
 measure(
   '[FIRST-TIME][MAP] immer (proxy) - without autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(false);
     return getData().mapBaseState;
   },
@@ -86,7 +83,6 @@ measure(
 measure(
   '[FIRST-TIME][ARRAY] immer (proxy) - with autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(true);
     return getData().arrayBaseState;
   },
@@ -100,7 +96,6 @@ measure(
 measure(
   '[FIRST-TIME][OBJECT] immer (proxy) - with autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(true);
     return getData().objectBaseState;
   },
@@ -114,7 +109,6 @@ measure(
 measure(
   '[FIRST-TIME][MAP] immer (proxy) - with autofreeze',
   () => {
-    setUseProxies(true);
     setAutoFreeze(true);
     return getData().mapBaseState;
   },

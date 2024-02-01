@@ -5,11 +5,11 @@ import fs from 'fs';
 import { Suite } from 'benchmark';
 import { parse } from 'json2csv';
 import deepFreeze from 'deep-freeze';
-import produce, {
+import {
+  produce,
   enablePatches,
   produceWithPatches,
   setAutoFreeze,
-  setUseProxies,
 } from 'immer';
 import { create } from '../../..';
 
@@ -71,7 +71,6 @@ suite
     {
       onStart: () => {
         setAutoFreeze(false);
-        setUseProxies(true);
         i = Math.random();
         baseState = getData();
       },
@@ -112,7 +111,6 @@ suite
     {
       onStart: () => {
         setAutoFreeze(true);
-        setUseProxies(true);
         i = Math.random();
         baseState = getData();
       },
@@ -153,7 +151,6 @@ suite
     {
       onStart: () => {
         setAutoFreeze(false);
-        setUseProxies(true);
         enablePatches();
         i = Math.random();
         baseState = getData();
@@ -195,7 +192,6 @@ suite
     {
       onStart: () => {
         setAutoFreeze(true);
-        setUseProxies(true);
         enablePatches();
         i = Math.random();
         baseState = getData();
