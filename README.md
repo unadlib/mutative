@@ -69,11 +69,24 @@ Mutative is up to 2x faster than naive handcrafted reducer for updating immutabl
 
 ```ts
 // baseState type: { value: number }[]
+
+// slower 6x than Mutative
 const state = [
   { ...baseState[0], value: i },
   ...baseState.slice(1, baseState.length),
 ];
+
+// slower 2.5x than Mutative
+// const state = baseState.map((item, index) =>
+//   index === 0 ? { ...item, value: i } : item
+// );
+
+// same performance as Mutative
+// const state = [...baseState];
+// state[0] = { ...baseState[0], value: i };
 ```
+
+> The actual difference depends on which spread operation syntax you use.
 
 - Mutative
 

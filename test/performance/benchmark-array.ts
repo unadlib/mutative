@@ -94,7 +94,7 @@ const run = (size: number) => {
       'Mutative',
       () => {
         const state = create(baseState, (draft) => {
-          draft.push({ value: i });
+          draft[0].value = i;
         });
       },
       {
@@ -107,7 +107,20 @@ const run = (size: number) => {
     .add(
       'Naive handcrafted reducer',
       () => {
-        const state = [...baseState, { value: i }];
+        // slower 6x than mutative
+        const state = [
+          { ...baseState[0], value: i },
+          ...baseState.slice(1, baseState.length),
+        ];
+
+        // slower 2.5x than mutative
+        // const state = baseState.map((item, index) =>
+        //   index === 0 ? { ...item, value: i } : item
+        // );
+
+        // same speed as mutative
+        // const state = [...baseState];
+        // state[0] = { ...baseState[0], value: i };
       },
       {
         onStart: () => {
