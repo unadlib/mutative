@@ -65,9 +65,10 @@
   },
   "author": "unadlib",
   "keywords": [
-    "mutative",
     "immutable",
     "mutable",
+    "copy-on-write",
+    "mutative",
     "immutability",
     "mutation"
   ],
