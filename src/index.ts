@@ -16,4 +16,5 @@ export type {
   Patches,
   Patch,
   ExternalOptions as Options,
+  PatchesOptions,
 } from './interface';
