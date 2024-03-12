@@ -13,7 +13,7 @@
 
 The spread operation has performance pitfalls, which can be detailed in the following article:
 
-- <a href="https://betterprogramming.pub/the-reduce-spread-anti-pattern-fc0c1c0b23f6" target="_blank">The Reduce ({…Spread}) Anti-Pattern</a>
+- <a href="https://www.richsnapp.com/article/2019/06-09-reduce-spread-anti-pattern" target="_blank">The reduce ({...spread}) anti-pattern</a>
 - <a href="https://jonlinnell.co.uk/articles/spread-operator-performance?fbclid=IwAR0mElQwz2aOxl8rcsqoYwkcQDlcXcwuyIsTmTAbmyzrarysS8-BC1lSY9k" target="_blank">How slow is the Spread operator in JavaScript?</a>
 
 And Mutative optimization focus on shallow copy optimization, more complete lazy drafts, finalization process optimization, and more.
