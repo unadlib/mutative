@@ -435,45 +435,45 @@ test('enablePatches and assign with ref array', () => {
 test('produce leaks proxy objects when symbols are present', () => {
   {
     setUseStrictShallowCopy(true);
-    const sym = Symbol();
+    const Parent = Symbol();
 
-    let state = {
-      id: 1,
-      [sym]: {},
+    const testObject = {
+      name: 'Parent',
     };
 
-    state = produce(state, (draft) => {
-      draft.id = 2;
-      draft[sym];
-    });
+    // @ts-ignore
+    testObject.child = {
+      [Parent]: testObject,
+      count: 0,
+    };
+
     // it should not throw error
     expect(() => {
-      state = produce(state, (draft) => {
-        draft.id = 3;
-        draft[sym];
+      const result = produce(testObject, (draft) => {
+        // @ts-ignore
+        draft.child.count++;
       });
     }).toThrowError();
   }
   {
-    const sym = Symbol();
+    const Parent = Symbol();
 
-    let state = {
-      id: 1,
-      [sym]: {},
+    const testObject = {
+      name: 'Parent',
     };
 
-    state = create(state, (draft) => {
-      draft.id = 2;
-      draft[sym];
-    });
+    // @ts-ignore
+    testObject.child = {
+      [Parent]: testObject,
+      count: 0,
+    };
+
     // it should not throw error
     expect(() => {
-      state = create(state, (draft) => {
-        draft.id = 3;
-        draft[sym];
+      const result = create(testObject, (draft) => {
+        // @ts-ignore
+        draft.child.count++;
       });
     }).not.toThrowError();
-    expect(state.id).toBe(3);
-    expect(state[sym]).toEqual({});
   }
 });
