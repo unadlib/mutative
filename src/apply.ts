@@ -130,7 +130,7 @@ export function apply<T extends object, F extends boolean = false>(
     return state;
   }
   return create<T, F>(state, mutate, {
-    enablePatches: false,
     ...applyOptions,
+    enablePatches: false,
   });
 }
