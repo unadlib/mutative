@@ -477,3 +477,28 @@ test('produce leaks proxy objects when symbols are present', () => {
     }).not.toThrowError();
   }
 });
+
+test('error key setting in array', () => {
+  {
+    for (const key of [-1, '-1', '1.0', '-1.1']) {
+      const data = [1, 2, 3];
+      expect(() => {
+        produce(data, (draft) => {
+          // @ts-ignore
+          draft[key] = 'new str';
+        });
+      }).not.toThrowError();
+    }
+  }
+  {
+    for (const key of [-1, '-1', '1.0', '-1.1']) {
+      const data = [1, 2, 3];
+      expect(() => {
+        create(data, (draft) => {
+          // @ts-ignore
+          draft[key] = 'new str';
+        });
+      }).toThrowErrorMatchingSnapshot();
+    }
+  }
+});

@@ -126,7 +126,11 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (
       target.type === DraftType.Array &&
       key !== 'length' &&
-      isNaN(Number(key))
+      !(
+        Number.isInteger(Number(key)) &&
+        Number(key) >= 0 &&
+        (String(Number(key)) === String(key) || key === 0 || Number(key) === 0)
+      )
     ) {
       throw new Error(
         `Only supports setting array indices and the 'length' property.`
