@@ -1292,3 +1292,68 @@ test('type check', () => {
   const key = patches![0].path;
   expect(Array.isArray(key)).toBeTruthy();
 });
+
+test('merge multiple patches', () => {
+  const arr = [1];
+  const [state, patches, inversePatches] = create(
+    arr,
+    (draft) => {
+      draft.push(2);
+      draft.push(999);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  console.log(
+    JSON.stringify(
+      {
+        patches,
+        inversePatches,
+      },
+      null,
+      2
+    )
+  );
+  const [state1, patches1, inversePatches1] = create(
+    state,
+    (draft) => {
+      draft.push(3);
+      draft.push(4);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+
+  const [state2, patches2, inversePatches2] = create(
+    state1,
+    (draft) => {
+      draft.shift();
+      draft.push(4);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+
+  const patches0 = [...patches, ...patches1, ...patches2];
+  // !!! need to reverse patches
+  const inversePatches0 = [
+    ...inversePatches2,
+    ...inversePatches1,
+    ...inversePatches,
+  ];
+
+  const nextState = apply(arr, patches0);
+  expect(nextState).toEqual(state2);
+  const prevState = apply(state2, inversePatches0);
+  expect(prevState).toEqual(arr);
+
+  const errorPrevState = apply(state2, [
+    ...inversePatches,
+    ...inversePatches1,
+    ...inversePatches2,
+  ]);
+  expect(errorPrevState).not.toEqual(arr);
+});
