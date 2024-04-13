@@ -60,15 +60,34 @@ test('no update object with NaN', () => {
 });
 
 test('check array options error', () => {
-  const data = [1, 2, 3];
-  expect(() => {
-    create(data, (draft) => {
-      // @ts-expect-error
-      draft.foo = 'new str';
-    });
-  }).toThrowError(
-    `Only supports setting array indices and the 'length' property.`
-  );
+  for (const key of [
+    -1,
+    '-1',
+    '1.0',
+    '-1.1',
+    'foo',
+    Infinity,
+    -Infinity,
+    NaN,
+  ]) {
+    const data = [1, 2, 3];
+    expect(() => {
+      create(data, (draft) => {
+        // @ts-ignore
+        draft[key] = 'new str';
+      });
+    }).toThrowErrorMatchingSnapshot();
+  }
+
+  for (const key of [0, 1, '1', '-0', '+0', -0, +0]) {
+    const data = [1, 2, 3];
+    expect(() => {
+      create(data, (draft) => {
+        // @ts-ignore
+        draft[key] = 'new str';
+      });
+    }).not.toThrowError();
+  }
 });
 
 test('object', () => {

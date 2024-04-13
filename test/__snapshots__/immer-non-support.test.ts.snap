@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`error key setting in array 1`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`error key setting in array 2`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`error key setting in array 3`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`error key setting in array 4`] = `"Only supports setting array indices and the 'length' property."`;

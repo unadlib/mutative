@@ -123,10 +123,15 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         `Map/Set draft does not support any property assignment.`
       );
     }
+    let _key: number;
     if (
       target.type === DraftType.Array &&
       key !== 'length' &&
-      isNaN(Number(key))
+      !(
+        Number.isInteger((_key = Number(key))) &&
+        _key >= 0 &&
+        (key === 0 || _key === 0 || String(_key) === String(key))
+      )
     ) {
       throw new Error(
         `Only supports setting array indices and the 'length' property.`

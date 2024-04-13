@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`check array options error 1`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`check array options error 2`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`check array options error 3`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`check array options error 4`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`check array options error 5`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`check array options error 6`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`check array options error 7`] = `"Only supports setting array indices and the 'length' property."`;
+
+exports[`check array options error 8`] = `"Only supports setting array indices and the 'length' property."`;
