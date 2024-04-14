@@ -16,14 +16,14 @@ const data = Object.entries(result).sort(
 const name = path.basename(__filename).replace('.ts', '');
 const chart = new QuickChart();
 chart.setConfig({
-  type: 'bar',
+  type: 'horizontalBar',
   data: {
     labels: data.map(([name]) => name),
     datasets: [
       {
         label: 'All benchmark items',
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        borderColor: 'rgb(54, 162, 235)',
         borderWidth: 1,
         data: data.map(([, { avg }]) => avg.toFixed(1)),
       },
@@ -32,19 +32,42 @@ chart.setConfig({
   options: {
     title: {
       display: true,
-      text: `
-        All benchmark results by average multiplier
-      `,
+      text: 'Mutative vs Immer - All benchmark results by average multiplier',
     },
     plugins: {
       datalabels: {
-        anchor: 'center',
-        align: 'center',
+        anchor: 'right',
+        align: 'right',
         color: '#666',
         font: {
           weight: 'normal',
         },
       },
+    },
+    scales: {
+      xAxes: [
+        {
+          display: true,
+          scaleLabel: {
+            display: true,
+            labelString: 'Multiplier',
+          },
+        },
+      ],
+      yAxes: [
+        {
+          type: 'category',
+          position: 'left',
+          display: true,
+          scaleLabel: {
+            display: true,
+            labelString: 'Benchmark Type',
+          },
+          ticks: {
+            reverse: true,
+          },
+        },
+      ],
     },
   },
 });
