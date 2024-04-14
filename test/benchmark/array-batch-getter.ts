@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable-loop */
 /* eslint-disable import/no-relative-packages */
 /* eslint-disable prefer-template */
 // @ts-nocheck
@@ -13,7 +14,6 @@ import {
   enablePatches,
   produceWithPatches,
   setAutoFreeze,
-  enableMapSet,
 } from 'immer';
 // import {
 //   produce,
@@ -22,8 +22,6 @@ import {
 //   setAutoFreeze,
 // } from '../../../temp/immer/dist';
 import { create } from '../..';
-
-enableMapSet();
 
 const config: Parameters<QuickChart['setConfig']>[0] = {
   type: 'line',
@@ -56,7 +54,7 @@ const config: Parameters<QuickChart['setConfig']>[0] = {
   options: {
     title: {
       display: true,
-      text: 'Mutative vs Immer performance - Map',
+      text: 'Mutative vs Immer performance - Array Batch Getter',
     },
     scales: {
       xAxes: [
@@ -64,7 +62,7 @@ const config: Parameters<QuickChart['setConfig']>[0] = {
           display: true,
           scaleLabel: {
             display: true,
-            labelString: 'Number of map items',
+            labelString: 'Number of array items',
           },
         },
       ],
@@ -84,23 +82,25 @@ const config: Parameters<QuickChart['setConfig']>[0] = {
 const run = (size: number) => {
   config.data.labels.push(size);
   const getData = (size: number) =>
-    new Map(
-      Array(size)
-        .fill(1)
-        .map((_, key) => [key, { value: key }])
-    );
+    Array(size)
+      .fill(1)
+      .map((_, key) => ({ value: key }));
 
   const suite = new Suite();
 
   let i: number;
-  let baseState: Map<number, { value: number }>;
+  let baseState: { value: number }[];
+  let MODIFY_FACTOR = 0.1;
 
   suite
     .add(
       'Mutative',
       () => {
         const state = create(baseState, (draft) => {
-          draft.get(0).value = i;
+          for (let index = 0; index < size * MODIFY_FACTOR; index++) {
+            // eslint-disable-next-line no-unused-expressions
+            draft[index].value;
+          }
         });
       },
       {
@@ -126,7 +126,9 @@ const run = (size: number) => {
       'Immer',
       () => {
         const state = produce(baseState, (draft: any) => {
-          draft.get(0).value = i;
+          for (let index = 0; index < size * MODIFY_FACTOR; index++) {
+            draft[index].value = i;
+          }
         });
       },
       {

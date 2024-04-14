@@ -13,17 +13,8 @@ import {
   enablePatches,
   produceWithPatches,
   setAutoFreeze,
-  enableMapSet,
 } from 'immer';
-// import {
-//   produce,
-//   enablePatches,
-//   produceWithPatches,
-//   setAutoFreeze,
-// } from '../../../temp/immer/dist';
 import { create } from '../..';
-
-enableMapSet();
 
 const config: Parameters<QuickChart['setConfig']>[0] = {
   type: 'line',
@@ -56,7 +47,7 @@ const config: Parameters<QuickChart['setConfig']>[0] = {
   options: {
     title: {
       display: true,
-      text: 'Mutative vs Immer performance - Map',
+      text: 'Mutative vs Immer performance - Object Batch Getter',
     },
     scales: {
       xAxes: [
@@ -64,7 +55,7 @@ const config: Parameters<QuickChart['setConfig']>[0] = {
           display: true,
           scaleLabel: {
             display: true,
-            labelString: 'Number of map items',
+            labelString: 'Number of object items',
           },
         },
       ],
@@ -82,25 +73,30 @@ const config: Parameters<QuickChart['setConfig']>[0] = {
 };
 
 const run = (size: number) => {
+  const MODIFY_FACTOR = 0.1;
   config.data.labels.push(size);
   const getData = (size: number) =>
-    new Map(
-      Array(size)
-        .fill(1)
-        .map((_, key) => [key, { value: key }])
-    );
+    Array(size)
+      .fill(1)
+      .reduce(
+        (acc, _, key) => Object.assign(acc, { [`key${key}`]: { value: key } }),
+        {} as Record<string, { value: number }>
+      );
 
   const suite = new Suite();
 
   let i: number;
-  let baseState: Map<number, { value: number }>;
+  let baseState: Record<string, { value: number }>;
 
   suite
     .add(
       'Mutative',
       () => {
         const state = create(baseState, (draft) => {
-          draft.get(0).value = i;
+          for (let index = 0; index < size * MODIFY_FACTOR; index++) {
+            // eslint-disable-next-line no-unused-expressions
+            draft[`key${index}`].value;
+          }
         });
       },
       {
@@ -113,7 +109,14 @@ const run = (size: number) => {
     // .add(
     //   'Naive handcrafted reducer',
     //   () => {
-    //     const state = [...baseState, { value: i }];
+    //     const state = {
+    //       ...baseState,
+    //     };
+    //     Object.keys(state).forEach((key, index) => {
+    //       if (index < size * MODIFY_FACTOR) {
+    //         state[key] = { ...state[key], value: index };
+    //       }
+    //     });
     //   },
     //   {
     //     onStart: () => {
@@ -126,7 +129,9 @@ const run = (size: number) => {
       'Immer',
       () => {
         const state = produce(baseState, (draft: any) => {
-          draft.get(0).value = i;
+          for (let index = 0; index < size * MODIFY_FACTOR; index++) {
+            draft[`key${index}`].value = i;
+          }
         });
       },
       {

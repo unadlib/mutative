@@ -194,8 +194,11 @@ try {
       return current + immerValue / value;
     }, 0) / config.data.datasets[0].data.length;
   const resultPath = path.resolve(__dirname, `./results/result.json`);
+  if (!fs.existsSync(resultPath)) {
+    fs.writeFileSync(resultPath, '{}');
+  }
   const data = JSON.parse(fs.readFileSync(resultPath));
-  data.push({ name, avg });
+  data[name] = { name, avg };
   fs.writeFileSync(resultPath, JSON.stringify(data, null, 2));
   const file = fs.createWriteStream(
     path.resolve(__dirname, `./results/${name}.jpg`)

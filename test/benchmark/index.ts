@@ -8,9 +8,13 @@ const currentDir = __dirname;
 async function runTsFilesSequentially() {
   const files = fs.readdirSync(currentDir);
   const tsFiles = files.filter(
-    (file) => path.extname(file) === '.ts' && path.basename(file) !== 'index.ts'
+    (file) =>
+      path.extname(file) === '.ts' &&
+      path.basename(file) !== 'index.ts' &&
+      path.basename(file) !== 'all.ts'
   );
-  for (const file of tsFiles) {
+  const all = files.find((file) => path.basename(file) === 'all.ts')!;
+  for (const file of [...tsFiles, all]) {
     console.log(`Running: ${file}`);
     const env = { ...process.env, NODE_ENV: 'production' };
     await new Promise<void>((resolve, reject) => {
