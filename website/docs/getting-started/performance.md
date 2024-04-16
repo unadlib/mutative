@@ -69,23 +69,23 @@ const state = create(baseState, (draft) => {
 
 > Mutative passed all of Immer's test cases.
 
-Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v1.0.3 vs Immer v10.0.3]
+Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v1.0.4 vs Immer v10.0.4]
 
 ![Benchmark](img/benchmark.jpg)
 
 ```
-Naive handcrafted reducer - No Freeze x 4,476 ops/sec ±0.38% (96 runs sampled)
-Mutative - No Freeze x 6,058 ops/sec ±0.91% (90 runs sampled)
-Immer - No Freeze x 5.80 ops/sec ±0.34% (19 runs sampled)
+Naive handcrafted reducer - No Freeze x 4,450 ops/sec ±0.36% (96 runs sampled)
+Mutative - No Freeze x 6,137 ops/sec ±1.15% (89 runs sampled)
+Immer - No Freeze x 5.27 ops/sec ±0.65% (18 runs sampled)
 
-Mutative - Freeze x 971 ops/sec ±1.07% (98 runs sampled)
-Immer - Freeze x 380 ops/sec ±0.61% (94 runs sampled)
+Mutative - Freeze x 960 ops/sec ±1.42% (95 runs sampled)
+Immer - Freeze x 378 ops/sec ±0.70% (93 runs sampled)
 
-Mutative - Patches and No Freeze x 967 ops/sec ±0.94% (96 runs sampled)
-Immer - Patches and No Freeze x 5.83 ops/sec ±0.17% (19 runs sampled)
+Mutative - Patches and No Freeze x 960 ops/sec ±1.32% (97 runs sampled)
+Immer - Patches and No Freeze x 5.27 ops/sec ±0.69% (18 runs sampled)
 
-Mutative - Patches and Freeze x 502 ops/sec ±0.94% (96 runs sampled)
-Immer - Patches and Freeze x 278 ops/sec ±0.73% (90 runs sampled)
+Mutative - Patches and Freeze x 493 ops/sec ±1.40% (94 runs sampled)
+Immer - Patches and Freeze x 275 ops/sec ±0.62% (89 runs sampled)
 
 The fastest method is Mutative - No Freeze
 ```
