@@ -12,10 +12,14 @@ import {
 } from './draft';
 import { forEach } from './forEach';
 
-export function handleValue(target: any, handledSet: WeakSet<any>) {
+export function handleValue(
+  target: any,
+  handledSet: WeakSet<any>,
+  options?: ProxyDraft['options']
+) {
   if (
     isDraft(target) ||
-    !isDraftable(target) ||
+    !isDraftable(target, options) ||
     handledSet.has(target) ||
     Object.isFrozen(target)
   )
@@ -35,7 +39,7 @@ export function handleValue(target: any, handledSet: WeakSet<any>) {
       // final update value
       set(isSet ? setMap! : target, key, updatedValue);
     } else {
-      handleValue(value, handledSet);
+      handleValue(value, handledSet, options);
     }
   });
   if (setMap) {
@@ -57,7 +61,11 @@ export function finalizeAssigned(proxyDraft: ProxyDraft, key: PropertyKey) {
     proxyDraft.assignedMap!.get(key) &&
     copy
   ) {
-    handleValue(get(copy, key), proxyDraft.finalities.handledSet);
+    handleValue(
+      get(copy, key),
+      proxyDraft.finalities.handledSet,
+      proxyDraft.options
+    );
   }
 }
 
