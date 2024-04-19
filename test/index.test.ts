@@ -13,6 +13,7 @@ import {
   Draft,
   markSimpleObject,
   rawReturn,
+  makeCreator,
 } from '../src';
 import { PROXY_DRAFT } from '../src/constant';
 
@@ -3880,4 +3881,50 @@ test('object with non-enumerable Symbol key at root - 1', () => {
   expect(state).toEqual({
     foobar: 'str',
   });
+});
+
+test('#37 - Proxy revoked error with `mark` option when performing chai deep equality', () => {
+  class Entity {
+    constructor(public readonly name: string) {}
+  }
+
+  class Group {
+    constructor(
+      public readonly id: string,
+      public readonly children: Entity[]
+    ) {}
+
+    public clone() {
+      return new Group(this.id, this.children);
+    }
+  }
+
+  class Data {
+    constructor(public readonly groupData: Record<string, Group>) {}
+  }
+
+  const create = makeCreator({
+    mark: () => 'immutable',
+  });
+
+  const entity1 = new Entity('entity1');
+  const entity2 = new Entity('entity2');
+
+  const data = new Data({
+    id1: new Group('id1', []),
+    id2: new Group('id2', [entity1]),
+    id3: new Group('id3', [entity2]),
+  });
+
+  expect(
+    create(data, (draft) => {
+      draft.groupData.id1 = draft.groupData.id1.clone();
+    })
+  ).toEqual(
+    new Data({
+      id1: new Group('id1', []),
+      id2: new Group('id2', [entity1]),
+      id3: new Group('id3', [entity2]),
+    })
+  );
 });
