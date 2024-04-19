@@ -276,6 +276,7 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
   > Set a mark to determine if the value is mutable or if an instance is an immutable, and it can also return a shallow copy function(`AutoFreeze` and `Patches` should both be disabled, Some patches operation might not be equivalent).
   > When the mark function is (target) => 'immutable', it means all the objects in the state structure are immutable. In this specific case, you can totally turn on `AutoFreeze` and `Patches`.
   > `mark` supports multiple marks, and the marks are executed in order, and the first mark that returns a value will be used.
+  > When a object tree node is marked by the `mark` function as `mutable`, all of its child nodes will also not be drafted by Mutative and will retain their original values.
 
 #### `create()` - Currying
 
