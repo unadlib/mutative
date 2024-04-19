@@ -108,23 +108,23 @@ Mutative is up to 6x faster than naive handcrafted reducer for updating immutabl
 
 > Mutative passed all of Immer's test cases.
 
-Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v1.0.4 vs Immer v10.0.4]
+Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v1.0.5 vs Immer v10.0.4]
 
 ![Benchmark](benchmark.jpg)
 
 ```
-Naive handcrafted reducer - No Freeze x 4,450 ops/sec ±0.36% (96 runs sampled)
-Mutative - No Freeze x 6,137 ops/sec ±1.15% (89 runs sampled)
-Immer - No Freeze x 5.27 ops/sec ±0.65% (18 runs sampled)
+Naive handcrafted reducer - No Freeze x 4,442 ops/sec ±0.49% (94 runs sampled)
+Mutative - No Freeze x 6,101 ops/sec ±1.26% (88 runs sampled)
+Immer - No Freeze x 5.20 ops/sec ±0.68% (17 runs sampled)
 
-Mutative - Freeze x 960 ops/sec ±1.42% (95 runs sampled)
-Immer - Freeze x 378 ops/sec ±0.70% (93 runs sampled)
+Mutative - Freeze x 946 ops/sec ±1.36% (92 runs sampled)
+Immer - Freeze x 376 ops/sec ±1.10% (93 runs sampled)
 
-Mutative - Patches and No Freeze x 960 ops/sec ±1.32% (97 runs sampled)
-Immer - Patches and No Freeze x 5.27 ops/sec ±0.69% (18 runs sampled)
+Mutative - Patches and No Freeze x 963 ops/sec ±1.14% (96 runs sampled)
+Immer - Patches and No Freeze x 5.32 ops/sec ±0.21% (18 runs sampled)
 
-Mutative - Patches and Freeze x 493 ops/sec ±1.40% (94 runs sampled)
-Immer - Patches and Freeze x 275 ops/sec ±0.62% (89 runs sampled)
+Mutative - Patches and Freeze x 501 ops/sec ±1.24% (93 runs sampled)
+Immer - Patches and Freeze x 272 ops/sec ±0.61% (88 runs sampled)
 
 The fastest method is Mutative - No Freeze
 ```
@@ -138,6 +138,15 @@ Immer relies on auto-freeze to be enabled, if auto-freeze is disabled, Immer wil
 So if you are using Immer, you will have to enable auto-freeze for performance. Mutative is disabled auto-freeze by default. With the default configuration of both, we can see the 16x performance gap between Mutative (`6,058 ops/sec`) and Immer (`380 ops/sec`).
 
 Overall, Mutative has a huge performance lead over Immer in [more performance testing scenarios](https://github.com/unadlib/mutative/tree/main/test/performance). Run `yarn performance` to get all the performance results locally.
+
+<details>
+<summary><b>More Performance Testing Scenarios, Mutative is up to 2.5X-73.8X faster than Immer:  </b></summary>
+
+![Mutative vs Immer - All benchmark results by average multiplier](test/benchmark/results/all.jpg)
+
+> [view source](https://github.com/unadlib/mutative/blob/main/test/benchmark).
+
+</details>
 
 ## Features and Benefits
 
