@@ -537,7 +537,7 @@ test('change Date instance - custom shallow copy', () => {
   const state = create(
     data,
     (draft) => {
-      draft.date.setFullYear(2000);
+      draft.date.setMilliseconds(42);
     },
     {
       strict: true,
@@ -549,8 +549,8 @@ test('change Date instance - custom shallow copy', () => {
   expect(data).not.toBe(state);
   expect(data.foo).toBe(state.foo);
   expect(data.date).not.toBe(state.date);
-  expect(state.date.getTime()).toBe(946684800000);
-  expect(data.date.getTime()).not.toBe(946684800000);
+  expect(state.date.getTime()).toBe(42);
+  expect(data.date.getTime()).not.toBe(42);
 });
 
 test('change Date instance', () => {
@@ -565,7 +565,7 @@ test('change Date instance', () => {
     data,
     (draft) => {
       unsafe(() => {
-        draft.date.setFullYear(2000);
+        draft.date.setMilliseconds(42);
       });
     },
     {
@@ -575,5 +575,5 @@ test('change Date instance', () => {
   expect(data).toBe(state);
   expect(data.foo).toBe(state.foo);
   expect(data.date).toBe(state.date);
-  expect(state.date.getTime()).toBe(946684800000);
+  expect(state.date.getTime()).toBe(42);
 });
