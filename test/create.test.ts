@@ -1060,7 +1060,7 @@ describe('hook in options', () => {
     const state = create(
       data,
       (draft) => {
-        draft.date.setFullYear(2000);
+        draft.date.setMilliseconds(42);
       },
       {
         mark: (target) => {
@@ -1071,8 +1071,8 @@ describe('hook in options', () => {
     expect(data).not.toBe(state);
     expect(data.foo).toBe(state.foo);
     expect(data.date).not.toBe(state.date);
-    expect(state.date.getTime()).toBe(946684800000);
-    expect(data.date.getTime()).not.toBe(946684800000);
+    expect(state.date.getTime()).toBe(42);
+    expect(data.date.getTime()).not.toBe(42);
   });
 
   class A {}
