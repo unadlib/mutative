@@ -1,50 +1,50 @@
 {
   "array-batch-getter": {
     "name": "array-batch-getter",
-    "avg": 6.107234226605621
+    "avg": 6.321058088498315
   },
   "array-batch": {
     "name": "array-batch",
-    "avg": 2.8719051051227336
+    "avg": 2.9293966353410776
   },
   "array-single-push": {
     "name": "array-single-push",
-    "avg": 22.98384953023448
+    "avg": 25.196361547206763
   },
   "array": {
     "name": "array",
-    "avg": 73.82055775232818
+    "avg": 82.92665595932255
   },
   "class": {
     "name": "class",
-    "avg": 7.531546974773679
+    "avg": 2.9577714835340125
   },
   "map-batch": {
     "name": "map-batch",
-    "avg": 3.428375698482166
+    "avg": 3.4827841500897168
   },
   "map": {
     "name": "map",
-    "avg": 5.535990607330832
+    "avg": 5.7553703684454725
   },
   "object-batch-getter": {
     "name": "object-batch-getter",
-    "avg": 2.959244280970674
+    "avg": 2.976148878415991
   },
   "object-batch": {
     "name": "object-batch",
-    "avg": 2.5010555687045364
+    "avg": 2.5238631589023566
   },
   "object": {
     "name": "object",
-    "avg": 2.566695550790242
+    "avg": 2.601897556539274
   },
   "set-batch": {
     "name": "set-batch",
-    "avg": 2.480536112712622
+    "avg": 2.501448439449168
   },
   "set": {
     "name": "set",
-    "avg": 3.049709335900435
+    "avg": 3.081842714116322
   }
 }

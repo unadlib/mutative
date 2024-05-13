@@ -28,7 +28,7 @@
     "clean": "rimraf dist",
     "test:coverage": "jest --coverage && coveralls < coverage/lcov.info",
     "benchmark": "yarn build && yarn benchmark:base && yarn benchmark:object && yarn benchmark:array && yarn benchmark:class",
-    "all-benchmark": "NODE_ENV='production' ts-node test/benchmark/index.ts",
+    "all-benchmark": "yarn build && NODE_ENV='production' ts-node test/benchmark/index.ts",
     "benchmark:base": "NODE_ENV='production' ts-node test/performance/benchmark.ts",
     "benchmark:object": "NODE_ENV='production' ts-node test/performance/benchmark-object.ts",
     "benchmark:array": "NODE_ENV='production' ts-node test/performance/benchmark-array.ts",
