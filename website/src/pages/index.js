@@ -20,7 +20,7 @@ function HomepageHeader() {
         <Heading as="h1" className={styles.heroProjectTagline}>
           <img
             // eslint-disable-next-line react/jsx-curly-brace-presence
-            alt={'Docusaurus with Keytar'}
+            alt={'Mutative'}
             className={styles.heroLogo}
             src={'/img/logo.svg'}
             width="200"
