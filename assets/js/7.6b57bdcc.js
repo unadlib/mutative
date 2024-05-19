@@ -1,6 +1,6 @@
 "use strict";
-exports.id = 696;
-exports.ids = [696];
+exports.id = 7;
+exports.ids = [7];
 exports.modules = {
 
 /***/ 1644:
@@ -6960,7 +6960,7 @@ function get(object, path, defaultValue) {
 // EXTERNAL MODULE: ./node_modules/lodash-es/hasIn.js + 1 modules
 var hasIn = __webpack_require__(5487);
 // EXTERNAL MODULE: ./node_modules/lodash-es/_isKey.js
-var _isKey = __webpack_require__(9365);
+var _isKey = __webpack_require__(6842);
 // EXTERNAL MODULE: ./node_modules/lodash-es/_toKey.js
 var _toKey = __webpack_require__(2656);
 ;// CONCATENATED MODULE: ./node_modules/lodash-es/_baseMatchesProperty.js
@@ -7208,7 +7208,7 @@ __webpack_require__.d(__webpack_exports__, {
 // EXTERNAL MODULE: ./node_modules/lodash-es/isArray.js
 var isArray = __webpack_require__(7771);
 // EXTERNAL MODULE: ./node_modules/lodash-es/_isKey.js
-var _isKey = __webpack_require__(9365);
+var _isKey = __webpack_require__(6842);
 // EXTERNAL MODULE: ./node_modules/lodash-es/memoize.js
 var memoize = __webpack_require__(2454);
 ;// CONCATENATED MODULE: ./node_modules/lodash-es/_memoizeCapped.js
@@ -7422,7 +7422,7 @@ function hasPath(object, path, hasFunc) {
 
 /***/ }),
 
-/***/ 9365:
+/***/ 6842:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -8948,638 +8948,350 @@ function values(object) {
 
 /***/ }),
 
-/***/ 2696:
+/***/ 1007:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   diagram: () => (/* binding */ diagram)
-/* harmony export */ });
-/* harmony import */ var _styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(1504);
-/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4218);
-/* harmony import */ var dagre_d3_es_src_dagre_index_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1644);
-/* harmony import */ var dagre_d3_es_src_graphlib_index_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5625);
-/* harmony import */ var _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(5322);
-/* harmony import */ var dayjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(7484);
-/* harmony import */ var _braintree_sanitize_url__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7967);
-/* harmony import */ var dompurify__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(683);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  diagram: () => (/* binding */ diagram)
+});
+
+// EXTERNAL MODULE: ./node_modules/mermaid/dist/mermaid-934d9bea.js + 8 modules
+var mermaid_934d9bea = __webpack_require__(5322);
+// EXTERNAL MODULE: ./node_modules/dagre-d3-es/src/graphlib/index.js
+var graphlib = __webpack_require__(5625);
+// EXTERNAL MODULE: ./node_modules/d3/src/index.js + 197 modules
+var src = __webpack_require__(4218);
+// EXTERNAL MODULE: ./node_modules/dagre-d3-es/src/dagre/index.js + 64 modules
+var dagre = __webpack_require__(1644);
+;// CONCATENATED MODULE: ./node_modules/uuid/dist/esm-node/stringify.js
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+
+const byteToHex = [];
+
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 0x100).toString(16).slice(1));
+}
+
+function unsafeStringify(arr, offset = 0) {
+  // Note: Be careful editing this code!  It's been tuned for performance
+  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+  return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
+}
+
+function stringify(arr, offset = 0) {
+  const uuid = unsafeStringify(arr, offset); // Consistency check for valid UUID.  If this throws, it's likely due to one
+  // of the following:
+  // - One or more input array values don't map to a hex octet (leading to
+  // "undefined" in the uuid)
+  // - Invalid input values for the RFC `version` or `variant` fields
+
+  if (!validate(uuid)) {
+    throw TypeError('Stringified UUID is invalid');
+  }
+
+  return uuid;
+}
+
+/* harmony default export */ const esm_node_stringify = ((/* unused pure expression or super */ null && (stringify)));
+;// CONCATENATED MODULE: ./node_modules/uuid/dist/esm-node/regex.js
+/* harmony default export */ const regex = (/^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i);
+;// CONCATENATED MODULE: ./node_modules/uuid/dist/esm-node/validate.js
+
+
+function validate_validate(uuid) {
+  return typeof uuid === 'string' && regex.test(uuid);
+}
+
+/* harmony default export */ const esm_node_validate = (validate_validate);
+;// CONCATENATED MODULE: ./node_modules/uuid/dist/esm-node/parse.js
+
+
+function parse(uuid) {
+  if (!esm_node_validate(uuid)) {
+    throw TypeError('Invalid UUID');
+  }
+
+  let v;
+  const arr = new Uint8Array(16); // Parse ########-....-....-....-............
+
+  arr[0] = (v = parseInt(uuid.slice(0, 8), 16)) >>> 24;
+  arr[1] = v >>> 16 & 0xff;
+  arr[2] = v >>> 8 & 0xff;
+  arr[3] = v & 0xff; // Parse ........-####-....-....-............
+
+  arr[4] = (v = parseInt(uuid.slice(9, 13), 16)) >>> 8;
+  arr[5] = v & 0xff; // Parse ........-....-####-....-............
+
+  arr[6] = (v = parseInt(uuid.slice(14, 18), 16)) >>> 8;
+  arr[7] = v & 0xff; // Parse ........-....-....-####-............
+
+  arr[8] = (v = parseInt(uuid.slice(19, 23), 16)) >>> 8;
+  arr[9] = v & 0xff; // Parse ........-....-....-....-############
+  // (Use "/" to avoid 32-bit truncation when bit-shifting high-order bytes)
+
+  arr[10] = (v = parseInt(uuid.slice(24, 36), 16)) / 0x10000000000 & 0xff;
+  arr[11] = v / 0x100000000 & 0xff;
+  arr[12] = v >>> 24 & 0xff;
+  arr[13] = v >>> 16 & 0xff;
+  arr[14] = v >>> 8 & 0xff;
+  arr[15] = v & 0xff;
+  return arr;
+}
+
+/* harmony default export */ const esm_node_parse = (parse);
+;// CONCATENATED MODULE: ./node_modules/uuid/dist/esm-node/v35.js
 
 
 
+function stringToBytes(str) {
+  str = unescape(encodeURIComponent(str)); // UTF8 escape
 
+  const bytes = [];
 
+  for (let i = 0; i < str.length; ++i) {
+    bytes.push(str.charCodeAt(i));
+  }
 
+  return bytes;
+}
 
+const DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+const URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
+function v35(name, version, hashfunc) {
+  function generateUUID(value, namespace, buf, offset) {
+    var _namespace;
 
-
-
-
-
-
-
-const idCache = {};
-const set = (key, val) => {
-  idCache[key] = val;
-};
-const get = (k) => idCache[k];
-const keys = () => Object.keys(idCache);
-const size = () => keys().length;
-const idCache$1 = {
-  get,
-  set,
-  keys,
-  size
-};
-const drawStartState = (g) => g.append("circle").attr("class", "start-state").attr("r", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.sizeUnit).attr("cx", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.sizeUnit).attr("cy", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.sizeUnit);
-const drawDivider = (g) => g.append("line").style("stroke", "grey").style("stroke-dasharray", "3").attr("x1", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight).attr("class", "divider").attr("x2", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight * 2).attr("y1", 0).attr("y2", 0);
-const drawSimpleState = (g, stateDef) => {
-  const state = g.append("text").attr("x", 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("y", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight + 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("font-size", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.fontSize).attr("class", "state-title").text(stateDef.id);
-  const classBox = state.node().getBBox();
-  g.insert("rect", ":first-child").attr("x", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("y", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("width", classBox.width + 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("height", classBox.height + 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("rx", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.radius);
-  return state;
-};
-const drawDescrState = (g, stateDef) => {
-  const addTspan = function(textEl, txt, isFirst2) {
-    const tSpan = textEl.append("tspan").attr("x", 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).text(txt);
-    if (!isFirst2) {
-      tSpan.attr("dy", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight);
+    if (typeof value === 'string') {
+      value = stringToBytes(value);
     }
-  };
-  const title = g.append("text").attr("x", 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("y", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight + 1.3 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("font-size", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.fontSize).attr("class", "state-title").text(stateDef.descriptions[0]);
-  const titleBox = title.node().getBBox();
-  const titleHeight = titleBox.height;
-  const description = g.append("text").attr("x", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr(
-    "y",
-    titleHeight + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding * 0.4 + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.dividerMargin + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight
-  ).attr("class", "state-description");
-  let isFirst = true;
-  let isSecond = true;
-  stateDef.descriptions.forEach(function(descr) {
-    if (!isFirst) {
-      addTspan(description, descr, isSecond);
-      isSecond = false;
+
+    if (typeof namespace === 'string') {
+      namespace = esm_node_parse(namespace);
     }
-    isFirst = false;
-  });
-  const descrLine = g.append("line").attr("x1", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("y1", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding + titleHeight + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.dividerMargin / 2).attr("y2", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding + titleHeight + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.dividerMargin / 2).attr("class", "descr-divider");
-  const descrBox = description.node().getBBox();
-  const width = Math.max(descrBox.width, titleBox.width);
-  descrLine.attr("x2", width + 3 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding);
-  g.insert("rect", ":first-child").attr("x", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("y", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("width", width + 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("height", descrBox.height + titleHeight + 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("rx", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.radius);
-  return g;
-};
-const addTitleAndBox = (g, stateDef, altBkg) => {
-  const pad = (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding;
-  const dblPad = 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding;
-  const orgBox = g.node().getBBox();
-  const orgWidth = orgBox.width;
-  const orgX = orgBox.x;
-  const title = g.append("text").attr("x", 0).attr("y", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.titleShift).attr("font-size", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.fontSize).attr("class", "state-title").text(stateDef.id);
-  const titleBox = title.node().getBBox();
-  const titleWidth = titleBox.width + dblPad;
-  let width = Math.max(titleWidth, orgWidth);
-  if (width === orgWidth) {
-    width = width + dblPad;
-  }
-  let startX;
-  const graphBox = g.node().getBBox();
-  if (stateDef.doc)
-    ;
-  startX = orgX - pad;
-  if (titleWidth > orgWidth) {
-    startX = (orgWidth - width) / 2 + pad;
-  }
-  if (Math.abs(orgX - graphBox.x) < pad && titleWidth > orgWidth) {
-    startX = orgX - (titleWidth - orgWidth) / 2;
-  }
-  const lineY = 1 - (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight;
-  g.insert("rect", ":first-child").attr("x", startX).attr("y", lineY).attr("class", altBkg ? "alt-composit" : "composit").attr("width", width).attr(
-    "height",
-    graphBox.height + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.titleShift + 1
-  ).attr("rx", "0");
-  title.attr("x", startX + pad);
-  if (titleWidth <= orgWidth) {
-    title.attr("x", orgX + (width - dblPad) / 2 - titleWidth / 2 + pad);
-  }
-  g.insert("rect", ":first-child").attr("x", startX).attr(
-    "y",
-    (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.titleShift - (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight - (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding
-  ).attr("width", width).attr("height", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight * 3).attr("rx", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.radius);
-  g.insert("rect", ":first-child").attr("x", startX).attr(
-    "y",
-    (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.titleShift - (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight - (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding
-  ).attr("width", width).attr("height", graphBox.height + 3 + 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.textHeight).attr("rx", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.radius);
-  return g;
-};
-const drawEndState = (g) => {
-  g.append("circle").attr("class", "end-state-outer").attr("r", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.sizeUnit + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.miniPadding).attr(
-    "cx",
-    (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.sizeUnit + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.miniPadding
-  ).attr(
-    "cy",
-    (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.sizeUnit + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.miniPadding
-  );
-  return g.append("circle").attr("class", "end-state-inner").attr("r", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.sizeUnit).attr("cx", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.sizeUnit + 2).attr("cy", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.sizeUnit + 2);
-};
-const drawForkJoinState = (g, stateDef) => {
-  let width = (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.forkWidth;
-  let height = (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.forkHeight;
-  if (stateDef.parentId) {
-    let tmp = width;
-    width = height;
-    height = tmp;
-  }
-  return g.append("rect").style("stroke", "black").style("fill", "black").attr("width", width).attr("height", height).attr("x", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("y", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding);
-};
-const _drawLongText = (_text, x, y, g) => {
-  let textHeight = 0;
-  const textElem = g.append("text");
-  textElem.style("text-anchor", "start");
-  textElem.attr("class", "noteText");
-  let text = _text.replace(/\r\n/g, "<br/>");
-  text = text.replace(/\n/g, "<br/>");
-  const lines = text.split(_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.e.lineBreakRegex);
-  let tHeight = 1.25 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.noteMargin;
-  for (const line2 of lines) {
-    const txt = line2.trim();
-    if (txt.length > 0) {
-      const span = textElem.append("tspan");
-      span.text(txt);
-      if (tHeight === 0) {
-        const textBounds = span.node().getBBox();
-        tHeight += textBounds.height;
+
+    if (((_namespace = namespace) === null || _namespace === void 0 ? void 0 : _namespace.length) !== 16) {
+      throw TypeError('Namespace must be array-like (16 iterable integer values, 0-255)');
+    } // Compute hash of namespace and value, Per 4.3
+    // Future: Use spread syntax when supported on all platforms, e.g. `bytes =
+    // hashfunc([...namespace, ... value])`
+
+
+    let bytes = new Uint8Array(16 + value.length);
+    bytes.set(namespace);
+    bytes.set(value, namespace.length);
+    bytes = hashfunc(bytes);
+    bytes[6] = bytes[6] & 0x0f | version;
+    bytes[8] = bytes[8] & 0x3f | 0x80;
+
+    if (buf) {
+      offset = offset || 0;
+
+      for (let i = 0; i < 16; ++i) {
+        buf[offset + i] = bytes[i];
       }
-      textHeight += tHeight;
-      span.attr("x", x + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.noteMargin);
-      span.attr("y", y + textHeight + 1.25 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.noteMargin);
+
+      return buf;
     }
+
+    return unsafeStringify(bytes);
+  } // Function#name is not settable on some platforms (#270)
+
+
+  try {
+    generateUUID.name = name; // eslint-disable-next-line no-empty
+  } catch (err) {} // For CommonJS default export support
+
+
+  generateUUID.DNS = DNS;
+  generateUUID.URL = URL;
+  return generateUUID;
+}
+// EXTERNAL MODULE: external "crypto"
+var external_crypto_ = __webpack_require__(6113);
+var external_crypto_default = /*#__PURE__*/__webpack_require__.n(external_crypto_);
+;// CONCATENATED MODULE: ./node_modules/uuid/dist/esm-node/sha1.js
+
+
+function sha1(bytes) {
+  if (Array.isArray(bytes)) {
+    bytes = Buffer.from(bytes);
+  } else if (typeof bytes === 'string') {
+    bytes = Buffer.from(bytes, 'utf8');
   }
-  return { textWidth: textElem.node().getBBox().width, textHeight };
-};
-const drawNote = (text, g) => {
-  g.attr("class", "state-note");
-  const note = g.append("rect").attr("x", 0).attr("y", (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding);
-  const rectElem = g.append("g");
-  const { textWidth, textHeight } = _drawLongText(text, 0, 0, rectElem);
-  note.attr("height", textHeight + 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.noteMargin);
-  note.attr("width", textWidth + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.noteMargin * 2);
-  return note;
-};
-const drawState = function(elem, stateDef) {
-  const id = stateDef.id;
-  const stateInfo = {
-    id,
-    label: stateDef.id,
-    width: 0,
-    height: 0
-  };
-  const g = elem.append("g").attr("id", id).attr("class", "stateGroup");
-  if (stateDef.type === "start") {
-    drawStartState(g);
-  }
-  if (stateDef.type === "end") {
-    drawEndState(g);
-  }
-  if (stateDef.type === "fork" || stateDef.type === "join") {
-    drawForkJoinState(g, stateDef);
-  }
-  if (stateDef.type === "note") {
-    drawNote(stateDef.note.text, g);
-  }
-  if (stateDef.type === "divider") {
-    drawDivider(g);
-  }
-  if (stateDef.type === "default" && stateDef.descriptions.length === 0) {
-    drawSimpleState(g, stateDef);
-  }
-  if (stateDef.type === "default" && stateDef.descriptions.length > 0) {
-    drawDescrState(g, stateDef);
-  }
-  const stateBox = g.node().getBBox();
-  stateInfo.width = stateBox.width + 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding;
-  stateInfo.height = stateBox.height + 2 * (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding;
-  idCache$1.set(id, stateInfo);
-  return stateInfo;
-};
-let edgeCount = 0;
-const drawEdge = function(elem, path, relation) {
-  const getRelationType = function(type) {
-    switch (type) {
-      case _styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__.d.relationType.AGGREGATION:
-        return "aggregation";
-      case _styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__.d.relationType.EXTENSION:
-        return "extension";
-      case _styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__.d.relationType.COMPOSITION:
-        return "composition";
-      case _styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__.d.relationType.DEPENDENCY:
-        return "dependency";
-    }
-  };
-  path.points = path.points.filter((p) => !Number.isNaN(p.y));
-  const lineData = path.points;
-  const lineFunction = (0,d3__WEBPACK_IMPORTED_MODULE_0__/* .line */ .jvg)().x(function(d) {
-    return d.x;
-  }).y(function(d) {
-    return d.y;
-  }).curve(d3__WEBPACK_IMPORTED_MODULE_0__/* .curveBasis */ .$0Z);
-  const svgPath = elem.append("path").attr("d", lineFunction(lineData)).attr("id", "edge" + edgeCount).attr("class", "transition");
-  let url = "";
-  if ((0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.arrowMarkerAbsolute) {
-    url = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.search;
-    url = url.replace(/\(/g, "\\(");
-    url = url.replace(/\)/g, "\\)");
-  }
-  svgPath.attr(
-    "marker-end",
-    "url(" + url + "#" + getRelationType(_styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__.d.relationType.DEPENDENCY) + "End)"
-  );
-  if (relation.title !== void 0) {
-    const label = elem.append("g").attr("class", "stateLabel");
-    const { x, y } = _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.u.calcLabelPosition(path.points);
-    const rows = _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.e.getRows(relation.title);
-    let titleHeight = 0;
-    const titleRows = [];
-    let maxWidth = 0;
-    let minX = 0;
-    for (let i = 0; i <= rows.length; i++) {
-      const title = label.append("text").attr("text-anchor", "middle").text(rows[i]).attr("x", x).attr("y", y + titleHeight);
-      const boundstmp = title.node().getBBox();
-      maxWidth = Math.max(maxWidth, boundstmp.width);
-      minX = Math.min(minX, boundstmp.x);
-      _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.info(boundstmp.x, x, y + titleHeight);
-      if (titleHeight === 0) {
-        const titleBox = title.node().getBBox();
-        titleHeight = titleBox.height;
-        _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.info("Title height", titleHeight, y);
-      }
-      titleRows.push(title);
-    }
-    let boxHeight = titleHeight * rows.length;
-    if (rows.length > 1) {
-      const heightAdj = (rows.length - 1) * titleHeight * 0.5;
-      titleRows.forEach((title, i) => title.attr("y", y + i * titleHeight - heightAdj));
-      boxHeight = titleHeight * rows.length;
-    }
-    const bounds = label.node().getBBox();
-    label.insert("rect", ":first-child").attr("class", "box").attr("x", x - maxWidth / 2 - (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding / 2).attr("y", y - boxHeight / 2 - (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding / 2 - 3.5).attr("width", maxWidth + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding).attr("height", boxHeight + (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state.padding);
-    _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.info(bounds);
-  }
-  edgeCount++;
-};
-let conf;
-const transformationLog = {};
-const setConf = function() {
-};
-const insertMarkers = function(elem) {
-  elem.append("defs").append("marker").attr("id", "dependencyEnd").attr("refX", 19).attr("refY", 7).attr("markerWidth", 20).attr("markerHeight", 28).attr("orient", "auto").append("path").attr("d", "M 19,7 L9,13 L14,7 L9,1 Z");
-};
-const draw = function(text, id, _version, diagObj) {
-  conf = (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().state;
-  const securityLevel = (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.c)().securityLevel;
-  let sandboxElement;
-  if (securityLevel === "sandbox") {
-    sandboxElement = (0,d3__WEBPACK_IMPORTED_MODULE_0__/* .select */ .Ys)("#i" + id);
-  }
-  const root = securityLevel === "sandbox" ? (0,d3__WEBPACK_IMPORTED_MODULE_0__/* .select */ .Ys)(sandboxElement.nodes()[0].contentDocument.body) : (0,d3__WEBPACK_IMPORTED_MODULE_0__/* .select */ .Ys)("body");
-  const doc = securityLevel === "sandbox" ? sandboxElement.nodes()[0].contentDocument : document;
-  _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.debug("Rendering diagram " + text);
-  const diagram2 = root.select(`[id='${id}']`);
-  insertMarkers(diagram2);
-  const rootDoc = diagObj.db.getRootDoc();
-  renderDoc(rootDoc, diagram2, void 0, false, root, doc, diagObj);
-  const padding = conf.padding;
-  const bounds = diagram2.node().getBBox();
-  const width = bounds.width + padding * 2;
-  const height = bounds.height + padding * 2;
-  const svgWidth = width * 1.75;
-  (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.i)(diagram2, height, svgWidth, conf.useMaxWidth);
-  diagram2.attr(
-    "viewBox",
-    `${bounds.x - conf.padding}  ${bounds.y - conf.padding} ` + width + " " + height
-  );
-};
-const getLabelWidth = (text) => {
-  return text ? text.length * conf.fontSizeFactor : 1;
-};
-const renderDoc = (doc, diagram2, parentId, altBkg, root, domDocument, diagObj) => {
-  const graph = new dagre_d3_es_src_graphlib_index_js__WEBPACK_IMPORTED_MODULE_2__/* .Graph */ .k({
-    compound: true,
-    multigraph: true
-  });
-  let i;
-  let edgeFreeDoc = true;
-  for (i = 0; i < doc.length; i++) {
-    if (doc[i].stmt === "relation") {
-      edgeFreeDoc = false;
-      break;
-    }
-  }
-  if (parentId) {
-    graph.setGraph({
-      rankdir: "LR",
-      multigraph: true,
-      compound: true,
-      // acyclicer: 'greedy',
-      ranker: "tight-tree",
-      ranksep: edgeFreeDoc ? 1 : conf.edgeLengthFactor,
-      nodeSep: edgeFreeDoc ? 1 : 50,
-      isMultiGraph: true
-      // ranksep: 5,
-      // nodesep: 1
-    });
-  } else {
-    graph.setGraph({
-      rankdir: "TB",
-      multigraph: true,
-      compound: true,
-      // isCompound: true,
-      // acyclicer: 'greedy',
-      // ranker: 'longest-path'
-      ranksep: edgeFreeDoc ? 1 : conf.edgeLengthFactor,
-      nodeSep: edgeFreeDoc ? 1 : 50,
-      ranker: "tight-tree",
-      // ranker: 'network-simplex'
-      isMultiGraph: true
-    });
-  }
-  graph.setDefaultEdgeLabel(function() {
-    return {};
-  });
-  diagObj.db.extract(doc);
-  const states = diagObj.db.getStates();
-  const relations = diagObj.db.getRelations();
-  const keys2 = Object.keys(states);
-  for (const key of keys2) {
-    const stateDef = states[key];
-    if (parentId) {
-      stateDef.parentId = parentId;
-    }
-    let node;
-    if (stateDef.doc) {
-      let sub = diagram2.append("g").attr("id", stateDef.id).attr("class", "stateGroup");
-      node = renderDoc(stateDef.doc, sub, stateDef.id, !altBkg, root, domDocument, diagObj);
-      {
-        sub = addTitleAndBox(sub, stateDef, altBkg);
-        let boxBounds = sub.node().getBBox();
-        node.width = boxBounds.width;
-        node.height = boxBounds.height + conf.padding / 2;
-        transformationLog[stateDef.id] = { y: conf.compositTitleSize };
-      }
-    } else {
-      node = drawState(diagram2, stateDef);
-    }
-    if (stateDef.note) {
-      const noteDef = {
-        descriptions: [],
-        id: stateDef.id + "-note",
-        note: stateDef.note,
-        type: "note"
-      };
-      const note = drawState(diagram2, noteDef);
-      if (stateDef.note.position === "left of") {
-        graph.setNode(node.id + "-note", note);
-        graph.setNode(node.id, node);
-      } else {
-        graph.setNode(node.id, node);
-        graph.setNode(node.id + "-note", note);
-      }
-      graph.setParent(node.id, node.id + "-group");
-      graph.setParent(node.id + "-note", node.id + "-group");
-    } else {
-      graph.setNode(node.id, node);
-    }
-  }
-  _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.debug("Count=", graph.nodeCount(), graph);
-  let cnt = 0;
-  relations.forEach(function(relation) {
-    cnt++;
-    _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.debug("Setting edge", relation);
-    graph.setEdge(
-      relation.id1,
-      relation.id2,
-      {
-        relation,
-        width: getLabelWidth(relation.title),
-        height: conf.labelHeight * _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.e.getRows(relation.title).length,
-        labelpos: "c"
-      },
-      "id" + cnt
-    );
-  });
-  (0,dagre_d3_es_src_dagre_index_js__WEBPACK_IMPORTED_MODULE_1__/* .layout */ .bK)(graph);
-  _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.debug("Graph after layout", graph.nodes());
-  const svgElem = diagram2.node();
-  graph.nodes().forEach(function(v) {
-    if (v !== void 0 && graph.node(v) !== void 0) {
-      _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.warn("Node " + v + ": " + JSON.stringify(graph.node(v)));
-      root.select("#" + svgElem.id + " #" + v).attr(
-        "transform",
-        "translate(" + (graph.node(v).x - graph.node(v).width / 2) + "," + (graph.node(v).y + (transformationLog[v] ? transformationLog[v].y : 0) - graph.node(v).height / 2) + " )"
-      );
-      root.select("#" + svgElem.id + " #" + v).attr("data-x-shift", graph.node(v).x - graph.node(v).width / 2);
-      const dividers = domDocument.querySelectorAll("#" + svgElem.id + " #" + v + " .divider");
-      dividers.forEach((divider) => {
-        const parent = divider.parentElement;
-        let pWidth = 0;
-        let pShift = 0;
-        if (parent) {
-          if (parent.parentElement) {
-            pWidth = parent.parentElement.getBBox().width;
-          }
-          pShift = parseInt(parent.getAttribute("data-x-shift"), 10);
-          if (Number.isNaN(pShift)) {
-            pShift = 0;
-          }
-        }
-        divider.setAttribute("x1", 0 - pShift + 8);
-        divider.setAttribute("x2", pWidth - pShift - 8);
-      });
-    } else {
-      _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.debug("No Node " + v + ": " + JSON.stringify(graph.node(v)));
-    }
-  });
-  let stateBox = svgElem.getBBox();
-  graph.edges().forEach(function(e) {
-    if (e !== void 0 && graph.edge(e) !== void 0) {
-      _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.debug("Edge " + e.v + " -> " + e.w + ": " + JSON.stringify(graph.edge(e)));
-      drawEdge(diagram2, graph.edge(e), graph.edge(e).relation);
-    }
-  });
-  stateBox = svgElem.getBBox();
-  const stateInfo = {
-    id: parentId ? parentId : "root",
-    label: parentId ? parentId : "root",
-    width: 0,
-    height: 0
-  };
-  stateInfo.width = stateBox.width + 2 * conf.padding;
-  stateInfo.height = stateBox.height + 2 * conf.padding;
-  _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_6__.l.debug("Doc rendered", stateInfo, graph);
-  return stateInfo;
-};
-const renderer = {
-  setConf,
-  draw
-};
-const diagram = {
-  parser: _styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__.p,
-  db: _styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__.d,
-  renderer,
-  styles: _styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__.s,
-  init: (cnf) => {
-    if (!cnf.state) {
-      cnf.state = {};
-    }
-    cnf.state.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-    _styles_bbc3fe3b_js__WEBPACK_IMPORTED_MODULE_7__.d.clear();
-  }
-};
+
+  return external_crypto_default().createHash('sha1').update(bytes).digest();
+}
+
+/* harmony default export */ const esm_node_sha1 = (sha1);
+;// CONCATENATED MODULE: ./node_modules/uuid/dist/esm-node/v5.js
+
+
+const v5 = v35('v5', 0x50, esm_node_sha1);
+/* harmony default export */ const esm_node_v5 = (v5);
+// EXTERNAL MODULE: ./node_modules/dayjs/dayjs.min.js
+var dayjs_min = __webpack_require__(7484);
+// EXTERNAL MODULE: ./node_modules/@braintree/sanitize-url/dist/index.js
+var dist = __webpack_require__(7967);
+// EXTERNAL MODULE: ./node_modules/dompurify/dist/purify.es.js
+var purify_es = __webpack_require__(683);
+;// CONCATENATED MODULE: ./node_modules/mermaid/dist/erDiagram-9cfc3649.js
 
 
 
-/***/ }),
 
-/***/ 1504:
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   D: () => (/* binding */ DEFAULT_STATE_TYPE),
-/* harmony export */   S: () => (/* binding */ STMT_RELATION),
-/* harmony export */   a: () => (/* binding */ DIVIDER_TYPE),
-/* harmony export */   b: () => (/* binding */ STMT_STATE),
-/* harmony export */   c: () => (/* binding */ DEFAULT_NESTED_DOC_DIR),
-/* harmony export */   d: () => (/* binding */ db),
-/* harmony export */   p: () => (/* binding */ parser$1),
-/* harmony export */   s: () => (/* binding */ styles)
-/* harmony export */ });
-/* harmony import */ var _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5322);
+
+
+
+
+
+
+
+
 
 var parser = function() {
   var o = function(k, v, o2, l) {
     for (o2 = o2 || {}, l = k.length; l--; o2[k[l]] = v)
       ;
     return o2;
-  }, $V0 = [1, 2], $V1 = [1, 3], $V2 = [1, 4], $V3 = [2, 4], $V4 = [1, 9], $V5 = [1, 11], $V6 = [1, 15], $V7 = [1, 16], $V8 = [1, 17], $V9 = [1, 18], $Va = [1, 30], $Vb = [1, 19], $Vc = [1, 20], $Vd = [1, 21], $Ve = [1, 22], $Vf = [1, 23], $Vg = [1, 25], $Vh = [1, 26], $Vi = [1, 27], $Vj = [1, 28], $Vk = [1, 29], $Vl = [1, 32], $Vm = [1, 33], $Vn = [1, 34], $Vo = [1, 35], $Vp = [1, 31], $Vq = [1, 4, 5, 15, 16, 18, 20, 21, 23, 24, 25, 26, 27, 28, 32, 34, 36, 37, 41, 44, 45, 46, 47, 50], $Vr = [1, 4, 5, 13, 14, 15, 16, 18, 20, 21, 23, 24, 25, 26, 27, 28, 32, 34, 36, 37, 41, 44, 45, 46, 47, 50], $Vs = [4, 5, 15, 16, 18, 20, 21, 23, 24, 25, 26, 27, 28, 32, 34, 36, 37, 41, 44, 45, 46, 47, 50];
+  }, $V0 = [6, 8, 10, 20, 22, 24, 26, 27, 28], $V1 = [1, 10], $V2 = [1, 11], $V3 = [1, 12], $V4 = [1, 13], $V5 = [1, 14], $V6 = [1, 15], $V7 = [1, 21], $V8 = [1, 22], $V9 = [1, 23], $Va = [1, 24], $Vb = [1, 25], $Vc = [6, 8, 10, 13, 15, 18, 19, 20, 22, 24, 26, 27, 28, 41, 42, 43, 44, 45], $Vd = [1, 34], $Ve = [27, 28, 46, 47], $Vf = [41, 42, 43, 44, 45], $Vg = [17, 34], $Vh = [1, 54], $Vi = [1, 53], $Vj = [17, 34, 36, 38];
   var parser2 = {
     trace: function trace() {
     },
     yy: {},
-    symbols_: { "error": 2, "start": 3, "SPACE": 4, "NL": 5, "SD": 6, "document": 7, "line": 8, "statement": 9, "classDefStatement": 10, "cssClassStatement": 11, "idStatement": 12, "DESCR": 13, "-->": 14, "HIDE_EMPTY": 15, "scale": 16, "WIDTH": 17, "COMPOSIT_STATE": 18, "STRUCT_START": 19, "STRUCT_STOP": 20, "STATE_DESCR": 21, "AS": 22, "ID": 23, "FORK": 24, "JOIN": 25, "CHOICE": 26, "CONCURRENT": 27, "note": 28, "notePosition": 29, "NOTE_TEXT": 30, "direction": 31, "acc_title": 32, "acc_title_value": 33, "acc_descr": 34, "acc_descr_value": 35, "acc_descr_multiline_value": 36, "classDef": 37, "CLASSDEF_ID": 38, "CLASSDEF_STYLEOPTS": 39, "DEFAULT": 40, "class": 41, "CLASSENTITY_IDS": 42, "STYLECLASS": 43, "direction_tb": 44, "direction_bt": 45, "direction_rl": 46, "direction_lr": 47, "eol": 48, ";": 49, "EDGE_STATE": 50, "STYLE_SEPARATOR": 51, "left_of": 52, "right_of": 53, "$accept": 0, "$end": 1 },
-    terminals_: { 2: "error", 4: "SPACE", 5: "NL", 6: "SD", 13: "DESCR", 14: "-->", 15: "HIDE_EMPTY", 16: "scale", 17: "WIDTH", 18: "COMPOSIT_STATE", 19: "STRUCT_START", 20: "STRUCT_STOP", 21: "STATE_DESCR", 22: "AS", 23: "ID", 24: "FORK", 25: "JOIN", 26: "CHOICE", 27: "CONCURRENT", 28: "note", 30: "NOTE_TEXT", 32: "acc_title", 33: "acc_title_value", 34: "acc_descr", 35: "acc_descr_value", 36: "acc_descr_multiline_value", 37: "classDef", 38: "CLASSDEF_ID", 39: "CLASSDEF_STYLEOPTS", 40: "DEFAULT", 41: "class", 42: "CLASSENTITY_IDS", 43: "STYLECLASS", 44: "direction_tb", 45: "direction_bt", 46: "direction_rl", 47: "direction_lr", 49: ";", 50: "EDGE_STATE", 51: "STYLE_SEPARATOR", 52: "left_of", 53: "right_of" },
-    productions_: [0, [3, 2], [3, 2], [3, 2], [7, 0], [7, 2], [8, 2], [8, 1], [8, 1], [9, 1], [9, 1], [9, 1], [9, 2], [9, 3], [9, 4], [9, 1], [9, 2], [9, 1], [9, 4], [9, 3], [9, 6], [9, 1], [9, 1], [9, 1], [9, 1], [9, 4], [9, 4], [9, 1], [9, 2], [9, 2], [9, 1], [10, 3], [10, 3], [11, 3], [31, 1], [31, 1], [31, 1], [31, 1], [48, 1], [48, 1], [12, 1], [12, 1], [12, 3], [12, 3], [29, 1], [29, 1]],
+    symbols_: { "error": 2, "start": 3, "ER_DIAGRAM": 4, "document": 5, "EOF": 6, "line": 7, "SPACE": 8, "statement": 9, "NEWLINE": 10, "entityName": 11, "relSpec": 12, ":": 13, "role": 14, "BLOCK_START": 15, "attributes": 16, "BLOCK_STOP": 17, "SQS": 18, "SQE": 19, "title": 20, "title_value": 21, "acc_title": 22, "acc_title_value": 23, "acc_descr": 24, "acc_descr_value": 25, "acc_descr_multiline_value": 26, "ALPHANUM": 27, "ENTITY_NAME": 28, "attribute": 29, "attributeType": 30, "attributeName": 31, "attributeKeyTypeList": 32, "attributeComment": 33, "ATTRIBUTE_WORD": 34, "attributeKeyType": 35, "COMMA": 36, "ATTRIBUTE_KEY": 37, "COMMENT": 38, "cardinality": 39, "relType": 40, "ZERO_OR_ONE": 41, "ZERO_OR_MORE": 42, "ONE_OR_MORE": 43, "ONLY_ONE": 44, "MD_PARENT": 45, "NON_IDENTIFYING": 46, "IDENTIFYING": 47, "WORD": 48, "$accept": 0, "$end": 1 },
+    terminals_: { 2: "error", 4: "ER_DIAGRAM", 6: "EOF", 8: "SPACE", 10: "NEWLINE", 13: ":", 15: "BLOCK_START", 17: "BLOCK_STOP", 18: "SQS", 19: "SQE", 20: "title", 21: "title_value", 22: "acc_title", 23: "acc_title_value", 24: "acc_descr", 25: "acc_descr_value", 26: "acc_descr_multiline_value", 27: "ALPHANUM", 28: "ENTITY_NAME", 34: "ATTRIBUTE_WORD", 36: "COMMA", 37: "ATTRIBUTE_KEY", 38: "COMMENT", 41: "ZERO_OR_ONE", 42: "ZERO_OR_MORE", 43: "ONE_OR_MORE", 44: "ONLY_ONE", 45: "MD_PARENT", 46: "NON_IDENTIFYING", 47: "IDENTIFYING", 48: "WORD" },
+    productions_: [0, [3, 3], [5, 0], [5, 2], [7, 2], [7, 1], [7, 1], [7, 1], [9, 5], [9, 4], [9, 3], [9, 1], [9, 7], [9, 6], [9, 4], [9, 2], [9, 2], [9, 2], [9, 1], [11, 1], [11, 1], [16, 1], [16, 2], [29, 2], [29, 3], [29, 3], [29, 4], [30, 1], [31, 1], [32, 1], [32, 3], [35, 1], [33, 1], [12, 3], [39, 1], [39, 1], [39, 1], [39, 1], [39, 1], [40, 1], [40, 1], [14, 1], [14, 1], [14, 1]],
     performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate, $$, _$) {
       var $0 = $$.length - 1;
       switch (yystate) {
-        case 3:
-          yy.setRootDoc($$[$0]);
-          return $$[$0];
-        case 4:
+        case 1:
+          break;
+        case 2:
           this.$ = [];
           break;
+        case 3:
+          $$[$0 - 1].push($$[$0]);
+          this.$ = $$[$0 - 1];
+          break;
+        case 4:
         case 5:
-          if ($$[$0] != "nl") {
-            $$[$0 - 1].push($$[$0]);
-            this.$ = $$[$0 - 1];
-          }
+          this.$ = $$[$0];
           break;
         case 6:
         case 7:
-          this.$ = $$[$0];
+          this.$ = [];
           break;
         case 8:
-          this.$ = "nl";
+          yy.addEntity($$[$0 - 4]);
+          yy.addEntity($$[$0 - 2]);
+          yy.addRelationship($$[$0 - 4], $$[$0], $$[$0 - 2], $$[$0 - 3]);
+          break;
+        case 9:
+          yy.addEntity($$[$0 - 3]);
+          yy.addAttributes($$[$0 - 3], $$[$0 - 1]);
+          break;
+        case 10:
+          yy.addEntity($$[$0 - 2]);
           break;
         case 11:
-          this.$ = $$[$0];
+          yy.addEntity($$[$0]);
           break;
         case 12:
-          const stateStmt = $$[$0 - 1];
-          stateStmt.description = yy.trimColon($$[$0]);
-          this.$ = stateStmt;
+          yy.addEntity($$[$0 - 6], $$[$0 - 4]);
+          yy.addAttributes($$[$0 - 6], $$[$0 - 1]);
           break;
         case 13:
-          this.$ = { stmt: "relation", state1: $$[$0 - 2], state2: $$[$0] };
+          yy.addEntity($$[$0 - 5], $$[$0 - 3]);
           break;
         case 14:
-          const relDescription = yy.trimColon($$[$0]);
-          this.$ = { stmt: "relation", state1: $$[$0 - 3], state2: $$[$0 - 1], description: relDescription };
+          yy.addEntity($$[$0 - 3], $$[$0 - 1]);
           break;
-        case 18:
-          this.$ = { stmt: "state", id: $$[$0 - 3], type: "default", description: "", doc: $$[$0 - 1] };
-          break;
-        case 19:
-          var id = $$[$0];
-          var description = $$[$0 - 2].trim();
-          if ($$[$0].match(":")) {
-            var parts = $$[$0].split(":");
-            id = parts[0];
-            description = [description, parts[1]];
-          }
-          this.$ = { stmt: "state", id, type: "default", description };
-          break;
-        case 20:
-          this.$ = { stmt: "state", id: $$[$0 - 3], type: "default", description: $$[$0 - 5], doc: $$[$0 - 1] };
-          break;
-        case 21:
-          this.$ = { stmt: "state", id: $$[$0], type: "fork" };
-          break;
-        case 22:
-          this.$ = { stmt: "state", id: $$[$0], type: "join" };
-          break;
-        case 23:
-          this.$ = { stmt: "state", id: $$[$0], type: "choice" };
-          break;
-        case 24:
-          this.$ = { stmt: "state", id: yy.getDividerId(), type: "divider" };
-          break;
-        case 25:
-          this.$ = { stmt: "state", id: $$[$0 - 1].trim(), note: { position: $$[$0 - 2].trim(), text: $$[$0].trim() } };
-          break;
-        case 28:
+        case 15:
+        case 16:
           this.$ = $$[$0].trim();
           yy.setAccTitle(this.$);
           break;
-        case 29:
-        case 30:
+        case 17:
+        case 18:
           this.$ = $$[$0].trim();
           yy.setAccDescription(this.$);
           break;
+        case 19:
+        case 43:
+          this.$ = $$[$0];
+          break;
+        case 20:
+        case 41:
+        case 42:
+          this.$ = $$[$0].replace(/"/g, "");
+          break;
+        case 21:
+        case 29:
+          this.$ = [$$[$0]];
+          break;
+        case 22:
+          $$[$0].push($$[$0 - 1]);
+          this.$ = $$[$0];
+          break;
+        case 23:
+          this.$ = { attributeType: $$[$0 - 1], attributeName: $$[$0] };
+          break;
+        case 24:
+          this.$ = { attributeType: $$[$0 - 2], attributeName: $$[$0 - 1], attributeKeyTypeList: $$[$0] };
+          break;
+        case 25:
+          this.$ = { attributeType: $$[$0 - 2], attributeName: $$[$0 - 1], attributeComment: $$[$0] };
+          break;
+        case 26:
+          this.$ = { attributeType: $$[$0 - 3], attributeName: $$[$0 - 2], attributeKeyTypeList: $$[$0 - 1], attributeComment: $$[$0] };
+          break;
+        case 27:
+        case 28:
         case 31:
+          this.$ = $$[$0];
+          break;
+        case 30:
+          $$[$0 - 2].push($$[$0]);
+          this.$ = $$[$0 - 2];
+          break;
         case 32:
-          this.$ = { stmt: "classDef", id: $$[$0 - 1].trim(), classes: $$[$0].trim() };
+          this.$ = $$[$0].replace(/"/g, "");
           break;
         case 33:
-          this.$ = { stmt: "applyClass", id: $$[$0 - 1].trim(), styleClass: $$[$0].trim() };
+          this.$ = { cardA: $$[$0], relType: $$[$0 - 1], cardB: $$[$0 - 2] };
           break;
         case 34:
-          yy.setDirection("TB");
-          this.$ = { stmt: "dir", value: "TB" };
+          this.$ = yy.Cardinality.ZERO_OR_ONE;
           break;
         case 35:
-          yy.setDirection("BT");
-          this.$ = { stmt: "dir", value: "BT" };
+          this.$ = yy.Cardinality.ZERO_OR_MORE;
           break;
         case 36:
-          yy.setDirection("RL");
-          this.$ = { stmt: "dir", value: "RL" };
+          this.$ = yy.Cardinality.ONE_OR_MORE;
           break;
         case 37:
-          yy.setDirection("LR");
-          this.$ = { stmt: "dir", value: "LR" };
+          this.$ = yy.Cardinality.ONLY_ONE;
+          break;
+        case 38:
+          this.$ = yy.Cardinality.MD_PARENT;
+          break;
+        case 39:
+          this.$ = yy.Identification.NON_IDENTIFYING;
           break;
         case 40:
-        case 41:
-          this.$ = { stmt: "state", id: $$[$0].trim(), type: "default", description: "" };
-          break;
-        case 42:
-          this.$ = { stmt: "state", id: $$[$0 - 2].trim(), classes: [$$[$0].trim()], type: "default", description: "" };
-          break;
-        case 43:
-          this.$ = { stmt: "state", id: $$[$0 - 2].trim(), classes: [$$[$0].trim()], type: "default", description: "" };
+          this.$ = yy.Identification.IDENTIFYING;
           break;
       }
     },
-    table: [{ 3: 1, 4: $V0, 5: $V1, 6: $V2 }, { 1: [3] }, { 3: 5, 4: $V0, 5: $V1, 6: $V2 }, { 3: 6, 4: $V0, 5: $V1, 6: $V2 }, o([1, 4, 5, 15, 16, 18, 21, 23, 24, 25, 26, 27, 28, 32, 34, 36, 37, 41, 44, 45, 46, 47, 50], $V3, { 7: 7 }), { 1: [2, 1] }, { 1: [2, 2] }, { 1: [2, 3], 4: $V4, 5: $V5, 8: 8, 9: 10, 10: 12, 11: 13, 12: 14, 15: $V6, 16: $V7, 18: $V8, 21: $V9, 23: $Va, 24: $Vb, 25: $Vc, 26: $Vd, 27: $Ve, 28: $Vf, 31: 24, 32: $Vg, 34: $Vh, 36: $Vi, 37: $Vj, 41: $Vk, 44: $Vl, 45: $Vm, 46: $Vn, 47: $Vo, 50: $Vp }, o($Vq, [2, 5]), { 9: 36, 10: 12, 11: 13, 12: 14, 15: $V6, 16: $V7, 18: $V8, 21: $V9, 23: $Va, 24: $Vb, 25: $Vc, 26: $Vd, 27: $Ve, 28: $Vf, 31: 24, 32: $Vg, 34: $Vh, 36: $Vi, 37: $Vj, 41: $Vk, 44: $Vl, 45: $Vm, 46: $Vn, 47: $Vo, 50: $Vp }, o($Vq, [2, 7]), o($Vq, [2, 8]), o($Vq, [2, 9]), o($Vq, [2, 10]), o($Vq, [2, 11], { 13: [1, 37], 14: [1, 38] }), o($Vq, [2, 15]), { 17: [1, 39] }, o($Vq, [2, 17], { 19: [1, 40] }), { 22: [1, 41] }, o($Vq, [2, 21]), o($Vq, [2, 22]), o($Vq, [2, 23]), o($Vq, [2, 24]), { 29: 42, 30: [1, 43], 52: [1, 44], 53: [1, 45] }, o($Vq, [2, 27]), { 33: [1, 46] }, { 35: [1, 47] }, o($Vq, [2, 30]), { 38: [1, 48], 40: [1, 49] }, { 42: [1, 50] }, o($Vr, [2, 40], { 51: [1, 51] }), o($Vr, [2, 41], { 51: [1, 52] }), o($Vq, [2, 34]), o($Vq, [2, 35]), o($Vq, [2, 36]), o($Vq, [2, 37]), o($Vq, [2, 6]), o($Vq, [2, 12]), { 12: 53, 23: $Va, 50: $Vp }, o($Vq, [2, 16]), o($Vs, $V3, { 7: 54 }), { 23: [1, 55] }, { 23: [1, 56] }, { 22: [1, 57] }, { 23: [2, 44] }, { 23: [2, 45] }, o($Vq, [2, 28]), o($Vq, [2, 29]), { 39: [1, 58] }, { 39: [1, 59] }, { 43: [1, 60] }, { 23: [1, 61] }, { 23: [1, 62] }, o($Vq, [2, 13], { 13: [1, 63] }), { 4: $V4, 5: $V5, 8: 8, 9: 10, 10: 12, 11: 13, 12: 14, 15: $V6, 16: $V7, 18: $V8, 20: [1, 64], 21: $V9, 23: $Va, 24: $Vb, 25: $Vc, 26: $Vd, 27: $Ve, 28: $Vf, 31: 24, 32: $Vg, 34: $Vh, 36: $Vi, 37: $Vj, 41: $Vk, 44: $Vl, 45: $Vm, 46: $Vn, 47: $Vo, 50: $Vp }, o($Vq, [2, 19], { 19: [1, 65] }), { 30: [1, 66] }, { 23: [1, 67] }, o($Vq, [2, 31]), o($Vq, [2, 32]), o($Vq, [2, 33]), o($Vr, [2, 42]), o($Vr, [2, 43]), o($Vq, [2, 14]), o($Vq, [2, 18]), o($Vs, $V3, { 7: 68 }), o($Vq, [2, 25]), o($Vq, [2, 26]), { 4: $V4, 5: $V5, 8: 8, 9: 10, 10: 12, 11: 13, 12: 14, 15: $V6, 16: $V7, 18: $V8, 20: [1, 69], 21: $V9, 23: $Va, 24: $Vb, 25: $Vc, 26: $Vd, 27: $Ve, 28: $Vf, 31: 24, 32: $Vg, 34: $Vh, 36: $Vi, 37: $Vj, 41: $Vk, 44: $Vl, 45: $Vm, 46: $Vn, 47: $Vo, 50: $Vp }, o($Vq, [2, 20])],
-    defaultActions: { 5: [2, 1], 6: [2, 2], 44: [2, 44], 45: [2, 45] },
+    table: [{ 3: 1, 4: [1, 2] }, { 1: [3] }, o($V0, [2, 2], { 5: 3 }), { 6: [1, 4], 7: 5, 8: [1, 6], 9: 7, 10: [1, 8], 11: 9, 20: $V1, 22: $V2, 24: $V3, 26: $V4, 27: $V5, 28: $V6 }, o($V0, [2, 7], { 1: [2, 1] }), o($V0, [2, 3]), { 9: 16, 11: 9, 20: $V1, 22: $V2, 24: $V3, 26: $V4, 27: $V5, 28: $V6 }, o($V0, [2, 5]), o($V0, [2, 6]), o($V0, [2, 11], { 12: 17, 39: 20, 15: [1, 18], 18: [1, 19], 41: $V7, 42: $V8, 43: $V9, 44: $Va, 45: $Vb }), { 21: [1, 26] }, { 23: [1, 27] }, { 25: [1, 28] }, o($V0, [2, 18]), o($Vc, [2, 19]), o($Vc, [2, 20]), o($V0, [2, 4]), { 11: 29, 27: $V5, 28: $V6 }, { 16: 30, 17: [1, 31], 29: 32, 30: 33, 34: $Vd }, { 11: 35, 27: $V5, 28: $V6 }, { 40: 36, 46: [1, 37], 47: [1, 38] }, o($Ve, [2, 34]), o($Ve, [2, 35]), o($Ve, [2, 36]), o($Ve, [2, 37]), o($Ve, [2, 38]), o($V0, [2, 15]), o($V0, [2, 16]), o($V0, [2, 17]), { 13: [1, 39] }, { 17: [1, 40] }, o($V0, [2, 10]), { 16: 41, 17: [2, 21], 29: 32, 30: 33, 34: $Vd }, { 31: 42, 34: [1, 43] }, { 34: [2, 27] }, { 19: [1, 44] }, { 39: 45, 41: $V7, 42: $V8, 43: $V9, 44: $Va, 45: $Vb }, o($Vf, [2, 39]), o($Vf, [2, 40]), { 14: 46, 27: [1, 49], 28: [1, 48], 48: [1, 47] }, o($V0, [2, 9]), { 17: [2, 22] }, o($Vg, [2, 23], { 32: 50, 33: 51, 35: 52, 37: $Vh, 38: $Vi }), o([17, 34, 37, 38], [2, 28]), o($V0, [2, 14], { 15: [1, 55] }), o([27, 28], [2, 33]), o($V0, [2, 8]), o($V0, [2, 41]), o($V0, [2, 42]), o($V0, [2, 43]), o($Vg, [2, 24], { 33: 56, 36: [1, 57], 38: $Vi }), o($Vg, [2, 25]), o($Vj, [2, 29]), o($Vg, [2, 32]), o($Vj, [2, 31]), { 16: 58, 17: [1, 59], 29: 32, 30: 33, 34: $Vd }, o($Vg, [2, 26]), { 35: 60, 37: $Vh }, { 17: [1, 61] }, o($V0, [2, 13]), o($Vj, [2, 30]), o($V0, [2, 12])],
+    defaultActions: { 34: [2, 27], 41: [2, 22] },
     parseError: function parseError(str, hash) {
       if (hash.recoverable) {
         this.trace(str);
@@ -10002,219 +9714,129 @@ var parser = function() {
       performAction: function anonymous(yy, yy_, $avoiding_name_collisions, YY_START) {
         switch ($avoiding_name_collisions) {
           case 0:
-            return 40;
+            this.begin("acc_title");
+            return 22;
           case 1:
-            return 44;
+            this.popState();
+            return "acc_title_value";
           case 2:
-            return 45;
+            this.begin("acc_descr");
+            return 24;
           case 3:
-            return 46;
+            this.popState();
+            return "acc_descr_value";
           case 4:
-            return 47;
+            this.begin("acc_descr_multiline");
+            break;
           case 5:
+            this.popState();
             break;
           case 6:
-            break;
+            return "acc_descr_multiline_value";
           case 7:
-            return 5;
+            return 10;
           case 8:
             break;
           case 9:
-            break;
+            return 8;
           case 10:
-            break;
+            return 28;
           case 11:
-            break;
+            return 48;
           case 12:
-            this.pushState("SCALE");
-            return 16;
+            return 4;
           case 13:
-            return 17;
+            this.begin("block");
+            return 15;
           case 14:
-            this.popState();
-            break;
+            return 36;
           case 15:
-            this.begin("acc_title");
-            return 32;
+            break;
           case 16:
-            this.popState();
-            return "acc_title_value";
+            return 37;
           case 17:
-            this.begin("acc_descr");
             return 34;
           case 18:
-            this.popState();
-            return "acc_descr_value";
+            return 34;
           case 19:
-            this.begin("acc_descr_multiline");
-            break;
+            return 38;
           case 20:
-            this.popState();
             break;
           case 21:
-            return "acc_descr_multiline_value";
+            this.popState();
+            return 17;
           case 22:
-            this.pushState("CLASSDEF");
-            return 37;
+            return yy_.yytext[0];
           case 23:
-            this.popState();
-            this.pushState("CLASSDEFID");
-            return "DEFAULT_CLASSDEF_ID";
+            return 18;
           case 24:
-            this.popState();
-            this.pushState("CLASSDEFID");
-            return 38;
+            return 19;
           case 25:
-            this.popState();
-            return 39;
-          case 26:
-            this.pushState("CLASS");
             return 41;
+          case 26:
+            return 43;
           case 27:
-            this.popState();
-            this.pushState("CLASS_STYLE");
-            return 42;
+            return 43;
           case 28:
-            this.popState();
             return 43;
           case 29:
-            this.pushState("SCALE");
-            return 16;
+            return 41;
           case 30:
-            return 17;
+            return 41;
           case 31:
-            this.popState();
-            break;
+            return 42;
           case 32:
-            this.pushState("STATE");
-            break;
+            return 42;
           case 33:
-            this.popState();
-            yy_.yytext = yy_.yytext.slice(0, -8).trim();
-            return 24;
+            return 42;
           case 34:
-            this.popState();
-            yy_.yytext = yy_.yytext.slice(0, -8).trim();
-            return 25;
+            return 42;
           case 35:
-            this.popState();
-            yy_.yytext = yy_.yytext.slice(0, -10).trim();
-            return 26;
+            return 42;
           case 36:
-            this.popState();
-            yy_.yytext = yy_.yytext.slice(0, -8).trim();
-            return 24;
+            return 43;
           case 37:
-            this.popState();
-            yy_.yytext = yy_.yytext.slice(0, -8).trim();
-            return 25;
+            return 42;
           case 38:
-            this.popState();
-            yy_.yytext = yy_.yytext.slice(0, -10).trim();
-            return 26;
+            return 43;
           case 39:
             return 44;
           case 40:
-            return 45;
+            return 44;
           case 41:
-            return 46;
+            return 44;
           case 42:
-            return 47;
+            return 44;
           case 43:
-            this.pushState("STATE_STRING");
-            break;
+            return 41;
           case 44:
-            this.pushState("STATE_ID");
-            return "AS";
+            return 42;
           case 45:
-            this.popState();
-            return "ID";
+            return 43;
           case 46:
-            this.popState();
-            break;
+            return 45;
           case 47:
-            return "STATE_DESCR";
+            return 46;
           case 48:
-            return 18;
+            return 47;
           case 49:
-            this.popState();
-            break;
+            return 47;
           case 50:
-            this.popState();
-            this.pushState("struct");
-            return 19;
+            return 46;
           case 51:
-            break;
+            return 46;
           case 52:
-            this.popState();
-            return 20;
+            return 46;
           case 53:
-            break;
-          case 54:
-            this.begin("NOTE");
-            return 28;
-          case 55:
-            this.popState();
-            this.pushState("NOTE_ID");
-            return 52;
-          case 56:
-            this.popState();
-            this.pushState("NOTE_ID");
-            return 53;
-          case 57:
-            this.popState();
-            this.pushState("FLOATING_NOTE");
-            break;
-          case 58:
-            this.popState();
-            this.pushState("FLOATING_NOTE_ID");
-            return "AS";
-          case 59:
-            break;
-          case 60:
-            return "NOTE_TEXT";
-          case 61:
-            this.popState();
-            return "ID";
-          case 62:
-            this.popState();
-            this.pushState("NOTE_TEXT");
-            return 23;
-          case 63:
-            this.popState();
-            yy_.yytext = yy_.yytext.substr(2).trim();
-            return 30;
-          case 64:
-            this.popState();
-            yy_.yytext = yy_.yytext.slice(0, -8).trim();
-            return 30;
-          case 65:
-            return 6;
-          case 66:
-            return 6;
-          case 67:
-            return 15;
-          case 68:
-            return 50;
-          case 69:
-            return 23;
-          case 70:
-            yy_.yytext = yy_.yytext.trim();
-            return 13;
-          case 71:
-            return 14;
-          case 72:
             return 27;
-          case 73:
-            return 51;
-          case 74:
-            return 5;
-          case 75:
-            return "INVALID";
+          case 54:
+            return yy_.yytext[0];
+          case 55:
+            return 6;
         }
       },
-      rules: [/^(?:default\b)/i, /^(?:.*direction\s+TB[^\n]*)/i, /^(?:.*direction\s+BT[^\n]*)/i, /^(?:.*direction\s+RL[^\n]*)/i, /^(?:.*direction\s+LR[^\n]*)/i, /^(?:%%(?!\{)[^\n]*)/i, /^(?:[^\}]%%[^\n]*)/i, /^(?:[\n]+)/i, /^(?:[\s]+)/i, /^(?:((?!\n)\s)+)/i, /^(?:#[^\n]*)/i, /^(?:%[^\n]*)/i, /^(?:scale\s+)/i, /^(?:\d+)/i, /^(?:\s+width\b)/i, /^(?:accTitle\s*:\s*)/i, /^(?:(?!\n||)*[^\n]*)/i, /^(?:accDescr\s*:\s*)/i, /^(?:(?!\n||)*[^\n]*)/i, /^(?:accDescr\s*\{\s*)/i, /^(?:[\}])/i, /^(?:[^\}]*)/i, /^(?:classDef\s+)/i, /^(?:DEFAULT\s+)/i, /^(?:\w+\s+)/i, /^(?:[^\n]*)/i, /^(?:class\s+)/i, /^(?:(\w+)+((,\s*\w+)*))/i, /^(?:[^\n]*)/i, /^(?:scale\s+)/i, /^(?:\d+)/i, /^(?:\s+width\b)/i, /^(?:state\s+)/i, /^(?:.*<<fork>>)/i, /^(?:.*<<join>>)/i, /^(?:.*<<choice>>)/i, /^(?:.*\[\[fork\]\])/i, /^(?:.*\[\[join\]\])/i, /^(?:.*\[\[choice\]\])/i, /^(?:.*direction\s+TB[^\n]*)/i, /^(?:.*direction\s+BT[^\n]*)/i, /^(?:.*direction\s+RL[^\n]*)/i, /^(?:.*direction\s+LR[^\n]*)/i, /^(?:["])/i, /^(?:\s*as\s+)/i, /^(?:[^\n\{]*)/i, /^(?:["])/i, /^(?:[^"]*)/i, /^(?:[^\n\s\{]+)/i, /^(?:\n)/i, /^(?:\{)/i, /^(?:%%(?!\{)[^\n]*)/i, /^(?:\})/i, /^(?:[\n])/i, /^(?:note\s+)/i, /^(?:left of\b)/i, /^(?:right of\b)/i, /^(?:")/i, /^(?:\s*as\s*)/i, /^(?:["])/i, /^(?:[^"]*)/i, /^(?:[^\n]*)/i, /^(?:\s*[^:\n\s\-]+)/i, /^(?:\s*:[^:\n;]+)/i, /^(?:[\s\S]*?end note\b)/i, /^(?:stateDiagram\s+)/i, /^(?:stateDiagram-v2\s+)/i, /^(?:hide empty description\b)/i, /^(?:\[\*\])/i, /^(?:[^:\n\s\-\{]+)/i, /^(?:\s*:[^:\n;]+)/i, /^(?:-->)/i, /^(?:--)/i, /^(?::::)/i, /^(?:$)/i, /^(?:.)/i],
-      conditions: { "LINE": { "rules": [9, 10], "inclusive": false }, "struct": { "rules": [9, 10, 22, 26, 32, 39, 40, 41, 42, 51, 52, 53, 54, 68, 69, 70, 71, 72], "inclusive": false }, "FLOATING_NOTE_ID": { "rules": [61], "inclusive": false }, "FLOATING_NOTE": { "rules": [58, 59, 60], "inclusive": false }, "NOTE_TEXT": { "rules": [63, 64], "inclusive": false }, "NOTE_ID": { "rules": [62], "inclusive": false }, "NOTE": { "rules": [55, 56, 57], "inclusive": false }, "CLASS_STYLE": { "rules": [28], "inclusive": false }, "CLASS": { "rules": [27], "inclusive": false }, "CLASSDEFID": { "rules": [25], "inclusive": false }, "CLASSDEF": { "rules": [23, 24], "inclusive": false }, "acc_descr_multiline": { "rules": [20, 21], "inclusive": false }, "acc_descr": { "rules": [18], "inclusive": false }, "acc_title": { "rules": [16], "inclusive": false }, "SCALE": { "rules": [13, 14, 30, 31], "inclusive": false }, "ALIAS": { "rules": [], "inclusive": false }, "STATE_ID": { "rules": [45], "inclusive": false }, "STATE_STRING": { "rules": [46, 47], "inclusive": false }, "FORK_STATE": { "rules": [], "inclusive": false }, "STATE": { "rules": [9, 10, 33, 34, 35, 36, 37, 38, 43, 44, 48, 49, 50], "inclusive": false }, "ID": { "rules": [9, 10], "inclusive": false }, "INITIAL": { "rules": [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 15, 17, 19, 22, 26, 29, 32, 50, 54, 65, 66, 67, 68, 69, 70, 71, 73, 74, 75], "inclusive": true } }
+      rules: [/^(?:accTitle\s*:\s*)/i, /^(?:(?!\n||)*[^\n]*)/i, /^(?:accDescr\s*:\s*)/i, /^(?:(?!\n||)*[^\n]*)/i, /^(?:accDescr\s*\{\s*)/i, /^(?:[\}])/i, /^(?:[^\}]*)/i, /^(?:[\n]+)/i, /^(?:\s+)/i, /^(?:[\s]+)/i, /^(?:"[^"%\r\n\v\b\\]+")/i, /^(?:"[^"]*")/i, /^(?:erDiagram\b)/i, /^(?:\{)/i, /^(?:,)/i, /^(?:\s+)/i, /^(?:\b((?:PK)|(?:FK)|(?:UK))\b)/i, /^(?:(.*?)[~](.*?)*[~])/i, /^(?:[\*A-Za-z_][A-Za-z0-9\-_\[\]\(\)]*)/i, /^(?:"[^"]*")/i, /^(?:[\n]+)/i, /^(?:\})/i, /^(?:.)/i, /^(?:\[)/i, /^(?:\])/i, /^(?:one or zero\b)/i, /^(?:one or more\b)/i, /^(?:one or many\b)/i, /^(?:1\+)/i, /^(?:\|o\b)/i, /^(?:zero or one\b)/i, /^(?:zero or more\b)/i, /^(?:zero or many\b)/i, /^(?:0\+)/i, /^(?:\}o\b)/i, /^(?:many\(0\))/i, /^(?:many\(1\))/i, /^(?:many\b)/i, /^(?:\}\|)/i, /^(?:one\b)/i, /^(?:only one\b)/i, /^(?:1\b)/i, /^(?:\|\|)/i, /^(?:o\|)/i, /^(?:o\{)/i, /^(?:\|\{)/i, /^(?:\s*u\b)/i, /^(?:\.\.)/i, /^(?:--)/i, /^(?:to\b)/i, /^(?:optionally to\b)/i, /^(?:\.-)/i, /^(?:-\.)/i, /^(?:[A-Za-z_][A-Za-z0-9\-_]*)/i, /^(?:.)/i, /^(?:$)/i],
+      conditions: { "acc_descr_multiline": { "rules": [5, 6], "inclusive": false }, "acc_descr": { "rules": [3], "inclusive": false }, "acc_title": { "rules": [1], "inclusive": false }, "block": { "rules": [14, 15, 16, 17, 18, 19, 20, 21, 22], "inclusive": false }, "INITIAL": { "rules": [0, 2, 4, 7, 8, 9, 10, 11, 12, 13, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55], "inclusive": true } }
     };
     return lexer2;
   }();
@@ -10227,584 +9849,471 @@ var parser = function() {
   return new Parser();
 }();
 parser.parser = parser;
-const parser$1 = parser;
-const DEFAULT_DIAGRAM_DIRECTION = "LR";
-const DEFAULT_NESTED_DOC_DIR = "TB";
-const STMT_STATE = "state";
-const STMT_RELATION = "relation";
-const STMT_CLASSDEF = "classDef";
-const STMT_APPLYCLASS = "applyClass";
-const DEFAULT_STATE_TYPE = "default";
-const DIVIDER_TYPE = "divider";
-const START_NODE = "[*]";
-const START_TYPE = "start";
-const END_NODE = START_NODE;
-const END_TYPE = "end";
-const COLOR_KEYWORD = "color";
-const FILL_KEYWORD = "fill";
-const BG_FILL = "bgFill";
-const STYLECLASS_SEP = ",";
-function newClassesList() {
-  return {};
-}
-let direction = DEFAULT_DIAGRAM_DIRECTION;
-let rootDoc = [];
-let classes = newClassesList();
-const newDoc = () => {
-  return {
-    relations: [],
-    states: {},
-    documents: {}
+const erParser = parser;
+let entities = {};
+let relationships = [];
+const Cardinality = {
+  ZERO_OR_ONE: "ZERO_OR_ONE",
+  ZERO_OR_MORE: "ZERO_OR_MORE",
+  ONE_OR_MORE: "ONE_OR_MORE",
+  ONLY_ONE: "ONLY_ONE",
+  MD_PARENT: "MD_PARENT"
+};
+const Identification = {
+  NON_IDENTIFYING: "NON_IDENTIFYING",
+  IDENTIFYING: "IDENTIFYING"
+};
+const addEntity = function(name, alias = void 0) {
+  if (entities[name] === void 0) {
+    entities[name] = { attributes: [], alias };
+    mermaid_934d9bea.l.info("Added new entity :", name);
+  } else if (entities[name] && !entities[name].alias && alias) {
+    entities[name].alias = alias;
+    mermaid_934d9bea.l.info(`Add alias '${alias}' to entity '${name}'`);
+  }
+  return entities[name];
+};
+const getEntities = () => entities;
+const addAttributes = function(entityName, attribs) {
+  let entity = addEntity(entityName);
+  let i;
+  for (i = attribs.length - 1; i >= 0; i--) {
+    entity.attributes.push(attribs[i]);
+    mermaid_934d9bea.l.debug("Added attribute ", attribs[i].attributeName);
+  }
+};
+const addRelationship = function(entA, rolA, entB, rSpec) {
+  let rel = {
+    entityA: entA,
+    roleA: rolA,
+    entityB: entB,
+    relSpec: rSpec
   };
+  relationships.push(rel);
+  mermaid_934d9bea.l.debug("Added new relationship :", rel);
 };
-let documents = {
-  root: newDoc()
+const getRelationships = () => relationships;
+const clear = function() {
+  entities = {};
+  relationships = [];
+  (0,mermaid_934d9bea.t)();
 };
-let currentDocument = documents.root;
-let startEndCount = 0;
-let dividerCnt = 0;
-const lineType = {
-  LINE: 0,
-  DOTTED_LINE: 1
-};
-const relationType = {
-  AGGREGATION: 0,
-  EXTENSION: 1,
-  COMPOSITION: 2,
-  DEPENDENCY: 3
-};
-const clone = (o) => JSON.parse(JSON.stringify(o));
-const setRootDoc = (o) => {
-  _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.l.info("Setting root doc", o);
-  rootDoc = o;
-};
-const getRootDoc = () => rootDoc;
-const docTranslator = (parent, node, first) => {
-  if (node.stmt === STMT_RELATION) {
-    docTranslator(parent, node.state1, true);
-    docTranslator(parent, node.state2, false);
-  } else {
-    if (node.stmt === STMT_STATE) {
-      if (node.id === "[*]") {
-        node.id = first ? parent.id + "_start" : parent.id + "_end";
-        node.start = first;
-      } else {
-        node.id = node.id.trim();
-      }
-    }
-    if (node.doc) {
-      const doc = [];
-      let currentDoc = [];
-      let i;
-      for (i = 0; i < node.doc.length; i++) {
-        if (node.doc[i].type === DIVIDER_TYPE) {
-          const newNode = clone(node.doc[i]);
-          newNode.doc = clone(currentDoc);
-          doc.push(newNode);
-          currentDoc = [];
-        } else {
-          currentDoc.push(node.doc[i]);
-        }
-      }
-      if (doc.length > 0 && currentDoc.length > 0) {
-        const newNode = {
-          stmt: STMT_STATE,
-          id: (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.G)(),
-          type: "divider",
-          doc: clone(currentDoc)
-        };
-        doc.push(clone(newNode));
-        node.doc = doc;
-      }
-      node.doc.forEach((docNode) => docTranslator(node, docNode, true));
-    }
-  }
-};
-const getRootDocV2 = () => {
-  docTranslator({ id: "root" }, { id: "root", doc: rootDoc }, true);
-  return { id: "root", doc: rootDoc };
-};
-const extract = (_doc) => {
-  let doc;
-  if (_doc.doc) {
-    doc = _doc.doc;
-  } else {
-    doc = _doc;
-  }
-  _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.l.info(doc);
-  clear(true);
-  _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.l.info("Extract", doc);
-  doc.forEach((item) => {
-    switch (item.stmt) {
-      case STMT_STATE:
-        addState(
-          item.id.trim(),
-          item.type,
-          item.doc,
-          item.description,
-          item.note,
-          item.classes,
-          item.styles,
-          item.textStyles
-        );
-        break;
-      case STMT_RELATION:
-        addRelation(item.state1, item.state2, item.description);
-        break;
-      case STMT_CLASSDEF:
-        addStyleClass(item.id.trim(), item.classes);
-        break;
-      case STMT_APPLYCLASS:
-        setCssClass(item.id.trim(), item.styleClass);
-        break;
-    }
-  });
-};
-const addState = function(id, type = DEFAULT_STATE_TYPE, doc = null, descr = null, note = null, classes2 = null, styles2 = null, textStyles = null) {
-  const trimmedId = id == null ? void 0 : id.trim();
-  if (currentDocument.states[trimmedId] === void 0) {
-    _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.l.info("Adding state ", trimmedId, descr);
-    currentDocument.states[trimmedId] = {
-      id: trimmedId,
-      descriptions: [],
-      type,
-      doc,
-      note,
-      classes: [],
-      styles: [],
-      textStyles: []
-    };
-  } else {
-    if (!currentDocument.states[trimmedId].doc) {
-      currentDocument.states[trimmedId].doc = doc;
-    }
-    if (!currentDocument.states[trimmedId].type) {
-      currentDocument.states[trimmedId].type = type;
-    }
-  }
-  if (descr) {
-    _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.l.info("Setting state description", trimmedId, descr);
-    if (typeof descr === "string") {
-      addDescription(trimmedId, descr.trim());
-    }
-    if (typeof descr === "object") {
-      descr.forEach((des) => addDescription(trimmedId, des.trim()));
-    }
-  }
-  if (note) {
-    currentDocument.states[trimmedId].note = note;
-    currentDocument.states[trimmedId].note.text = _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.e.sanitizeText(
-      currentDocument.states[trimmedId].note.text,
-      (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.c)()
-    );
-  }
-  if (classes2) {
-    _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.l.info("Setting state classes", trimmedId, classes2);
-    const classesList = typeof classes2 === "string" ? [classes2] : classes2;
-    classesList.forEach((klass) => setCssClass(trimmedId, klass.trim()));
-  }
-  if (styles2) {
-    _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.l.info("Setting state styles", trimmedId, styles2);
-    const stylesList = typeof styles2 === "string" ? [styles2] : styles2;
-    stylesList.forEach((style) => setStyle(trimmedId, style.trim()));
-  }
-  if (textStyles) {
-    _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.l.info("Setting state styles", trimmedId, styles2);
-    const textStylesList = typeof textStyles === "string" ? [textStyles] : textStyles;
-    textStylesList.forEach((textStyle) => setTextStyle(trimmedId, textStyle.trim()));
-  }
-};
-const clear = function(saveCommon) {
-  documents = {
-    root: newDoc()
-  };
-  currentDocument = documents.root;
-  startEndCount = 0;
-  classes = newClassesList();
-  if (!saveCommon) {
-    (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.t)();
-  }
-};
-const getState = function(id) {
-  return currentDocument.states[id];
-};
-const getStates = function() {
-  return currentDocument.states;
-};
-const logDocuments = function() {
-  _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.l.info("Documents = ", documents);
-};
-const getRelations = function() {
-  return currentDocument.relations;
-};
-function startIdIfNeeded(id = "") {
-  let fixedId = id;
-  if (id === START_NODE) {
-    startEndCount++;
-    fixedId = `${START_TYPE}${startEndCount}`;
-  }
-  return fixedId;
-}
-function startTypeIfNeeded(id = "", type = DEFAULT_STATE_TYPE) {
-  return id === START_NODE ? START_TYPE : type;
-}
-function endIdIfNeeded(id = "") {
-  let fixedId = id;
-  if (id === END_NODE) {
-    startEndCount++;
-    fixedId = `${END_TYPE}${startEndCount}`;
-  }
-  return fixedId;
-}
-function endTypeIfNeeded(id = "", type = DEFAULT_STATE_TYPE) {
-  return id === END_NODE ? END_TYPE : type;
-}
-function addRelationObjs(item1, item2, relationTitle) {
-  let id1 = startIdIfNeeded(item1.id.trim());
-  let type1 = startTypeIfNeeded(item1.id.trim(), item1.type);
-  let id2 = startIdIfNeeded(item2.id.trim());
-  let type2 = startTypeIfNeeded(item2.id.trim(), item2.type);
-  addState(
-    id1,
-    type1,
-    item1.doc,
-    item1.description,
-    item1.note,
-    item1.classes,
-    item1.styles,
-    item1.textStyles
-  );
-  addState(
-    id2,
-    type2,
-    item2.doc,
-    item2.description,
-    item2.note,
-    item2.classes,
-    item2.styles,
-    item2.textStyles
-  );
-  currentDocument.relations.push({
-    id1,
-    id2,
-    relationTitle: _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.e.sanitizeText(relationTitle, (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.c)())
-  });
-}
-const addRelation = function(item1, item2, title) {
-  if (typeof item1 === "object") {
-    addRelationObjs(item1, item2, title);
-  } else {
-    const id1 = startIdIfNeeded(item1.trim());
-    const type1 = startTypeIfNeeded(item1);
-    const id2 = endIdIfNeeded(item2.trim());
-    const type2 = endTypeIfNeeded(item2);
-    addState(id1, type1);
-    addState(id2, type2);
-    currentDocument.relations.push({
-      id1,
-      id2,
-      title: _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.e.sanitizeText(title, (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.c)())
-    });
-  }
-};
-const addDescription = function(id, descr) {
-  const theState = currentDocument.states[id];
-  const _descr = descr.startsWith(":") ? descr.replace(":", "").trim() : descr;
-  theState.descriptions.push(_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.e.sanitizeText(_descr, (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.c)()));
-};
-const cleanupLabel = function(label) {
-  if (label.substring(0, 1) === ":") {
-    return label.substr(2).trim();
-  } else {
-    return label.trim();
-  }
-};
-const getDividerId = () => {
-  dividerCnt++;
-  return "divider-id-" + dividerCnt;
-};
-const addStyleClass = function(id, styleAttributes = "") {
-  if (classes[id] === void 0) {
-    classes[id] = { id, styles: [], textStyles: [] };
-  }
-  const foundClass = classes[id];
-  if (styleAttributes !== void 0 && styleAttributes !== null) {
-    styleAttributes.split(STYLECLASS_SEP).forEach((attrib) => {
-      const fixedAttrib = attrib.replace(/([^;]*);/, "$1").trim();
-      if (attrib.match(COLOR_KEYWORD)) {
-        const newStyle1 = fixedAttrib.replace(FILL_KEYWORD, BG_FILL);
-        const newStyle2 = newStyle1.replace(COLOR_KEYWORD, FILL_KEYWORD);
-        foundClass.textStyles.push(newStyle2);
-      }
-      foundClass.styles.push(fixedAttrib);
-    });
-  }
-};
-const getClasses = function() {
-  return classes;
-};
-const setCssClass = function(itemIds, cssClassName) {
-  itemIds.split(",").forEach(function(id) {
-    let foundState = getState(id);
-    if (foundState === void 0) {
-      const trimmedId = id.trim();
-      addState(trimmedId);
-      foundState = getState(trimmedId);
-    }
-    foundState.classes.push(cssClassName);
-  });
-};
-const setStyle = function(itemId, styleText) {
-  const item = getState(itemId);
-  if (item !== void 0) {
-    item.textStyles.push(styleText);
-  }
-};
-const setTextStyle = function(itemId, cssClassName) {
-  const item = getState(itemId);
-  if (item !== void 0) {
-    item.textStyles.push(cssClassName);
-  }
-};
-const getDirection = () => direction;
-const setDirection = (dir) => {
-  direction = dir;
-};
-const trimColon = (str) => str && str[0] === ":" ? str.substr(1).trim() : str.trim();
-const db = {
-  getConfig: () => (0,_mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.c)().state,
-  addState,
+const erDb = {
+  Cardinality,
+  Identification,
+  getConfig: () => (0,mermaid_934d9bea.c)().er,
+  addEntity,
+  addAttributes,
+  getEntities,
+  addRelationship,
+  getRelationships,
   clear,
-  getState,
-  getStates,
-  getRelations,
-  getClasses,
-  getDirection,
-  addRelation,
-  getDividerId,
-  setDirection,
-  cleanupLabel,
-  lineType,
-  relationType,
-  logDocuments,
-  getRootDoc,
-  setRootDoc,
-  getRootDocV2,
-  extract,
-  trimColon,
-  getAccTitle: _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.g,
-  setAccTitle: _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.s,
-  getAccDescription: _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.a,
-  setAccDescription: _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.b,
-  addStyleClass,
-  setCssClass,
-  addDescription,
-  setDiagramTitle: _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.q,
-  getDiagramTitle: _mermaid_934d9bea_js__WEBPACK_IMPORTED_MODULE_0__.r
+  setAccTitle: mermaid_934d9bea.s,
+  getAccTitle: mermaid_934d9bea.g,
+  setAccDescription: mermaid_934d9bea.b,
+  getAccDescription: mermaid_934d9bea.a,
+  setDiagramTitle: mermaid_934d9bea.q,
+  getDiagramTitle: mermaid_934d9bea.r
+};
+const ERMarkers = {
+  ONLY_ONE_START: "ONLY_ONE_START",
+  ONLY_ONE_END: "ONLY_ONE_END",
+  ZERO_OR_ONE_START: "ZERO_OR_ONE_START",
+  ZERO_OR_ONE_END: "ZERO_OR_ONE_END",
+  ONE_OR_MORE_START: "ONE_OR_MORE_START",
+  ONE_OR_MORE_END: "ONE_OR_MORE_END",
+  ZERO_OR_MORE_START: "ZERO_OR_MORE_START",
+  ZERO_OR_MORE_END: "ZERO_OR_MORE_END",
+  MD_PARENT_END: "MD_PARENT_END",
+  MD_PARENT_START: "MD_PARENT_START"
+};
+const insertMarkers = function(elem, conf2) {
+  let marker;
+  elem.append("defs").append("marker").attr("id", ERMarkers.MD_PARENT_START).attr("refX", 0).attr("refY", 7).attr("markerWidth", 190).attr("markerHeight", 240).attr("orient", "auto").append("path").attr("d", "M 18,7 L9,13 L1,7 L9,1 Z");
+  elem.append("defs").append("marker").attr("id", ERMarkers.MD_PARENT_END).attr("refX", 19).attr("refY", 7).attr("markerWidth", 20).attr("markerHeight", 28).attr("orient", "auto").append("path").attr("d", "M 18,7 L9,13 L1,7 L9,1 Z");
+  elem.append("defs").append("marker").attr("id", ERMarkers.ONLY_ONE_START).attr("refX", 0).attr("refY", 9).attr("markerWidth", 18).attr("markerHeight", 18).attr("orient", "auto").append("path").attr("stroke", conf2.stroke).attr("fill", "none").attr("d", "M9,0 L9,18 M15,0 L15,18");
+  elem.append("defs").append("marker").attr("id", ERMarkers.ONLY_ONE_END).attr("refX", 18).attr("refY", 9).attr("markerWidth", 18).attr("markerHeight", 18).attr("orient", "auto").append("path").attr("stroke", conf2.stroke).attr("fill", "none").attr("d", "M3,0 L3,18 M9,0 L9,18");
+  marker = elem.append("defs").append("marker").attr("id", ERMarkers.ZERO_OR_ONE_START).attr("refX", 0).attr("refY", 9).attr("markerWidth", 30).attr("markerHeight", 18).attr("orient", "auto");
+  marker.append("circle").attr("stroke", conf2.stroke).attr("fill", "white").attr("cx", 21).attr("cy", 9).attr("r", 6);
+  marker.append("path").attr("stroke", conf2.stroke).attr("fill", "none").attr("d", "M9,0 L9,18");
+  marker = elem.append("defs").append("marker").attr("id", ERMarkers.ZERO_OR_ONE_END).attr("refX", 30).attr("refY", 9).attr("markerWidth", 30).attr("markerHeight", 18).attr("orient", "auto");
+  marker.append("circle").attr("stroke", conf2.stroke).attr("fill", "white").attr("cx", 9).attr("cy", 9).attr("r", 6);
+  marker.append("path").attr("stroke", conf2.stroke).attr("fill", "none").attr("d", "M21,0 L21,18");
+  elem.append("defs").append("marker").attr("id", ERMarkers.ONE_OR_MORE_START).attr("refX", 18).attr("refY", 18).attr("markerWidth", 45).attr("markerHeight", 36).attr("orient", "auto").append("path").attr("stroke", conf2.stroke).attr("fill", "none").attr("d", "M0,18 Q 18,0 36,18 Q 18,36 0,18 M42,9 L42,27");
+  elem.append("defs").append("marker").attr("id", ERMarkers.ONE_OR_MORE_END).attr("refX", 27).attr("refY", 18).attr("markerWidth", 45).attr("markerHeight", 36).attr("orient", "auto").append("path").attr("stroke", conf2.stroke).attr("fill", "none").attr("d", "M3,9 L3,27 M9,18 Q27,0 45,18 Q27,36 9,18");
+  marker = elem.append("defs").append("marker").attr("id", ERMarkers.ZERO_OR_MORE_START).attr("refX", 18).attr("refY", 18).attr("markerWidth", 57).attr("markerHeight", 36).attr("orient", "auto");
+  marker.append("circle").attr("stroke", conf2.stroke).attr("fill", "white").attr("cx", 48).attr("cy", 18).attr("r", 6);
+  marker.append("path").attr("stroke", conf2.stroke).attr("fill", "none").attr("d", "M0,18 Q18,0 36,18 Q18,36 0,18");
+  marker = elem.append("defs").append("marker").attr("id", ERMarkers.ZERO_OR_MORE_END).attr("refX", 39).attr("refY", 18).attr("markerWidth", 57).attr("markerHeight", 36).attr("orient", "auto");
+  marker.append("circle").attr("stroke", conf2.stroke).attr("fill", "white").attr("cx", 9).attr("cy", 18).attr("r", 6);
+  marker.append("path").attr("stroke", conf2.stroke).attr("fill", "none").attr("d", "M21,18 Q39,0 57,18 Q39,36 21,18");
+  return;
+};
+const erMarkers = {
+  ERMarkers,
+  insertMarkers
+};
+const BAD_ID_CHARS_REGEXP = /[^\dA-Za-z](\W)*/g;
+let conf = {};
+let entityNameIds = /* @__PURE__ */ new Map();
+const setConf = function(cnf) {
+  const keys = Object.keys(cnf);
+  for (const key of keys) {
+    conf[key] = cnf[key];
+  }
+};
+const drawAttributes = (groupNode, entityTextNode, attributes) => {
+  const heightPadding = conf.entityPadding / 3;
+  const widthPadding = conf.entityPadding / 3;
+  const attrFontSize = conf.fontSize * 0.85;
+  const labelBBox = entityTextNode.node().getBBox();
+  const attributeNodes = [];
+  let hasKeyType = false;
+  let hasComment = false;
+  let maxTypeWidth = 0;
+  let maxNameWidth = 0;
+  let maxKeyWidth = 0;
+  let maxCommentWidth = 0;
+  let cumulativeHeight = labelBBox.height + heightPadding * 2;
+  let attrNum = 1;
+  attributes.forEach((item) => {
+    if (item.attributeKeyTypeList !== void 0 && item.attributeKeyTypeList.length > 0) {
+      hasKeyType = true;
+    }
+    if (item.attributeComment !== void 0) {
+      hasComment = true;
+    }
+  });
+  attributes.forEach((item) => {
+    const attrPrefix = `${entityTextNode.node().id}-attr-${attrNum}`;
+    let nodeHeight = 0;
+    const attributeType = (0,mermaid_934d9bea.v)(item.attributeType);
+    const typeNode = groupNode.append("text").classed("er entityLabel", true).attr("id", `${attrPrefix}-type`).attr("x", 0).attr("y", 0).style("dominant-baseline", "middle").style("text-anchor", "left").style("font-family", (0,mermaid_934d9bea.c)().fontFamily).style("font-size", attrFontSize + "px").text(attributeType);
+    const nameNode = groupNode.append("text").classed("er entityLabel", true).attr("id", `${attrPrefix}-name`).attr("x", 0).attr("y", 0).style("dominant-baseline", "middle").style("text-anchor", "left").style("font-family", (0,mermaid_934d9bea.c)().fontFamily).style("font-size", attrFontSize + "px").text(item.attributeName);
+    const attributeNode = {};
+    attributeNode.tn = typeNode;
+    attributeNode.nn = nameNode;
+    const typeBBox = typeNode.node().getBBox();
+    const nameBBox = nameNode.node().getBBox();
+    maxTypeWidth = Math.max(maxTypeWidth, typeBBox.width);
+    maxNameWidth = Math.max(maxNameWidth, nameBBox.width);
+    nodeHeight = Math.max(typeBBox.height, nameBBox.height);
+    if (hasKeyType) {
+      const keyTypeNodeText = item.attributeKeyTypeList !== void 0 ? item.attributeKeyTypeList.join(",") : "";
+      const keyTypeNode = groupNode.append("text").classed("er entityLabel", true).attr("id", `${attrPrefix}-key`).attr("x", 0).attr("y", 0).style("dominant-baseline", "middle").style("text-anchor", "left").style("font-family", (0,mermaid_934d9bea.c)().fontFamily).style("font-size", attrFontSize + "px").text(keyTypeNodeText);
+      attributeNode.kn = keyTypeNode;
+      const keyTypeBBox = keyTypeNode.node().getBBox();
+      maxKeyWidth = Math.max(maxKeyWidth, keyTypeBBox.width);
+      nodeHeight = Math.max(nodeHeight, keyTypeBBox.height);
+    }
+    if (hasComment) {
+      const commentNode = groupNode.append("text").classed("er entityLabel", true).attr("id", `${attrPrefix}-comment`).attr("x", 0).attr("y", 0).style("dominant-baseline", "middle").style("text-anchor", "left").style("font-family", (0,mermaid_934d9bea.c)().fontFamily).style("font-size", attrFontSize + "px").text(item.attributeComment || "");
+      attributeNode.cn = commentNode;
+      const commentNodeBBox = commentNode.node().getBBox();
+      maxCommentWidth = Math.max(maxCommentWidth, commentNodeBBox.width);
+      nodeHeight = Math.max(nodeHeight, commentNodeBBox.height);
+    }
+    attributeNode.height = nodeHeight;
+    attributeNodes.push(attributeNode);
+    cumulativeHeight += nodeHeight + heightPadding * 2;
+    attrNum += 1;
+  });
+  let widthPaddingFactor = 4;
+  if (hasKeyType) {
+    widthPaddingFactor += 2;
+  }
+  if (hasComment) {
+    widthPaddingFactor += 2;
+  }
+  const maxWidth = maxTypeWidth + maxNameWidth + maxKeyWidth + maxCommentWidth;
+  const bBox = {
+    width: Math.max(
+      conf.minEntityWidth,
+      Math.max(
+        labelBBox.width + conf.entityPadding * 2,
+        maxWidth + widthPadding * widthPaddingFactor
+      )
+    ),
+    height: attributes.length > 0 ? cumulativeHeight : Math.max(conf.minEntityHeight, labelBBox.height + conf.entityPadding * 2)
+  };
+  if (attributes.length > 0) {
+    const spareColumnWidth = Math.max(
+      0,
+      (bBox.width - maxWidth - widthPadding * widthPaddingFactor) / (widthPaddingFactor / 2)
+    );
+    entityTextNode.attr(
+      "transform",
+      "translate(" + bBox.width / 2 + "," + (heightPadding + labelBBox.height / 2) + ")"
+    );
+    let heightOffset = labelBBox.height + heightPadding * 2;
+    let attribStyle = "attributeBoxOdd";
+    attributeNodes.forEach((attributeNode) => {
+      const alignY = heightOffset + heightPadding + attributeNode.height / 2;
+      attributeNode.tn.attr("transform", "translate(" + widthPadding + "," + alignY + ")");
+      const typeRect = groupNode.insert("rect", "#" + attributeNode.tn.node().id).classed(`er ${attribStyle}`, true).attr("x", 0).attr("y", heightOffset).attr("width", maxTypeWidth + widthPadding * 2 + spareColumnWidth).attr("height", attributeNode.height + heightPadding * 2);
+      const nameXOffset = parseFloat(typeRect.attr("x")) + parseFloat(typeRect.attr("width"));
+      attributeNode.nn.attr(
+        "transform",
+        "translate(" + (nameXOffset + widthPadding) + "," + alignY + ")"
+      );
+      const nameRect = groupNode.insert("rect", "#" + attributeNode.nn.node().id).classed(`er ${attribStyle}`, true).attr("x", nameXOffset).attr("y", heightOffset).attr("width", maxNameWidth + widthPadding * 2 + spareColumnWidth).attr("height", attributeNode.height + heightPadding * 2);
+      let keyTypeAndCommentXOffset = parseFloat(nameRect.attr("x")) + parseFloat(nameRect.attr("width"));
+      if (hasKeyType) {
+        attributeNode.kn.attr(
+          "transform",
+          "translate(" + (keyTypeAndCommentXOffset + widthPadding) + "," + alignY + ")"
+        );
+        const keyTypeRect = groupNode.insert("rect", "#" + attributeNode.kn.node().id).classed(`er ${attribStyle}`, true).attr("x", keyTypeAndCommentXOffset).attr("y", heightOffset).attr("width", maxKeyWidth + widthPadding * 2 + spareColumnWidth).attr("height", attributeNode.height + heightPadding * 2);
+        keyTypeAndCommentXOffset = parseFloat(keyTypeRect.attr("x")) + parseFloat(keyTypeRect.attr("width"));
+      }
+      if (hasComment) {
+        attributeNode.cn.attr(
+          "transform",
+          "translate(" + (keyTypeAndCommentXOffset + widthPadding) + "," + alignY + ")"
+        );
+        groupNode.insert("rect", "#" + attributeNode.cn.node().id).classed(`er ${attribStyle}`, "true").attr("x", keyTypeAndCommentXOffset).attr("y", heightOffset).attr("width", maxCommentWidth + widthPadding * 2 + spareColumnWidth).attr("height", attributeNode.height + heightPadding * 2);
+      }
+      heightOffset += attributeNode.height + heightPadding * 2;
+      attribStyle = attribStyle === "attributeBoxOdd" ? "attributeBoxEven" : "attributeBoxOdd";
+    });
+  } else {
+    bBox.height = Math.max(conf.minEntityHeight, cumulativeHeight);
+    entityTextNode.attr("transform", "translate(" + bBox.width / 2 + "," + bBox.height / 2 + ")");
+  }
+  return bBox;
+};
+const drawEntities = function(svgNode, entities2, graph) {
+  const keys = Object.keys(entities2);
+  let firstOne;
+  keys.forEach(function(entityName) {
+    const entityId = generateId(entityName, "entity");
+    entityNameIds.set(entityName, entityId);
+    const groupNode = svgNode.append("g").attr("id", entityId);
+    firstOne = firstOne === void 0 ? entityId : firstOne;
+    const textId = "text-" + entityId;
+    const textNode = groupNode.append("text").classed("er entityLabel", true).attr("id", textId).attr("x", 0).attr("y", 0).style("dominant-baseline", "middle").style("text-anchor", "middle").style("font-family", (0,mermaid_934d9bea.c)().fontFamily).style("font-size", conf.fontSize + "px").text(entities2[entityName].alias ?? entityName);
+    const { width: entityWidth, height: entityHeight } = drawAttributes(
+      groupNode,
+      textNode,
+      entities2[entityName].attributes
+    );
+    const rectNode = groupNode.insert("rect", "#" + textId).classed("er entityBox", true).attr("x", 0).attr("y", 0).attr("width", entityWidth).attr("height", entityHeight);
+    const rectBBox = rectNode.node().getBBox();
+    graph.setNode(entityId, {
+      width: rectBBox.width,
+      height: rectBBox.height,
+      shape: "rect",
+      id: entityId
+    });
+  });
+  return firstOne;
+};
+const adjustEntities = function(svgNode, graph) {
+  graph.nodes().forEach(function(v) {
+    if (v !== void 0 && graph.node(v) !== void 0) {
+      svgNode.select("#" + v).attr(
+        "transform",
+        "translate(" + (graph.node(v).x - graph.node(v).width / 2) + "," + (graph.node(v).y - graph.node(v).height / 2) + " )"
+      );
+    }
+  });
+};
+const getEdgeName = function(rel) {
+  return (rel.entityA + rel.roleA + rel.entityB).replace(/\s/g, "");
+};
+const addRelationships = function(relationships2, g) {
+  relationships2.forEach(function(r) {
+    g.setEdge(
+      entityNameIds.get(r.entityA),
+      entityNameIds.get(r.entityB),
+      { relationship: r },
+      getEdgeName(r)
+    );
+  });
+  return relationships2;
+};
+let relCnt = 0;
+const drawRelationshipFromLayout = function(svg, rel, g, insert, diagObj) {
+  relCnt++;
+  const edge = g.edge(
+    entityNameIds.get(rel.entityA),
+    entityNameIds.get(rel.entityB),
+    getEdgeName(rel)
+  );
+  const lineFunction = (0,src/* line */.jvg)().x(function(d) {
+    return d.x;
+  }).y(function(d) {
+    return d.y;
+  }).curve(src/* curveBasis */.$0Z);
+  const svgPath = svg.insert("path", "#" + insert).classed("er relationshipLine", true).attr("d", lineFunction(edge.points)).style("stroke", conf.stroke).style("fill", "none");
+  if (rel.relSpec.relType === diagObj.db.Identification.NON_IDENTIFYING) {
+    svgPath.attr("stroke-dasharray", "8,8");
+  }
+  let url = "";
+  if (conf.arrowMarkerAbsolute) {
+    url = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.search;
+    url = url.replace(/\(/g, "\\(");
+    url = url.replace(/\)/g, "\\)");
+  }
+  switch (rel.relSpec.cardA) {
+    case diagObj.db.Cardinality.ZERO_OR_ONE:
+      svgPath.attr("marker-end", "url(" + url + "#" + erMarkers.ERMarkers.ZERO_OR_ONE_END + ")");
+      break;
+    case diagObj.db.Cardinality.ZERO_OR_MORE:
+      svgPath.attr("marker-end", "url(" + url + "#" + erMarkers.ERMarkers.ZERO_OR_MORE_END + ")");
+      break;
+    case diagObj.db.Cardinality.ONE_OR_MORE:
+      svgPath.attr("marker-end", "url(" + url + "#" + erMarkers.ERMarkers.ONE_OR_MORE_END + ")");
+      break;
+    case diagObj.db.Cardinality.ONLY_ONE:
+      svgPath.attr("marker-end", "url(" + url + "#" + erMarkers.ERMarkers.ONLY_ONE_END + ")");
+      break;
+    case diagObj.db.Cardinality.MD_PARENT:
+      svgPath.attr("marker-end", "url(" + url + "#" + erMarkers.ERMarkers.MD_PARENT_END + ")");
+      break;
+  }
+  switch (rel.relSpec.cardB) {
+    case diagObj.db.Cardinality.ZERO_OR_ONE:
+      svgPath.attr(
+        "marker-start",
+        "url(" + url + "#" + erMarkers.ERMarkers.ZERO_OR_ONE_START + ")"
+      );
+      break;
+    case diagObj.db.Cardinality.ZERO_OR_MORE:
+      svgPath.attr(
+        "marker-start",
+        "url(" + url + "#" + erMarkers.ERMarkers.ZERO_OR_MORE_START + ")"
+      );
+      break;
+    case diagObj.db.Cardinality.ONE_OR_MORE:
+      svgPath.attr(
+        "marker-start",
+        "url(" + url + "#" + erMarkers.ERMarkers.ONE_OR_MORE_START + ")"
+      );
+      break;
+    case diagObj.db.Cardinality.ONLY_ONE:
+      svgPath.attr("marker-start", "url(" + url + "#" + erMarkers.ERMarkers.ONLY_ONE_START + ")");
+      break;
+    case diagObj.db.Cardinality.MD_PARENT:
+      svgPath.attr("marker-start", "url(" + url + "#" + erMarkers.ERMarkers.MD_PARENT_START + ")");
+      break;
+  }
+  const len = svgPath.node().getTotalLength();
+  const labelPoint = svgPath.node().getPointAtLength(len * 0.5);
+  const labelId = "rel" + relCnt;
+  const labelNode = svg.append("text").classed("er relationshipLabel", true).attr("id", labelId).attr("x", labelPoint.x).attr("y", labelPoint.y).style("text-anchor", "middle").style("dominant-baseline", "middle").style("font-family", (0,mermaid_934d9bea.c)().fontFamily).style("font-size", conf.fontSize + "px").text(rel.roleA);
+  const labelBBox = labelNode.node().getBBox();
+  svg.insert("rect", "#" + labelId).classed("er relationshipLabelBox", true).attr("x", labelPoint.x - labelBBox.width / 2).attr("y", labelPoint.y - labelBBox.height / 2).attr("width", labelBBox.width).attr("height", labelBBox.height);
+};
+const draw = function(text, id, _version, diagObj) {
+  conf = (0,mermaid_934d9bea.c)().er;
+  mermaid_934d9bea.l.info("Drawing ER diagram");
+  const securityLevel = (0,mermaid_934d9bea.c)().securityLevel;
+  let sandboxElement;
+  if (securityLevel === "sandbox") {
+    sandboxElement = (0,src/* select */.Ys)("#i" + id);
+  }
+  const root = securityLevel === "sandbox" ? (0,src/* select */.Ys)(sandboxElement.nodes()[0].contentDocument.body) : (0,src/* select */.Ys)("body");
+  const svg = root.select(`[id='${id}']`);
+  erMarkers.insertMarkers(svg, conf);
+  let g;
+  g = new graphlib/* Graph */.k({
+    multigraph: true,
+    directed: true,
+    compound: false
+  }).setGraph({
+    rankdir: conf.layoutDirection,
+    marginx: 20,
+    marginy: 20,
+    nodesep: 100,
+    edgesep: 100,
+    ranksep: 100
+  }).setDefaultEdgeLabel(function() {
+    return {};
+  });
+  const firstEntity = drawEntities(svg, diagObj.db.getEntities(), g);
+  const relationships2 = addRelationships(diagObj.db.getRelationships(), g);
+  (0,dagre/* layout */.bK)(g);
+  adjustEntities(svg, g);
+  relationships2.forEach(function(rel) {
+    drawRelationshipFromLayout(svg, rel, g, firstEntity, diagObj);
+  });
+  const padding = conf.diagramPadding;
+  mermaid_934d9bea.u.insertTitle(svg, "entityTitleText", conf.titleTopMargin, diagObj.db.getDiagramTitle());
+  const svgBounds = svg.node().getBBox();
+  const width = svgBounds.width + padding * 2;
+  const height = svgBounds.height + padding * 2;
+  (0,mermaid_934d9bea.i)(svg, height, width, conf.useMaxWidth);
+  svg.attr("viewBox", `${svgBounds.x - padding} ${svgBounds.y - padding} ${width} ${height}`);
+};
+const MERMAID_ERDIAGRAM_UUID = "28e9f9db-3c8d-5aa5-9faf-44286ae5937c";
+function generateId(str = "", prefix = "") {
+  const simplifiedStr = str.replace(BAD_ID_CHARS_REGEXP, "");
+  return `${strWithHyphen(prefix)}${strWithHyphen(simplifiedStr)}${esm_node_v5(
+    str,
+    MERMAID_ERDIAGRAM_UUID
+  )}`;
+}
+function strWithHyphen(str = "") {
+  return str.length > 0 ? `${str}-` : "";
+}
+const erRenderer = {
+  setConf,
+  draw
 };
 const getStyles = (options) => `
-defs #statediagram-barbEnd {
-    fill: ${options.transitionColor};
-    stroke: ${options.transitionColor};
+  .entityBox {
+    fill: ${options.mainBkg};
+    stroke: ${options.nodeBorder};
   }
-g.stateGroup text {
-  fill: ${options.nodeBorder};
-  stroke: none;
-  font-size: 10px;
-}
-g.stateGroup text {
-  fill: ${options.textColor};
-  stroke: none;
-  font-size: 10px;
 
-}
-g.stateGroup .state-title {
-  font-weight: bolder;
-  fill: ${options.stateLabelColor};
-}
-
-g.stateGroup rect {
-  fill: ${options.mainBkg};
-  stroke: ${options.nodeBorder};
-}
-
-g.stateGroup line {
-  stroke: ${options.lineColor};
-  stroke-width: 1;
-}
-
-.transition {
-  stroke: ${options.transitionColor};
-  stroke-width: 1;
-  fill: none;
-}
-
-.stateGroup .composit {
-  fill: ${options.background};
-  border-bottom: 1px
-}
-
-.stateGroup .alt-composit {
-  fill: #e0e0e0;
-  border-bottom: 1px
-}
-
-.state-note {
-  stroke: ${options.noteBorderColor};
-  fill: ${options.noteBkgColor};
-
-  text {
-    fill: ${options.noteTextColor};
-    stroke: none;
-    font-size: 10px;
+  .attributeBoxOdd {
+    fill: ${options.attributeBackgroundColorOdd};
+    stroke: ${options.nodeBorder};
   }
-}
 
-.stateLabel .box {
-  stroke: none;
-  stroke-width: 0;
-  fill: ${options.mainBkg};
-  opacity: 0.5;
-}
+  .attributeBoxEven {
+    fill:  ${options.attributeBackgroundColorEven};
+    stroke: ${options.nodeBorder};
+  }
 
-.edgeLabel .label rect {
-  fill: ${options.labelBackgroundColor};
-  opacity: 0.5;
-}
-.edgeLabel .label text {
-  fill: ${options.transitionLabelColor || options.tertiaryTextColor};
-}
-.label div .edgeLabel {
-  color: ${options.transitionLabelColor || options.tertiaryTextColor};
-}
+  .relationshipLabelBox {
+    fill: ${options.tertiaryColor};
+    opacity: 0.7;
+    background-color: ${options.tertiaryColor};
+      rect {
+        opacity: 0.5;
+      }
+  }
 
-.stateLabel text {
-  fill: ${options.stateLabelColor};
-  font-size: 10px;
-  font-weight: bold;
-}
+    .relationshipLine {
+      stroke: ${options.lineColor};
+    }
 
-.node circle.state-start {
-  fill: ${options.specialStateColor};
-  stroke: ${options.specialStateColor};
-}
-
-.node .fork-join {
-  fill: ${options.specialStateColor};
-  stroke: ${options.specialStateColor};
-}
-
-.node circle.state-end {
-  fill: ${options.innerEndBackground};
-  stroke: ${options.background};
-  stroke-width: 1.5
-}
-.end-state-inner {
-  fill: ${options.compositeBackground || options.background};
-  // stroke: ${options.background};
-  stroke-width: 1.5
-}
-
-.node rect {
-  fill: ${options.stateBkg || options.mainBkg};
-  stroke: ${options.stateBorder || options.nodeBorder};
-  stroke-width: 1px;
-}
-.node polygon {
-  fill: ${options.mainBkg};
-  stroke: ${options.stateBorder || options.nodeBorder};;
-  stroke-width: 1px;
-}
-#statediagram-barbEnd {
-  fill: ${options.lineColor};
-}
-
-.statediagram-cluster rect {
-  fill: ${options.compositeTitleBackground};
-  stroke: ${options.stateBorder || options.nodeBorder};
-  stroke-width: 1px;
-}
-
-.cluster-label, .nodeLabel {
-  color: ${options.stateLabelColor};
-}
-
-.statediagram-cluster rect.outer {
-  rx: 5px;
-  ry: 5px;
-}
-.statediagram-state .divider {
-  stroke: ${options.stateBorder || options.nodeBorder};
-}
-
-.statediagram-state .title-state {
-  rx: 5px;
-  ry: 5px;
-}
-.statediagram-cluster.statediagram-cluster .inner {
-  fill: ${options.compositeBackground || options.background};
-}
-.statediagram-cluster.statediagram-cluster-alt .inner {
-  fill: ${options.altBackground ? options.altBackground : "#efefef"};
-}
-
-.statediagram-cluster .inner {
-  rx:0;
-  ry:0;
-}
-
-.statediagram-state rect.basic {
-  rx: 5px;
-  ry: 5px;
-}
-.statediagram-state rect.divider {
-  stroke-dasharray: 10,10;
-  fill: ${options.altBackground ? options.altBackground : "#efefef"};
-}
-
-.note-edge {
-  stroke-dasharray: 5;
-}
-
-.statediagram-note rect {
-  fill: ${options.noteBkgColor};
-  stroke: ${options.noteBorderColor};
-  stroke-width: 1px;
-  rx: 0;
-  ry: 0;
-}
-.statediagram-note rect {
-  fill: ${options.noteBkgColor};
-  stroke: ${options.noteBorderColor};
-  stroke-width: 1px;
-  rx: 0;
-  ry: 0;
-}
-
-.statediagram-note text {
-  fill: ${options.noteTextColor};
-}
-
-.statediagram-note .nodeLabel {
-  color: ${options.noteTextColor};
-}
-.statediagram .edgeLabel {
-  color: red; // ${options.noteTextColor};
-}
-
-#dependencyStart, #dependencyEnd {
-  fill: ${options.lineColor};
-  stroke: ${options.lineColor};
-  stroke-width: 1;
-}
-
-.statediagramTitleText {
-  text-anchor: middle;
-  font-size: 18px;
-  fill: ${options.textColor};
-}
+  .entityTitleText {
+    text-anchor: middle;
+    font-size: 18px;
+    fill: ${options.textColor};
+  }    
+  #MD_PARENT_START {
+    fill: #f5f5f5 !important;
+    stroke: ${options.lineColor} !important;
+    stroke-width: 1;
+  }
+  #MD_PARENT_END {
+    fill: #f5f5f5 !important;
+    stroke: ${options.lineColor} !important;
+    stroke-width: 1;
+  }
+  
 `;
-const styles = getStyles;
+const erStyles = getStyles;
+const diagram = {
+  parser: erParser,
+  db: erDb,
+  renderer: erRenderer,
+  styles: erStyles
+};
 
 
 
