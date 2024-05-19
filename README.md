@@ -532,7 +532,8 @@ expect(state.simpleObject).not.toBe(baseState.simpleObject);
 
 ## Integration with React
 
-- [use-mutative](https://github.com/unadlib/use-mutative)
+- [use-mutative](https://github.com/mutativejs/use-mutative) - A 2-6x faster alternative to useState with spread operation
+- [use-travel](https://github.com/mutativejs/use-travel) - A React hook for state time travel with undo, redo, reset and archive functionalities.
 
 ## FAQs
 

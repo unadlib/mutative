@@ -447,6 +447,7 @@ test('produce leaks proxy objects when symbols are present', () => {
       count: 0,
     };
 
+    // https://github.com/immerjs/immer/issues/1106
     // it should not throw error
     expect(() => {
       const result = produce(testObject, (draft) => {
