@@ -140,7 +140,7 @@ So if you are using Immer, you will have to enable auto-freeze for performance. 
 Overall, Mutative has a huge performance lead over Immer in [more performance testing scenarios](https://github.com/unadlib/mutative/tree/main/test/performance). Run `yarn performance` to get all the performance results locally.
 
 <details>
-<summary><b>More Performance Testing Scenarios, Mutative is up to 2.5X-73.8X faster than Immer:  </b></summary>
+<summary><b>More Performance Testing Scenarios, Mutative is up to `2.5X-73.8X` faster than Immer:  </b></summary>
 
 ![Mutative vs Immer - All benchmark results by average multiplier](test/benchmark/results/all.jpg)
 
