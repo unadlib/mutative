@@ -5,6 +5,16 @@
 import { create, current, isDraft } from '../src';
 
 describe('current', () => {
+  test('base', () => {
+    const state = create({ a: { b: { c: 1 } }, d: { f: 1 } }, (draft) => {
+      draft.a.b.c = 2;
+      expect(current(draft.a)).toEqual({ b: { c: 2 } });
+      // The node `a` has been modified.
+      expect(current(draft.a) === current(draft.a)).toBeFalsy();
+      // The node `d` has not been modified.
+      expect(current(draft.d) === current(draft.d)).toBeTruthy();
+    });
+  });
   test('should return the current value', () => {
     interface Item {
       foo: string;
@@ -141,6 +151,9 @@ test('nested draft', () => {
         d: number;
       };
     }>;
+    j: {
+      k: number;
+    };
   };
   const baseState: State = {
     c: {
@@ -167,6 +180,9 @@ test('nested draft', () => {
         },
       },
     ]),
+    j: {
+      k: 1,
+    },
   };
   create(baseState, (draft) => {
     draft.c.a = 2;
@@ -191,7 +207,6 @@ test('nested draft', () => {
         },
       },
     };
-
     const d = current(draft.d);
     const map = current(draft.map);
     const set = current(draft.set);
@@ -202,5 +217,9 @@ test('nested draft', () => {
     const f = set.values().next().value.d.d.f.f.f;
     expect(f).toEqual({ a: 2 });
     expect(isDraft(f)).toBeFalsy();
+    // the node `d` has been changed
+    expect(current(draft.d) === current(draft.d)).toBeFalsy();
+    // the node `j` has not been changed
+    expect(current(draft.j) === current(draft.j)).toBeTruthy();
   });
 });

@@ -334,16 +334,19 @@ expect(prevState).toEqual(baseState);
 
 Get the current value from a draft.
 
-```ts
-const baseState = {
-  foo: 'bar',
-  list: [{ text: 'todo' }],
-};
+- For any draft where a child node has been modified, the state obtained by executing current() each time will be a new reference object.
+- For a draft where no child nodes have been modified, executing current() will always return the original state.
 
-const state = create(baseState, (draft) => {
-  draft.foo = 'foobar';
-  draft.list.push({ text: 'learning' });
-  expect(current(draft.list)).toEqual([{ text: 'todo' }, { text: 'learning' }]);
+> It is recommended to minimize the number of times current() is executed when performing read-only operations, ideally executing it only once.
+
+```ts
+const state = create({ a: { b: { c: 1 } }, d: { f: 1 } }, (draft) => {
+  draft.a.b.c = 2;
+  expect(current(draft.a)).toEqual({ b: { c: 2 } });
+  // The node `a` has been modified.
+  expect(current(draft.a) === current(draft.a)).toBeFalsy();
+  // The node `d` has not been modified.
+  expect(current(draft.d) === current(draft.d)).toBeTruthy();
 });
 ```
 
