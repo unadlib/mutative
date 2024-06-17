@@ -10,4 +10,4 @@ The following are other libraries created based on Mutative:
 - [use-travel](https://github.com/mutativejs/use-travel) - A React hook for state time travel with undo, redo, reset and archive functionalities.
 - [mutative-compat](https://github.com/exuanbo/mutative-compat) - Mutative wrapper with full Immer API compatibility.
 - [mutability](https://github.com/mutativejs/mutability) - A JavaScript library for transactional mutable updates.
-- [zustand-mutative](https://github.com/mutativejs/mutability) - A Mutative middleware for Zustand enhances the efficiency of immutable state updates.
+- [zustand-mutative](https://github.com/mutativejs/zustand-mutative) - A Mutative middleware for Zustand enhances the efficiency of immutable state updates.
