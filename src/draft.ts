@@ -33,8 +33,15 @@ import {
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
 
+const draftsCache = new WeakSet<ProxyDraft>();
+
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
+    const copy = target.copy?.[key];
+    // Improve draft reading performance by caching the draft copy.
+    if (copy && draftsCache.has(copy)) {
+      return copy;
+    }
     if (key === PROXY_DRAFT) return target;
     let markResult: any;
     if (target.options.mark) {
@@ -98,13 +105,15 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     // Ensure that the assigned values are not drafted
     if (value === peek(target.original, key)) {
       ensureShallowCopy(target);
-      target.copy![key] = createDraft({
+      const copy = createDraft({
         original: target.original[key],
         parentDraft: target,
         key: target.type === DraftType.Array ? Number(key) : key,
         finalities: target.finalities,
         options: target.options,
       });
+      draftsCache.add(copy);
+      target.copy![key] = copy;
       // !case: support for custom shallow copy function
       if (typeof markResult === 'function') {
         const subProxyDraft = getProxyDraft(target.copy![key])!;
