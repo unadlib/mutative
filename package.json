@@ -1,6 +1,6 @@
 {
   "name": "mutative",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A JavaScript library for efficient immutable updates",
   "main": "dist/index.js",
   "module": "dist/mutative.esm.js",
