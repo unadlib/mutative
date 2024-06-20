@@ -33,7 +33,7 @@ import {
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
 
-const draftsCache = new WeakSet<ProxyDraft>();
+const draftsCache = new WeakSet<object>();
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
@@ -105,15 +105,13 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     // Ensure that the assigned values are not drafted
     if (value === peek(target.original, key)) {
       ensureShallowCopy(target);
-      const copy = createDraft({
+      target.copy![key] = createDraft({
         original: target.original[key],
         parentDraft: target,
         key: target.type === DraftType.Array ? Number(key) : key,
         finalities: target.finalities,
         options: target.options,
       });
-      draftsCache.add(copy);
-      target.copy![key] = copy;
       // !case: support for custom shallow copy function
       if (typeof markResult === 'function') {
         const subProxyDraft = getProxyDraft(target.copy![key])!;
@@ -258,6 +256,7 @@ export function createDraft<T extends object>(createDraftOptions: {
     proxyHandler
   );
   finalities.revoke.push(revoke);
+  draftsCache.add(proxy);
   proxyDraft.proxy = proxy;
   if (parentDraft) {
     const target = parentDraft;
