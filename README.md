@@ -5,7 +5,9 @@
 ![Node CI](https://github.com/unadlib/mutative/workflows/Node%20CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/unadlib/mutative/badge.svg?branch=main)](https://coveralls.io/github/unadlib/mutative?branch=main)
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
-![license](https://img.shields.io/npm/l/mutative)
+![NPM Downloads](https://img.shields.io/npm/dm/mutative)
+![license](https://flat-badgen.vercel.app/npm/license/mutative)
+
 
 **Mutative** - A JavaScript library for efficient immutable updates, 2-6x faster than naive handcrafted reducer, and more than 10x faster than Immer.
 
