@@ -16,6 +16,8 @@ strict option is `boolean` type, the default is `false`.
 
 :::tip
 **It is recommended to enable `strict` in development mode and disable `strict` in production mode.** This will ensure safe explicit returns and also keep good performance in the production build. If the value that does not mix any current draft or is `undefined` is returned, then use [rawReturn()](/docs/api-reference/rawreturn).
+
+If you'd like to enable strict mode by default in a development build and turn it off for production, you can use `strict: process.env.NODE_ENV !== 'production'`.
 :::
 
 ## Enable strict mode
