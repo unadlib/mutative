@@ -396,8 +396,6 @@ const state = create(
 
 > If you'd like to enable strict mode by default in a development build and turn it off for production, you can use `strict: process.env.NODE_ENV !== 'production'`.
 
-```ts
-
 ### `isDraft()`
 
 Check if a value is a draft.
