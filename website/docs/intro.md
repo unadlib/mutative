@@ -61,7 +61,7 @@ This is the basic usage of Mutative, which can help us implement immutable updat
 
 Immer helps us write simpler immutable updates with `mutative` logic.
 
-But its performance issue causes a runtime performance overhead. Immer must have auto-freeze enabled by default(Performance will be worse if auto-freeze is disabled), such immutable state with Immer is not common. In scenarios such as cross-processing, remote data transfer, etc., we have to constantly freeze these immutable data.
+But its performance issue causes a runtime performance overhead. Immer must have auto-freeze enabled by default(Performance will be worse if auto-freeze is disabled), such immutable state with Immer is not common. In scenarios such as cross-processing, remote data transfer, etc., these immutable data must be constantly frozen.
 
 There are more parts that could be improved, such as better type inference, non-intrusive markup, support for more types of immutability, Safer immutability, [more edge cases](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts), and so on.
 

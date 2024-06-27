@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/unadlib/mutative/badge.svg?branch=main)](https://coveralls.io/github/unadlib/mutative?branch=main)
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![NPM Downloads](https://img.shields.io/npm/dm/mutative)
-![license](https://flat-badgen.vercel.app/npm/license/mutative)
+![license](https://img.shields.io/npm/l/mutative)
 
 
 **Mutative** - A JavaScript library for efficient immutable updates, 2-6x faster than naive handcrafted reducer, and more than 10x faster than Immer.
@@ -24,7 +24,7 @@ And Mutative optimization focus on shallow copy optimization, more complete lazy
 
 Writing immutable updates by hand is usually difficult, prone to errors, and cumbersome. Immer helps us write simpler immutable updates with "mutative" logic.
 
-But its performance issue causes a runtime performance overhead. Immer must have auto-freeze enabled by default(Performance will be worse if auto-freeze is disabled), such immutable state with Immer is not common. In scenarios such as cross-processing, remote data transfer, etc., we have to constantly freeze these immutable data.
+But its performance issue causes a runtime performance overhead. Immer must have auto-freeze enabled by default(Performance will be worse if auto-freeze is disabled), such immutable state with Immer is not common. In scenarios such as cross-processing, remote data transfer, etc., these immutable data must be constantly frozen.
 
 There are more parts that could be improved, such as better type inference, non-intrusive markup, support for more types of immutability, Safer immutability, [more edge cases](test/immer-non-support.test.ts), and so on.
 
