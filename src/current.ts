@@ -59,28 +59,51 @@ export function handleReturnValue<T extends object>(options: {
   }
 }
 
-function getCurrent(target: any) {
+const UNCHANGED = Symbol('Unchanged');
+
+function getCurrent(target: any): any | typeof UNCHANGED {
   const proxyDraft = getProxyDraft(target);
-  if (!isDraftable(target, proxyDraft?.options)) return target;
+  if (!isDraftable(target, proxyDraft?.options)) return UNCHANGED;
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
-  if (proxyDraft) proxyDraft.finalized = true;
   let currentValue: any;
-  try {
-    currentValue =
-      type === DraftType.Map
-        ? new Map(target)
-        : type === DraftType.Set
-        ? Array.from(proxyDraft!.setMap!.values()!)
-        : shallowCopy(target, proxyDraft?.options);
-  } finally {
-    if (proxyDraft) proxyDraft.finalized = false;
+  function ensureShallowCopy() {
+    if (!currentValue || currentValue === target)
+      currentValue =
+        type === DraftType.Map
+          ? new Map(target)
+          : type === DraftType.Set
+          ? Array.from(proxyDraft!.setMap!.values()!)
+          : shallowCopy(target, proxyDraft?.options);
   }
+
+  if (proxyDraft) {
+    // It's a proxy draft, let's create a shallow copy eagerly
+    proxyDraft.finalized = true;
+    try {
+      ensureShallowCopy();
+    } finally {
+      proxyDraft.finalized = false;
+    }
+  } else {
+    // It's not a proxy draft, let's use the target directly and let's see
+    // lazily if we need to create a shallow copy
+    currentValue = target;
+  }
+
   forEach(currentValue, (key, value) => {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
-    set(currentValue, key, getCurrent(value));
+    const newValue = getCurrent(value);
+    if (newValue !== UNCHANGED) {
+      ensureShallowCopy();
+      set(currentValue, key, newValue);
+    }
   });
-  return type === DraftType.Set ? new Set(currentValue) : currentValue;
+  return type === DraftType.Set
+    ? new Set(currentValue)
+    : currentValue === target
+    ? UNCHANGED
+    : currentValue;
 }
 
 /**
@@ -105,5 +128,6 @@ export function current<T extends object>(target: T): T {
   if (!isDraft(target)) {
     throw new Error(`current() is only used for Draft, parameter: ${target}`);
   }
-  return getCurrent(target);
+  const current = getCurrent(target);
+  return current === UNCHANGED ? target : current;
 }

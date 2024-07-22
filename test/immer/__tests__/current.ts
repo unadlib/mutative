@@ -253,5 +253,15 @@ function runTests(name) {
         expect(c).toBeInstanceOf(Counter);
       });
     });
+
+    it("won't deep copy unchanged values unnecessarily", () => {
+      const obj = { k: 42 };
+      const base = { x: { y: { z: obj } } };
+      produce(base, (draft) => {
+        draft.x = { y: { z: obj } };
+        const c = current(draft);
+        expect(c.x.y.z).toBe(obj);
+      });
+    });
   });
 }
