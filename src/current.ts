@@ -59,11 +59,9 @@ export function handleReturnValue<T extends object>(options: {
   }
 }
 
-const UNCHANGED = Symbol('Unchanged');
-
-function getCurrent(target: any): any | typeof UNCHANGED {
+function getCurrent(target: any) {
   const proxyDraft = getProxyDraft(target);
-  if (!isDraftable(target, proxyDraft?.options)) return UNCHANGED;
+  if (!isDraftable(target, proxyDraft?.options)) return target;
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   let currentValue: any;
@@ -94,16 +92,12 @@ function getCurrent(target: any): any | typeof UNCHANGED {
   forEach(currentValue, (key, value) => {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
     const newValue = getCurrent(value);
-    if (newValue !== UNCHANGED) {
+    if (newValue !== value) {
       ensureShallowCopy();
       set(currentValue, key, newValue);
     }
   });
-  return type === DraftType.Set
-    ? new Set(currentValue)
-    : currentValue === target
-    ? UNCHANGED
-    : currentValue;
+  return type === DraftType.Set ? new Set(currentValue) : currentValue;
 }
 
 /**
@@ -128,6 +122,5 @@ export function current<T extends object>(target: T): T {
   if (!isDraft(target)) {
     throw new Error(`current() is only used for Draft, parameter: ${target}`);
   }
-  const current = getCurrent(target);
-  return current === UNCHANGED ? target : current;
+  return getCurrent(target);
 }
