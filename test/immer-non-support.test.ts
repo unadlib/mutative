@@ -14,8 +14,9 @@ import {
   enablePatches,
   applyPatches,
   setUseStrictShallowCopy,
+  current as immerCurrent,
 } from 'immer';
-import { create, apply } from '../src';
+import { create, apply, current } from '../src';
 
 enableMapSet();
 
@@ -564,5 +565,27 @@ test(`Object values of a Map are not frozen anymore #1119`, () => {
 
     const product = products.get('apple1');
     expect(Object.isFrozen(product)).toBeTruthy();
+  }
+});
+
+test('#47 Avoid deep copies', () => {
+  {
+    const obj = { k: 42 };
+    const base = { x: { y: { z: obj } } };
+    produce(base, (draft) => {
+      draft.x = { y: { z: obj } };
+      const c = immerCurrent(draft);
+      // ! it should be equal
+      expect(c.x.y.z).not.toBe(obj);
+    });
+  }
+  {
+    const obj = { k: 42 };
+    const base = { x: { y: { z: obj } } };
+    create(base, (draft) => {
+      draft.x = { y: { z: obj } };
+      const c = current(draft);
+      expect(c.x.y.z).toBe(obj);
+    });
   }
 });

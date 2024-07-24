@@ -64,38 +64,23 @@ function getCurrent(target: any) {
   if (!isDraftable(target, proxyDraft?.options)) return target;
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
-  let currentValue: any;
-  function ensureShallowCopy() {
-    if (!currentValue || currentValue === target)
+  if (proxyDraft) proxyDraft.finalized = true;
+  let currentValue = target;
+  if (proxyDraft) {
+    try {
       currentValue =
         type === DraftType.Map
           ? new Map(target)
           : type === DraftType.Set
           ? Array.from(proxyDraft!.setMap!.values()!)
           : shallowCopy(target, proxyDraft?.options);
-  }
-
-  if (proxyDraft) {
-    // It's a proxy draft, let's create a shallow copy eagerly
-    proxyDraft.finalized = true;
-    try {
-      ensureShallowCopy();
     } finally {
       proxyDraft.finalized = false;
     }
-  } else {
-    // It's not a proxy draft, let's use the target directly and let's see
-    // lazily if we need to create a shallow copy
-    currentValue = target;
   }
-
   forEach(currentValue, (key, value) => {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
-    const newValue = getCurrent(value);
-    if (newValue !== value) {
-      ensureShallowCopy();
-      set(currentValue, key, newValue);
-    }
+    set(currentValue, key, getCurrent(value));
   });
   return type === DraftType.Set ? new Set(currentValue) : currentValue;
 }
