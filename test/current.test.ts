@@ -223,3 +223,83 @@ test('nested draft', () => {
     expect(current(draft.j) === current(draft.j)).toBeTruthy();
   });
 });
+
+test('#47 current creates new copies of the objects where unnecessary', () => {
+  const obj = { k: 42 };
+  const original = { x: { y: { z: [obj] } } };
+  const yReplace = { z: [obj] };
+
+  // with create
+  const withCreate = create(original, (draft) => {
+    draft.x.y = yReplace;
+  });
+  expect(withCreate.x.y === yReplace).toBe(true);
+  expect(withCreate.x.y.z[0] === obj).toBe(true);
+  // with draft + current
+  const [draft] = create(original);
+  draft.x.y = yReplace;
+  const withDraft = current(draft);
+  expect(withDraft.x.y === yReplace).toBe(true);
+  expect(withDraft.x.y.z[0] === obj).toBe(true);
+});
+
+test('current() for changed Set/Map draft', () => {
+  const obj = { k: 42 };
+  const base = { x: { y: { z: obj } }, a: new Set([1]), b: new Map([[1, 2]]) };
+  create(base, (draft) => {
+    draft.a.add(2);
+    draft.b.delete(1);
+    draft.x.y.z = { k: 43 };
+    const c = current(draft);
+    expect(c.a.has(2)).toBeTruthy();
+    expect(c.a.has(1)).toBeTruthy();
+    expect(c.b.has(1)).toBeFalsy();
+    expect(c.x.y.z.k).toBe(43);
+    expect(JSON.stringify(c)).toMatchInlineSnapshot(
+      `"{"x":{"y":{"z":{"k":43}}},"a":{},"b":{}}"`
+    );
+  });
+});
+
+test('Avoid deep copies', () => {
+  const obj = { k: 42 };
+  const base = { x: { y: { z: obj } }, a: { c: 1 } };
+  create(base, (draft) => {
+    // @ts-ignore
+    const a = draft.a;
+    a.c = 2;
+    // @ts-ignore
+    delete draft.a;
+    // @ts-ignore
+    draft.x1 = { y1: { z1: obj }, a };
+    const c = current(draft);
+    // @ts-ignore
+    expect(c.x1.y1.z1).toBe(obj);
+    expect(JSON.stringify(c)).toMatchInlineSnapshot(
+      `"{"x":{"y":{"z":{"k":42}}},"x1":{"y1":{"z1":{"k":42}},"a":{"c":2}}}"`
+    );
+  });
+});
+
+test('nested create() - Avoid deep copies', () => {
+  const obj = { k: 42 };
+  const base = { x: { y: { z: obj } }, a: { c: 1 } };
+  const base0 = { x: { y: { z: obj } }, a: { c: 1 } };
+  create(base0, (draft0) => {
+    // @ts-ignore
+    const a = draft0.a;
+    a.c = 2;
+    // @ts-ignore
+    delete draft0.a;
+    create(base, (draft) => {
+      // @ts-ignore
+      draft.x1 = { y1: { z1: obj }, a };
+      const c = current(draft);
+      // @ts-ignore
+      expect(c.x1.y1.z1).toBe(obj);
+      expect(JSON.stringify(c)).toMatchInlineSnapshot(
+        `"{"x":{"y":{"z":{"k":42}}},"a":{"c":1},"x1":{"y1":{"z1":{"k":42}},"a":{"c":2}}}"`
+      );
+    });
+  });
+});
