@@ -72,8 +72,8 @@ function getCurrent(target: any) {
         type === DraftType.Map
           ? new Map(target)
           : type === DraftType.Set
-          ? Array.from(proxyDraft!.setMap!.values()!)
-          : shallowCopy(target, proxyDraft?.options);
+          ? Array.from(proxyDraft.setMap!.values()!)
+          : shallowCopy(target, proxyDraft.options);
     } finally {
       proxyDraft.finalized = false;
     }

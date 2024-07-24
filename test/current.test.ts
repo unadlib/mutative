@@ -243,6 +243,24 @@ test('#47 current creates new copies of the objects where unnecessary', () => {
   expect(withDraft.x.y.z[0] === obj).toBe(true);
 });
 
+test('current() for changed Set/Map draft', () => {
+  const obj = { k: 42 };
+  const base = { x: { y: { z: obj } }, a: new Set([1]), b: new Map([[1, 2]]) };
+  create(base, (draft) => {
+    draft.a.add(2);
+    draft.b.delete(1);
+    draft.x.y.z = { k: 43 };
+    const c = current(draft);
+    expect(c.a.has(2)).toBeTruthy();
+    expect(c.a.has(1)).toBeTruthy();
+    expect(c.b.has(1)).toBeFalsy();
+    expect(c.x.y.z.k).toBe(43);
+    expect(JSON.stringify(c)).toMatchInlineSnapshot(
+      `"{"x":{"y":{"z":{"k":43}}},"a":{},"b":{}}"`
+    );
+  });
+});
+
 test('Avoid deep copies', () => {
   const obj = { k: 42 };
   const base = { x: { y: { z: obj } }, a: { c: 1 } };
