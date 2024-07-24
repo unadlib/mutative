@@ -29,7 +29,7 @@ function strictCopy(target: any) {
 
 const propIsEnum = Object.prototype.propertyIsEnumerable;
 
-export function shallowCopy(original: any, options?: Options<any, any>) {
+export function shallowCopy(original: any, options: Options<any, any>) {
   let markResult: any;
   if (Array.isArray(original)) {
     return Array.prototype.concat.call(original);
@@ -38,7 +38,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
   } else if (original instanceof Map) {
     return new Map(original);
   } else if (
-    options?.mark &&
+    options.mark &&
     ((markResult = options.mark(original, dataTypes)),
     markResult !== undefined) &&
     markResult !== dataTypes.mutable
