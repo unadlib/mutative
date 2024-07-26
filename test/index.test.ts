@@ -3928,3 +3928,52 @@ test('#37 - Proxy revoked error with `mark` option when performing chai deep equ
     })
   );
 });
+
+it("#51 doesn't assign values to frozen object", () => {
+  const frozen = Object.freeze({ test: 42 });
+  const base = { k: null };
+  create(base, (draft) => {
+    // @ts-ignore
+    draft.k = frozen;
+    const c = current(draft); // Boom! tries to set a value in the frozen object
+    expect(c.k).toBe(frozen);
+  });
+});
+
+it('#51-1 nested drafts work after current', () => {
+  const base = { k1: {}, k2: {} };
+  const result = create(base, (draft) => {
+    const obj = { x: draft.k2 };
+    draft.k1 = obj;
+    current(draft); // try to comment me
+    // @ts-ignore
+    obj.x.abc = 100;
+    // @ts-ignore
+    draft.k2.def = 200;
+  });
+  // @ts-ignore
+  expect(result.k1.x).toBe(result.k2);
+  expect(result).toEqual({
+    k1: { x: { abc: 100, def: 200 } },
+    k2: { abc: 100, def: 200 },
+  });
+});
+
+it('#51-2 nested drafts work after current', () => {
+  const base = { k1: {}, k2: {} };
+  const result = create(base, (draft) => {
+    const obj = { x: draft.k2 };
+    draft.k1 = obj;
+    // current(draft); // try to comment me
+    // @ts-ignore
+    obj.x.abc = 100;
+    // @ts-ignore
+    draft.k2.def = 200;
+  });
+  // @ts-ignore
+  expect(result.k1.x).toBe(result.k2);
+  expect(result).toEqual({
+    k1: { x: { abc: 100, def: 200 } },
+    k2: { abc: 100, def: 200 },
+  });
+});
