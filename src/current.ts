@@ -65,7 +65,7 @@ function getCurrent(target: any) {
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   let currentValue: any;
-  function setCurrentValue() {
+  function ensureShallowCopy() {
     currentValue =
       type === DraftType.Map
         ? new Map(target)
@@ -78,7 +78,7 @@ function getCurrent(target: any) {
     // It's a proxy draft, let's create a shallow copy eagerly
     proxyDraft.finalized = true;
     try {
-      setCurrentValue();
+      ensureShallowCopy();
     } finally {
       proxyDraft.finalized = false;
     }
@@ -92,7 +92,7 @@ function getCurrent(target: any) {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
     const newValue = getCurrent(value);
     if (newValue !== value) {
-      if (currentValue === target) setCurrentValue();
+      if (currentValue === target) ensureShallowCopy();
       set(currentValue, key, newValue);
     }
   });
