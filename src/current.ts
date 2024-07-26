@@ -65,21 +65,20 @@ function getCurrent(target: any) {
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   let currentValue: any;
-  function ensureShallowCopy() {
-    if (!currentValue || currentValue === target)
-      currentValue =
-        type === DraftType.Map
-          ? new Map(target)
-          : type === DraftType.Set
-          ? Array.from(proxyDraft!.setMap!.values()!)
-          : shallowCopy(target, proxyDraft?.options);
+  function setCurrentValue() {
+    currentValue =
+      type === DraftType.Map
+        ? new Map(target)
+        : type === DraftType.Set
+        ? Array.from(proxyDraft!.setMap!.values()!)
+        : shallowCopy(target, proxyDraft?.options);
   }
 
   if (proxyDraft) {
     // It's a proxy draft, let's create a shallow copy eagerly
     proxyDraft.finalized = true;
     try {
-      ensureShallowCopy();
+      setCurrentValue();
     } finally {
       proxyDraft.finalized = false;
     }
@@ -93,7 +92,7 @@ function getCurrent(target: any) {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
     const newValue = getCurrent(value);
     if (newValue !== value) {
-      ensureShallowCopy();
+      if (currentValue === target) setCurrentValue();
       set(currentValue, key, newValue);
     }
   });
