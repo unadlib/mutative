@@ -3,7 +3,6 @@
 <a href="https://mutative.js.org/" target="_blank"><img src="https://raw.githubusercontent.com/unadlib/mutative/main/website/static/img/ mutative.png" height="120" alt="Mutative Logo" /></a>
 
 ![Node CI](https://github.com/unadlib/mutative/workflows/Node%20CI/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/unadlib/mutative/badge.svg?branch=main)](https://coveralls.io/github/unadlib/mutative?branch=main)
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
 ![NPM Downloads](https://img.shields.io/npm/dm/mutative)
 ![license](https://img.shields.io/npm/l/mutative)

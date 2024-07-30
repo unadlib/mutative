@@ -26,7 +26,7 @@
   "scripts": {
     "test": "jest",
     "clean": "rimraf dist",
-    "test:coverage": "jest --coverage && coveralls < coverage/lcov.info",
+    "test:coverage": "jest --coverage",
     "benchmark": "yarn build && yarn benchmark:base && yarn benchmark:object && yarn benchmark:array && yarn benchmark:class",
     "all-benchmark": "yarn build && NODE_ENV='production' ts-node test/benchmark/index.ts",
     "benchmark:base": "NODE_ENV='production' ts-node test/performance/benchmark.ts",
@@ -98,7 +98,6 @@
     "@typescript-eslint/parser": "^5.58.0",
     "benchmark": "^2.1.4",
     "commitizen": "^4.3.0",
-    "coveralls": "^3.1.1",
     "deep-freeze": "^0.0.1",
     "eslint": "^8.11.0",
     "eslint-config-airbnb": "^19.0.4",
