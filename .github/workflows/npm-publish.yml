@@ -1,8 +1,7 @@
 name: Node.js Package
 
 on:
-  release:
-    types: [created]
+  workflow_dispatch:
 
 jobs:
   publish-npm:
@@ -11,15 +10,33 @@ jobs:
       contents: read
       id-token: write
     steps:
+      - run: |
+          git config --global user.email "me@example.com"
+          git config --global user.name "me"
+
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: '18.x'
           registry-url: 'https://npm.pkg.github.com'
+
       - run: yarn
       - run: yarn build
       - run: yarn test
+
+      - id: google-github-actions-auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/236662580667/locations/global/workloadIdentityPools/ci-pool/providers/ls-github-actions'
+          service_account: 'github-actions@valued-clarity-241606.iam.gserviceaccount.com'
+          project_id: valued-clarity-241606
+      - run: npx google-artifactregistry-auth
+        env:
+          GOOGLE_PROJECT_ID: valued-clarity-241606
+          GOOGLE_APPLICATION_CREDENTIALS: ${{steps.google-github-actions-auth.outputs.credentials_file_path}}
+      - run: npm version $(jq -r '.version' package.json)-ls.$(git rev-parse --short HEAD)
       - run: npm publish --provenance
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
           CI: true
+      - run: git push --tags
