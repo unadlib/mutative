@@ -5,7 +5,7 @@
 ![Node CI](https://github.com/unadlib/mutative/workflows/Node%20CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/unadlib/mutative/badge.svg?branch=main)](https://coveralls.io/github/unadlib/mutative?branch=main)
 [![npm](https://img.shields.io/npm/v/mutative.svg)](https://www.npmjs.com/package/mutative)
-![NPM Downloads](https://img.shields.io/npm/dm/mutative)
+[![NPM Downloads](https://img.shields.io/npm/dm/mutative)](https://npmtrends.com/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
 
@@ -541,6 +541,7 @@ expect(state.simpleObject).not.toBe(baseState.simpleObject);
 
 - [use-mutative](https://github.com/mutativejs/use-mutative) - A 2-6x faster alternative to useState with spread operation
 - [use-travel](https://github.com/mutativejs/use-travel) - A React hook for state time travel with undo, redo, reset and archive functionalities.
+- [zustand-mutative](https://github.com/mutativejs/zustand-mutative) - A Mutative middleware for Zustand enhances the efficiency of immutable state updates.
 
 ## FAQs
 
