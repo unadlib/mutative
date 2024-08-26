@@ -35,7 +35,79 @@ import { generatePatches } from './patch';
 
 const draftsCache = new WeakSet<object>();
 
+function proxiedSplice(
+  this: Array<unknown>,
+  ...args: Parameters<(typeof Array)['prototype']['splice']>
+) {
+  const [start, deleteCount, ...items] = args;
+
+  const draft = getProxyDraft(this)!;
+
+  draft.arrayChanges ??= [];
+
+  const addCount = items.length;
+
+  for (let i = addCount; i < deleteCount; i++) {
+    if (this.length > start + i) {
+      draft.arrayChanges.push(['removed', start]);
+    }
+  }
+
+  for (let i = deleteCount; i < addCount; i++) {
+    draft.arrayChanges.push(['added', start + i]);
+  }
+
+  return Array.prototype.splice.call(this, ...args);
+}
+
+function proxiedPush(this: ProxyDraft, ...items: any[]) {
+  const draft = getProxyDraft(this)!;
+
+  draft.arrayChanges ??= [];
+
+  for (let i = 0; i < items.length; i++) {
+    draft.arrayChanges.push(['added', (this as any).length + i]);
+  }
+
+  return Array.prototype.push.call(this, ...items);
+}
+
+function proxiedPop(this: ProxyDraft) {
+  const draft = getProxyDraft(this)!;
+
+  draft.arrayChanges ??= [];
+  draft.arrayChanges.push(['removed', (this as any).length - 1]);
+
+  return Array.prototype.pop.call(this);
+}
+
+function proxiedUnshift(this: ProxyDraft, ...items: any[]) {
+  const draft = getProxyDraft(this)!;
+
+  draft.arrayChanges ??= [];
+
+  for (let i = 0; i < items.length; i++) {
+    draft.arrayChanges.push(['added', i]);
+  }
+
+  return Array.prototype.unshift.call(this, ...items);
+}
+
+function proxiedShift(this: ProxyDraft) {
+  const draft = getProxyDraft(this)!;
+
+  draft.arrayChanges ??= [];
+  draft.arrayChanges.push(['removed', 0]);
+
+  return Array.prototype.shift.call(this);
+}
+
 const proxyHandler: ProxyHandler<ProxyDraft> = {
+  apply(target: ProxyDraft, key: string | number | symbol, receiver: any) {
+    console.log('apply', target, key, receiver);
+
+    throw new Error('xxx');
+  },
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
     const copy = target.copy?.[key];
     // Improve draft reading performance by caching the draft copy.
@@ -86,6 +158,21 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       }
     }
 
+    if (target.options.enablePatches) {
+      switch (source[key]) {
+        case Array.prototype.push:
+          return proxiedPush;
+        case Array.prototype.pop:
+          return proxiedPop;
+        case Array.prototype.unshift:
+          return proxiedUnshift;
+        case Array.prototype.shift:
+          return proxiedShift;
+        case Array.prototype.splice:
+          return proxiedSplice;
+      }
+    }
+
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
       return desc
@@ -125,6 +212,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     return value;
   },
   set(target: ProxyDraft, key: string | number | symbol, value: any) {
+    // TODO: もしvalueが既存のcopyに含まれているなら、Moveが使えそう
     if (target.type === DraftType.Set || target.type === DraftType.Map) {
       throw new Error(
         `Map/Set draft does not support any property assignment.`
