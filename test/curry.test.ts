@@ -462,12 +462,11 @@ describe('Currying', () => {
     expect(inversePatches).toMatchInlineSnapshot(`
       [
         {
-          "op": "replace",
+          "op": "remove",
           "path": [
             "list",
-            "length",
+            1,
           ],
-          "value": 1,
         },
         {
           "op": "replace",

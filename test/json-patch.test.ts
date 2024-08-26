@@ -36,32 +36,35 @@ test('patches should not contain `array.length` - arrayLengthAssignment: false, 
   expect(patches).toMatchInlineSnapshot(`
     [
       {
-        "op": "remove",
-        "path": [
-          "list",
-          2,
-        ],
-      },
-      {
-        "op": "remove",
-        "path": [
-          "list",
-          1,
-        ],
-      },
-      {
-        "op": "remove",
+        "op": "replace",
         "path": [
           "list",
           0,
         ],
+        "value": undefined,
+      },
+      {
+        "op": "replace",
+        "path": [
+          "list",
+          1,
+        ],
+        "value": undefined,
+      },
+      {
+        "op": "replace",
+        "path": [
+          "list",
+          2,
+        ],
+        "value": undefined,
       },
     ]
   `);
   expect(inversePatches).toMatchInlineSnapshot(`
     [
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           0,
@@ -69,7 +72,7 @@ test('patches should not contain `array.length` - arrayLengthAssignment: false, 
         "value": 1,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           1,
@@ -77,7 +80,7 @@ test('patches should not contain `array.length` - arrayLengthAssignment: false, 
         "value": 2,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           2,
@@ -119,16 +122,32 @@ test('patches should contain `array.length` - arrayLengthAssignment: true, pathA
         "op": "replace",
         "path": [
           "list",
-          "length",
+          0,
         ],
-        "value": 0,
+        "value": undefined,
+      },
+      {
+        "op": "replace",
+        "path": [
+          "list",
+          1,
+        ],
+        "value": undefined,
+      },
+      {
+        "op": "replace",
+        "path": [
+          "list",
+          2,
+        ],
+        "value": undefined,
       },
     ]
   `);
   expect(inversePatches).toMatchInlineSnapshot(`
     [
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           0,
@@ -136,7 +155,7 @@ test('patches should contain `array.length` - arrayLengthAssignment: true, pathA
         "value": 1,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           1,
@@ -144,7 +163,7 @@ test('patches should contain `array.length` - arrayLengthAssignment: true, pathA
         "value": 2,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           2,
@@ -184,25 +203,35 @@ test('patches should contain `array.length` - arrayLengthAssignment: true, pathA
     [
       {
         "op": "replace",
-        "path": "/list/length",
-        "value": 0,
+        "path": "/list/0",
+        "value": undefined,
+      },
+      {
+        "op": "replace",
+        "path": "/list/1",
+        "value": undefined,
+      },
+      {
+        "op": "replace",
+        "path": "/list/2",
+        "value": undefined,
       },
     ]
   `);
   expect(inversePatches).toMatchInlineSnapshot(`
     [
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/0",
         "value": 1,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/1",
         "value": 2,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/2",
         "value": 3,
       },
@@ -239,25 +268,35 @@ test('patches should not contain `array.length` - arrayLengthAssignment: false, 
     [
       {
         "op": "replace",
-        "path": "/list/length",
-        "value": 0,
+        "path": "/list/0",
+        "value": undefined,
+      },
+      {
+        "op": "replace",
+        "path": "/list/1",
+        "value": undefined,
+      },
+      {
+        "op": "replace",
+        "path": "/list/2",
+        "value": undefined,
       },
     ]
   `);
   expect(inversePatches).toMatchInlineSnapshot(`
     [
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/0",
         "value": 1,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/1",
         "value": 2,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/2",
         "value": 3,
       },
@@ -313,4 +352,140 @@ test('edge key - apply with string path', () => {
   expect(prevState).toEqual(data);
   const nextState = apply(data, patches);
   expect(nextState).toEqual(state);
+});
+
+describe('length change tracking', () => {
+  const data = { list: [1, 2, 3] };
+
+  function test_(expected: typeof data, f: (draft: typeof data) => void) {
+    const [state, patches, inversePatches] = create(data, f, {
+      enablePatches: {
+        pathAsArray: true,
+        arrayLengthAssignment: false,
+      },
+    });
+
+    expect(state).toEqual(expected);
+
+    expect(Array.isArray(patches[0].path)).toBeTruthy();
+    expect(Array.isArray(inversePatches[0].path)).toBeTruthy();
+    const prevState = apply(state, inversePatches);
+    expect(prevState).toEqual(data);
+    const nextState = apply(data, patches);
+    expect(nextState).toEqual(state);
+
+    expect(inversePatches.length).toEqual(patches.length);
+  }
+
+  // test('splice(0, 0)', () => {
+  //   test_((draft) => {
+  //     draft.list.splice(0, 0);
+  //   });
+  // });
+
+  test('splice(0, 1)', () => {
+    test_({ list: [2, 3] }, (draft) => {
+      draft.list.splice(0, 1);
+    });
+  });
+
+  test('splice(0, 1)', () => {
+    test_({ list: [20, 30] }, (draft) => {
+      draft.list[0] = 10;
+      draft.list[1] = 20;
+      draft.list[2] = 30;
+      draft.list.splice(0, 1);
+    });
+  });
+
+  test('splice(0, 1)', () => {
+    test_({ list: [100, 3] }, (draft) => {
+      draft.list[0] = 10;
+      draft.list.splice(0, 1);
+      draft.list[0] = 100;
+    });
+  });
+
+  test('splice(0, 2)', () => {
+    test_({ list: [3] }, (draft) => {
+      draft.list.splice(0, 2);
+    });
+  });
+
+  test('splice(0, 2)', () => {
+    test_({ list: [3] }, (draft) => {
+      draft.list[0] = 10;
+      draft.list[1] = 20;
+      draft.list.splice(0, 2);
+    });
+  });
+
+  test('splice(0, 1, 10)', () => {
+    test_({ list: [10, 2, 3] }, (draft) => {
+      draft.list.splice(0, 1, 10);
+    });
+  });
+
+  test('splice(0, 2, 10)', () => {
+    test_({ list: [10, 3] }, (draft) => {
+      draft.list.splice(0, 2, 10);
+    });
+  });
+
+  test('splice(0, 0, 0)', () => {
+    test_({ list: [0, 1, 2, 3] }, (draft) => {
+      draft.list.splice(0, 0, 0);
+    });
+  });
+
+  test('splice(0, 1, 0, 1)', () => {
+    test_({ list: [0, 1, 2, 3] }, (draft) => {
+      draft.list.splice(0, 1, 0, 1);
+    });
+  });
+
+  test('push', () => {
+    test_({ list: [1, 2, 3, 4] }, (draft) => {
+      draft.list.push(4);
+    });
+
+    test_({ list: [1, 2, 3, 4, 5, 6] }, (draft) => {
+      draft.list.push(4, 5, 6);
+    });
+  });
+
+  test('pop', () => {
+    test_({ list: [1, 2] }, (draft) => {
+      draft.list.pop();
+    });
+  });
+
+  test('unshift()', () => {
+    test_({ list: [0, 1, 2, 3] }, (draft) => {
+      draft.list.unshift(0);
+    });
+
+    test_({ list: [-2, -1, 0, 1, 2, 3] }, (draft) => {
+      draft.list.unshift(-2, -1, 0);
+    });
+  });
+
+  test('shift()', () => {
+    test_({ list: [2, 3] }, (draft) => {
+      draft.list.shift();
+    });
+  });
+
+  test('arr[3] = 4', () => {
+    test_({ list: [1, 2, 3, 4] }, (draft) => {
+      draft.list[3] = 4;
+    });
+  });
+
+  test('splice(1, 3, 1)', () => {
+    // 意味のない削除（削除対象がlengthを超えている）
+    test_({ list: [1, 2, 3, 4] }, (draft) => {
+      draft.list.splice(3, 4, 4);
+    });
+  });
 });
