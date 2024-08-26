@@ -355,27 +355,27 @@ test('edge key - apply with string path', () => {
 });
 
 describe('length change tracking', () => {
-  const data = { list: [1, 2, 3] };
-
-  function test_(expected: typeof data, f: (draft: typeof data) => void) {
-    const [state, patches, inversePatches] = create(data, f, {
+  function test_<T extends object>(source: T, f: (draft: T) => void) {
+    const [actual, patches, inversePatches] = create(source, f, {
       enablePatches: {
         pathAsArray: true,
         arrayLengthAssignment: false,
       },
     });
 
-    expect(state).toEqual(expected);
+    const expected = structuredClone(source);
+    f(expected);
+    expect(actual).toEqual(expected);
 
     expect(Array.isArray(patches[0].path)).toBeTruthy();
     expect(Array.isArray(inversePatches[0].path)).toBeTruthy();
-    const prevState = apply(state, inversePatches);
-    expect(prevState).toEqual(data);
-    const nextState = apply(data, patches);
-    expect(nextState).toEqual(state);
-
-    expect(inversePatches.length).toEqual(patches.length);
+    const prevState = apply(actual, inversePatches);
+    expect(prevState).toEqual(source);
+    const nextState = apply(source, patches);
+    expect(nextState).toEqual(actual);
   }
+
+  const data = { list: [1, 2, 3] };
 
   // test('splice(0, 0)', () => {
   //   test_((draft) => {
@@ -384,13 +384,13 @@ describe('length change tracking', () => {
   // });
 
   test('splice(0, 1)', () => {
-    test_({ list: [2, 3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.splice(0, 1);
     });
   });
 
   test('splice(0, 1)', () => {
-    test_({ list: [20, 30] }, (draft) => {
+    test_(data, (draft) => {
       draft.list[0] = 10;
       draft.list[1] = 20;
       draft.list[2] = 30;
@@ -399,7 +399,7 @@ describe('length change tracking', () => {
   });
 
   test('splice(0, 1)', () => {
-    test_({ list: [100, 3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list[0] = 10;
       draft.list.splice(0, 1);
       draft.list[0] = 100;
@@ -407,13 +407,13 @@ describe('length change tracking', () => {
   });
 
   test('splice(0, 2)', () => {
-    test_({ list: [3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.splice(0, 2);
     });
   });
 
   test('splice(0, 2)', () => {
-    test_({ list: [3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list[0] = 10;
       draft.list[1] = 20;
       draft.list.splice(0, 2);
@@ -421,71 +421,109 @@ describe('length change tracking', () => {
   });
 
   test('splice(0, 1, 10)', () => {
-    test_({ list: [10, 2, 3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.splice(0, 1, 10);
     });
   });
 
   test('splice(0, 2, 10)', () => {
-    test_({ list: [10, 3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.splice(0, 2, 10);
     });
   });
 
   test('splice(0, 0, 0)', () => {
-    test_({ list: [0, 1, 2, 3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.splice(0, 0, 0);
     });
   });
 
+  test('splice(1, 0, 1.5)', () => {
+    test_(data, (draft) => {
+      draft.list.splice(1, 0, 1.5);
+    });
+
+    test_(data, (draft) => {
+      draft.list.splice(2, 0, 2.5);
+    });
+  });
+
   test('splice(0, 1, 0, 1)', () => {
-    test_({ list: [0, 1, 2, 3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.splice(0, 1, 0, 1);
     });
   });
 
   test('push', () => {
-    test_({ list: [1, 2, 3, 4] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.push(4);
     });
 
-    test_({ list: [1, 2, 3, 4, 5, 6] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.push(4, 5, 6);
     });
   });
 
   test('pop', () => {
-    test_({ list: [1, 2] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.pop();
     });
   });
 
   test('unshift()', () => {
-    test_({ list: [0, 1, 2, 3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.unshift(0);
     });
 
-    test_({ list: [-2, -1, 0, 1, 2, 3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.unshift(-2, -1, 0);
     });
   });
 
   test('shift()', () => {
-    test_({ list: [2, 3] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.shift();
     });
   });
 
   test('arr[3] = 4', () => {
-    test_({ list: [1, 2, 3, 4] }, (draft) => {
+    test_(data, (draft) => {
       draft.list[3] = 4;
     });
   });
 
   test('splice(1, 3, 1)', () => {
     // 意味のない削除（削除対象がlengthを超えている）
-    test_({ list: [1, 2, 3, 4] }, (draft) => {
+    test_(data, (draft) => {
       draft.list.splice(3, 4, 4);
     });
+  });
+
+  describe('object array', () => {
+    test('splice(0, 1)', () => {
+      test_({ list: [{ id: 1 }, { id: 2 }, { id: 3 }] }, (draft) => {
+        draft.list.splice(0, 1);
+      });
+    });
+
+    test('splice(1, 1)', () => {
+      test_({ list: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }] }, (draft) => {
+        draft.list.splice(1, 1);
+      });
+    });
+  });
+
+  test('arr', () => {
+    test_(
+      {
+        arr1: [{ bar: 'str1' }, { bar: 'str1' }],
+        arr2: [{ bar: 'str1' }, { bar: 'str1' }],
+      },
+      (draft) => {
+        draft.arr2.push(draft.arr1[0]);
+        draft.arr2[2].bar = 'new str111';
+        draft.arr2.splice(1, 4);
+      }
+    );
   });
 });
