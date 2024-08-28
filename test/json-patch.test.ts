@@ -363,19 +363,25 @@ describe('length change tracking', () => {
       },
     });
 
-    const expected = structuredClone(source);
-    f(expected);
-    expect(actual).toEqual(expected);
-
     expect(Array.isArray(patches[0].path)).toBeTruthy();
     expect(Array.isArray(inversePatches[0].path)).toBeTruthy();
     const prevState = apply(actual, inversePatches);
     expect(prevState).toEqual(source);
     const nextState = apply(source, patches);
     expect(nextState).toEqual(actual);
+
+    const expected = structuredClone(source);
+    f(expected);
+    expect(nextState).toEqual(expected);
+
+    return [patches, inversePatches] as const;
   }
 
-  const data = { list: [1, 2, 3] };
+  const data: { list: Array<number> } = { list: [] };
+
+  for (let i = 0; i < 100; i++) {
+    data.list.push(i);
+  }
 
   // test('splice(0, 0)', () => {
   //   test_((draft) => {
@@ -384,119 +390,1236 @@ describe('length change tracking', () => {
   // });
 
   test('splice(0, 1)', () => {
-    test_(data, (draft) => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list.splice(0, 1);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+      ]
+    `);
+
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+      ]
+    `);
   });
 
   test('splice(0, 1)', () => {
-    test_(data, (draft) => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list[0] = 10;
       draft.list[1] = 20;
       draft.list[2] = 30;
       draft.list.splice(0, 1);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 20,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 30,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            2,
+          ],
+          "value": 2,
+        },
+      ]
+    `);
   });
 
   test('splice(0, 1)', () => {
-    test_(data, (draft) => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list[0] = 10;
       draft.list.splice(0, 1);
       draft.list[0] = 100;
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 100,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+      ]
+    `);
   });
 
   test('splice(0, 2)', () => {
-    test_(data, (draft) => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list.splice(0, 2);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+      ]
+    `);
   });
 
-  test('splice(0, 2)', () => {
-    test_(data, (draft) => {
+  test('remove added elements', () => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list[0] = 10;
       draft.list[1] = 20;
       draft.list.splice(0, 2);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+      ]
+    `);
   });
 
-  test('splice(0, 1, 10)', () => {
-    test_(data, (draft) => {
+  test('remove and add at the same time', () => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list.splice(0, 1, 10);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 10,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+      ]
+    `);
   });
 
-  test('splice(0, 2, 10)', () => {
-    test_(data, (draft) => {
+  test('remove two and add one at the same time', () => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list.splice(0, 2, 10);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 10,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+      ]
+    `);
   });
 
-  test('splice(0, 0, 0)', () => {
-    test_(data, (draft) => {
+  test('add at first index', () => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list.splice(0, 0, 0);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+      ]
+    `);
   });
 
-  test('splice(1, 0, 1.5)', () => {
-    test_(data, (draft) => {
-      draft.list.splice(1, 0, 1.5);
+  test('splice(2, 1); splice(1, 1)', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.splice(2, 1);
+      draft.list.splice(1, 1);
     });
 
-    test_(data, (draft) => {
-      draft.list.splice(2, 0, 2.5);
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            2,
+          ],
+          "value": 2,
+        },
+      ]
+    `);
+  });
+
+  test('splice(1, 1); splice(2, 1)', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.splice(1, 1);
+      draft.list.splice(2, 1);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 2,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            2,
+          ],
+          "value": 2,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            3,
+          ],
+          "value": 3,
+        },
+      ]
+    `);
   });
 
   test('splice(0, 1, 0, 1)', () => {
-    test_(data, (draft) => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list.splice(0, 1, 0, 1);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+      ]
+    `);
   });
 
   test('push', () => {
-    test_(data, (draft) => {
-      draft.list.push(4);
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.push(100);
     });
 
-    test_(data, (draft) => {
-      draft.list.push(4, 5, 6);
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            100,
+          ],
+          "value": 100,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+      ]
+    `);
+  });
+
+  test('push', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.push(100, 101, 102);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            100,
+          ],
+          "value": 100,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            101,
+          ],
+          "value": 101,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            102,
+          ],
+          "value": 102,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+      ]
+    `);
   });
 
   test('pop', () => {
-    test_(data, (draft) => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list.pop();
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            99,
+          ],
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+      ]
+    `);
+  });
+
+  test('push(100, 101); pop()', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.push(100, 101);
+      draft.list.pop();
+    });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            100,
+          ],
+          "value": 100,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+      ]
+    `);
+  });
+
+  test('push(100, 101); pop(); push(101)', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.push(100, 101);
+      draft.list.pop();
+      draft.list.push(101);
+    });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            100,
+          ],
+          "value": 100,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            101,
+          ],
+          "value": 101,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+      ]
+    `);
+  });
+
+  test('pop(); push(99, 100)', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.pop();
+      draft.list.push(99, 100);
+    });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            99,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            100,
+          ],
+          "value": 100,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+      ]
+    `);
+  });
+
+  test('pop(); push(99, 100); pop()', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.pop();
+      draft.list.push(99, 100);
+      draft.list.pop();
+    });
+
+    // TODO: optimize
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            99,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+      ]
+    `);
   });
 
   test('unshift()', () => {
-    test_(data, (draft) => {
-      draft.list.unshift(0);
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.unshift(-1);
     });
 
-    test_(data, (draft) => {
-      draft.list.unshift(-2, -1, 0);
-    });
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": -1,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+      ]
+    `);
   });
 
   test('shift()', () => {
-    test_(data, (draft) => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list.shift();
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+      ]
+    `);
   });
 
-  test('arr[3] = 4', () => {
-    test_(data, (draft) => {
-      draft.list[3] = 4;
+  test('unshift(-2, -1); shift();', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.unshift(-2, -1);
+      draft.list.shift();
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": -1,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 0,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+      ]
+    `);
+  });
+
+  test('unshift(-2, -1); shift(); unshift(-2)', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.unshift(-2, -1);
+      draft.list.shift();
+      draft.list.unshift(-2);
+    });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": -2,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": -1,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+      ]
+    `);
+  });
+
+  test('shift(); unshift(-2, -1);', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.shift();
+      draft.list.unshift(-1, 0);
+    });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": -1,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 0,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+      ]
+    `);
+  });
+
+  test('shift(); unshift(-2, -1); shift()', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.shift();
+      draft.list.unshift(-1, 0);
+      draft.list.shift();
+    });
+
+    // TODO: optimize
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            2,
+          ],
+        },
+      ]
+    `);
+  });
+
+  test('Insert into an index that exceeds the length of the array', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list[draft.list.length] = draft.list.length;
+    });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            100,
+          ],
+          "value": 100,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+      ]
+    `);
+  });
+
+  test('Insert into an index that exceeds the length of the array', () => {
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list[draft.list.length + 1] = draft.list.length + 1;
+    });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            100,
+          ],
+          "value": undefined,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            101,
+          ],
+          "value": 101,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+      ]
+    `);
   });
 
   test('splice(1, 3, 1)', () => {
     // 意味のない削除（削除対象がlengthを超えている）
-    test_(data, (draft) => {
+    const [forward, backward] = test_(data, (draft) => {
       draft.list.splice(3, 4, 4);
     });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            3,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            3,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            3,
+          ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            3,
+          ],
+          "value": 4,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            3,
+          ],
+          "value": 3,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            4,
+          ],
+          "value": 4,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            5,
+          ],
+          "value": 5,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            6,
+          ],
+          "value": 6,
+        },
+      ]
+    `);
   });
 
   describe('object array', () => {

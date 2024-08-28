@@ -719,13 +719,6 @@ exports[`array 5`] = `
     ],
   },
   {
-    "op": "remove",
-    "path": [
-      "arr2",
-      1,
-    ],
-  },
-  {
     "op": "add",
     "path": [
       "arr0",
@@ -3461,13 +3454,6 @@ exports[`simple array 1`] = `
       "a",
     ],
     "value": 2,
-  },
-  {
-    "op": "remove",
-    "path": [
-      "arr0",
-      1,
-    ],
   },
 ]
 `;

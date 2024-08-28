@@ -61,7 +61,10 @@ function generateArrayPatches(
     if (getValue(copy[index]) !== original[index]) {
       // console.log('index', index);
       // console.log('removedOffset', removedOffset);
-      if (copy[index] === REMOVED) {
+      if (copy[index] === REMOVED && original[index] === ADDED) {
+        removedOffset += 1;
+        addedOffset += 1;
+      } else if (copy[index] === REMOVED) {
         patches.push({
           op: Operation.Remove,
           path: escapePath(
@@ -69,17 +72,12 @@ function generateArrayPatches(
             pathAsArray
           ),
         });
-        if (original[index] !== ADDED) {
-          inversePatches.push({
-            op: Operation.Add,
-            path: escapePath(
-              basePath.concat([index - addedOffset]),
-              pathAsArray
-            ),
-            // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
-            value: cloneIfNeeded(original[index]),
-          });
-        }
+        inversePatches.push({
+          op: Operation.Add,
+          path: escapePath(basePath.concat([index - addedOffset]), pathAsArray),
+          // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
+          value: cloneIfNeeded(original[index]),
+        });
         removedOffset += 1;
       } else if (original[index] === ADDED) {
         patches.push({
@@ -91,15 +89,10 @@ function generateArrayPatches(
           // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
           value: cloneIfNeeded(copy[index]),
         });
-        if (copy[index] !== REMOVED) {
-          inversePatches.push({
-            op: Operation.Remove,
-            path: escapePath(
-              basePath.concat([index - addedOffset]),
-              pathAsArray
-            ),
-          });
-        }
+        inversePatches.push({
+          op: Operation.Remove,
+          path: escapePath(basePath.concat([index - addedOffset]), pathAsArray),
+        });
         addedOffset += 1;
       } else {
         const item = getProxyDraft(copy[index]);
