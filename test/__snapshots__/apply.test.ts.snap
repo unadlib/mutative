@@ -3111,45 +3111,9 @@ exports[`same value replacement(array) - 2 1`] = `[]`;
 
 exports[`same value replacement(array) - 2 2`] = `[]`;
 
-exports[`same value replacement(array) - 2 3`] = `
-[
-  {
-    "op": "remove",
-    "path": [
-      2,
-    ],
-  },
-  {
-    "op": "add",
-    "path": [
-      2,
-    ],
-    "value": {
-      "x": 1,
-    },
-  },
-]
-`;
+exports[`same value replacement(array) - 2 3`] = `[]`;
 
-exports[`same value replacement(array) - 2 4`] = `
-[
-  {
-    "op": "add",
-    "path": [
-      2,
-    ],
-    "value": {
-      "x": 1,
-    },
-  },
-  {
-    "op": "remove",
-    "path": [
-      3,
-    ],
-  },
-]
-`;
+exports[`same value replacement(array) - 2 4`] = `[]`;
 
 exports[`same value replacement(map) - 2 1`] = `[]`;
 
