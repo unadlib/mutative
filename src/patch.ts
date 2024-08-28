@@ -121,6 +121,7 @@ function generateArrayPatches(
     }
   }
 
+  // !case: support for insertion into an index that exceeds the length of the array
   for (let index = original.length; index < copy.length; index += 1) {
     patches.push({
       op: Operation.Add,
