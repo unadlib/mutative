@@ -22,7 +22,6 @@ function generateArrayPatches(
   let { original, arrayChanges } = proxyState;
 
   // console.log('generateArrayPatches', proxyState.key);
-  // console.log('arrayChanges', arrayChanges);
 
   let copy = proxyState.copy!;
 
@@ -30,23 +29,21 @@ function generateArrayPatches(
     const changedOriginal = original.slice();
     const changedCopy = copy.slice();
 
+    arrayChanges.sort(([, a], [, b]) => a - b);
+    // console.log('arrayChanges', arrayChanges);
+
+    let removedOffset = 0;
+    let addedOffset = 0;
+
     for (const [op, index] of arrayChanges) {
       switch (op) {
         case 'removed':
-          // TODO: refactor
-          if (changedOriginal[index] === ADDED) {
-            changedOriginal.splice(index, 1);
-          } else {
-            changedCopy.splice(index, 0, REMOVED);
-          }
+          changedCopy.splice(index + addedOffset, 0, REMOVED);
+          removedOffset += 1;
           break;
         case 'added':
-          // TODO: refactor
-          if (changedCopy[index] === REMOVED) {
-            changedCopy.splice(index, 1);
-          } else {
-            changedOriginal.splice(index, 0, ADDED);
-          }
+          changedOriginal.splice(index + removedOffset, 0, ADDED);
+          addedOffset += 1;
           break;
       }
     }
@@ -62,6 +59,8 @@ function generateArrayPatches(
   let addedOffset = 0;
   for (let index = 0; index < original.length; index += 1) {
     if (getValue(copy[index]) !== original[index]) {
+      // console.log('index', index);
+      // console.log('removedOffset', removedOffset);
       if (copy[index] === REMOVED) {
         patches.push({
           op: Operation.Remove,
@@ -70,7 +69,6 @@ function generateArrayPatches(
             pathAsArray
           ),
         });
-        // TODO: refactor
         if (original[index] !== ADDED) {
           inversePatches.push({
             op: Operation.Add,
@@ -93,7 +91,6 @@ function generateArrayPatches(
           // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
           value: cloneIfNeeded(copy[index]),
         });
-        // TODO: refactor
         if (copy[index] !== REMOVED) {
           inversePatches.push({
             op: Operation.Remove,

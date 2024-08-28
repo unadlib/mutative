@@ -526,4 +526,18 @@ describe('length change tracking', () => {
       }
     );
   });
+
+  test('move', () => {
+    test_([0, 1, 2, 3], (draft) => {
+      const moved = draft[1];
+      draft.splice(1, 1);
+      draft.splice(2, 0, moved);
+    });
+
+    test_([0, 1, 2, 3], (draft) => {
+      const moved = draft[1];
+      draft.splice(3, 0, moved);
+      draft.splice(1, 1);
+    });
+  });
 });

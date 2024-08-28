@@ -1263,17 +1263,17 @@ exports[`arrays - multiple splice 1`] = `
     "value": 3,
   },
   {
+    "op": "remove",
+    "path": [
+      3,
+    ],
+  },
+  {
     "op": "replace",
     "path": [
       3,
     ],
     "value": 3,
-  },
-  {
-    "op": "remove",
-    "path": [
-      4,
-    ],
   },
 ]
 `;
@@ -1295,14 +1295,14 @@ exports[`arrays - multiple splice 2`] = `
     "value": 2,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       4,
     ],
     "value": 4,
   },
   {
-    "op": "add",
+    "op": "replace",
     "path": [
       5,
     ],
@@ -1387,10 +1387,18 @@ exports[`arrays - prepend then splice middle 1`] = `
     "value": 4,
   },
   {
-    "op": "remove",
+    "op": "replace",
     "path": [
       "x",
       2,
+    ],
+    "value": 3,
+  },
+  {
+    "op": "remove",
+    "path": [
+      "x",
+      3,
     ],
   },
 ]
@@ -1406,12 +1414,20 @@ exports[`arrays - prepend then splice middle 2`] = `
     ],
   },
   {
-    "op": "add",
+    "op": "replace",
     "path": [
       "x",
       1,
     ],
     "value": 2,
+  },
+  {
+    "op": "add",
+    "path": [
+      "x",
+      2,
+    ],
+    "value": 3,
   },
 ]
 `;
@@ -1607,16 +1623,8 @@ exports[`arrays - splice middle then prepend 1`] = `
     "op": "remove",
     "path": [
       "x",
-      1,
+      2,
     ],
-  },
-  {
-    "op": "replace",
-    "path": [
-      "x",
-      1,
-    ],
-    "value": 1,
   },
 ]
 `;
@@ -1632,14 +1640,6 @@ exports[`arrays - splice middle then prepend 2`] = `
   },
   {
     "op": "add",
-    "path": [
-      "x",
-      0,
-    ],
-    "value": 1,
-  },
-  {
-    "op": "replace",
     "path": [
       "x",
       1,
@@ -3118,9 +3118,45 @@ exports[`same value replacement(array) - 2 1`] = `[]`;
 
 exports[`same value replacement(array) - 2 2`] = `[]`;
 
-exports[`same value replacement(array) - 2 3`] = `[]`;
+exports[`same value replacement(array) - 2 3`] = `
+[
+  {
+    "op": "remove",
+    "path": [
+      2,
+    ],
+  },
+  {
+    "op": "add",
+    "path": [
+      2,
+    ],
+    "value": {
+      "x": 1,
+    },
+  },
+]
+`;
 
-exports[`same value replacement(array) - 2 4`] = `[]`;
+exports[`same value replacement(array) - 2 4`] = `
+[
+  {
+    "op": "add",
+    "path": [
+      2,
+    ],
+    "value": {
+      "x": 1,
+    },
+  },
+  {
+    "op": "remove",
+    "path": [
+      3,
+    ],
+  },
+]
+`;
 
 exports[`same value replacement(map) - 2 1`] = `[]`;
 
@@ -3425,6 +3461,13 @@ exports[`simple array 1`] = `
       "a",
     ],
     "value": 2,
+  },
+  {
+    "op": "remove",
+    "path": [
+      "arr0",
+      1,
+    ],
   },
 ]
 `;
