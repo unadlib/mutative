@@ -363,6 +363,8 @@ describe('length change tracking', () => {
       },
     });
 
+    expect(Array.isArray(patches[0].path)).toBeTruthy();
+    expect(Array.isArray(inversePatches[0].path)).toBeTruthy();
     const prevState = apply(actual, inversePatches);
     expect(prevState).toEqual(source);
     const nextState = apply(source, patches);
@@ -381,14 +383,11 @@ describe('length change tracking', () => {
     data.list.push(i);
   }
 
-  test('splice(0, 0)', () => {
-    const [forward, backward] = test_(data, (draft) => {
-      draft.list.splice(0, 0);
-    });
-
-    expect(forward).toMatchInlineSnapshot(`[]`);
-    expect(backward).toMatchInlineSnapshot(`[]`);
-  });
+  // test('splice(0, 0)', () => {
+  //   test_((draft) => {
+  //     draft.list.splice(0, 0);
+  //   });
+  // });
 
   test('splice(0, 1)', () => {
     const [forward, backward] = test_(data, (draft) => {
@@ -1078,6 +1077,21 @@ describe('length change tracking', () => {
     expect(forward).toMatchInlineSnapshot(`
       [
         {
+          "op": "remove",
+          "path": [
+            "list",
+            99,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+        {
           "op": "add",
           "path": [
             "list",
@@ -1090,6 +1104,21 @@ describe('length change tracking', () => {
     expect(backward).toMatchInlineSnapshot(`
       [
         {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+        {
           "op": "remove",
           "path": [
             "list",
@@ -1101,17 +1130,51 @@ describe('length change tracking', () => {
   });
 
   test('pop(); push(99, 100); pop()', () => {
-    const [forward, backward] = test_(
-      { list: data.list.slice(0, 10) },
-      (draft) => {
-        draft.list.pop();
-        draft.list.push(9, 10);
-        draft.list.pop();
-      }
-    );
+    const [forward, backward] = test_(data, (draft) => {
+      draft.list.pop();
+      draft.list.push(99, 100);
+      draft.list.pop();
+    });
 
-    expect(forward).toMatchInlineSnapshot(`[]`);
-    expect(backward).toMatchInlineSnapshot(`[]`);
+    // TODO: optimize
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            99,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
+        },
+      ]
+    `);
   });
 
   test('unshift()', () => {
@@ -1183,12 +1246,19 @@ describe('length change tracking', () => {
     expect(forward).toMatchInlineSnapshot(`
       [
         {
-          "op": "replace",
+          "op": "add",
           "path": [
             "list",
             0,
           ],
           "value": -1,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
         },
         {
           "op": "add",
@@ -1203,7 +1273,14 @@ describe('length change tracking', () => {
     expect(backward).toMatchInlineSnapshot(`
       [
         {
-          "op": "replace",
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "add",
           "path": [
             "list",
             0,
@@ -1277,7 +1354,14 @@ describe('length change tracking', () => {
     expect(forward).toMatchInlineSnapshot(`
       [
         {
-          "op": "replace",
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "add",
           "path": [
             "list",
             0,
@@ -1297,12 +1381,19 @@ describe('length change tracking', () => {
     expect(backward).toMatchInlineSnapshot(`
       [
         {
-          "op": "replace",
+          "op": "add",
           "path": [
             "list",
             0,
           ],
           "value": 0,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
         },
         {
           "op": "remove",

@@ -35,19 +35,7 @@ function generateArrayPatches(
     let removedOffset = 0;
     let addedOffset = 0;
 
-    for (let i = 0; i < arrayChanges.length; i++) {
-      const [op, index] = arrayChanges[i];
-
-      if (
-        arrayChanges[i + 1] &&
-        arrayChanges[i + 1][1] === index &&
-        arrayChanges[i + 1][0] !== op
-      ) {
-        i++;
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-
+    for (const [op, index] of arrayChanges) {
       switch (op) {
         case 'removed':
           changedCopy.splice(index + addedOffset, 0, REMOVED);
