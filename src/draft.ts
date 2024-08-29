@@ -103,11 +103,6 @@ function proxiedShift(this: ProxyDraft) {
 }
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
-  apply(target: ProxyDraft, key: string | number | symbol, receiver: any) {
-    console.log('apply', target, key, receiver);
-
-    throw new Error('xxx');
-  },
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
     const copy = target.copy?.[key];
     // Improve draft reading performance by caching the draft copy.
