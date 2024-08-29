@@ -1,6 +1,6 @@
 {
   "name": "@legalscape/mutative",
-  "version": "1.0.8-ls.f5b6fad",
+  "version": "1.0.8-ls.223d74f",
   "description": "A JavaScript library for efficient immutable updates",
   "main": "dist/index.js",
   "module": "dist/mutative.esm.js",
