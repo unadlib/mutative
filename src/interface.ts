@@ -102,6 +102,13 @@ export type Mark<O extends PatchesOptions, F extends boolean> = (
   ? BaseMark
   : MarkWithCopy;
 
+export interface ApplyMutableOptions {
+  /**
+   * If it's `true`, the state will be mutated directly.
+   */
+  mutable?: boolean;
+}
+
 export interface Options<O extends PatchesOptions, F extends boolean> {
   /**
    * In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.

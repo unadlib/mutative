@@ -1,4 +1,11 @@
-import { Draft, Options, Patches, DraftType, Operation } from './interface';
+import { Operation } from './interface';
+import type {
+  Draft,
+  Options,
+  Patches,
+  DraftType,
+  ApplyMutableOptions,
+} from './interface';
 import { deepClone, get, getType, isDraft, unescapePath } from './utils';
 import { create } from './create';
 
@@ -26,10 +33,12 @@ import { create } from './create';
 export function apply<T extends object, F extends boolean = false>(
   state: T,
   patches: Patches,
-  applyOptions?: Pick<
-    Options<boolean, F>,
-    Exclude<keyof Options<boolean, F>, 'enablePatches'>
-  >
+  applyOptions?:
+    | Pick<
+        Options<boolean, F>,
+        Exclude<keyof Options<boolean, F>, 'enablePatches'>
+      >
+    | ApplyMutableOptions
 ) {
   let i: number;
   for (i = patches.length - 1; i >= 0; i -= 1) {
@@ -45,7 +54,7 @@ export function apply<T extends object, F extends boolean = false>(
   if (i > -1) {
     patches = patches.slice(i + 1);
   }
-  const mutate = (draft: Draft<T>) => {
+  const mutate = (draft: Draft<T> | T) => {
     patches.forEach((patch) => {
       const { path: _path, op } = patch;
       const path = unescapePath(_path);
@@ -119,6 +128,10 @@ export function apply<T extends object, F extends boolean = false>(
       }
     });
   };
+  if ((applyOptions as ApplyMutableOptions)?.mutable) {
+    mutate(state);
+    return;
+  }
   if (isDraft(state)) {
     if (applyOptions !== undefined) {
       throw new Error(`Cannot apply patches with options to a draft.`);
