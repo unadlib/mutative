@@ -197,3 +197,16 @@ export type Draft<T> = T extends Primitive | AtomicObject
   : T extends object
   ? DraftedObject<T>
   : T;
+
+export type ApplyOptions<F extends boolean> =
+  | Pick<
+      Options<boolean, F>,
+      Exclude<keyof Options<boolean, F>, 'enablePatches'>
+    >
+  | ApplyMutableOptions;
+
+export type ApplyResult<
+  T extends object,
+  F extends boolean = false,
+  A extends ApplyOptions<F> = ApplyOptions<F>
+> = A extends { mutable: true } ? void : T;
