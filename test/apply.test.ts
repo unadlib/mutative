@@ -1305,16 +1305,6 @@ test('merge multiple patches', () => {
       enablePatches: true,
     }
   );
-  console.log(
-    JSON.stringify(
-      {
-        patches,
-        inversePatches,
-      },
-      null,
-      2
-    )
-  );
   const [state1, patches1, inversePatches1] = create(
     state,
     (draft) => {
@@ -1390,8 +1380,13 @@ test('base - mutate', () => {
       },
     ],
   });
+  const nextState = apply(baseState, patches);
+  expect(nextState).toEqual({ a: { c: 2 } });
+  expect(baseState).toEqual({ a: { c: 1 } });
+
   const result = apply(baseState, patches, {
     mutable: true,
   });
   expect(baseState).toEqual({ a: { c: 2 } });
+  expect(result).toBeUndefined();
 });
