@@ -1305,16 +1305,6 @@ test('merge multiple patches', () => {
       enablePatches: true,
     }
   );
-  console.log(
-    JSON.stringify(
-      {
-        patches,
-        inversePatches,
-      },
-      null,
-      2
-    )
-  );
   const [state1, patches1, inversePatches1] = create(
     state,
     (draft) => {
