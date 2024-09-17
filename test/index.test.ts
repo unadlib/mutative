@@ -3977,3 +3977,18 @@ it('#51-2 nested drafts work after current', () => {
     k2: { abc: 100, def: 200 },
   });
 });
+
+test('#57 - curried create returns object of wrong type', () => {
+  const state: {
+    readonly a: {
+      readonly x: string;
+    };
+  } = { a: { x: 'x' } };
+
+  const [draft, finalize] = create(state);
+
+  draft.a.x = 'test';
+
+  const nextState = finalize();
+  expect(nextState).toEqual({ a: { x: 'test' } });
+});

@@ -57,7 +57,7 @@ type MakeCreator = <
   <T extends any, O extends PatchesOptions = _O, F extends boolean = _F>(
     base: T,
     options?: ExternalOptions<O, F>
-  ): [T, () => Result<T, O, F>];
+  ): [Draft<T>, () => Result<T, O, F>];
 };
 
 /**
