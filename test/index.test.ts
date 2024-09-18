@@ -3992,3 +3992,94 @@ test('#57 - curried create returns object of wrong type', () => {
   const nextState = finalize();
   expect(nextState).toEqual({ a: { x: 'test' } });
 });
+
+test('#59 - Failure to apply inverse patchset', () => {
+  const parentId = 'parent';
+  const childId = 'child';
+  const myObj = {
+    [parentId]: { name: 'parent', children: [childId] },
+    [childId]: { name: 'child' },
+  };
+  const [newState, patchset, inverse] = create(
+    myObj,
+    (draft: any) => {
+      // delete children
+      while (draft[parentId].children.length) {
+        const id = draft[parentId].children[0];
+        draft[parentId].children.splice(0, 1);
+        delete draft[id]; // delete child object
+      }
+
+      // delete parent
+      // @ts-ignore
+      delete draft[parentId];
+    },
+    { enablePatches: true }
+  );
+  const reverted = apply(newState, inverse);
+  expect(reverted).toEqual(myObj);
+  const reverted2 = apply(myObj, patchset);
+  expect(reverted2).toEqual(newState);
+});
+
+test('#59 - Failure to apply inverse patchset(Set)', () => {
+  const parentId = 'parent';
+  const childId = 'child';
+
+  const myObj = {
+    [parentId]: new Set([{ name: 'parent', children: [childId] }]),
+    [childId]: { name: 'child' },
+  };
+
+  const [newState, patchset, inverse] = create(
+    myObj,
+    (draft: any) => {
+      // delete children
+      const parent: any = Array.from(draft[parentId])[0];
+      while (parent.children.length) {
+        const id = parent.children[0];
+        parent.children.splice(0, 1);
+        delete draft[id]; // delete child object
+      }
+
+      // delete parent
+      draft[parentId].clear();
+    },
+    { enablePatches: true }
+  );
+  const reverted = apply(newState, inverse);
+  expect(reverted).toEqual(myObj);
+  const reverted2 = apply(myObj, patchset);
+  expect(reverted2).toEqual(newState);
+});
+
+test('#59 - Failure to apply inverse patchset(Map)', () => {
+  const parentId = 'parent';
+  const childId = 'child';
+
+  const myObj = {
+    [parentId]: new Map([[0, { name: 'parent', children: [childId] }]]),
+    [childId]: { name: 'child' },
+  };
+
+  const [newState, patchset, inverse] = create(
+    myObj,
+    (draft: any) => {
+      // delete children
+      const parent: any = draft[parentId].get(0);
+      while (parent.children.length) {
+        const id = parent.children[0];
+        parent.children.splice(0, 1);
+        delete draft[id]; // delete child object
+      }
+
+      // delete parent
+      draft[parentId].clear();
+    },
+    { enablePatches: true }
+  );
+  const reverted = apply(newState, inverse);
+  expect(reverted).toEqual(myObj);
+  const reverted2 = apply(myObj, patchset);
+  expect(reverted2).toEqual(newState);
+});
