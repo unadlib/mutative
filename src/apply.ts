@@ -67,10 +67,7 @@ export function apply<T extends object, F extends boolean = false>(
           );
         }
         // use `index` in Set draft
-        base = get(
-          getType(base) === DraftType.Set ? Array.from(base) : base,
-          key
-        );
+        base = get(parentType === DraftType.Set ? Array.from(base) : base, key);
         if (typeof base !== 'object') {
           throw new Error(`Cannot apply patch at '${path.join('/')}'.`);
         }
