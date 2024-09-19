@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-inner-declarations */
 /* eslint-disable symbol-description */
 /* eslint-disable no-unused-expressions */
@@ -15,8 +16,10 @@ import {
   applyPatches,
   setUseStrictShallowCopy,
   current as immerCurrent,
+  createDraft,
+  finishDraft,
 } from 'immer';
-import { create, apply, current } from '../src';
+import { create, apply, current, getCurrent } from '../src';
 
 enableMapSet();
 
@@ -586,6 +589,31 @@ test('#47 Avoid deep copies', () => {
       draft.x = { y: { z: obj } };
       const c = current(draft);
       expect(c.x.y.z).toBe(obj);
+    });
+  }
+});
+
+test('#61 - type issue: current of Draft<T> type should return T type', () => {
+  {
+    function test<T extends { x: { y: ReadonlySet<string> } }>(base: T): T {
+      const draft = createDraft(base);
+      // @ts-ignore
+      const currentValue: T = immerCurrent(draft); // !!! Type Draft<T> is not assignable to type T
+      // @ts-expect-error
+      return finishDraft(draft);
+    }
+    expect(test({ x: { y: new Set(['a', 'b']) } })).toEqual({
+      x: { y: new Set(['a', 'b']) },
+    });
+  }
+  {
+    function test<T extends { x: { y: ReadonlySet<string> } }>(base: T): T {
+      const [draft, f] = create(base);
+      const currentValue: T = getCurrent(draft);
+      return f();
+    }
+    expect(test({ x: { y: new Set(['a', 'b']) } })).toEqual({
+      x: { y: new Set(['a', 'b']) },
     });
   }
 });

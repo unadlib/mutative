@@ -1,4 +1,4 @@
-import { DraftType, ProxyDraft } from './interface';
+import { DraftType, type Draft, type ProxyDraft } from './interface';
 import {
   forEach,
   get,
@@ -59,7 +59,7 @@ export function handleReturnValue<T extends object>(options: {
   }
 }
 
-function getCurrent(target: any) {
+function getCurrentValue(target: any) {
   const proxyDraft = getProxyDraft(target);
   if (!isDraftable(target, proxyDraft?.options)) return target;
   const type = getType(target);
@@ -90,7 +90,7 @@ function getCurrent(target: any) {
 
   forEach(currentValue, (key, value) => {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
-    const newValue = getCurrent(value);
+    const newValue = getCurrentValue(value);
     if (newValue !== value) {
       if (currentValue === target) ensureShallowCopy();
       set(currentValue, key, newValue);
@@ -121,5 +121,30 @@ export function current<T extends object>(target: T): T {
   if (!isDraft(target)) {
     throw new Error(`current() is only used for Draft, parameter: ${target}`);
   }
-  return getCurrent(target);
+  return getCurrentValue(target);
+}
+
+/**
+ * `getCurrent(draft)` to get current state in the draft mutation function.
+ *
+ * ## Example
+ *
+ * ```ts
+ * import { create, getCurrent } from '../index';
+ *
+ * const baseState = { foo: { bar: 'str' }, arr: [] };
+ * const state = create(
+ *   baseState,
+ *   (draft) => {
+ *     draft.foo.bar = 'str2';
+ *     expect(getCurrent(draft.foo)).toEqual({ bar: 'str2' });
+ *   },
+ * );
+ * ```
+ */
+export function getCurrent<T extends object>(target: Draft<T>): T {
+  if (!isDraft(target)) {
+    throw new Error(`current() is only used for Draft, parameter: ${target}`);
+  }
+  return getCurrentValue(target);
 }
