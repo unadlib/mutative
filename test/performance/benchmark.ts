@@ -91,7 +91,7 @@ suite
     () => {
       const state = create(baseState, (draft) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     },
     {
@@ -106,7 +106,7 @@ suite
     () => {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     },
     {
@@ -125,7 +125,7 @@ suite
         baseState,
         (draft) => {
           draft.arr.push(i);
-          draft.map[i] = i;
+          draft.map[i] = { i };
         },
         {
           enableAutoFreeze: true,
@@ -145,7 +145,7 @@ suite
     () => {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     },
     {
@@ -164,7 +164,7 @@ suite
         baseState,
         (draft) => {
           draft.arr.push(i);
-          draft.map[i] = i;
+          draft.map[i] = { i };
         },
         {
           enableAutoFreeze: false,
@@ -184,7 +184,7 @@ suite
     () => {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     },
     {
@@ -204,7 +204,7 @@ suite
         baseState,
         (draft) => {
           draft.arr.push(i);
-          draft.map[i] = i;
+          draft.map[i] = { i };
         },
         {
           enableAutoFreeze: true,
@@ -224,7 +224,7 @@ suite
     () => {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     },
     {

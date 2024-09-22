@@ -56,7 +56,7 @@ measure(
     for (let i = 0; i < MAX; i++) {
       const state = create(baseState, (draft) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     }
   }
@@ -73,7 +73,7 @@ measure(
     for (let i = 0; i < MAX; i++) {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     }
   }
@@ -90,7 +90,7 @@ measure(
         baseState,
         (draft) => {
           draft.arr.push(i);
-          draft.map[i] = i;
+          draft.map[i] = { i };
         },
         {
           enableAutoFreeze: true,
@@ -112,7 +112,7 @@ measure(
     for (let i = 0; i < MAX; i++) {
       const state = produce(baseState, (draft: any) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     }
   }
@@ -129,7 +129,7 @@ measure(
         baseState,
         (draft) => {
           draft.arr.push(i);
-          draft.map[i] = i;
+          draft.map[i] = { i };
         },
         {
           enableAutoFreeze: false,
@@ -152,7 +152,7 @@ measure(
     for (let i = 0; i < MAX; i++) {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     }
   }
@@ -169,7 +169,7 @@ measure(
         baseState,
         (draft) => {
           draft.arr.push(i);
-          draft.map[i] = i;
+          draft.map[i] = { i };
         },
         {
           enableAutoFreeze: true,
@@ -192,7 +192,7 @@ measure(
     for (let i = 0; i < MAX; i++) {
       const state = produceWithPatches(baseState, (draft: any) => {
         draft.arr.push(i);
-        draft.map[i] = i;
+        draft.map[i] = { i };
       });
     }
   }
