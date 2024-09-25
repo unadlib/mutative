@@ -1698,4 +1698,72 @@ describe('length change tracking', () => {
       });
     });
   });
+
+  test('inversePatches order', () => {
+    const numbers = [0, 1, 2, 3];
+    const objects = numbers.map((id) => ({ id }));
+
+    const [forward, backward] = test_(objects, (draft) => {
+      draft[3].id *= 10;
+      draft.splice(0, 1);
+    });
+
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "replace",
+          "path": [
+            3,
+            "id",
+          ],
+          "value": 30,
+        },
+        {
+          "op": "remove",
+          "path": [
+            0,
+          ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            2,
+          ],
+          "value": {
+            "id": 30,
+          },
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            0,
+          ],
+          "value": {
+            "id": 0,
+          },
+        },
+        {
+          "op": "replace",
+          "path": [
+            3,
+          ],
+          "value": {
+            "id": 3,
+          },
+        },
+        {
+          "op": "replace",
+          "path": [
+            3,
+            "id",
+          ],
+          "value": 3,
+        },
+      ]
+    `);
+  });
 });

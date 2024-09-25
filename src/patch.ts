@@ -15,11 +15,14 @@ const ADDED = Symbol('ADDED');
 function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
   basePath: any[],
-  patches: Patches,
-  inversePatches: Patches,
+  patches_: Patches,
+  inversePatches_: Patches,
   pathAsArray: boolean
 ) {
   let { original, arrayChanges } = proxyState;
+
+  const patches = [];
+  const inversePatches = [];
 
   // console.log('generateArrayPatches', proxyState.key);
 
@@ -137,6 +140,9 @@ function generateArrayPatches(
       path: escapePath(basePath.concat([original.length]), pathAsArray),
     });
   }
+
+  patches_.push(...patches);
+  inversePatches_.unshift(...inversePatches);
 
   // console.log('patches', [...patches]);
   // console.log('inversePatches', [...inversePatches]);
