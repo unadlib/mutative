@@ -92,7 +92,6 @@
     "@size-limit/preset-small-lib": "^8.1.0",
     "@size-limit/webpack": "^8.1.0",
     "@size-limit/webpack-why": "^8.1.0",
-    "@types/diff": "^5.2.2",
     "@types/jest": "^29.4.0",
     "@types/node": "^17.0.21",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
@@ -157,8 +156,5 @@
     "globals": {
       "__DEV__": true
     }
-  },
-  "dependencies": {
-    "diff": "^7.0.0"
   }
 }

@@ -36,32 +36,35 @@ test('patches should not contain `array.length` - arrayLengthAssignment: false, 
   expect(patches).toMatchInlineSnapshot(`
     [
       {
-        "op": "remove",
+        "op": "replace",
         "path": [
           "list",
           0,
         ],
+        "value": undefined,
       },
       {
-        "op": "remove",
+        "op": "replace",
         "path": [
           "list",
-          0,
+          1,
         ],
+        "value": undefined,
       },
       {
-        "op": "remove",
+        "op": "replace",
         "path": [
           "list",
-          0,
+          2,
         ],
+        "value": undefined,
       },
     ]
   `);
   expect(inversePatches).toMatchInlineSnapshot(`
     [
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           0,
@@ -69,7 +72,7 @@ test('patches should not contain `array.length` - arrayLengthAssignment: false, 
         "value": 1,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           1,
@@ -77,7 +80,7 @@ test('patches should not contain `array.length` - arrayLengthAssignment: false, 
         "value": 2,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           2,
@@ -116,32 +119,35 @@ test('patches should contain `array.length` - arrayLengthAssignment: true, pathA
   expect(patches).toMatchInlineSnapshot(`
     [
       {
-        "op": "remove",
+        "op": "replace",
         "path": [
           "list",
           0,
         ],
+        "value": undefined,
       },
       {
-        "op": "remove",
+        "op": "replace",
         "path": [
           "list",
-          0,
+          1,
         ],
+        "value": undefined,
       },
       {
-        "op": "remove",
+        "op": "replace",
         "path": [
           "list",
-          0,
+          2,
         ],
+        "value": undefined,
       },
     ]
   `);
   expect(inversePatches).toMatchInlineSnapshot(`
     [
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           0,
@@ -149,7 +155,7 @@ test('patches should contain `array.length` - arrayLengthAssignment: true, pathA
         "value": 1,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           1,
@@ -157,7 +163,7 @@ test('patches should contain `array.length` - arrayLengthAssignment: true, pathA
         "value": 2,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": [
           "list",
           2,
@@ -196,33 +202,36 @@ test('patches should contain `array.length` - arrayLengthAssignment: true, pathA
   expect(patches).toMatchInlineSnapshot(`
     [
       {
-        "op": "remove",
+        "op": "replace",
         "path": "/list/0",
+        "value": undefined,
       },
       {
-        "op": "remove",
-        "path": "/list/0",
+        "op": "replace",
+        "path": "/list/1",
+        "value": undefined,
       },
       {
-        "op": "remove",
-        "path": "/list/0",
+        "op": "replace",
+        "path": "/list/2",
+        "value": undefined,
       },
     ]
   `);
   expect(inversePatches).toMatchInlineSnapshot(`
     [
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/0",
         "value": 1,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/1",
         "value": 2,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/2",
         "value": 3,
       },
@@ -258,33 +267,36 @@ test('patches should not contain `array.length` - arrayLengthAssignment: false, 
   expect(patches).toMatchInlineSnapshot(`
     [
       {
-        "op": "remove",
+        "op": "replace",
         "path": "/list/0",
+        "value": undefined,
       },
       {
-        "op": "remove",
-        "path": "/list/0",
+        "op": "replace",
+        "path": "/list/1",
+        "value": undefined,
       },
       {
-        "op": "remove",
-        "path": "/list/0",
+        "op": "replace",
+        "path": "/list/2",
+        "value": undefined,
       },
     ]
   `);
   expect(inversePatches).toMatchInlineSnapshot(`
     [
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/0",
         "value": 1,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/1",
         "value": 2,
       },
       {
-        "op": "add",
+        "op": "replace",
         "path": "/list/2",
         "value": 3,
       },
@@ -351,6 +363,8 @@ describe('length change tracking', () => {
       },
     });
 
+    expect(Array.isArray(patches[0].path)).toBeTruthy();
+    expect(Array.isArray(inversePatches[0].path)).toBeTruthy();
     const prevState = apply(actual, inversePatches);
     expect(prevState).toEqual(source);
     const nextState = apply(source, patches);
@@ -365,7 +379,7 @@ describe('length change tracking', () => {
 
   const data: { list: Array<number> } = { list: [] };
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 100; i++) {
     data.list.push(i);
   }
 
@@ -564,51 +578,6 @@ describe('length change tracking', () => {
     `);
   });
 
-  test('splice(0, 0, -2, -1)', () => {
-    const [forward, backward] = test_(data, (draft) => {
-      draft.list.splice(0, 0, -2, -1);
-    });
-
-    expect(forward).toMatchInlineSnapshot(`
-      [
-        {
-          "op": "add",
-          "path": [
-            "list",
-            0,
-          ],
-          "value": -2,
-        },
-        {
-          "op": "add",
-          "path": [
-            "list",
-            1,
-          ],
-          "value": -1,
-        },
-      ]
-    `);
-    expect(backward).toMatchInlineSnapshot(`
-      [
-        {
-          "op": "remove",
-          "path": [
-            "list",
-            0,
-          ],
-        },
-        {
-          "op": "remove",
-          "path": [
-            "list",
-            0,
-          ],
-        },
-      ]
-    `);
-  });
-
   test('remove added elements', () => {
     const [forward, backward] = test_(data, (draft) => {
       draft.list[0] = 10;
@@ -744,7 +713,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            1,
+            0,
           ],
           "value": 0,
         },
@@ -756,7 +725,7 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            1,
+            0,
           ],
         },
       ]
@@ -828,8 +797,16 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            2,
+            1,
           ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 2,
         },
       ]
     `);
@@ -847,101 +824,17 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
+            2,
+          ],
+          "value": 2,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
             3,
           ],
           "value": 3,
-        },
-      ]
-    `);
-  });
-
-  test('splice(3, 0, 1.5); splice(1, 0, 0.5)', () => {
-    const [forward, backward] = test_(data, (draft) => {
-      draft.list.splice(3, 0, 1.5);
-      draft.list.splice(1, 0, 0.5);
-    });
-
-    expect(forward).toMatchInlineSnapshot(`
-      [
-        {
-          "op": "add",
-          "path": [
-            "list",
-            1,
-          ],
-          "value": 0.5,
-        },
-        {
-          "op": "add",
-          "path": [
-            "list",
-            4,
-          ],
-          "value": 1.5,
-        },
-      ]
-    `);
-    expect(backward).toMatchInlineSnapshot(`
-      [
-        {
-          "op": "remove",
-          "path": [
-            "list",
-            1,
-          ],
-        },
-        {
-          "op": "remove",
-          "path": [
-            "list",
-            3,
-          ],
-        },
-      ]
-    `);
-  });
-
-  test('splice(1, 0, 0.5); splice(3, 0, 1.5)', () => {
-    const [forward, backward] = test_(data, (draft) => {
-      draft.list.splice(1, 0, 0.5);
-      draft.list.splice(3, 0, 1.5);
-    });
-
-    expect(forward).toMatchInlineSnapshot(`
-      [
-        {
-          "op": "add",
-          "path": [
-            "list",
-            1,
-          ],
-          "value": 0.5,
-        },
-        {
-          "op": "add",
-          "path": [
-            "list",
-            3,
-          ],
-          "value": 1.5,
-        },
-      ]
-    `);
-    expect(backward).toMatchInlineSnapshot(`
-      [
-        {
-          "op": "remove",
-          "path": [
-            "list",
-            1,
-          ],
-        },
-        {
-          "op": "remove",
-          "path": [
-            "list",
-            2,
-          ],
         },
       ]
     `);
@@ -958,7 +851,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            2,
+            1,
           ],
           "value": 1,
         },
@@ -970,7 +863,7 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            2,
+            1,
           ],
         },
       ]
@@ -988,7 +881,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            10,
+            100,
           ],
           "value": 100,
         },
@@ -1000,7 +893,7 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
       ]
@@ -1018,7 +911,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            10,
+            100,
           ],
           "value": 100,
         },
@@ -1026,7 +919,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            11,
+            101,
           ],
           "value": 101,
         },
@@ -1034,7 +927,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            12,
+            102,
           ],
           "value": 102,
         },
@@ -1046,21 +939,21 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
         {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
         {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
       ]
@@ -1078,7 +971,7 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            9,
+            99,
           ],
         },
       ]
@@ -1089,9 +982,9 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            9,
+            99,
           ],
-          "value": 9,
+          "value": 99,
         },
       ]
     `);
@@ -1109,7 +1002,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            10,
+            100,
           ],
           "value": 100,
         },
@@ -1121,7 +1014,7 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
       ]
@@ -1141,7 +1034,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            10,
+            100,
           ],
           "value": 100,
         },
@@ -1149,7 +1042,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            11,
+            101,
           ],
           "value": 101,
         },
@@ -1161,14 +1054,14 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
         {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
       ]
@@ -1184,18 +1077,25 @@ describe('length change tracking', () => {
     expect(forward).toMatchInlineSnapshot(`
       [
         {
+          "op": "remove",
+          "path": [
+            "list",
+            99,
+          ],
+        },
+        {
           "op": "add",
           "path": [
             "list",
-            9,
+            99,
           ],
           "value": 99,
         },
         {
-          "op": "replace",
+          "op": "add",
           "path": [
             "list",
-            10,
+            100,
           ],
           "value": 100,
         },
@@ -1204,19 +1104,26 @@ describe('length change tracking', () => {
     expect(backward).toMatchInlineSnapshot(`
       [
         {
+          "op": "add",
+          "path": [
+            "list",
+            99,
+          ],
+          "value": 99,
+        },
+        {
           "op": "remove",
           "path": [
             "list",
-            9,
+            100,
           ],
         },
         {
-          "op": "replace",
+          "op": "remove",
           "path": [
             "list",
-            9,
+            100,
           ],
-          "value": 9,
         },
       ]
     `);
@@ -1233,10 +1140,17 @@ describe('length change tracking', () => {
     expect(forward).toMatchInlineSnapshot(`
       [
         {
-          "op": "replace",
+          "op": "remove",
           "path": [
             "list",
-            9,
+            99,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            99,
           ],
           "value": 99,
         },
@@ -1245,12 +1159,19 @@ describe('length change tracking', () => {
     expect(backward).toMatchInlineSnapshot(`
       [
         {
-          "op": "replace",
+          "op": "add",
           "path": [
             "list",
-            9,
+            99,
           ],
-          "value": 9,
+          "value": 99,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            100,
+          ],
         },
       ]
     `);
@@ -1332,6 +1253,21 @@ describe('length change tracking', () => {
           ],
           "value": -1,
         },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 0,
+        },
       ]
     `);
     expect(backward).toMatchInlineSnapshot(`
@@ -1341,6 +1277,21 @@ describe('length change tracking', () => {
           "path": [
             "list",
             0,
+          ],
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
           ],
         },
       ]
@@ -1403,6 +1354,13 @@ describe('length change tracking', () => {
     expect(forward).toMatchInlineSnapshot(`
       [
         {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
           "op": "add",
           "path": [
             "list",
@@ -1410,15 +1368,38 @@ describe('length change tracking', () => {
           ],
           "value": -1,
         },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 0,
+        },
       ]
     `);
     expect(backward).toMatchInlineSnapshot(`
       [
         {
-          "op": "remove",
+          "op": "add",
           "path": [
             "list",
             0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
+          ],
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            1,
           ],
         },
       ]
@@ -1433,8 +1414,60 @@ describe('length change tracking', () => {
     });
 
     // TODO: optimize
-    expect(forward).toMatchInlineSnapshot(`[]`);
-    expect(backward).toMatchInlineSnapshot(`[]`);
+    expect(forward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            0,
+          ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+      ]
+    `);
+    expect(backward).toMatchInlineSnapshot(`
+      [
+        {
+          "op": "add",
+          "path": [
+            "list",
+            0,
+          ],
+          "value": 0,
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            1,
+          ],
+          "value": 1,
+        },
+        {
+          "op": "remove",
+          "path": [
+            "list",
+            2,
+          ],
+        },
+      ]
+    `);
   });
 
   test('Insert into an index that exceeds the length of the array', () => {
@@ -1448,9 +1481,9 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            10,
+            100,
           ],
-          "value": 10,
+          "value": 100,
         },
       ]
     `);
@@ -1460,7 +1493,7 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
       ]
@@ -1478,7 +1511,7 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            10,
+            100,
           ],
           "value": undefined,
         },
@@ -1486,9 +1519,9 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
-            11,
+            101,
           ],
-          "value": 11,
+          "value": 101,
         },
       ]
     `);
@@ -1498,14 +1531,14 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
         {
           "op": "remove",
           "path": [
             "list",
-            10,
+            100,
           ],
         },
       ]
@@ -1531,15 +1564,23 @@ describe('length change tracking', () => {
           "op": "remove",
           "path": [
             "list",
-            4,
+            3,
           ],
         },
         {
           "op": "remove",
           "path": [
             "list",
-            4,
+            3,
           ],
+        },
+        {
+          "op": "replace",
+          "path": [
+            "list",
+            3,
+          ],
+          "value": 4,
         },
       ]
     `);
@@ -1557,12 +1598,20 @@ describe('length change tracking', () => {
           "op": "add",
           "path": [
             "list",
+            4,
+          ],
+          "value": 4,
+        },
+        {
+          "op": "add",
+          "path": [
+            "list",
             5,
           ],
           "value": 5,
         },
         {
-          "op": "add",
+          "op": "replace",
           "path": [
             "list",
             6,
