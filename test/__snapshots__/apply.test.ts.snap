@@ -72,21 +72,12 @@ exports[`#468 1`] = `
     "value": 2,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       0,
     ],
     "value": {
       "id": 2,
-    },
-  },
-  {
-    "op": "add",
-    "path": [
-      1,
-    ],
-    "value": {
-      "id": 1,
     },
   },
 ]
@@ -103,18 +94,9 @@ exports[`#468 2`] = `
     "value": 1,
   },
   {
-    "op": "replace",
-    "path": [
-      0,
-    ],
-    "value": {
-      "id": 1,
-    },
-  },
-  {
     "op": "remove",
     "path": [
-      1,
+      0,
     ],
   },
 ]
@@ -319,39 +301,35 @@ exports[`array 3`] = `
     "value": 10,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "arr8",
       0,
     ],
-    "value": undefined,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "arr8",
-      1,
+      0,
     ],
-    "value": undefined,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "arr8",
-      2,
+      0,
     ],
-    "value": undefined,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "arr7",
       0,
     ],
-    "value": 1,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr7",
       1,
@@ -359,15 +337,29 @@ exports[`array 3`] = `
     "value": 2,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "arr6",
       0,
     ],
-    "value": "c",
   },
   {
-    "op": "replace",
+    "op": "remove",
+    "path": [
+      "arr6",
+      0,
+    ],
+  },
+  {
+    "op": "add",
+    "path": [
+      "arr6",
+      1,
+    ],
+    "value": "b",
+  },
+  {
+    "op": "add",
     "path": [
       "arr6",
       2,
@@ -414,7 +406,7 @@ exports[`array 3`] = `
     "value": 0,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr1",
       0,
@@ -424,7 +416,7 @@ exports[`array 3`] = `
     },
   },
   {
-    "op": "add",
+    "op": "replace",
     "path": [
       "arr1",
       1,
@@ -434,7 +426,7 @@ exports[`array 3`] = `
     },
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr",
       2,
@@ -458,7 +450,7 @@ exports[`array 3`] = `
     "value": 9,
   },
   {
-    "op": "add",
+    "op": "replace",
     "path": [
       "arr",
       5,
@@ -535,7 +527,7 @@ exports[`array 4`] = `
     ],
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr8",
       0,
@@ -543,7 +535,7 @@ exports[`array 4`] = `
     "value": 1,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr8",
       1,
@@ -551,7 +543,7 @@ exports[`array 4`] = `
     "value": 2,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr8",
       2,
@@ -559,7 +551,7 @@ exports[`array 4`] = `
     "value": 3,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr7",
       0,
@@ -567,15 +559,14 @@ exports[`array 4`] = `
     "value": 2,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "arr7",
-      1,
+      2,
     ],
-    "value": 1,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr6",
       0,
@@ -583,12 +574,26 @@ exports[`array 4`] = `
     "value": "a",
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr6",
-      2,
+      1,
     ],
-    "value": "c",
+    "value": "b",
+  },
+  {
+    "op": "remove",
+    "path": [
+      "arr6",
+      3,
+    ],
+  },
+  {
+    "op": "remove",
+    "path": [
+      "arr6",
+      3,
+    ],
   },
   {
     "op": "add",
@@ -630,6 +635,13 @@ exports[`array 4`] = `
     "value": 1,
   },
   {
+    "op": "remove",
+    "path": [
+      "arr1",
+      0,
+    ],
+  },
+  {
     "op": "replace",
     "path": [
       "arr1",
@@ -642,8 +654,22 @@ exports[`array 4`] = `
   {
     "op": "remove",
     "path": [
-      "arr1",
-      1,
+      "arr",
+      2,
+    ],
+  },
+  {
+    "op": "remove",
+    "path": [
+      "arr",
+      2,
+    ],
+  },
+  {
+    "op": "remove",
+    "path": [
+      "arr",
+      2,
     ],
   },
   {
@@ -654,55 +680,31 @@ exports[`array 4`] = `
     ],
     "value": 3,
   },
-  {
-    "op": "remove",
-    "path": [
-      "arr",
-      3,
-    ],
-  },
-  {
-    "op": "remove",
-    "path": [
-      "arr",
-      3,
-    ],
-  },
-  {
-    "op": "remove",
-    "path": [
-      "arr",
-      3,
-    ],
-  },
 ]
 `;
 
 exports[`array 5`] = `
 [
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "arr4",
       0,
     ],
-    "value": undefined,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "arr4",
-      1,
+      0,
     ],
-    "value": undefined,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "arr3",
       1,
     ],
-    "value": undefined,
   },
   {
     "op": "remove",
@@ -734,7 +736,7 @@ exports[`array 5`] = `
 exports[`array 6`] = `
 [
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr4",
       0,
@@ -744,7 +746,7 @@ exports[`array 6`] = `
     },
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr4",
       1,
@@ -754,7 +756,7 @@ exports[`array 6`] = `
     },
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "arr3",
       1,
@@ -805,12 +807,11 @@ exports[`array length with ref 1`] = `
     },
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "foobar",
       0,
     ],
-    "value": undefined,
   },
 ]
 `;
@@ -824,7 +825,7 @@ exports[`array length with ref 2`] = `
     ],
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "foobar",
       0,
@@ -881,6 +882,16 @@ exports[`array pop with ref 2`] = `
 exports[`array setter with ref 1`] = `
 [
   {
+    "op": "replace",
+    "path": [
+      "foobar",
+      0,
+    ],
+    "value": {
+      "baz": "str",
+    },
+  },
+  {
     "op": "add",
     "path": [
       "f",
@@ -894,6 +905,16 @@ exports[`array setter with ref 1`] = `
 
 exports[`array setter with ref 2`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "foobar",
+      0,
+    ],
+    "value": {
+      "baz": "str",
+    },
+  },
   {
     "op": "remove",
     "path": [
@@ -1169,12 +1190,11 @@ exports[`arrays - modify and shrink 1`] = `
     "value": 4,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "x",
       2,
     ],
-    "value": undefined,
   },
 ]
 `;
@@ -1190,7 +1210,7 @@ exports[`arrays - modify and shrink 2`] = `
     "value": 1,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "x",
       2,
@@ -1249,17 +1269,17 @@ exports[`arrays - multiple splice 1`] = `
     ],
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       1,
     ],
-    "value": 3,
   },
   {
-    "op": "remove",
+    "op": "replace",
     "path": [
-      3,
+      2,
     ],
+    "value": 3,
   },
   {
     "op": "replace",
@@ -1281,14 +1301,14 @@ exports[`arrays - multiple splice 2`] = `
     "value": 1,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       2,
     ],
     "value": 2,
   },
   {
-    "op": "add",
+    "op": "replace",
     "path": [
       4,
     ],
@@ -1380,18 +1400,10 @@ exports[`arrays - prepend then splice middle 1`] = `
     "value": 4,
   },
   {
-    "op": "replace",
-    "path": [
-      "x",
-      2,
-    ],
-    "value": 3,
-  },
-  {
     "op": "remove",
     "path": [
       "x",
-      3,
+      2,
     ],
   },
 ]
@@ -1407,20 +1419,12 @@ exports[`arrays - prepend then splice middle 2`] = `
     ],
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "x",
       1,
     ],
     "value": 2,
-  },
-  {
-    "op": "add",
-    "path": [
-      "x",
-      2,
-    ],
-    "value": 3,
   },
 ]
 `;
@@ -1468,7 +1472,7 @@ exports[`arrays - push multiple 2`] = `
 exports[`arrays - splice (expand) 1`] = `
 [
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "x",
       1,
@@ -1484,7 +1488,7 @@ exports[`arrays - splice (expand) 1`] = `
     "value": 5,
   },
   {
-    "op": "add",
+    "op": "replace",
     "path": [
       "x",
       3,
@@ -1497,26 +1501,26 @@ exports[`arrays - splice (expand) 1`] = `
 exports[`arrays - splice (expand) 2`] = `
 [
   {
+    "op": "remove",
+    "path": [
+      "x",
+      1,
+    ],
+  },
+  {
+    "op": "remove",
+    "path": [
+      "x",
+      1,
+    ],
+  },
+  {
     "op": "replace",
     "path": [
       "x",
       1,
     ],
     "value": 2,
-  },
-  {
-    "op": "remove",
-    "path": [
-      "x",
-      2,
-    ],
-  },
-  {
-    "op": "remove",
-    "path": [
-      "x",
-      2,
-    ],
   },
 ]
 `;
@@ -1668,20 +1672,18 @@ exports[`arrays - splice should should result in remove op. 2`] = `
 exports[`arrays - truncate 1`] = `
 [
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "x",
       1,
     ],
-    "value": undefined,
   },
   {
-    "op": "replace",
+    "op": "remove",
     "path": [
       "x",
-      2,
+      1,
     ],
-    "value": undefined,
   },
 ]
 `;
@@ -1689,7 +1691,7 @@ exports[`arrays - truncate 1`] = `
 exports[`arrays - truncate 2`] = `
 [
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "x",
       1,
@@ -1697,7 +1699,7 @@ exports[`arrays - truncate 2`] = `
     "value": 2,
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "x",
       2,
@@ -3111,45 +3113,9 @@ exports[`same value replacement(array) - 2 1`] = `[]`;
 
 exports[`same value replacement(array) - 2 2`] = `[]`;
 
-exports[`same value replacement(array) - 2 3`] = `
-[
-  {
-    "op": "remove",
-    "path": [
-      2,
-    ],
-  },
-  {
-    "op": "add",
-    "path": [
-      2,
-    ],
-    "value": {
-      "x": 1,
-    },
-  },
-]
-`;
+exports[`same value replacement(array) - 2 3`] = `[]`;
 
-exports[`same value replacement(array) - 2 4`] = `
-[
-  {
-    "op": "add",
-    "path": [
-      2,
-    ],
-    "value": {
-      "x": 1,
-    },
-  },
-  {
-    "op": "remove",
-    "path": [
-      3,
-    ],
-  },
-]
-`;
+exports[`same value replacement(array) - 2 4`] = `[]`;
 
 exports[`same value replacement(map) - 2 1`] = `[]`;
 
