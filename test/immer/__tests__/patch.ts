@@ -1069,6 +1069,12 @@ describe('#468', () => {
         path: [0, 'id'],
         value: 2,
       },
+      // TODO: this is unnecessary
+      {
+        op: 'replace',
+        path: [0],
+        value: { id: 2 },
+      },
       {
         op: 'add',
         path: [1],

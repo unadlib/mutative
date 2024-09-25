@@ -48,6 +48,7 @@ export interface ProxyDraft<T = any> {
   setMap?: Map<any, ProxyDraft>;
   assignedMap?: Map<any, boolean>;
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
+  arrayChanges?: Array<['removed' | 'added', number]>;
 }
 
 interface IPatch {

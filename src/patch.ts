@@ -1,5 +1,16 @@
 import { DraftType, Operation, Patches, ProxyDraft } from './interface';
-import { cloneIfNeeded, escapePath, get, has, isEqual } from './utils';
+import {
+  cloneIfNeeded,
+  escapePath,
+  get,
+  getProxyDraft,
+  getValue,
+  has,
+  isEqual,
+} from './utils';
+
+const REMOVED = Symbol('REMOVED');
+const ADDED = Symbol('ADDED');
 
 function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
@@ -8,64 +19,127 @@ function generateArrayPatches(
   inversePatches: Patches,
   pathAsArray: boolean
 ) {
-  let { original, assignedMap, options } = proxyState;
+  let { original, arrayChanges } = proxyState;
+
+  // console.log('generateArrayPatches', proxyState.key);
+
   let copy = proxyState.copy!;
-  if (copy.length < original.length) {
-    [original, copy] = [copy, original];
-    [patches, inversePatches] = [inversePatches, patches];
-  }
-  for (let index = 0; index < original.length; index += 1) {
-    if (assignedMap!.get(index.toString()) && copy[index] !== original[index]) {
-      const _path = basePath.concat([index]);
-      const path = escapePath(_path, pathAsArray);
-      patches.push({
-        op: Operation.Replace,
-        path,
-        // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
-        value: cloneIfNeeded(copy[index]),
-      });
-      inversePatches.push({
-        op: Operation.Replace,
-        path,
-        // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
-        value: cloneIfNeeded(original[index]),
-      });
+
+  // console.log('original', original);
+  // console.log('copy', copy.map(getValue));
+
+  if (arrayChanges) {
+    const changedOriginal = original.slice();
+    const changedCopy = copy.slice();
+
+    arrayChanges.sort(([, a], [, b]) => a - b);
+    // console.log('arrayChanges', arrayChanges);
+
+    let removedOffset = 0;
+    let addedOffset = 0;
+
+    for (const [op, index] of arrayChanges) {
+      switch (op) {
+        case 'removed':
+          changedCopy.splice(index + addedOffset, 0, REMOVED);
+          removedOffset += 1;
+          break;
+        case 'added':
+          changedOriginal.splice(index + removedOffset, 0, ADDED);
+          addedOffset += 1;
+          break;
+      }
     }
+
+    original = changedOriginal;
+    copy = changedCopy;
   }
-  for (let index = original.length; index < copy.length; index += 1) {
-    const _path = basePath.concat([index]);
-    const path = escapePath(_path, pathAsArray);
-    patches.push({
-      op: Operation.Add,
-      path,
-      // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
-      value: cloneIfNeeded(copy[index]),
-    });
-  }
-  if (original.length < copy.length) {
-    // https://www.rfc-editor.org/rfc/rfc6902#appendix-A.4
-    // For performance, here we only generate an operation that replaces the length of the array,
-    // which is inconsistent with JSON Patch specification
-    const { arrayLengthAssignment = true } = options.enablePatches;
-    if (arrayLengthAssignment) {
-      const _path = basePath.concat(['length']);
-      const path = escapePath(_path, pathAsArray);
-      inversePatches.push({
-        op: Operation.Replace,
-        path,
-        value: original.length,
-      });
-    } else {
-      for (let index = copy.length; original.length < index; index -= 1) {
-        const _path = basePath.concat([index - 1]);
-        const path = escapePath(_path, pathAsArray);
+
+  // console.log('original', original);
+  // console.log('copy', copy.map(getValue));
+
+  let removedOffset = 0;
+  let addedOffset = 0;
+  for (let index = 0; index < original.length; index += 1) {
+    if (getValue(copy[index]) !== original[index]) {
+      // console.log('index', index);
+      // console.log('removedOffset', removedOffset);
+      if (copy[index] === REMOVED && original[index] === ADDED) {
+        removedOffset += 1;
+        addedOffset += 1;
+      } else if (copy[index] === REMOVED) {
+        patches.push({
+          op: Operation.Remove,
+          path: escapePath(
+            basePath.concat([index - removedOffset]),
+            pathAsArray
+          ),
+        });
+        inversePatches.push({
+          op: Operation.Add,
+          path: escapePath(basePath.concat([index - addedOffset]), pathAsArray),
+          // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
+          value: cloneIfNeeded(original[index]),
+        });
+        removedOffset += 1;
+      } else if (original[index] === ADDED) {
+        patches.push({
+          op: Operation.Add,
+          path: escapePath(
+            basePath.concat([index - removedOffset]),
+            pathAsArray
+          ),
+          // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
+          value: cloneIfNeeded(copy[index]),
+        });
         inversePatches.push({
           op: Operation.Remove,
-          path,
+          path: escapePath(basePath.concat([index - addedOffset]), pathAsArray),
+        });
+        addedOffset += 1;
+      } else {
+        const item = getProxyDraft(copy[index]);
+
+        if (item && !item.operated && isEqual(original[index], item.original)) {
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+
+        patches.push({
+          op: Operation.Replace,
+          path: escapePath(
+            basePath.concat([index - removedOffset]),
+            pathAsArray
+          ),
+          // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
+          value: cloneIfNeeded(copy[index]),
+        });
+        inversePatches.push({
+          op: Operation.Replace,
+          path: escapePath(basePath.concat([index - addedOffset]), pathAsArray),
+          // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
+          value: cloneIfNeeded(original[index]),
         });
       }
     }
   }
+
+  // !case: support for insertion into an index that exceeds the length of the array
+  for (let index = original.length; index < copy.length; index += 1) {
+    patches.push({
+      op: Operation.Add,
+      path: escapePath(basePath.concat([index]), pathAsArray),
+      // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
+      value: cloneIfNeeded(copy[index]),
+    });
+    inversePatches.push({
+      op: Operation.Remove,
+      path: escapePath(basePath.concat([original.length]), pathAsArray),
+    });
+  }
+
+  // console.log('patches', [...patches]);
+  // console.log('inversePatches', [...inversePatches]);
 }
 
 function generatePatchesFromAssigned(
