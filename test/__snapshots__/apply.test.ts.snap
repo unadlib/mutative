@@ -881,6 +881,16 @@ exports[`array pop with ref 2`] = `
 exports[`array setter with ref 1`] = `
 [
   {
+    "op": "replace",
+    "path": [
+      "foobar",
+      0,
+    ],
+    "value": {
+      "baz": "str",
+    },
+  },
+  {
     "op": "add",
     "path": [
       "f",
@@ -894,6 +904,16 @@ exports[`array setter with ref 1`] = `
 
 exports[`array setter with ref 2`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "foobar",
+      0,
+    ],
+    "value": {
+      "baz": "str",
+    },
+  },
   {
     "op": "remove",
     "path": [

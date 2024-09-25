@@ -1650,17 +1650,52 @@ describe('length change tracking', () => {
     );
   });
 
-  test('move', () => {
-    test_([0, 1, 2, 3], (draft) => {
-      const moved = draft[1];
-      draft.splice(1, 1);
-      draft.splice(2, 0, moved);
+  describe('move', () => {
+    const numbers = [0, 1, 2, 3];
+    const objects = numbers.map((id) => ({ id }));
+
+    test('move 1 item', () => {
+      test_(objects, (draft) => {
+        const moved = draft[1];
+        draft.splice(1, 1);
+        draft.splice(2, 0, moved);
+      });
+
+      test_(objects, (draft) => {
+        const moved = draft[2];
+        draft.splice(2, 1);
+        draft.splice(1, 0, moved);
+      });
     });
 
-    test_([0, 1, 2, 3], (draft) => {
-      const moved = draft[1];
-      draft.splice(3, 0, moved);
-      draft.splice(1, 1);
+    test('move 2 consecutive items', () => {
+      test_(objects, (draft) => {
+        const moved = draft.slice(0, 2);
+        draft.splice(0, 2);
+        draft.splice(1, 0, ...moved);
+      });
+
+      test_(objects, (draft) => {
+        const moved = draft.slice(1, 3);
+        draft.splice(1, 2);
+        draft.splice(0, 0, ...moved);
+      });
+    });
+
+    test('move 2 separate items', () => {
+      test_(objects, (draft) => {
+        const moved = [draft[0], draft[2]];
+        draft.splice(0, 1);
+        draft.splice(1, 1);
+        draft.splice(2, 0, ...moved);
+      });
+
+      test_(objects, (draft) => {
+        const moved = [draft[1], draft[3]];
+        draft.splice(3, 1);
+        draft.splice(1, 1);
+        draft.splice(0, 0, ...moved);
+      });
     });
   });
 });

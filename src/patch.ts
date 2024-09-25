@@ -25,6 +25,9 @@ function generateArrayPatches(
 
   let copy = proxyState.copy!;
 
+  // console.log('original', original);
+  // console.log('copy', copy.map(getValue));
+
   if (arrayChanges) {
     const changedOriginal = original.slice();
     const changedCopy = copy.slice();
@@ -53,7 +56,7 @@ function generateArrayPatches(
   }
 
   // console.log('original', original);
-  // console.log('copy', copy);
+  // console.log('copy', copy.map(getValue));
 
   let removedOffset = 0;
   let addedOffset = 0;
@@ -97,7 +100,7 @@ function generateArrayPatches(
       } else {
         const item = getProxyDraft(copy[index]);
 
-        if (item && !item.operated) {
+        if (item && !item.operated && isEqual(original[index], item.original)) {
           // eslint-disable-next-line no-continue
           continue;
         }
