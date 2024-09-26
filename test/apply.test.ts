@@ -8,7 +8,7 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { create, apply, Patches } from '../src';
+import { create, apply, Patches, original } from '../src';
 import { deepClone } from '../src/utils';
 
 test('classic case', () => {
@@ -1346,4 +1346,68 @@ test('merge multiple patches', () => {
     ...inversePatches2,
   ]);
   expect(errorPrevState).not.toEqual(arr);
+});
+
+test('#64 - Invalid inversePatches when array length changes', () => {
+  checkPatches(
+    [0, 1, 2, 3].map((id) => ({ id })),
+    (draft) => {
+      draft[3].id *= 10;
+      draft.splice(0, 1);
+    }
+  );
+});
+
+test('modify deep object', () => {
+  const a = { a: 1 };
+  const b = { b: 2 };
+  const c = { c: 3 };
+  const set1 = new Set([a, b]);
+  const set2 = new Set([c]);
+  // @ts-ignore
+  const map = new Map([
+    ['set1', set1],
+    ['set2', set2],
+  ]);
+  const base = { map };
+
+  function first(set: any) {
+    return Array.from(set.values())[0];
+  }
+
+  function second(set: any) {
+    return Array.from(set.values())[1];
+  }
+
+  const fn = (draft: any) => {
+    const v = first(draft.map.get('set1'));
+    expect(original(v)).toBe(a);
+    expect(v).toEqual(a);
+    expect(v).not.toBe(a);
+    // @ts-ignore
+    v.a++;
+  };
+
+  const [state, patches, inversePatches] = create(base, fn, {
+    enablePatches: true,
+  });
+
+  const prevState = apply(state, inversePatches);
+  expect(prevState).toEqual(base);
+  const nextState = apply(base, patches);
+  expect(nextState).toEqual(state);
+
+  expect(state).toMatchSnapshot();
+  expect(patches).toMatchSnapshot();
+  expect(inversePatches).toMatchSnapshot();
+
+  expect(a.a).toBe(1);
+  expect(base.map.get('set1')).toBe(set1);
+  expect(first(base.map.get('set1'))).toBe(a);
+  expect(state).not.toBe(base);
+  expect(state.map).not.toBe(base.map);
+  expect(state.map.get('set1')).not.toBe(base.map.get('set1'));
+  expect(second(base.map.get('set1'))).toBe(b);
+  expect(base.map.get('set2')).toBe(set2);
+  expect(first(state.map.get('set1'))).toEqual({ a: 2 });
 });

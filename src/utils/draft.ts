@@ -1,5 +1,6 @@
 import { DraftType, Mark, ProxyDraft } from '../interface';
 import { dataTypes, PROXY_DRAFT } from '../constant';
+import { has } from './proto';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
@@ -45,15 +46,21 @@ export function getPath(
 ): (string | number | object)[] | null {
   if (Object.hasOwnProperty.call(target, 'key')) {
     // check if the parent is a draft and the original value is not equal to the current value
-    const proxyDraft = getProxyDraft(get(target.parent!.copy, target.key!));
+    const parentCopy = target.parent!.copy;
+    const proxyDraft = getProxyDraft(get(parentCopy, target.key!));
     if (proxyDraft !== null && proxyDraft?.original !== target.original) {
       return null;
     }
-    path.push(
-      target.parent!.type === DraftType.Set
-        ? Array.from(target.parent!.setMap!.keys()).indexOf(target.key)
-        : target.key
-    );
+    const isSet = target.parent!.type === DraftType.Set;
+    const key = isSet
+      ? Array.from(target.parent!.setMap!.keys()).indexOf(target.key)
+      : target.key;
+    // check if the key is still in the next state parent
+    if (
+      !((isSet && parentCopy.size > (key as number)) || has(parentCopy, key!))
+    )
+      return null;
+    path.push(key);
   }
   if (target.parent) {
     return getPath(target.parent, path);
