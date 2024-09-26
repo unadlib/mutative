@@ -1,5 +1,85 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`#64 - Invalid inversePatches when array length changes 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      0,
+    ],
+    "value": {
+      "id": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      1,
+    ],
+    "value": {
+      "id": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      2,
+    ],
+    "value": {
+      "id": 30,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "length",
+    ],
+    "value": 3,
+  },
+]
+`;
+
+exports[`#64 - Invalid inversePatches when array length changes 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      0,
+    ],
+    "value": {
+      "id": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      1,
+    ],
+    "value": {
+      "id": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      2,
+    ],
+    "value": {
+      "id": 2,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      3,
+    ],
+    "value": {
+      "id": 3,
+    },
+  },
+]
+`;
+
 exports[`#466 mapChangeBug 1`] = `
 [
   {
@@ -2589,6 +2669,56 @@ exports[`minimum amount of changes 2`] = `
     "value": {
       "a": 4,
     },
+  },
+]
+`;
+
+exports[`modify deep object 1`] = `
+{
+  "map": Map {
+    "set1" => Set {
+      {
+        "a": 2,
+      },
+      {
+        "b": 2,
+      },
+    },
+    "set2" => Set {
+      {
+        "c": 3,
+      },
+    },
+  },
+}
+`;
+
+exports[`modify deep object 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "set1",
+      0,
+      "a",
+    ],
+    "value": 2,
+  },
+]
+`;
+
+exports[`modify deep object 3`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "set1",
+      0,
+      "a",
+    ],
+    "value": 1,
   },
 ]
 `;
