@@ -1,6 +1,6 @@
-on: ["push"]
+on: ["pull_request"]
 
-name: Push Test Coveralls
+name: Test Coverage
 
 jobs:
 
@@ -19,10 +19,9 @@ jobs:
     - name: yarn install, yarn test:coverage
       run: |
         yarn install
-        echo repo_token: ${{ secrets.COVERALLS_REPO_TOKEN }} > .coveralls.yml
         yarn test:coverage
 
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
+    - name: Coverage
+      uses: romeovs/lcov-reporter-action@v0.4.0
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        lcov-file: ./coverage/lcov.info
