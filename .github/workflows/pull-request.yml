@@ -19,7 +19,7 @@ jobs:
     - name: yarn install, yarn test:coverage
       run: |
         yarn install
-        yarn test:coverage
+        yarn test --coverage
 
     - name: Coverage
       uses: romeovs/lcov-reporter-action@v0.4.0
