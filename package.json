@@ -25,6 +25,7 @@
   ],
   "scripts": {
     "test": "jest",
+    "type-check": "tsc --noEmit",
     "clean": "rimraf dist",
     "test:coverage": "jest --coverage && coveralls < coverage/lcov.info",
     "benchmark": "yarn build && yarn benchmark:base && yarn benchmark:object && yarn benchmark:array && yarn benchmark:class",
