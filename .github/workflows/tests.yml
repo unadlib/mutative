@@ -1,6 +1,9 @@
-on: ["push"]
+on:
+  push:
+    branches:
+      - main
 
-name: Push Test Coveralls
+name: Test with Coveralls
 
 jobs:
 
