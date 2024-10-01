@@ -200,7 +200,8 @@ test('nested draft', () => {
         },
       },
     };
-    draft.set.values().next().value.d.d = {
+    // @ts-ignore
+    draft.set.values().next().value!.d!.d = {
       f: {
         f: {
           f: draft.c,
@@ -213,8 +214,10 @@ test('nested draft', () => {
     expect((d.d as Data).f.f.f).toEqual({ a: 2 });
     expect(isDraft((d.d as Data).f.f.f)).toBeFalsy();
     expect((map.get('d')!.d.d as Data).f.f.f).toEqual({ a: 2 });
+    // @ts-ignore
     expect(isDraft((map.get('d')!.d.d as Data).f.f.f)).toBeFalsy();
-    const f = set.values().next().value.d.d.f.f.f;
+    // @ts-ignore
+    const f = set.values().next().value!.d.d.f.f.f;
     expect(f).toEqual({ a: 2 });
     expect(isDraft(f)).toBeFalsy();
     // the node `d` has been changed

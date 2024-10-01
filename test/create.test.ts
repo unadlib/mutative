@@ -507,7 +507,7 @@ describe('base', () => {
 
     const state = create(data, (draft) => {
       const iterator = draft.map.values();
-      iterator.next().value.x = 1;
+      iterator.next().value!.x = 1;
       for (const [key, item] of draft.map) {
         if (item.x === 1) {
           item.c = 2;
@@ -540,7 +540,7 @@ describe('base', () => {
     };
 
     const state = create(data, (draft) => {
-      draft.set.values().next().value.x = 1;
+      draft.set.values().next().value!.x = 1;
       const [first] = draft.set.values();
       expect(draft.set.has(first)).toBeTruthy();
       for (const item of draft.set) {
@@ -648,7 +648,7 @@ describe('no updates', () => {
     };
 
     const state = create(data, (draft) => {
-      draft.set.values().next().value.a = 1;
+      draft.set.values().next().value!.a = 1;
     });
     expect(state).toBe(data);
   });

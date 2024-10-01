@@ -399,7 +399,7 @@ test('base root set', () => {
   const data = new Set([{ a: 1 }, { a: 2 }]);
 
   const state = create(data, (draft) => {
-    draft.values().next().value.a = 3;
+    draft.values().next().value!.a = 3;
   });
 
   expect(state).not.toBe(data);
@@ -414,7 +414,7 @@ test('base set', () => {
   };
 
   const state = create(data, (draft) => {
-    draft.set.values().next().value.a = 3;
+    draft.set.values().next().value!.a = 3;
   });
 
   expect(state).not.toBe(data);
@@ -461,7 +461,7 @@ test('delete for set', () => {
 
   const state = create(data, (draft) => {
     const draftA = draft.set.values().next().value;
-    draft.set.delete(draftA);
+    draft.set.delete(draftA!);
   });
   expect(state.set.size).toBe(0);
 });
@@ -1497,7 +1497,7 @@ test('base map with deep object', () => {
   };
 
   const state = create(data, (draft) => {
-    draft.map.values().next().value.x = 1;
+    draft.map.values().next().value!.x = 1;
     for (const [key, item] of draft.map) {
       if (item.x === 1) {
         item.c = 2;
@@ -1528,7 +1528,7 @@ test('base set deep object', () => {
   const state = create(
     data,
     (draft) => {
-      draft.set.values().next().value.x = 1;
+      draft.set.values().next().value!.x = 1;
       const [first] = draft.set.values();
       expect(draft.set.has(first)).toBeTruthy();
       for (const item of draft.set) {

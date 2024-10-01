@@ -450,7 +450,7 @@ test('set with mutable mark in strict mode', () => {
     data,
     (draft) => {
       unsafe(() => {
-        draft.foo.values().next().value.bar = 'new str';
+        draft.foo.values().next().value!.bar = 'new str';
       });
     },
     {
@@ -468,7 +468,7 @@ test('set with mutable mark in strict mode', () => {
     create(
       data,
       (draft) => {
-        draft.foo.values().next().value.bar = 'new str';
+        draft.foo.values().next().value!.bar = 'new str';
       },
       {
         strict: true,

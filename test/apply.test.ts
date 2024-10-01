@@ -336,12 +336,12 @@ test('set', () => {
     },
     (draft) => {
       draft.set.add({ bar: 'str' });
-      draft.set.values().next().value.bar = 'new str0';
+      draft.set.values().next().value!.bar = 'new str0';
       draft.set1.clear();
       const a = draft.set.values().next().value;
-      draft.set3.add(a);
-      a.bar = 'new str1';
-      draft.set.delete(a);
+      draft.set3.add(a!);
+      a!.bar = 'new str1';
+      draft.set.delete(a!);
     }
   );
 });
