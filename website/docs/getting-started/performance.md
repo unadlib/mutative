@@ -115,7 +115,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 
 ## More Performance Testing Scenarios
 
-Mutative is up to `2.5X-73.8X` faster than Immer:
+Mutative is up to `2.5X-82.9X` faster than Immer:
 
 ![Mutative vs Immer - All benchmark results by average multiplier](img/all.jpg)
 
