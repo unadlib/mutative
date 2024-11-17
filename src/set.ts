@@ -152,6 +152,8 @@ export const setHandler = {
 };
 
 if (Set.prototype.difference) {
+  // for compatibility with new Set methods
+  // https://github.com/tc39/proposal-set-methods
   Object.assign(setHandler, {
     intersection(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
       return Set.prototype.intersection.call(new Set(this.values()), other);
