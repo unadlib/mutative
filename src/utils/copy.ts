@@ -34,7 +34,9 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
   if (Array.isArray(original)) {
     return Array.prototype.concat.call(original);
   } else if (original instanceof Set) {
-    return new Set(original.values());
+    return Set.prototype.difference
+      ? Set.prototype.difference.call(original, new Set())
+      : new Set(original.values());
   } else if (original instanceof Map) {
     return new Map(original);
   } else if (
