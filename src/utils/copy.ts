@@ -109,11 +109,12 @@ function deepClone(target: any) {
     return new Map(iterable);
   }
   if (target instanceof Set) {
+    const iterable = Array.from(target).map(deepClone);
     if (!isBaseSetInstance(target)) {
       const SubClass = Object.getPrototypeOf(target).constructor;
-      return new SubClass(Array.from(target).map(deepClone));
+      return new SubClass(iterable);
     }
-    return new Set(Array.from(target).map(deepClone));
+    return new Set(iterable);
   }
   const copy = Object.create(Object.getPrototypeOf(target));
   for (const key in target) copy[key] = deepClone(target[key]);
