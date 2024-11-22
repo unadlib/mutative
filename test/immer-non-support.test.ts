@@ -617,3 +617,28 @@ test('#61 - type issue: current of Draft<T> type should return T type', () => {
     });
   }
 });
+
+test('set - new Set API', () => {
+  // @ts-ignore
+  if (!Set.prototype.difference) {
+    console.warn('Set.prototype.difference is not supported');
+    return;
+  }
+  {
+    enableMapSet();
+    const odds = new Set([1, 3, 5, 7, 9]);
+    const squares = new Set([1, 4, 9]);
+    const state = produce(odds, (draft) => {
+      // @ts-ignore
+      expect(draft.intersection(squares)).toEqual(new Set([])); // it should be `new Set([1, 9])`
+    });
+  }
+  {
+    const odds = new Set([1, 3, 5, 7, 9]);
+    const squares = new Set([1, 4, 9]);
+    const state = create(odds, (draft) => {
+      // @ts-ignore
+      expect(draft.intersection(squares)).toEqual(new Set([1, 9]));
+    });
+  }
+});

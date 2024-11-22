@@ -151,4 +151,35 @@ export const setHandler = {
   },
 };
 
+if (Set.prototype.difference) {
+  // for compatibility with new Set methods
+  // https://github.com/tc39/proposal-set-methods
+  Object.assign(setHandler, {
+    intersection(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
+      return Set.prototype.intersection.call(new Set(this.values()), other);
+    },
+    union(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
+      return Set.prototype.union.call(new Set(this.values()), other);
+    },
+    difference(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
+      return Set.prototype.difference.call(new Set(this.values()), other);
+    },
+    symmetricDifference(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
+      return Set.prototype.symmetricDifference.call(
+        new Set(this.values()),
+        other
+      );
+    },
+    isSubsetOf(this: Set<any>, other: ReadonlySetLike<any>): boolean {
+      return Set.prototype.isSubsetOf.call(new Set(this.values()), other);
+    },
+    isSupersetOf(this: Set<any>, other: ReadonlySetLike<any>): boolean {
+      return Set.prototype.isSupersetOf.call(new Set(this.values()), other);
+    },
+    isDisjointFrom(this: Set<any>, other: ReadonlySetLike<any>): boolean {
+      return Set.prototype.isDisjointFrom.call(new Set(this.values()), other);
+    },
+  });
+}
+
 export const setHandlerKeys = Reflect.ownKeys(setHandler);
