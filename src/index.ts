@@ -2,7 +2,7 @@ export { makeCreator } from './makeCreator';
 export { create } from './create';
 export { apply } from './apply';
 export { original } from './original';
-export { current, getCurrent } from './current';
+export { current } from './current';
 export { unsafe } from './unsafe';
 export { rawReturn } from './rawReturn';
 export { isDraft } from './utils/draft';

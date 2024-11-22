@@ -19,7 +19,7 @@ import {
   createDraft,
   finishDraft,
 } from 'immer';
-import { create, apply, current, getCurrent } from '../src';
+import { create, apply, current } from '../src';
 
 enableMapSet();
 
@@ -609,7 +609,7 @@ test('#61 - type issue: current of Draft<T> type should return T type', () => {
   {
     function test<T extends { x: { y: ReadonlySet<string> } }>(base: T): T {
       const [draft, f] = create(base);
-      const currentValue: T = getCurrent(draft);
+      const currentValue: T = current(draft);
       return f();
     }
     expect(test({ x: { y: new Set(['a', 'b']) } })).toEqual({

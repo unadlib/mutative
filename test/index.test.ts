@@ -15,7 +15,6 @@ import {
   markSimpleObject,
   rawReturn,
   makeCreator,
-  getCurrent,
   castMutable,
 } from '../src';
 import { PROXY_DRAFT } from '../src/constant';
@@ -4091,10 +4090,10 @@ test('#61 - type issue: current of Draft<T> type should return T type', () => {
   function test<T extends { x: { y: ReadonlySet<string> } }>(base: T): T {
     const [draft, f] = create(base);
     const mutableValue: T = castMutable(draft);
-    const currentValue: T = getCurrent(draft);
+    const currentValue: T = current(draft);
     expect(() => {
       // @ts-expect-error
-      const value = getCurrent({ x: { y: new Set(['a', 'b']) } } as T);
+      const value = current({ x: { y: new Set(['a', 'b']) } } as T);
     }).toThrowErrorMatchingInlineSnapshot(
       `"current() is only used for Draft, parameter: [object Object]"`
     );

@@ -1,4 +1,4 @@
-import { DraftType, type Draft, type ProxyDraft } from './interface';
+import { type Draft, DraftType, type ProxyDraft } from './interface';
 import {
   forEach,
   get,
@@ -59,7 +59,7 @@ export function handleReturnValue<T extends object>(options: {
   }
 }
 
-function getCurrentValue(target: any) {
+function getCurrent(target: any) {
   const proxyDraft = getProxyDraft(target);
   if (!isDraftable(target, proxyDraft?.options)) return target;
   const type = getType(target);
@@ -70,8 +70,8 @@ function getCurrentValue(target: any) {
       type === DraftType.Map
         ? new Map(target)
         : type === DraftType.Set
-        ? Array.from(proxyDraft!.setMap!.values()!)
-        : shallowCopy(target, proxyDraft?.options);
+          ? Array.from(proxyDraft!.setMap!.values()!)
+          : shallowCopy(target, proxyDraft?.options);
   }
 
   if (proxyDraft) {
@@ -90,7 +90,7 @@ function getCurrentValue(target: any) {
 
   forEach(currentValue, (key, value) => {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
-    const newValue = getCurrentValue(value);
+    const newValue = getCurrent(value);
     if (newValue !== value) {
       if (currentValue === target) ensureShallowCopy();
       set(currentValue, key, newValue);
@@ -117,34 +117,12 @@ function getCurrentValue(target: any) {
  * );
  * ```
  */
-export function current<T extends object>(target: T): T {
+export function current<T extends object>(target: Draft<T>): T;
+/** @deprecated You should call current only on `Draft<T>` types. */
+export function current<T extends object>(target: T): T;
+export function current<T extends object>(target: T | Draft<T>): T {
   if (!isDraft(target)) {
     throw new Error(`current() is only used for Draft, parameter: ${target}`);
   }
-  return getCurrentValue(target);
-}
-
-/**
- * `getCurrent(draft)` to get current state in the draft mutation function.
- *
- * ## Example
- *
- * ```ts
- * import { create, getCurrent } from '../index';
- *
- * const baseState = { foo: { bar: 'str' }, arr: [] };
- * const state = create(
- *   baseState,
- *   (draft) => {
- *     draft.foo.bar = 'str2';
- *     expect(getCurrent(draft.foo)).toEqual({ bar: 'str2' });
- *   },
- * );
- * ```
- */
-export function getCurrent<T extends object>(target: Draft<T>): T {
-  if (!isDraft(target)) {
-    throw new Error(`current() is only used for Draft, parameter: ${target}`);
-  }
-  return getCurrentValue(target);
+  return getCurrent(target);
 }

@@ -306,3 +306,13 @@ test('nested create() - Avoid deep copies', () => {
     });
   });
 });
+
+
+test('#61 - type issue: current of Draft<T> type should return T type', () => {
+  function test<T extends { x: { y: ReadonlySet<string> } }>(base: T): T {
+    const [draft] = create(base);
+    const currentValue0 = current(draft); // Type Draft<T> is assignable to type T
+    const currentValue1: T = current(base); // T is assignable to type T
+    return currentValue0;
+  }
+});
