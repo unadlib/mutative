@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prefer-template */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable arrow-body-style */
@@ -14,6 +15,7 @@ import {
   markSimpleObject,
   rawReturn,
   makeCreator,
+  castMutable,
 } from '../src';
 import { PROXY_DRAFT } from '../src/constant';
 
@@ -4082,4 +4084,22 @@ test('#59 - Failure to apply inverse patchset(Map)', () => {
   expect(reverted).toEqual(myObj);
   const reverted2 = apply(myObj, patchset);
   expect(reverted2).toEqual(newState);
+});
+
+test('#61 - type issue: current of Draft<T> type should return T type', () => {
+  function test<T extends { x: { y: ReadonlySet<string> } }>(base: T): T {
+    const [draft, f] = create(base);
+    const mutableValue: T = castMutable(draft);
+    const currentValue: T = current(draft);
+    expect(() => {
+      // @ts-expect-error
+      const value = current({ x: { y: new Set(['a', 'b']) } } as T);
+    }).toThrowErrorMatchingInlineSnapshot(
+      `"current() is only used for Draft, parameter: [object Object]"`
+    );
+    return f();
+  }
+  expect(test({ x: { y: new Set(['a', 'b']) } })).toEqual({
+    x: { y: new Set(['a', 'b']) },
+  });
 });

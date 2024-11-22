@@ -9,7 +9,7 @@ export { isDraft } from './utils/draft';
 export { isDraftable } from './utils/draft';
 export { markSimpleObject } from './utils/marker';
 
-export { castDraft, castImmutable } from './utils/cast';
+export { castDraft, castImmutable, castMutable } from './utils/cast';
 export type {
   Immutable,
   Draft,

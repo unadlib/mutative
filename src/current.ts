@@ -1,4 +1,4 @@
-import { DraftType, ProxyDraft } from './interface';
+import { type Draft, DraftType, type ProxyDraft } from './interface';
 import {
   forEach,
   get,
@@ -70,8 +70,8 @@ function getCurrent(target: any) {
       type === DraftType.Map
         ? new Map(target)
         : type === DraftType.Set
-        ? Array.from(proxyDraft!.setMap!.values()!)
-        : shallowCopy(target, proxyDraft?.options);
+          ? Array.from(proxyDraft!.setMap!.values()!)
+          : shallowCopy(target, proxyDraft?.options);
   }
 
   if (proxyDraft) {
@@ -117,7 +117,10 @@ function getCurrent(target: any) {
  * );
  * ```
  */
-export function current<T extends object>(target: T): T {
+export function current<T extends object>(target: Draft<T>): T;
+/** @deprecated You should call current only on `Draft<T>` types. */
+export function current<T extends object>(target: T): T;
+export function current<T extends object>(target: T | Draft<T>): T {
   if (!isDraft(target)) {
     throw new Error(`current() is only used for Draft, parameter: ${target}`);
   }
