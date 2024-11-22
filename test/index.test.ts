@@ -4103,3 +4103,118 @@ test('#61 - type issue: current of Draft<T> type should return T type', () => {
     x: { y: new Set(['a', 'b']) },
   });
 });
+
+describe('set - new API', () => {
+  // @ts-ignore
+  if (!Set.prototype.difference) {
+    return;
+  }
+  test('set - without Set.prototype.difference', () => {
+    // @ts-ignore
+    const difference = Set.prototype.difference;
+    // @ts-ignore
+    delete Set.prototype.difference;
+    const odds = new Set([{a: 1}]);
+    const state = create({ odds }, (draft) => {
+      // @ts-ignore
+      draft.odds.values().next().value.a = 2;
+    });
+    // @ts-ignore
+    Set.prototype.difference = difference;
+  });
+
+  test('set - Set.prototype.intersection', () => {
+    const odds = new Set([1, 3, 5, 7, 9]);
+    const squares = new Set([1, 4, 9]);
+    const state = create(odds, (draft) => {
+      // @ts-ignore
+      expect(draft.intersection(squares)).toEqual(new Set([1, 9]));
+    });
+  });
+
+  test('set - Set.prototype.union', () => {
+    const evens = new Set([2, 4, 6, 8]);
+    const squares = new Set([1, 4, 9]);
+    const state = create(evens, (draft) => {
+      // @ts-ignore
+      expect(draft.union(squares)).toEqual(new Set([2, 4, 6, 8, 1, 9]));
+    });
+  });
+
+  test('set - Set.prototype.difference', () => {
+    const odds = new Set([1, 3, 5, 7, 9]);
+    const squares = new Set([1, 4, 9]);
+    const state = create(odds, (draft) => {
+      // @ts-ignore
+      expect(draft.difference(squares)).toEqual(new Set([3, 5, 7]));
+    });
+  });
+
+  test('set - Set.prototype.symmetricDifference', () => {
+    const evens = new Set([2, 4, 6, 8]);
+    const squares = new Set([1, 4, 9]);
+    const state = create(evens, (draft) => {
+      // @ts-ignore
+      expect(draft.symmetricDifference(squares)).toEqual(
+        new Set([2, 6, 8, 1, 9])
+      );
+    });
+  });
+
+  test('set - Set.prototype.isSubsetOf', () => {
+    {
+      const fours = new Set([4, 8, 12, 16]);
+      const evens = new Set([2, 4, 6, 8, 10, 12, 14, 16, 18]);
+      const state = create(fours, (draft) => {
+        // @ts-ignore
+        expect(draft.isSubsetOf(evens)).toBe(true);
+      });
+    }
+    {
+      const primes = new Set([2, 3, 5, 7, 11, 13, 17, 19]);
+      const odds = new Set([3, 5, 7, 9, 11, 13, 15, 17, 19]);
+      const state = create(primes, (draft) => {
+        // @ts-ignore
+        expect(draft.isSubsetOf(odds)).toBe(false);
+      });
+    }
+  });
+
+  test('set - Set.prototype.isSupersetOf', () => {
+    {
+      const evens = new Set([2, 4, 6, 8, 10, 12, 14, 16, 18]);
+      const fours = new Set([4, 8, 12, 16]);
+      const state = create(evens, (draft) => {
+        // @ts-ignore
+        expect(draft.isSupersetOf(fours)).toBe(true);
+      });
+    }
+    {
+      const primes = new Set([2, 3, 5, 7, 11, 13, 17, 19]);
+      const odds = new Set([3, 5, 7, 9, 11, 13, 15, 17, 19]);
+      const state = create(odds, (draft) => {
+        // @ts-ignore
+        expect(draft.isSupersetOf(primes)).toBe(false);
+      });
+    }
+  });
+
+  test('set - Set.prototype.isDisjointFrom', () => {
+    {
+      const primes = new Set([2, 3, 5, 7, 11, 13, 17, 19]);
+      const squares = new Set([1, 4, 9, 16]);
+      const state = create(primes, (draft) => {
+        // @ts-ignore
+        expect(draft.isDisjointFrom(squares)).toBe(true);
+      });
+    }
+    {
+      const composites = new Set([4, 6, 8, 9, 10, 12, 14, 15, 16, 18]);
+      const squares = new Set([1, 4, 9, 16]);
+      const state = create(composites, (draft) => {
+        // @ts-ignore
+        expect(draft.isDisjointFrom(squares)).toBe(false);
+      });
+    }
+  });
+});
