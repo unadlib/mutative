@@ -154,6 +154,8 @@ export const setHandler = {
 if (Set.prototype.difference) {
   // for compatibility with new Set methods
   // https://github.com/tc39/proposal-set-methods
+  // And `https://github.com/tc39/proposal-set-methods/blob/main/details.md#symbolspecies` has some details about the `@@species` symbol.
+  // So we can't use SubSet instance constructor to get the constructor of the SubSet instance.
   Object.assign(setHandler, {
     intersection(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
       return Set.prototype.intersection.call(new Set(this.values()), other);

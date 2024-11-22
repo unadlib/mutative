@@ -4,6 +4,8 @@ import {
   get,
   getProxyDraft,
   getType,
+  isBaseMapInstance,
+  isBaseSetInstance,
   isDraft,
   isDraftable,
   isEqual,
@@ -68,7 +70,9 @@ function getCurrent(target: any) {
   function ensureShallowCopy() {
     currentValue =
       type === DraftType.Map
-        ? new Map(target)
+        ? !isBaseMapInstance(target)
+          ? new (Object.getPrototypeOf(target).constructor)(target)
+          : new Map(target)
         : type === DraftType.Set
           ? Array.from(proxyDraft!.setMap!.values()!)
           : shallowCopy(target, proxyDraft?.options);
@@ -96,7 +100,13 @@ function getCurrent(target: any) {
       set(currentValue, key, newValue);
     }
   });
-  return type === DraftType.Set ? new Set(currentValue) : currentValue;
+  if (type === DraftType.Set) {
+    const value = proxyDraft?.original ?? currentValue;
+    return !isBaseSetInstance(value)
+      ? new (Object.getPrototypeOf(value).constructor)(currentValue)
+      : new Set(currentValue);
+  }
+  return currentValue;
 }
 
 /**

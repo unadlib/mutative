@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`current() for Custom Set/Map draft 1`] = `
+{
+  "a": Set {
+    {
+      "id": 42,
+    },
+    {
+      "id": 43,
+    },
+  },
+  "b": Map {
+    1 => {
+      "id": 42,
+    },
+    2 => {
+      "id": 43,
+    },
+  },
+  "x": {
+    "y": {
+      "z": {
+        "k": 43,
+      },
+    },
+  },
+}
+`;
+
+exports[`current() for Custom Set/Map draft 2`] = `
+{
+  "a": Set {
+    {
+      "id": 42,
+    },
+    {
+      "id": 43,
+    },
+    Set {
+      {},
+    },
+  },
+  "b": Map {
+    1 => {
+      "id": 42,
+    },
+    2 => {
+      "id": 43,
+    },
+  },
+  "x": {
+    "y": {
+      "z": {
+        "k": 43,
+      },
+    },
+  },
+}
+`;

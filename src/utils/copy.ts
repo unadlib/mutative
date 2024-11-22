@@ -1,6 +1,7 @@
 import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
+import { isBaseMapInstance, isBaseSetInstance } from './proto';
 
 function strictCopy(target: any) {
   const copy = Object.create(Object.getPrototypeOf(target));
@@ -34,10 +35,18 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
   if (Array.isArray(original)) {
     return Array.prototype.concat.call(original);
   } else if (original instanceof Set) {
+    if (!isBaseSetInstance(original)) {
+      const SubClass = Object.getPrototypeOf(original).constructor;
+      return new SubClass(original.values());
+    }
     return Set.prototype.difference
       ? Set.prototype.difference.call(original, new Set())
       : new Set(original.values());
   } else if (original instanceof Map) {
+    if (!isBaseMapInstance(original)) {
+      const SubClass = Object.getPrototypeOf(original).constructor;
+      return new SubClass(original);
+    }
     return new Map(original);
   } else if (
     options?.mark &&
@@ -88,11 +97,25 @@ function deepClone<T>(target: T): T;
 function deepClone(target: any) {
   if (!isDraftable(target)) return getValue(target);
   if (Array.isArray(target)) return target.map(deepClone);
-  if (target instanceof Map)
-    return new Map(
-      Array.from(target.entries()).map(([k, v]) => [k, deepClone(v)])
-    );
-  if (target instanceof Set) return new Set(Array.from(target).map(deepClone));
+  if (target instanceof Map) {
+    const iterable = Array.from(target.entries()).map(([k, v]) => [
+      k,
+      deepClone(v),
+    ]) as Iterable<readonly [any, any]>;
+    if (!isBaseMapInstance(target)) {
+      const SubClass = Object.getPrototypeOf(target).constructor;
+      return new SubClass(iterable);
+    }
+    return new Map(iterable);
+  }
+  if (target instanceof Set) {
+    const iterable = Array.from(target).map(deepClone);
+    if (!isBaseSetInstance(target)) {
+      const SubClass = Object.getPrototypeOf(target).constructor;
+      return new SubClass(iterable);
+    }
+    return new Set(iterable);
+  }
   const copy = Object.create(Object.getPrototypeOf(target));
   for (const key in target) copy[key] = deepClone(target[key]);
   return copy;
