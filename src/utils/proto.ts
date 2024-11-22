@@ -15,3 +15,11 @@ export function getDescriptor(target: object, key: PropertyKey) {
   }
   return;
 }
+
+export function isBaseSetInstance(obj: any) {
+  return Object.getPrototypeOf(obj) === Set.prototype;
+}
+
+export function isBaseMapInstance(obj: any) {
+  return Object.getPrototypeOf(obj) === Map.prototype;
+}

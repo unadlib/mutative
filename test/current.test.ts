@@ -307,7 +307,6 @@ test('nested create() - Avoid deep copies', () => {
   });
 });
 
-
 test('#61 - type issue: current of Draft<T> type should return T type', () => {
   function test<T extends { x: { y: ReadonlySet<string> } }>(base: T): T {
     const [draft] = create(base);
@@ -315,4 +314,32 @@ test('#61 - type issue: current of Draft<T> type should return T type', () => {
     const currentValue1: T = current(base); // T is assignable to type T
     return currentValue0;
   }
+});
+
+test('current() for Custom Set/Map draft', () => {
+  class CustomSet<T> extends Set<T> {}
+  class CustomMap<T, P> extends Map<T, P> {}
+  const obj = { k: 42 };
+  const base = {
+    x: { y: { z: obj } },
+    a: new CustomSet([{ id: 42 }]),
+    b: new CustomMap([[1, { id: 42 }]]),
+  };
+  create(base, (draft) => {
+    const obj1 = draft.x.y.z;
+    const d = { id: 43 };
+    draft.a.add(d);
+    draft.b.set(2, { id: 43 });
+    draft.x.y.z = { k: 43 };
+    const c = current(draft);
+    expect(c.a.has(d)).toBeTruthy();
+    expect(c.b.get(2)).toEqual({ id: 43 });
+    expect(c).toMatchSnapshot();
+    // @ts-ignore
+    draft.a.add(new CustomSet([{}]));
+    // @ts-ignore
+    Array.from(draft.a)[2].value = obj1;
+    const f = current(draft);
+    expect(f).toMatchSnapshot();
+  });
 });

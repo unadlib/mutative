@@ -18,6 +18,7 @@ import {
   current as immerCurrent,
   createDraft,
   finishDraft,
+  immerable,
 } from 'immer';
 import { create, apply, current } from '../src';
 
@@ -640,5 +641,95 @@ test('set - new Set API', () => {
       // @ts-ignore
       expect(draft.intersection(squares)).toEqual(new Set([1, 9]));
     });
+  }
+});
+
+test('CustomSet', () => {
+  {
+    enableMapSet();
+    class CustomSet extends Set {
+      [immerable] = true;
+
+      getIdentity() {
+        return 'CustomSet';
+      }
+    }
+
+    const s = new CustomSet();
+    const newS = produce(s, (draft) => {
+      draft.add(1);
+      // @ts-ignore
+      expect(typeof draft.getIdentity === 'function').toBeFalsy(); // it should be `true`
+    });
+    // @ts-ignore
+    expect(typeof newS.getIdentity === 'function').toBeFalsy(); // it should be `true`
+  }
+  {
+    class CustomSet extends Set {
+      getIdentity() {
+        return 'CustomSet';
+      }
+    }
+
+    const s = new CustomSet();
+    const newS = create(
+      s,
+      (draft) => {
+        draft.add(1);
+        // @ts-ignore
+        expect(draft.getIdentity()).toBe('CustomSet');
+      },
+      {
+        mark: () => 'immutable',
+      }
+    );
+    expect(newS instanceof CustomSet).toBeTruthy();
+    // @ts-ignore
+    expect(newS.getIdentity()).toBe('CustomSet');
+  }
+});
+
+test('CustomMap', () => {
+  {
+    enableMapSet();
+    class CustomMap extends Map {
+      [immerable] = true;
+
+      getIdentity() {
+        return 'CustomMap';
+      }
+    }
+
+    const state = new CustomMap();
+    const newState = produce(state, (draft) => {
+      draft.set(1, 1);
+      // @ts-ignore
+      expect(typeof draft.getIdentity === 'function').toBeFalsy(); // it should be `true`
+    });
+    // @ts-ignore
+    expect(typeof newState.getIdentity === 'function').toBeFalsy(); // it should be `true`
+  }
+  {
+    class CustomMap extends Map {
+      getIdentity() {
+        return 'CustomMap';
+      }
+    }
+
+    const state = new CustomMap();
+    const newState = create(
+      state,
+      (draft) => {
+        draft.set(1, 1);
+        // @ts-ignore
+        expect(draft.getIdentity()).toBe('CustomMap');
+      },
+      {
+        mark: () => 'immutable',
+      }
+    );
+    expect(newState instanceof CustomMap).toBeTruthy();
+    // @ts-ignore
+    expect(newState.getIdentity()).toBe('CustomMap');
   }
 });

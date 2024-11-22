@@ -9,7 +9,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { create, apply, Patches, original } from '../src';
-import { deepClone } from '../src/utils';
+import { deepClone, set } from '../src/utils';
 
 test('classic case', () => {
   const data = {
@@ -1410,4 +1410,31 @@ test('modify deep object', () => {
   expect(second(base.map.get('set1'))).toBe(b);
   expect(base.map.get('set2')).toBe(set2);
   expect(first(state.map.get('set1'))).toEqual({ a: 2 });
+});
+
+test('#70 - deep copy patches with Custom Set/Map', () => {
+  class CustomSet<T> extends Set<T> {}
+  class CustomMap<K, V> extends Map<K, V> {}
+  const baseState = {
+    map: new CustomMap<any, any>(),
+    set: new CustomSet<any>(),
+  };
+  const [state, patches, inversePatches] = create(
+    baseState,
+    (draft) => {
+      draft.map = new CustomMap<any, any>([[1, 1]]);
+      draft.set = new CustomSet<any>([1]);
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  const nextState = apply(baseState, patches);
+  expect(patches[0].value).toBeInstanceOf(CustomMap);
+  expect(patches[1].value).toBeInstanceOf(CustomSet);
+  expect(nextState).toEqual(state);
+  const prevState = apply(state, inversePatches);
+  expect(inversePatches[0].value).toBeInstanceOf(CustomMap);
+  expect(inversePatches[1].value).toBeInstanceOf(CustomSet);
+  expect(prevState).toEqual(baseState);
 });
