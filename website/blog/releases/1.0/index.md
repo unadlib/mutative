@@ -140,6 +140,7 @@ While Immer has been a popular choice for handling immutable data, Mutative 1.0 
 | Non-global config                     |       ✅ |  ❌   |
 | async draft function                  |       ✅ |  ❌   |
 | Fully compatible with JSON Patch spec |       ✅ |  ❌   |
+| new Set methods(Mutative v1.1.0+)     |       ✅ |  ❌   |
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 

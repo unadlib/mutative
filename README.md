@@ -8,7 +8,6 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/mutative)](https://npmtrends.com/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-
 **Mutative** - A JavaScript library for efficient immutable updates, 2-6x faster than naive handcrafted reducer, and more than 10x faster than Immer.
 
 **Why is Mutative faster than the spread operation(naive handcrafted reducer)?**
@@ -173,6 +172,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 | Non-global config                     |       ✅ |  ❌   |
 | async draft function                  |       ✅ |  ❌   |
 | Fully compatible with JSON Patch spec |       ✅ |  ❌   |
+| new Set methods(Mutative v1.1.0+)     |       ✅ |  ❌   |
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 

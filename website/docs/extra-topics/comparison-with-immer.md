@@ -18,6 +18,7 @@ Mutative is a high-performance immutable update library, and Immer is a popular 
 | Non-global config                     |       ✅ |  ❌   |
 | async draft function                  |       ✅ |  ❌   |
 | Fully compatible with JSON Patch spec |       ✅ |  ❌   |
+| new Set methods(Mutative v1.1.0+)     |       ✅ |  ❌   |
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 
@@ -55,4 +56,3 @@ Immer relies on auto-freeze to be enabled, if auto-freeze is disabled, Immer wil
 So if you are using Immer, you will have to enable auto-freeze for performance. Mutative is disabled auto-freeze by default. With the default configuration of both, we can see the 16x performance gap between Mutative (`6,015 ops/sec`) and Immer (`382 ops/sec`).
 
 Overall, Mutative has a huge performance lead over Immer in [more performance testing scenarios](https://github.com/unadlib/mutative/tree/main/test/performance). Run `yarn performance` to get all the performance results locally.
-
