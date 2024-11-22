@@ -14,4 +14,4 @@
 
 ## Defined in
 
-[interface.ts:58](https://github.com/unadlib/mutative/blob/4e5a64df3bd670123a9179420fc5820dbbf11915/src/interface.ts#L58)
+[interface.ts:58](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/interface.ts#L58)

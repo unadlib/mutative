@@ -76,7 +76,7 @@ expect(state.arr).toBe(baseState.arr);
 
 ### Defined in
 
-[create.ts:25](https://github.com/unadlib/mutative/blob/4e5a64df3bd670123a9179420fc5820dbbf11915/src/create.ts#L25)
+[create.ts:25](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/create.ts#L25)
 
 ## create(base, mutate, options)
 
@@ -127,7 +127,7 @@ expect(state.arr).toBe(baseState.arr);
 
 ### Defined in
 
-[create.ts:25](https://github.com/unadlib/mutative/blob/4e5a64df3bd670123a9179420fc5820dbbf11915/src/create.ts#L25)
+[create.ts:25](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/create.ts#L25)
 
 ## create(mutate, options)
 
@@ -188,11 +188,11 @@ expect(state.arr).toBe(baseState.arr);
 
 ### Defined in
 
-[create.ts:25](https://github.com/unadlib/mutative/blob/4e5a64df3bd670123a9179420fc5820dbbf11915/src/create.ts#L25)
+[create.ts:25](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/create.ts#L25)
 
 ## create(base, options)
 
-> **create**\<`T`, `O`, `F`\>(`base`, `options`?): [`T`, () => `Result`\<`T`, `O`, `F`\>]
+> **create**\<`T`, `O`, `F`\>(`base`, `options`?): [[`Draft`](../type-aliases/Draft.md)\<`T`\>, () => `Result`\<`T`, `O`, `F`\>]
 
 `create(baseState, callback, options)` to create the next state
 
@@ -231,8 +231,8 @@ expect(state.arr).toBe(baseState.arr);
 
 ### Returns
 
-[`T`, () => `Result`\<`T`, `O`, `F`\>]
+[[`Draft`](../type-aliases/Draft.md)\<`T`\>, () => `Result`\<`T`, `O`, `F`\>]
 
 ### Defined in
 
-[create.ts:25](https://github.com/unadlib/mutative/blob/4e5a64df3bd670123a9179420fc5820dbbf11915/src/create.ts#L25)
+[create.ts:25](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/create.ts#L25)

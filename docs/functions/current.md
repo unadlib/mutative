@@ -6,6 +6,8 @@
 
 # Function: current()
 
+## current(target)
+
 > **current**\<`T`\>(`target`): `T`
 
 `current(draft)` to get current state in the draft mutation function.
@@ -25,18 +27,42 @@ const state = create(
 );
 ```
 
-## Type Parameters
+### Type Parameters
 
 • **T** *extends* `object`
 
-## Parameters
+### Parameters
 
-• **target**: `T`
+• **target**: [`Draft`](../type-aliases/Draft.md)\<`T`\>
 
-## Returns
+### Returns
 
 `T`
 
-## Defined in
+### Defined in
 
-[current.ts:104](https://github.com/unadlib/mutative/blob/4e5a64df3bd670123a9179420fc5820dbbf11915/src/current.ts#L104)
+[current.ts:120](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/current.ts#L120)
+
+## current(target)
+
+> **current**\<`T`\>(`target`): `T`
+
+### Type Parameters
+
+• **T** *extends* `object`
+
+### Parameters
+
+• **target**: `T`
+
+### Returns
+
+`T`
+
+### Deprecated
+
+You should call current only on `Draft<T>` types.
+
+### Defined in
+
+[current.ts:122](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/current.ts#L122)

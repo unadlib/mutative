@@ -6,7 +6,7 @@
 
 # Function: makeCreator()
 
-> **makeCreator**\<`_F`, `_O`\>(`options`?): \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options`?) => `CreateResult`\<`T`, `O`, `F`, `R`\>\<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options`?) => `CreateResult`\<`T`, `O`, `F`, `R`\>\<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options`?) => (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>\<`T`, `O`, `F`\>(`base`, `options`?) => [`T`, () => `Result`\<`T`, `O`, `F`\>]
+> **makeCreator**\<`_F`, `_O`\>(`options`?): \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options`?) => `CreateResult`\<`T`, `O`, `F`, `R`\>\<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options`?) => `CreateResult`\<`T`, `O`, `F`, `R`\>\<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options`?) => (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>\<`T`, `O`, `F`\>(`base`, `options`?) => [[`Draft`](../type-aliases/Draft.md)\<`T`\>, () => `Result`\<`T`, `O`, `F`\>]
 
 `makeCreator(options)` to make a creator function.
 
@@ -137,8 +137,8 @@ expect(Object.isFrozen(state)).toBeTruthy();
 
 ### Returns
 
-[`T`, () => `Result`\<`T`, `O`, `F`\>]
+[[`Draft`](../type-aliases/Draft.md)\<`T`\>, () => `Result`\<`T`, `O`, `F`\>]
 
 ## Defined in
 
-[makeCreator.ts:87](https://github.com/unadlib/mutative/blob/4e5a64df3bd670123a9179420fc5820dbbf11915/src/makeCreator.ts#L87)
+[makeCreator.ts:87](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/makeCreator.ts#L87)

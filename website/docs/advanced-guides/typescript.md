@@ -10,6 +10,7 @@ Mutative support is built into the typescript types. You can use the `Draft<T>` 
 
 - `castDraft()`
 - `castImmutable()`
+- `castMutable()`
 - `Draft<T>`
 - `Immutable<T>`
 - `Patches`

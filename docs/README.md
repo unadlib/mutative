@@ -21,6 +21,7 @@
 - [apply](functions/apply.md)
 - [castDraft](functions/castDraft.md)
 - [castImmutable](functions/castImmutable.md)
+- [castMutable](functions/castMutable.md)
 - [create](functions/create.md)
 - [current](functions/current.md)
 - [isDraft](functions/isDraft.md)

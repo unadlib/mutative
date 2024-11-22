@@ -533,6 +533,7 @@ expect(state.simpleObject).not.toBe(baseState.simpleObject);
 
 - `castDraft()`
 - `castImmutable()`
+- `castMutable()`
 - `Draft<T>`
 - `Immutable<T>`
 - `Patches`

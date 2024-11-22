@@ -24,4 +24,4 @@ Cast a value to an Draft type value.
 
 ## Defined in
 
-[utils/cast.ts:6](https://github.com/unadlib/mutative/blob/4e5a64df3bd670123a9179420fc5820dbbf11915/src/utils/cast.ts#L6)
+[utils/cast.ts:6](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/utils/cast.ts#L6)
