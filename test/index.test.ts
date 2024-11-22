@@ -4114,7 +4114,7 @@ describe('set - new API', () => {
     const difference = Set.prototype.difference;
     // @ts-ignore
     delete Set.prototype.difference;
-    const odds = new Set([{a: 1}]);
+    const odds = new Set([{ a: 1 }]);
     const state = create({ odds }, (draft) => {
       // @ts-ignore
       draft.odds.values().next().value.a = 2;
@@ -4220,49 +4220,49 @@ describe('set - new API', () => {
 });
 
 test('CustomSet', () => {
-    class CustomSet extends Set {
-      getIdentity() {
-        return 'CustomSet';
-      }
+  class CustomSet extends Set {
+    getIdentity() {
+      return 'CustomSet';
     }
+  }
 
-    const s = new CustomSet();
-    const newS = create(
-      s,
-      (draft) => {
-        draft.add(1);
-        // @ts-ignore
-        expect(draft.getIdentity()).toBe('CustomSet');
-      },
-      {
-        mark: () => 'immutable',
-      }
-    );
-    expect(newS instanceof CustomSet).toBeTruthy();
-    // @ts-ignore
-    expect(newS.getIdentity()).toBe('CustomSet');
+  const state = new CustomSet();
+  const newState = create(
+    state,
+    (draft) => {
+      draft.add(1);
+      // @ts-ignore
+      expect(draft.getIdentity()).toBe('CustomSet');
+    },
+    {
+      mark: () => 'immutable',
+    }
+  );
+  expect(newState instanceof CustomSet).toBeTruthy();
+  // @ts-ignore
+  expect(newState.getIdentity()).toBe('CustomSet');
 });
 
 test('CustomMap', () => {
-    class CustomMap extends Map {
-      getIdentity() {
-        return 'CustomMap';
-      }
+  class CustomMap extends Map {
+    getIdentity() {
+      return 'CustomMap';
     }
+  }
 
-    const state = new CustomMap();
-    const newState = create(
-      state,
-      (draft) => {
-        draft.set(1, 1);
-        // @ts-ignore
-        expect(draft.getIdentity()).toBe('CustomMap');
-      },
-      {
-        mark: () => 'immutable',
-      }
-    );
-    expect(newState instanceof CustomMap).toBeTruthy();
-    // @ts-ignore
-    expect(newState.getIdentity()).toBe('CustomMap');
+  const state = new CustomMap();
+  const newState = create(
+    state,
+    (draft) => {
+      draft.set(1, 1);
+      // @ts-ignore
+      expect(draft.getIdentity()).toBe('CustomMap');
+    },
+    {
+      mark: () => 'immutable',
+    }
+  );
+  expect(newState instanceof CustomMap).toBeTruthy();
+  // @ts-ignore
+  expect(newState.getIdentity()).toBe('CustomMap');
 });

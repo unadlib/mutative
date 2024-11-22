@@ -671,9 +671,9 @@ test('CustomSet', () => {
       }
     }
 
-    const s = new CustomSet();
-    const newS = create(
-      s,
+    const state = new CustomSet();
+    const newState = create(
+      state,
       (draft) => {
         draft.add(1);
         // @ts-ignore
@@ -683,9 +683,9 @@ test('CustomSet', () => {
         mark: () => 'immutable',
       }
     );
-    expect(newS instanceof CustomSet).toBeTruthy();
+    expect(newState instanceof CustomSet).toBeTruthy();
     // @ts-ignore
-    expect(newS.getIdentity()).toBe('CustomSet');
+    expect(newState.getIdentity()).toBe('CustomSet');
   }
 });
 
