@@ -672,17 +672,11 @@ test('CustomSet', () => {
     }
 
     const state = new CustomSet();
-    const newState = create(
-      state,
-      (draft) => {
-        draft.add(1);
-        // @ts-ignore
-        expect(draft.getIdentity()).toBe('CustomSet');
-      },
-      {
-        mark: () => 'immutable',
-      }
-    );
+    const newState = create(state, (draft) => {
+      draft.add(1);
+      // @ts-ignore
+      expect(draft.getIdentity()).toBe('CustomSet');
+    });
     expect(newState instanceof CustomSet).toBeTruthy();
     // @ts-ignore
     expect(newState.getIdentity()).toBe('CustomSet');
@@ -717,17 +711,11 @@ test('CustomMap', () => {
     }
 
     const state = new CustomMap();
-    const newState = create(
-      state,
-      (draft) => {
-        draft.set(1, 1);
-        // @ts-ignore
-        expect(draft.getIdentity()).toBe('CustomMap');
-      },
-      {
-        mark: () => 'immutable',
-      }
-    );
+    const newState = create(state, (draft) => {
+      draft.set(1, 1);
+      // @ts-ignore
+      expect(draft.getIdentity()).toBe('CustomMap');
+    });
     expect(newState instanceof CustomMap).toBeTruthy();
     // @ts-ignore
     expect(newState.getIdentity()).toBe('CustomMap');
