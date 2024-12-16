@@ -14,7 +14,6 @@ import { objectIs } from './generic-utils/equality';
 
 export const mapHandler = {
   get size() {
-    // TODO remove unused code?
     const current: Map<any, any> = latest(getProxyDraft(this)!);
     return current.size;
   },
@@ -103,7 +102,7 @@ export const mapHandler = {
       [iteratorSymbol]: () => this.values(),
       next: () => {
         const result = iterator.next();
-        if (result.done) return result; // TODO [bug] last value is not wrapped in proxy?!?! or does it even just return a key?! write test
+        if (result.done) return result;
         const value = this.get(result.value);
         return {
           done: false,
@@ -118,7 +117,7 @@ export const mapHandler = {
       [iteratorSymbol]: () => this.entries(),
       next: () => {
         const result = iterator.next();
-        if (result.done) return result; // TODO [bug] last value is not wrapped in proxy?!?! or does it even just return a key?! write test
+        if (result.done) return result;
         const value = this.get(result.value);
         return {
           done: false,

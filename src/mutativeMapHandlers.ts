@@ -16,7 +16,6 @@ import { MutativeMap } from './MutativeMap';
 // TODO [MutativeMap] [refactoring] ended up being basically an exact copy of mapHandlers, so code could be deduplicated. But additional methods to optimize performance could be added here.
 export const mutativeMapHandler = {
   get size() {
-    // TODO remove unused code?
     const current: MutativeMap<any, any> = latest(getProxyDraft(this)!);
     return current.size;
   },
@@ -62,10 +61,10 @@ export const mutativeMapHandler = {
     target.copy!.clear();
   },
   forEach(callback: (value: any, key: any, self: any) => void, thisArg?: any) {
-    const target = getProxyDraft(this)!;
-    latest(target).forEach((_value: any, _key: any) => {
-      callback.call(thisArg, this.get(_key), _key, this);
-    });
+    const keys = this.keysArray(); // get as array to make sure that modifications due to creating drafts do not lead to the same key being iterated over multiple times
+    for (const key of keys) {
+      callback.call(thisArg, this.get(key), key, this);
+    }
   },
   get(key: any): any {
     const target = getProxyDraft(this)!;
@@ -99,6 +98,10 @@ export const mutativeMapHandler = {
   keys(): IterableIterator<any> {
     return latest(getProxyDraft(this)!).keys();
   },
+  keysArray(): any[] {
+    // TODO [MutativeMap] [bug] iteration order changes when calling .values() because of creating drafts. So if calling .values() again, the order is different but stays stable starting then. Fix by just returning patchData keys/entries first?
+    return latest(getProxyDraft(this)!).keysArray();
+  },
   values(): IterableIterator<any> {
     const iterator = this.keys();
     return {
@@ -113,6 +116,28 @@ export const mutativeMapHandler = {
       },
     } as any;
   },
+  // values(): IterableIterator<any> {
+  //   const keys = this.keysArray(); // get as array to make sure that modifications due to creating drafts do not lead to the same key being iterated over multiple times
+  //   let nextIndex = 0;
+  //   return {
+  //     [iteratorSymbol]: () => this.values(),
+  //     next: () => {
+  //       if (nextIndex >= keys.length) {
+  //         return { done: true };
+  //       }
+  //       const key = keys[nextIndex++];
+  //       const value = this.get(key);
+  //       return {
+  //         done: false,
+  //         value,
+  //       };
+  //     },
+  //   } as any;
+  // },
+  valuesArray(): any[] {
+    // TODO [MutativeMap] [performance] could probably be optimized just like non-draft fn
+    return Array.from(this.values());
+  },
   entries(): IterableIterator<[any, any]> {
     const iterator = this.keys();
     return {
@@ -126,6 +151,33 @@ export const mutativeMapHandler = {
         };
       },
     } as any;
+  },
+  // entries(): IterableIterator<[any, any]> {
+  //   const keys = this.keysArray(); // get as array to make sure that modifications due to creating drafts do not lead to the same key being iterated over multiple times
+  //   let nextIndex = 0;
+  //   return {
+  //     [iteratorSymbol]: () => this.entries(),
+  //     next: () => {
+  //       if (nextIndex >= keys.length) {
+  //         return { done: true };
+  //       }
+  //       const key = keys[nextIndex++];
+  //       const value = this.get(key);
+  //       return {
+  //         done: false,
+  //         value: [key, value],
+  //       };
+  //     },
+  //   } as any;
+  // },
+  entriesArray(): [any, any][] {
+    // TODO [MutativeMap] [performance] could probably be optimized just like non-draft fn
+    return Array.from(this.entries());
+  },
+  mapValues<ResultValue>(
+    fn: (value: any, key: any) => ResultValue
+  ): ResultValue[] {
+    return Array.from(this.entries(), ([key, value]) => fn(value, key));
   },
   [iteratorSymbol]() {
     return this.entries();

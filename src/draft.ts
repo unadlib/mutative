@@ -88,7 +88,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     ) {
       if (key === 'size') {
         // TODO [documentation] why this "fast-path" here?
-        return Object.getOwnPropertyDescriptor(mapHandler, 'size')!.get!.call(
+        return Object.getOwnPropertyDescriptor(mutativeMapHandler, 'size')!.get!.call(
           target.proxy
         );
       }
@@ -113,6 +113,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       }
     }
 
+    // TODO [bug] isn't this potentially wrong for map entries with string keys, because e.g. if mutativeMap['valuesArray'] is called and an entry with 'valuesArray' exists as key, it may not attempt to find a property 'valuesArray' on the MutativeMap object itself, which is not correct. Fixing it by adding mutativeMapHandler, but generally makes no sense here to consider map entries here. Will probably just make issues for custom map implementations (which seem to be supported based on some code I looked at). Test with '_size'.
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
       return desc

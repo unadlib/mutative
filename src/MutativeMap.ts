@@ -2,12 +2,12 @@ const removedValueSymbol = Symbol('MutativeMap-removedValue');
 
 /**
  * More efficient version of Map for use with 'mutative' mutations, especially when a lot of entries exist and only a few are changed at a time. (it already is much faster at just a hundred entries though)
- * WARNING: It does not guarantee iteration order to be the same as the original map (i.e. it might not be insertion order during iteration).
+ * WARNING: Iteration order may change between read-only calls and iteration order is not guaranteed to be insertion order like in a normal Map.
  * TODO [bug] I think mutative already violates iteration-order contract anyhow? I think updated entries are treated as if they were inserted? or at least read objects are set with draft value and then set to final value, which might impact order. How does Immer behave? Write test for that
  * TODO [MutativeMap] test/implement patch support
  * TODO [MutativeMap] MutativeMap does not extend Map. Reasons were:
- *  1. reduce the initial complexity/effort of having to implement and test all Map methods;
- *  2. prevent external business-logic written to handle Maps to do unsupported stuff with MutativeMap;
+ *  1. reduce the initial complexity/effort of having to implement and test all Map methods - which became obselete because I implemented everything (and additional utilities for better performance for common use-cases) anyhow;
+ *  2. prevent external business-logic written to handle Maps to do unsupported or weird stuff with MutativeMap - e.g. serialize MutativeMap to JSON as map, but at deserialization it would be a Map and no MutativeMap, reducing performance again on next mutation;
  *  3. because MutativeMap does not adhere to the contract of insertion-order during iteration, it should not extend Map.
  *  But maybe all this does not matter and MutativeMap should extend Map.
  *
@@ -122,6 +122,9 @@ export class MutativeMap<K, V> {
     return immutableMap.has(key);
   }
 
+  /**
+   * WARNING: order may change between calls during mutation (drafting influences entry order).
+   */
   forEach(
     callbackfn: (value: V, key: K, map: MutativeMap<K, V>) => void,
     thisArg?: any
@@ -131,92 +134,119 @@ export class MutativeMap<K, V> {
     }
   }
 
+  /**
+   * WARNING: order may change between calls during mutation (drafting influences entry order).
+   */
   entriesArray(): [K, V][] {
+    // TODO [MutativeMap] [bug] if modified during iteration, new AND old entry for same key may be emitted
+    // TODO [MutativeMap] [bug] what about modification during iteration generally?
+    // NOTE: returning patchData values first to have better behavior in some cases when modifying during iteration (e.g. during drafting)
     const entries: [K, V][] = Array.from({ length: this._size });
     let currentEntryIndex = 0;
-    for (const [key, value] of this.immutableData.entries()) {
-      if (!this.patchData.has(key)) {
-        entries[currentEntryIndex++] = [key, value];
-      }
-    }
     for (const [key, value] of this.patchData.entries()) {
       if (value !== removedValueSymbol) {
         entries[currentEntryIndex++] = [key, value as V];
       }
     }
+    for (const [key, value] of this.immutableData.entries()) {
+      if (!this.patchData.has(key)) {
+        entries[currentEntryIndex++] = [key, value];
+      }
+    }
     return entries;
   }
 
+  /**
+   * WARNING: order may change between calls during mutation (drafting influences entry order).
+   */
   *entries(): IterableIterator<[K, V]> {
-    for (const [key, value] of this.immutableData.entries()) {
-      if (!this.patchData.has(key)) {
-        yield [key, value];
-      }
-    }
+    // TODO [MutativeMap] [bug] if modified during iteration, new AND old entry for same key may be emitted
+    // NOTE: returning patchData values first to have better behavior in some cases when modifying during iteration (e.g. during drafting)
     for (const [key, value] of this.patchData.entries()) {
       if (value !== removedValueSymbol) {
         yield [key, value as V];
       }
     }
-  }
-
-  valuesArray(): V[] {
-    const values: V[] = Array.from({ length: this._size });
-    let currentValueIndex = 0;
     for (const [key, value] of this.immutableData.entries()) {
       if (!this.patchData.has(key)) {
-        values[currentValueIndex++] = value;
+        yield [key, value];
       }
     }
+  }
+
+  /**
+   * WARNING: order may change between calls during mutation (drafting influences entry order).
+   */
+  valuesArray(): V[] {
+    // TODO [MutativeMap] [bug] if modified during iteration, old AND new value for same key may be emitted
+    // NOTE: returning patchData values first to have better behavior in some cases when modifying during iteration (e.g. during drafting)
+    const values: V[] = Array.from({ length: this._size });
+    let currentValueIndex = 0;
     for (const value of this.patchData.values()) {
       if (value !== removedValueSymbol) {
         values[currentValueIndex++] = value as V;
       }
     }
+    for (const [key, value] of this.immutableData.entries()) {
+      if (!this.patchData.has(key)) {
+        values[currentValueIndex++] = value;
+      }
+    }
     return values;
   }
 
+  /**
+   * WARNING: order may change between calls during mutation (drafting influences entry order).
+   */
   *values(): IterableIterator<V> {
-    for (const [key, value] of this.immutableData.entries()) {
-      if (!this.patchData.has(key)) {
-        yield value;
-      }
-    }
+    // TODO [MutativeMap] [bug] if modified during iteration, old AND new value for same key may be emitted
+    // NOTE: returning patchData values first to have better behavior in some cases when modifying during iteration (e.g. during drafting)
     for (const value of this.patchData.values()) {
       if (value !== removedValueSymbol) {
         yield value as V;
       }
     }
+    for (const [key, value] of this.immutableData.entries()) {
+      if (!this.patchData.has(key)) {
+        yield value;
+      }
+    }
   }
 
+  /**
+   * WARNING: order may change between calls during mutation (drafting influences entry order).
+   */
   keysArray(): K[] {
-    const immutableMap = this.immutableData;
-
+    // TODO [MutativeMap] [bug] if modified during iteration, key may be emitted twice in some special cases like setting key to original value
+    // NOTE: returning patchData values first to have better behavior in some cases when modifying during iteration (e.g. during drafting)
     const keys: K[] = Array.from({ length: this._size });
     let currentKeyIndex = 0;
-    for (const key of immutableMap.keys()) {
-      if (!this.patchData.has(key)) {
+    for (const [key, value] of this.patchData.entries()) {
+      if (value !== removedValueSymbol) {
         keys[currentKeyIndex++] = key;
       }
     }
-    for (const key of this.patchData.keys()) {
-      if (this.patchData.get(key) !== removedValueSymbol) {
+    for (const key of this.immutableData.keys()) {
+      if (!this.patchData.has(key)) {
         keys[currentKeyIndex++] = key;
       }
     }
     return keys;
   }
 
+  /**
+   * WARNING: order may change between calls during mutation (drafting influences entry order).
+   */
   *keys(): IterableIterator<K> {
-    const immutableMap = this.immutableData;
-
-    for (const key of immutableMap.keys()) {
-      if (!this.patchData.has(key)) {
+    // TODO [MutativeMap] [bug] if modified during iteration, key may be emitted twice in some special cases like setting key to original value
+    // NOTE: returning patchData values first to have better behavior in some cases when modifying during iteration (e.g. during drafting)
+    for (const [key, value] of this.patchData.entries()) {
+      if (value !== removedValueSymbol) {
         yield key;
       }
     }
-    for (const key of this.patchData.keys()) {
-      if (this.patchData.get(key) !== removedValueSymbol) {
+    for (const key of this.immutableData.keys()) {
+      if (!this.patchData.has(key)) {
         yield key;
       }
     }
@@ -228,10 +258,15 @@ export class MutativeMap<K, V> {
     this._size = 0;
   }
 
-  map<ResultValue>(fn: (value: V, key: K) => ResultValue): ResultValue[] {
+  /**
+   * WARNING: order may change between calls during mutation (drafting influences entry order).
+   * @param fn
+   */
+  mapValues<ResultValue>(fn: (value: V, key: K) => ResultValue): ResultValue[] {
     const result: ResultValue[] = Array.from({ length: this._size });
+    let currentIndex = 0;
     for (const [key, value] of this.entries()) {
-      result.push(fn(value, key));
+      result[currentIndex++] = fn(value, key);
     }
     return result;
   }
