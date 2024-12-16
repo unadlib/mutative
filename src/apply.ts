@@ -81,6 +81,7 @@ export function apply<T extends object, F extends boolean = false>(
         case Operation.Replace:
           switch (type) {
             case DraftType.Map:
+            case DraftType.MutativeMap:
               return base.set(key, value);
             case DraftType.Set:
               throw new Error(`Cannot apply replace patch to set.`);
@@ -97,6 +98,7 @@ export function apply<T extends object, F extends boolean = false>(
                 ? base.push(value)
                 : base.splice(key as number, 0, value);
             case DraftType.Map:
+            case DraftType.MutativeMap:
               return base.set(key, value);
             case DraftType.Set:
               return base.add(value);
@@ -108,6 +110,7 @@ export function apply<T extends object, F extends boolean = false>(
             case DraftType.Array:
               return base.splice(key as number, 1);
             case DraftType.Map:
+            case DraftType.MutativeMap:
               return base.delete(key);
             case DraftType.Set:
               return base.delete(patch.value);

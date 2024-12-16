@@ -104,3 +104,6 @@ dist
 .tern-port
 
 benchmark.csv
+
+# IntelliJ
+/.idea

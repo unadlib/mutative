@@ -8,10 +8,11 @@ import {
   isBaseSetInstance,
   isDraft,
   isDraftable,
-  isEqual,
   set,
   shallowCopy,
 } from './utils';
+import { objectIs } from './generic-utils/equality';
+import { MutativeMap } from './MutativeMap';
 
 export function handleReturnValue<T extends object>(options: {
   rootDraft: ProxyDraft<any> | undefined;
@@ -21,6 +22,7 @@ export function handleReturnValue<T extends object>(options: {
   isRoot?: boolean;
 }) {
   const { rootDraft, value, useRawReturn = false, isRoot = true } = options;
+  // TODO doesn't this iterate over the proxy too? or does getOwnKeys only return the keys of the original object?
   forEach(value, (key, item, source) => {
     const proxyDraft = getProxyDraft(item);
     // just handle the draft which is created by the same rootDraft
@@ -67,15 +69,18 @@ function getCurrent(target: any) {
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   let currentValue: any;
+
   function ensureShallowCopy() {
     currentValue =
       type === DraftType.Map
         ? !isBaseMapInstance(target)
           ? new (Object.getPrototypeOf(target).constructor)(target)
           : new Map(target)
-        : type === DraftType.Set
-          ? Array.from(proxyDraft!.setMap!.values()!)
-          : shallowCopy(target, proxyDraft?.options);
+        : type === DraftType.MutativeMap
+          ? new MutativeMap(target)
+          : type === DraftType.Set
+            ? Array.from(proxyDraft!.setMap!.values()!)
+            : shallowCopy(target, proxyDraft?.options);
   }
 
   if (proxyDraft) {
@@ -93,7 +98,7 @@ function getCurrent(target: any) {
   }
 
   forEach(currentValue, (key, value) => {
-    if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
+    if (proxyDraft && objectIs(get(proxyDraft.original, key), value)) return;
     const newValue = getCurrent(value);
     if (newValue !== value) {
       if (currentValue === target) ensureShallowCopy();

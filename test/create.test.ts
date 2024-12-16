@@ -5,7 +5,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-plusplus */
-import { create, isDraft } from '../src';
+import { create, isDraft, MutativeMap } from '../src';
+import { makeAssertDidNotChange } from './utils/identityChecking';
+import { assertHasNoDrafts } from './utils/assertHasNoDrafts';
 
 describe('base', () => {
   test('object', () => {
@@ -431,6 +433,179 @@ describe('base', () => {
     expect(state).not.toBe(data);
     expect(state.bar).toBe(data.bar);
     expect(state.map).not.toBe(data.map);
+  });
+
+  test('MutativeMap:set new', () => {
+    const initialState = {
+      bar: {},
+      map: new MutativeMap([
+        ['initial1', { a: 1 }],
+        ['initial2', { a: 2 }],
+      ]),
+    };
+    const assertInitialStateDidNotChange = makeAssertDidNotChange(initialState);
+
+    const newState = create(initialState, (draft) => {
+      draft.map.set('new1', { a: 3 });
+    });
+    assertHasNoDrafts(newState);
+    expect(newState).toMatchInlineSnapshot(`
+      {
+        "bar": {},
+        "map": MutativeMap {
+          "_size": 3,
+          "immutableData": Map {
+            "initial1" => {
+              "a": 1,
+            },
+            "initial2" => {
+              "a": 2,
+            },
+          },
+          "patchData": Map {
+            "new1" => {
+              "a": 3,
+            },
+          },
+        },
+      }
+    `);
+    expect(newState).not.toBe(initialState);
+    expect(newState.bar).toBe(initialState.bar);
+    expect(newState.map).not.toBe(initialState.map);
+    expect(newState.map.get('initial1')).toBe(initialState.map.get('initial1'));
+    expect(newState.map.get('initial2')).toBe(initialState.map.get('initial2'));
+    expect(newState.map.get('new1')).not.toBe(initialState.map.get('new1'));
+    assertInitialStateDidNotChange();
+  });
+  test('MutativeMap update existing value (without calling set)', () => {
+    const initialState = {
+      bar: {},
+      map: new MutativeMap([
+        ['initial1', { a: 1 }],
+        ['initial2', { a: 2 }],
+      ]),
+    };
+    const assertInitialStateDidNotChange = makeAssertDidNotChange(initialState);
+
+    const newState = create(initialState, (draft) => {
+      draft.map.get('initial1')!.a = 3;
+    });
+    assertHasNoDrafts(newState);
+    expect(newState).toMatchInlineSnapshot(`
+      {
+        "bar": {},
+        "map": MutativeMap {
+          "_size": 2,
+          "immutableData": Map {
+            "initial1" => {
+              "a": 1,
+            },
+            "initial2" => {
+              "a": 2,
+            },
+          },
+          "patchData": Map {
+            "initial1" => {
+              "a": 3,
+            },
+          },
+        },
+      }
+    `);
+    expect(newState).not.toBe(initialState);
+    expect(newState.bar).toBe(initialState.bar);
+    expect(newState.map).not.toBe(initialState.map);
+    expect(newState.map.get('initial1')).not.toBe(
+      initialState.map.get('initial1')
+    );
+    expect(newState.map.get('initial1')).toStrictEqual({ a: 3 });
+    expect(newState.map.get('initial2')).toBe(initialState.map.get('initial2'));
+    assertInitialStateDidNotChange();
+  });
+  test('MutativeMap update existing value (without calling set) and read other value without changing it', () => {
+    const initialState = {
+      bar: {},
+      map: new MutativeMap([
+        ['initial1', { a: 1 }],
+        ['initial2', { a: 2 }],
+      ]),
+    };
+    const assertInitialStateDidNotChange = makeAssertDidNotChange(initialState);
+
+    const newState = create(initialState, (draft) => {
+      draft.map.get('initial1')!.a = draft.map.get('initial2')!.a + 3;
+    });
+    assertHasNoDrafts(newState);
+    expect(newState).toMatchInlineSnapshot(`
+      {
+        "bar": {},
+        "map": MutativeMap {
+          "_size": 2,
+          "immutableData": Map {
+            "initial1" => {
+              "a": 1,
+            },
+            "initial2" => {
+              "a": 2,
+            },
+          },
+          "patchData": Map {
+            "initial1" => {
+              "a": 5,
+            },
+          },
+        },
+      }
+    `);
+    expect(newState).not.toBe(initialState);
+    expect(newState.bar).toBe(initialState.bar);
+    expect(newState.map).not.toBe(initialState.map);
+    expect(newState.map.get('initial1')).not.toBe(
+      initialState.map.get('initial1')
+    );
+    expect(newState.map.get('initial1')).toStrictEqual({ a: 5 });
+    expect(newState.map.get('initial2')).toBe(initialState.map.get('initial2'));
+    assertInitialStateDidNotChange();
+  });
+  test('MutativeMap value is only read', () => {
+    const initialState = {
+      bar: {},
+      map: new MutativeMap([
+        ['initial1', { a: 1 }],
+        ['initial2', { a: 2 }],
+      ]),
+    };
+    const assertInitialStateDidNotChange = makeAssertDidNotChange(initialState);
+
+    const newState = create(initialState, (draft) => {
+      draft.bar = draft.map.get('initial1')!;
+    });
+    assertHasNoDrafts(newState);
+    expect(newState).toMatchInlineSnapshot(`
+      {
+        "bar": {
+          "a": 1,
+        },
+        "map": MutativeMap {
+          "_size": 2,
+          "immutableData": Map {
+            "initial1" => {
+              "a": 1,
+            },
+            "initial2" => {
+              "a": 2,
+            },
+          },
+          "patchData": Map {},
+        },
+      }
+    `);
+    expect(newState).not.toBe(initialState);
+    expect(newState.bar).not.toBe(initialState.bar);
+    expect(newState.bar).toBe(initialState.map.get('initial1'));
+    expect(newState.map).toBe(initialState.map);
+    assertInitialStateDidNotChange();
   });
 
   test('map clear', () => {

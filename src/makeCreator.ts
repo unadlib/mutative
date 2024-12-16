@@ -12,11 +12,11 @@ import {
   getProxyDraft,
   isDraft,
   isDraftable,
-  isEqual,
   revokeProxy,
 } from './utils';
 import { current, handleReturnValue } from './current';
 import { RAW_RETURN_SYMBOL, dataTypes } from './constant';
+import { objectIs } from './generic-utils/equality';
 
 type MakeCreator = <
   _F extends boolean = false,
@@ -179,7 +179,7 @@ export const makeCreator: MakeCreator = (arg) => {
       if (!isDraft(value)) {
         if (
           value !== undefined &&
-          !isEqual(value, draft) &&
+          !objectIs(value, draft) &&
           proxyDraft?.operated
         ) {
           throw new Error(

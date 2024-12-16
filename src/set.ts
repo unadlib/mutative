@@ -19,7 +19,7 @@ const getNextIterator =
   ) =>
   () => {
     const result = iterator.next();
-    if (result.done) return result;
+    if (result.done) return result; // TODO [bug] last value is not wrapped in proxy?!?! write test
     const key = result.value as any;
     let value = target.setMap!.get(key);
     const currentDraft = getProxyDraft(value);

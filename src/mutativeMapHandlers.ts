@@ -11,11 +11,13 @@ import {
   markFinalization,
 } from './utils';
 import { objectIs } from './generic-utils/equality';
+import { MutativeMap } from './MutativeMap';
 
-export const mapHandler = {
+// TODO [MutativeMap] [refactoring] ended up being basically an exact copy of mapHandlers, so code could be deduplicated. But additional methods to optimize performance could be added here.
+export const mutativeMapHandler = {
   get size() {
     // TODO remove unused code?
-    const current: Map<any, any> = latest(getProxyDraft(this)!);
+    const current: MutativeMap<any, any> = latest(getProxyDraft(this)!);
     return current.size;
   },
   has(key: any): boolean {
@@ -103,10 +105,9 @@ export const mapHandler = {
       [iteratorSymbol]: () => this.values(),
       next: () => {
         const result = iterator.next();
-        if (result.done) return result; // TODO [bug] last value is not wrapped in proxy?!?! or does it even just return a key?! write test
         const value = this.get(result.value);
         return {
-          done: false,
+          done: result.done,
           value,
         };
       },
@@ -118,10 +119,9 @@ export const mapHandler = {
       [iteratorSymbol]: () => this.entries(),
       next: () => {
         const result = iterator.next();
-        if (result.done) return result; // TODO [bug] last value is not wrapped in proxy?!?! or does it even just return a key?! write test
         const value = this.get(result.value);
         return {
-          done: false,
+          done: result.done,
           value: [result.value, value],
         };
       },
@@ -132,4 +132,4 @@ export const mapHandler = {
   },
 };
 
-export const mapHandlerKeys = Reflect.ownKeys(mapHandler);
+export const mutativeMapHandlerKeys = Reflect.ownKeys(mutativeMapHandler);

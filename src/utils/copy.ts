@@ -3,6 +3,8 @@ import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 import { isBaseMapInstance, isBaseSetInstance } from './proto';
 
+import { MutativeMap } from '../MutativeMap';
+
 function strictCopy(target: any) {
   const copy = Object.create(Object.getPrototypeOf(target));
   Reflect.ownKeys(target).forEach((key: any) => {
@@ -48,6 +50,12 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
       return new SubClass(original);
     }
     return new Map(original);
+  } else if (original instanceof MutativeMap) {
+    if (!isBaseMutativeMapInstance(original)) {
+      const SubClass = Object.getPrototypeOf(original).constructor;
+      return new SubClass(original);
+    }
+    return new MutativeMap(original);
   } else if (
     options?.mark &&
     ((markResult = options.mark(original, dataTypes)),
@@ -108,6 +116,13 @@ function deepClone(target: any) {
     }
     return new Map(iterable);
   }
+  if (target instanceof MutativeMap) {
+    const iterable = Array.from(target.entries()).map(([k, v]) => [
+      k,
+      deepClone(v),
+    ]) as Iterable<readonly [any, any]>;
+    return new MutativeMap(iterable);
+  }
   if (target instanceof Set) {
     const iterable = Array.from(target).map(deepClone);
     if (!isBaseSetInstance(target)) {
@@ -124,5 +139,10 @@ function deepClone(target: any) {
 export function cloneIfNeeded<T>(target: T): T {
   return isDraft(target) ? deepClone(target) : target;
 }
+
+export function isBaseMutativeMapInstance(obj: any) {
+  return Object.getPrototypeOf(obj) === MutativeMap.prototype;
+}
+
 
 export { deepClone };

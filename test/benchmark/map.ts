@@ -1,6 +1,8 @@
 /* eslint-disable import/no-relative-packages */
 /* eslint-disable prefer-template */
 // @ts-nocheck
+
+(globalThis as any).__DEV__ = false;
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
@@ -21,7 +23,7 @@ import {
 //   produceWithPatches,
 //   setAutoFreeze,
 // } from '../../../temp/immer/dist';
-import { create } from '../..';
+import { create, MutativeMap } from '../..';
 
 enableMapSet();
 
@@ -34,6 +36,13 @@ const config: Parameters<QuickChart['setConfig']>[0] = {
         label: 'Mutative',
         backgroundColor: 'rgba(54, 162, 235, 0.5)',
         borderColor: 'rgba(54, 162, 235, 0.5)',
+        data: [],
+        fill: false,
+      },
+      {
+        label: 'MutativeMap',
+        backgroundColor: 'rgba(235,54,220,0.5)',
+        borderColor: 'rgba(235,54,220,0.5)',
         data: [],
         fill: false,
       },
@@ -93,7 +102,7 @@ const run = (size: number) => {
   const suite = new Suite();
 
   let i: number;
-  let baseState: Map<number, { value: number }>;
+  let baseState: Map<number, { value: number }> | MutativeMap<number, { value: number }>;
 
   suite
     .add(
@@ -107,6 +116,20 @@ const run = (size: number) => {
         onStart: () => {
           i = Math.random();
           baseState = getData(size);
+        },
+      }
+    )
+    .add(
+      'MutativeMap',
+      () => {
+        const state = create(baseState, (draft) => {
+          draft.get(0).value = i;
+        });
+      },
+      {
+        onStart: () => {
+          i = Math.random();
+          baseState = new MutativeMap(getData(size));
         },
       }
     )
@@ -153,9 +176,15 @@ const run = (size: number) => {
 };
 
 [
+  // 100 - 900
+  // ...Array(9)
+  //   .fill(1)
+  //   .map((_, i) => (i + 1) * 10 ** 2),
+  // 1000 - 9000
   ...Array(9)
     .fill(1)
     .map((_, i) => (i + 1) * 10 ** 3),
+  // 10000 - 90000
   ...Array(9)
     .fill(1)
     .map((_, i) => (i + 1) * 10 ** 4),

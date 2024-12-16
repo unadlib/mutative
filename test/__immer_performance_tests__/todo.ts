@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 // @ts-nocheck
 'use strict';
+(globalThis as any).__DEV__ = false;
 
 import { enablePatches, produce, setAutoFreeze } from 'immer';
 import cloneDeep from 'lodash.clonedeep';

@@ -1,5 +1,7 @@
+import { MutativeMap } from '../MutativeMap';
+
 export function has(target: object, key: PropertyKey) {
-  return target instanceof Map
+  return target instanceof Map || target instanceof MutativeMap
     ? target.has(key)
     : Object.prototype.hasOwnProperty.call(target, key);
 }

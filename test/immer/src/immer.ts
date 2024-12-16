@@ -131,7 +131,7 @@ export const produceWithPatches = (base: any, recipe: any) => {
 
 export function freeze<T>(obj: any, deep: boolean = false): T {
   if (isFrozen(obj) || isDraft(obj) || !isDraftable(obj)) return obj;
-  if (getArchtype(obj) > 1 /* Map or Set */) {
+  if (getArchtype(obj) > 1 /* Map or MutativeMap or Set */) {
     obj.set =
       obj.add =
       obj.clear =

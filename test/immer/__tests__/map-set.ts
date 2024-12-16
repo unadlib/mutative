@@ -17,7 +17,7 @@ jest.setTimeout(1000);
 
 runBaseTest('proxy (no freeze)', true, false);
 runBaseTest('proxy (autofreeze)', true, true);
-runBaseTest('proxy (autofreeze)(patch listener)', true, true, true);
+runBaseTest('proxy (autofreeze)(patch listener)', true, true, true); // TODO unused 4th arg?
 
 function runBaseTest(name, autoFreeze, useListener) {
   const listener = useListener ? function () {} : undefined;

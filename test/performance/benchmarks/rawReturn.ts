@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-expressions */
 // @ts-nocheck
+(globalThis as any).__DEV__ = false;
 import fs from 'fs';
 import { Suite } from 'benchmark';
 import { parse } from 'json2csv';

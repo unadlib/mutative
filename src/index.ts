@@ -8,6 +8,7 @@ export { rawReturn } from './rawReturn';
 export { isDraft } from './utils/draft';
 export { isDraftable } from './utils/draft';
 export { markSimpleObject } from './utils/marker';
+export { MutativeMap } from './MutativeMap';
 
 export { castDraft, castImmutable, castMutable } from './utils/cast';
 export type {
