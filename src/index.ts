@@ -18,4 +18,5 @@ export type {
   Patch,
   ExternalOptions as Options,
   PatchesOptions,
+  Mark, // TODO [review] allowed to expose this? I wanted it in my own project for proper typing and originally used patch-package. But I'll try to sneak it in with this feature if it's fine.
 } from './interface';

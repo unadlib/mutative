@@ -102,7 +102,9 @@ const run = (size: number) => {
   const suite = new Suite();
 
   let i: number;
-  let baseState: Map<number, { value: number }> | MutativeMap<number, { value: number }>;
+  let baseState:
+    | Map<number, { value: number }>
+    | MutativeMap<number, { value: number }>;
 
   suite
     .add(

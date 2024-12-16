@@ -77,10 +77,10 @@ function getCurrent(target: any) {
           ? new (Object.getPrototypeOf(target).constructor)(target)
           : new Map(target)
         : type === DraftType.MutativeMap
-          ? new MutativeMap(target)
-          : type === DraftType.Set
-            ? Array.from(proxyDraft!.setMap!.values()!)
-            : shallowCopy(target, proxyDraft?.options);
+        ? new MutativeMap(target)
+        : type === DraftType.Set
+        ? Array.from(proxyDraft!.setMap!.values()!)
+        : shallowCopy(target, proxyDraft?.options);
   }
 
   if (proxyDraft) {

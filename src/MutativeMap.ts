@@ -2,8 +2,8 @@ const removedValueSymbol = Symbol('MutativeMap-removedValue');
 
 /**
  * More efficient version of Map for use with 'mutative' mutations, especially when a lot of entries exist and only a few are changed at a time. (it already is much faster at just a hundred entries though)
- * WARNING: does not guarantee iteration order to be the same as the original map (i.e. not insertion order).
- * TODO [bug] I think mutative already violates iteration-order contract anyhow? I think updated entries are treated as if they were inserted? or at least read objects are set with draft value and then set to final value, which might impact order. Write test for that
+ * WARNING: It does not guarantee iteration order to be the same as the original map (i.e. it might not be insertion order during iteration).
+ * TODO [bug] I think mutative already violates iteration-order contract anyhow? I think updated entries are treated as if they were inserted? or at least read objects are set with draft value and then set to final value, which might impact order. How does Immer behave? Write test for that
  * TODO [MutativeMap] test/implement patch support
  * TODO [MutativeMap] MutativeMap does not extend Map. Reasons were:
  *  1. reduce the initial complexity/effort of having to implement and test all Map methods;
@@ -12,7 +12,7 @@ const removedValueSymbol = Symbol('MutativeMap-removedValue');
  *  But maybe all this does not matter and MutativeMap should extend Map.
  *
  * Background/Details:
- * Mutative and especially Immer do not work well for scenarios where a lot of entries exist and only a fraction of the data is accessed/changed per mutation. It has to shallow-copy the whole Map on each mutation, which has significant performance impact compared to directly mutating a Map.
+ * Mutative and especially Immer do not work well for scenarios where a lot of entries exist and only a fraction of the data is accessed/changed per mutation. It has to shallow-copy the whole Map on each mutation, which has a significant performance impact compared to directly mutating a Map.
  * Compared to immer, mutative is already much faster/better for such scenarios, but using MutativeMap basically reduces the cost to 0. See performance test in test/performance/mutative-set-map.ts.
  * This class enables mutative from needing to copy the entire map when a single value is changed. Instead, it stores the original entries separately and only copies the changed data during drafting.
  * E.g. if there are 50k entries and only 1 is changed or was recently changed, this class will only copy the map with that 1 changed entry.
@@ -83,7 +83,7 @@ export class MutativeMap<K, V> {
       // re-use immutableData value if it's the same as the new value to minimize size of patchData
       // TODO [MutativeMap] [performance] could store drafts somewhere else to avoid setting drafts as values in patchData and then removing them again if they did not change?
       this.patchData.delete(key);
-    }else {
+    } else {
       this.patchData.set(key, value as any);
     }
   }
@@ -122,7 +122,10 @@ export class MutativeMap<K, V> {
     return immutableMap.has(key);
   }
 
-  forEach(callbackfn: (value: V, key: K, map: MutativeMap<K, V>) => void, thisArg?: any): void {
+  forEach(
+    callbackfn: (value: V, key: K, map: MutativeMap<K, V>) => void,
+    thisArg?: any
+  ): void {
     for (const [key, value] of this.entries()) {
       callbackfn.call(thisArg, value, key, this);
     }

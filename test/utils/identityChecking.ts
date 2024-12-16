@@ -1,7 +1,8 @@
 import {
-  getAllChildIntermediateAndLeafNodePaths, getDeepValueByPath,
+  getAllChildIntermediateAndLeafNodePaths,
+  getDeepValueByPath,
 } from '../generic-utils/recordUtil';
-import {format as prettyFormat} from 'pretty-format';
+import { format as prettyFormat } from 'pretty-format';
 
 /**
  * returns a function that asserts that the value did not change in any way (deep equality and identity checks)
@@ -22,5 +23,5 @@ export function makeAssertDidNotChange(value: any) {
     allPaths.forEach((path, index) => {
       expect(getDeepValueByPath(value, path)).toBe(valuePerPath[index]);
     });
-  }
+  };
 }

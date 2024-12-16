@@ -8,12 +8,7 @@ import {
   Result,
 } from './interface';
 import { draftify } from './draftify';
-import {
-  getProxyDraft,
-  isDraft,
-  isDraftable,
-  revokeProxy,
-} from './utils';
+import { getProxyDraft, isDraft, isDraftable, revokeProxy } from './utils';
 import { current, handleReturnValue } from './current';
 import { RAW_RETURN_SYMBOL, dataTypes } from './constant';
 import { objectIs } from './generic-utils/equality';

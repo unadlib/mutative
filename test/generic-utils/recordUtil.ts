@@ -14,7 +14,7 @@ export function deepIterateObjectNodes(
   return deepIterateObjectNodes2(value, [], filter);
 }
 
-function *deepIterateObjectNodes2(
+function* deepIterateObjectNodes2(
   value: unknown,
   path: (string | number)[],
   filter?: (path: (string | number)[], value: unknown) => boolean
@@ -29,22 +29,22 @@ function *deepIterateObjectNodes2(
   }
   if (Array.isArray(value)) {
     for (let i = 0; i < value.length; i++) {
-      yield *deepIterateObjectNodes2(value[i], [...path, i], filter);
+      yield* deepIterateObjectNodes2(value[i], [...path, i], filter);
     }
   } else if (value instanceof Map || value instanceof MutativeMap) {
     for (const [key, subValue] of value.entries()) {
-      yield *deepIterateObjectNodes2(subValue, [...path, key], filter);
+      yield* deepIterateObjectNodes2(subValue, [...path, key], filter);
     }
   } else if (value instanceof Set) {
     // hack to iterate over set values
     let i = 0;
     for (const subValue of value.values()) {
-      yield *deepIterateObjectNodes2(subValue, [...path, i], filter);
+      yield* deepIterateObjectNodes2(subValue, [...path, i], filter);
       i++;
     }
   } else if (typeof value === 'object') {
     for (const [key, subValue] of Object.entries(value)) {
-      yield *deepIterateObjectNodes2(subValue, [...path, key], filter);
+      yield* deepIterateObjectNodes2(subValue, [...path, key], filter);
     }
   }
 }
@@ -54,7 +54,9 @@ function *deepIterateObjectNodes2(
  * TODO support symbols and other values in paths + fix typing for map keys that are not strings
  * @param data
  */
-export function getAllChildIntermediateAndLeafNodePaths(data: unknown): (string | number)[][] {
+export function getAllChildIntermediateAndLeafNodePaths(
+  data: unknown
+): (string | number)[][] {
   if (typeof data !== 'object' || data === null) {
     return [];
   }
@@ -63,9 +65,11 @@ export function getAllChildIntermediateAndLeafNodePaths(data: unknown): (string 
     return keys.flatMap((key) => {
       return [
         [key],
-        ...getAllChildIntermediateAndLeafNodePaths(data.get(key)).map((path) => {
-          return [key, ...path];
-        }),
+        ...getAllChildIntermediateAndLeafNodePaths(data.get(key)).map(
+          (path) => {
+            return [key, ...path];
+          }
+        ),
       ];
     });
   }
@@ -74,21 +78,32 @@ export function getAllChildIntermediateAndLeafNodePaths(data: unknown): (string 
   }
   if (Array.isArray(data)) {
     return data.flatMap((v, index) => {
-      return [[index], ...getAllChildIntermediateAndLeafNodePaths(v).map((path) => [index, ...path])];
+      return [
+        [index],
+        ...getAllChildIntermediateAndLeafNodePaths(v).map((path) => [
+          index,
+          ...path,
+        ]),
+      ];
     });
   }
   const keys = Object.keys(data);
   return keys.flatMap((key) => {
     return [
       [key],
-      ...getAllChildIntermediateAndLeafNodePaths((data as any)[key]).map((path) => {
-        return [key, ...path];
-      }),
+      ...getAllChildIntermediateAndLeafNodePaths((data as any)[key]).map(
+        (path) => {
+          return [key, ...path];
+        }
+      ),
     ];
   });
 }
 
-export function getDeepValueByPath(data: unknown, path: (string | number)[]): unknown {
+export function getDeepValueByPath(
+  data: unknown,
+  path: (string | number)[]
+): unknown {
   let current = data;
   for (const key of path) {
     if (typeof current !== 'object' || current === null) {
@@ -97,7 +112,10 @@ export function getDeepValueByPath(data: unknown, path: (string | number)[]): un
     if (current instanceof Map || current instanceof MutativeMap) {
       current = (current as Map<any, any> | MutativeMap<any, any>).get(key);
     } else if (current instanceof Set) {
-      assertAlways(typeof key === 'number', () => 'key must be a index (number) for Set values but was ' + key);
+      assertAlways(
+        typeof key === 'number',
+        () => 'key must be a index (number) for Set values but was ' + key
+      );
       current = [...current.values()][key as number];
     } else {
       current = (current as any)[key];
@@ -106,7 +124,10 @@ export function getDeepValueByPath(data: unknown, path: (string | number)[]): un
   return current;
 }
 
-export function tryGetDeepValueByPath(data: unknown, path: (string | number)[]): undefined | { value: unknown } {
+export function tryGetDeepValueByPath(
+  data: unknown,
+  path: (string | number)[]
+): undefined | { value: unknown } {
   let current = data;
   for (const key of path) {
     if (typeof current !== 'object' || current === null) {
@@ -126,7 +147,11 @@ export function tryGetDeepValueByPath(data: unknown, path: (string | number)[]):
   return { value: current };
 }
 
-export function setDeepValueByPath(data: unknown, path: (string | number)[], value: unknown): void {
+export function setDeepValueByPath(
+  data: unknown,
+  path: (string | number)[],
+  value: unknown
+): void {
   const parent = getDeepValueByPath(data, path.slice(0, -1));
   const key = path[path.length - 1];
   if (parent instanceof Map || parent instanceof MutativeMap) {
@@ -135,11 +160,18 @@ export function setDeepValueByPath(data: unknown, path: (string | number)[], val
     // TODO [unimportant] does this make any sense?
     parent.add(value);
   } else if (Array.isArray(parent)) {
-    assertAlways(typeof key === 'number', () => 'key must be a index (number) for array values but was ' + key);
+    assertAlways(
+      typeof key === 'number',
+      () => 'key must be a index (number) for array values but was ' + key
+    );
     if (parent.length === key) {
       parent.push(value);
     } else if (parent.length < key) {
-      throw new Error(`cannot set value by path '${path.join('.')}' in array with length ${parent.length}`);
+      throw new Error(
+        `cannot set value by path '${path.join('.')}' in array with length ${
+          parent.length
+        }`
+      );
     } else {
       parent[key] = value;
     }
@@ -148,16 +180,25 @@ export function setDeepValueByPath(data: unknown, path: (string | number)[], val
   }
 }
 
-export function deleteDeepValueByPath(data: unknown, path: (string | number)[]): void {
+export function deleteDeepValueByPath(
+  data: unknown,
+  path: (string | number)[]
+): void {
   const parent = getDeepValueByPath(data, path.slice(0, -1));
   const key = path[path.length - 1];
   if (parent instanceof Map || parent instanceof MutativeMap) {
     (parent as Map<any, any> | MutativeMap<any, any>).delete(key);
   } else if (parent instanceof Set) {
-    assertAlways(typeof key === 'number', () => 'key must be a index (number) for Set values but was ' + key);
+    assertAlways(
+      typeof key === 'number',
+      () => 'key must be a index (number) for Set values but was ' + key
+    );
     parent.delete([...parent.values()][key]);
   } else if (Array.isArray(parent)) {
-    assertAlways(typeof key === 'number', () => 'key must be a index (number) for array values but was ' + key);
+    assertAlways(
+      typeof key === 'number',
+      () => 'key must be a index (number) for array values but was ' + key
+    );
     parent.splice(key, 1);
   } else {
     delete (parent as any)[key];

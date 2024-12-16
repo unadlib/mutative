@@ -101,7 +101,9 @@ const run = (size: number) => {
   const suite = new Suite();
 
   let i: number;
-  let baseState: Map<number, { value: number }> | MutativeMap<number, { value: number }>;
+  let baseState:
+    | Map<number, { value: number }>
+    | MutativeMap<number, { value: number }>;
   let MODIFY_FACTOR = 0.1;
 
   suite

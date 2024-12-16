@@ -22,7 +22,7 @@ export function getProxyDraft<T extends any>(value: T): ProxyDraft | null {
 
 export function getValue<T extends object>(value: T): T {
   const proxyDraft = getProxyDraft(value);
-  return proxyDraft ? (proxyDraft.copy ?? proxyDraft.original) : value;
+  return proxyDraft ? proxyDraft.copy ?? proxyDraft.original : value;
 }
 
 /**
@@ -88,7 +88,10 @@ export function getType(target: any) {
 }
 
 export function get(target: any, key: PropertyKey) {
-  return getType(target) === DraftType.Map || getType(target) === DraftType.MutativeMap ? target.get(key) : target[key];
+  return getType(target) === DraftType.Map ||
+    getType(target) === DraftType.MutativeMap
+    ? target.get(key)
+    : target[key];
 }
 
 export function set(target: any, key: PropertyKey, value: any) {

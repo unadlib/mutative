@@ -4,7 +4,6 @@
 import { create, MutativeMap } from '../..';
 import { measure } from '../__immer_performance_tests__/measure';
 
-
 // TODO [performance] use minified version for benchmarks and performance tests. Apparently as it worked sometime without __DEV__ being defined and indicated by setting NODE_ENV=production, this probably already happened sometime but was broken since?
 
 const MAX = 100;
@@ -29,17 +28,19 @@ interface BaseState {
   // set: Set<{
   //   [x: number]: number;
   // }>;
-  map: Map<
-    number,
-    {
-      [x: number]: number;
-    }
-  > | MutativeMap<
-    number,
-    {
-      [x: number]: number;
-    }
-  >;
+  map:
+    | Map<
+        number,
+        {
+          [x: number]: number;
+        }
+      >
+    | MutativeMap<
+        number,
+        {
+          [x: number]: number;
+        }
+      >;
 }
 
 measure(

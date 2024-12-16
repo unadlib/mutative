@@ -144,5 +144,4 @@ export function isBaseMutativeMapInstance(obj: any) {
   return Object.getPrototypeOf(obj) === MutativeMap.prototype;
 }
 
-
 export { deepClone };

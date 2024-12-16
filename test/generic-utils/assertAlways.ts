@@ -1,5 +1,7 @@
-
-export function assertAlways(condition: unknown, message?: string | (() => string)): asserts condition {
+export function assertAlways(
+  condition: unknown,
+  message?: string | (() => string)
+): asserts condition {
   if (!condition) {
     if (message !== undefined) {
       if (typeof message === 'function') {

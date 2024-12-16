@@ -16,7 +16,9 @@ export function assertHasNoDrafts(obj: any) {
         // });
         // TODO separate tsconfig for tests to upgrade tsconfig target?
         throw new Error(
-          `Draft found at path ${path.join('.')}, but the proxy has been revoked`
+          `Draft found at path ${path.join(
+            '.'
+          )}, but the proxy has been revoked`
         );
       }
       throw e;

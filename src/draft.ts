@@ -54,7 +54,9 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       // or `Uncaught TypeError: Method get Set.prototype.size called on incompatible receiver #<Set>`
       const value =
         key === 'size' &&
-        ( target.original instanceof Map || target.original instanceof MutativeMap|| target.original instanceof Set)
+        (target.original instanceof Map ||
+          target.original instanceof MutativeMap ||
+          target.original instanceof Set)
           ? Reflect.get(target.original, key)
           : Reflect.get(target.original, key, receiver);
       markResult = target.options.mark(value, dataTypes);
@@ -80,14 +82,19 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       }
     }
 
-    if (source instanceof MutativeMap && mutativeMapHandlerKeys.includes(key as any)) {
+    if (
+      source instanceof MutativeMap &&
+      mutativeMapHandlerKeys.includes(key as any)
+    ) {
       if (key === 'size') {
         // TODO [documentation] why this "fast-path" here?
         return Object.getOwnPropertyDescriptor(mapHandler, 'size')!.get!.call(
           target.proxy
         );
       }
-      const handle = mutativeMapHandler[key as keyof typeof mutativeMapHandler] as Function;
+      const handle = mutativeMapHandler[
+        key as keyof typeof mutativeMapHandler
+      ] as Function;
       if (handle) {
         return handle.bind(target.proxy);
       }

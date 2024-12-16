@@ -18,8 +18,8 @@ export function forEach<T extends object>(
       index += 1;
     }
   } else {
-    (target as Map<any, any> | MutativeMap<any, any> | Set<any>).forEach((entry: any, index: any) =>
-      iter(index, entry, target)
+    (target as Map<any, any> | MutativeMap<any, any> | Set<any>).forEach(
+      (entry: any, index: any) => iter(index, entry, target)
     );
   }
 }

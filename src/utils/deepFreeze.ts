@@ -41,7 +41,9 @@ export function deepFreeze(
               const parent = stack![index];
               if (
                 typeof key === 'object' &&
-                (parent instanceof Map || parent instanceof MutativeMap || parent instanceof Set)
+                (parent instanceof Map ||
+                  parent instanceof MutativeMap ||
+                  parent instanceof Set)
               )
                 return Array.from(parent.keys()).indexOf(key);
               return key;
