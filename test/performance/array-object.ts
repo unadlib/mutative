@@ -1,5 +1,6 @@
 // @ts-nocheck
 'use strict';
+(globalThis as any).__DEV__ = false;
 
 import { produce, setAutoFreeze, enableMapSet } from 'immer';
 import { create } from '../..';

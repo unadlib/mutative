@@ -1,6 +1,7 @@
 /* eslint-disable import/no-relative-packages */
 /* eslint-disable prefer-template */
 // @ts-nocheck
+(globalThis as any).__DEV__ = false;
 import fs from 'fs';
 import path from 'path';
 import https from 'https';

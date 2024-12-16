@@ -52,7 +52,7 @@ function runTests(name) {
     it('cannot finishDraft twice', () => {
       const state = { a: 1 };
 
-      const [draft, finishDraft]= createDraft(state);
+      const [draft, finishDraft] = createDraft(state);
       draft.a = 2;
       expect(finishDraft(draft)).toEqual({ a: 2 });
       expect(() => {

@@ -1,4 +1,5 @@
 // @ts-nocheck
+(globalThis as any).__DEV__ = false;
 import { produce, setUseStrictShallowCopy } from 'immer';
 import { measure } from './measure';
 

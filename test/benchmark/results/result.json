@@ -21,11 +21,11 @@
   },
   "map-batch": {
     "name": "map-batch",
-    "avg": 3.4827841500897168
+    "avg": 0.6617105542656838
   },
   "map": {
     "name": "map",
-    "avg": 5.7553703684454725
+    "avg": 0.027595652427846274
   },
   "object-batch-getter": {
     "name": "object-batch-getter",
