@@ -1,5 +1,5 @@
 {
-  "name": "mutative",
+  "name": "@thomasjahoda-forks/mutative",
   "version": "1.1.0",
   "description": "A JavaScript library for efficient immutable updates",
   "main": "dist/index.js",
