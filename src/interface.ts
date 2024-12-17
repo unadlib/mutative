@@ -51,7 +51,8 @@ export interface ProxyDraft<T = any> {
    */
   setMap?: Map<any, ProxyDraft>;
   /**
-   * Marks which keys have been assigned new values (also during drafting properties).
+   * Marks which keys have been assigned new values or been drafted (true) and which have been deleted (false).
+   * Untouched keys are not present.
    */
   assignedMap?: Map<any, boolean>;
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];

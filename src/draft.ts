@@ -143,7 +143,9 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       // !case: support for custom shallow copy function
       if (typeof markResult === 'function') {
         const subProxyDraft = getProxyDraft(target.copy![key])!;
+        // TODO [shallow-copy] [documentation] why is a property directly shallow-copied if it uses the mark-fn for shallow-copies? as performance improvement to not have to execute mark-fn again when the value is actually used? then the same should happen for maps and sets too
         ensureShallowCopy(subProxyDraft);
+        // TODO [shallow-copy] [bug] why is it necessary to always mark a shallow-copied object as changed? why does this only happen for plain objects but not for Maps/Sets? almost certainly a bug
         // Trigger a custom shallow copy to update to a new copy
         markChanged(subProxyDraft);
         return subProxyDraft.copy;

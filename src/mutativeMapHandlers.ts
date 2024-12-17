@@ -61,7 +61,7 @@ export const mutativeMapHandler = {
     target.copy!.clear();
   },
   forEach(callback: (value: any, key: any, self: any) => void, thisArg?: any) {
-    const keys = this.keysArray(); // get as array to make sure that modifications due to creating drafts do not lead to the same key being iterated over multiple times
+    const keys = this.keysArray(); // get as array to make sure that modifications due to creating drafts do not lead to the same key being iterated over multiple times (probably just special case of setting original value for some key during iteration)
     for (const key of keys) {
       callback.call(thisArg, this.get(key), key, this);
     }
