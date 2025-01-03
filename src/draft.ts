@@ -29,11 +29,15 @@ import {
   finalizeSetValue,
   markFinalization,
   finalizePatches,
+  isDraft,
+  skipFinalization,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
 
 const draftsCache = new WeakSet<object>();
+
+let arrayHandling = false;
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
@@ -88,6 +92,26 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
 
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
+      if (target.type === DraftType.Array) {
+        if (
+          [
+            'splice',
+            'push',
+            'pop',
+            'shift',
+            'unshift',
+            'sort',
+            'reverse',
+          ].includes(key as string)
+        ) {
+          return function (this: any, ...args: any[]) {
+            arrayHandling = true;
+            const result = desc!.value.apply(this, args);
+            arrayHandling = false;
+            return result;
+          };
+        }
+      }
       return desc
         ? `value` in desc
           ? desc.value
@@ -103,7 +127,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       return value;
     }
     // Ensure that the assigned values are not drafted
-    if (value === peek(target.original, key)) {
+    if (value === peek(target.original, key) && !arrayHandling) {
       ensureShallowCopy(target);
       target.copy![key] = createDraft({
         original: target.original[key],
@@ -121,6 +145,11 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         return subProxyDraft.copy;
       }
       return target.copy![key];
+    }
+    if (arrayHandling && !isDraft(value)) {
+      skipFinalization.add(value);
+    } else if (skipFinalization.has(value)) {
+      skipFinalization.delete(value);
     }
     return value;
   },
@@ -319,10 +348,10 @@ export function finalizeDraft<T>(
   const state = hasReturnedValue
     ? returnedValue[0]
     : proxyDraft
-    ? proxyDraft.operated
-      ? proxyDraft.copy
-      : proxyDraft.original
-    : result;
+      ? proxyDraft.operated
+        ? proxyDraft.copy
+        : proxyDraft.original
+      : result;
   if (proxyDraft) revokeProxy(proxyDraft);
   if (enableAutoFreeze) {
     deepFreeze(state, state, proxyDraft?.options.updatedValues);
