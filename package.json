@@ -30,6 +30,7 @@
     "test:coverage": "jest --coverage && coveralls < coverage/lcov.info",
     "benchmark": "yarn build && yarn benchmark:base && yarn benchmark:object && yarn benchmark:array && yarn benchmark:class",
     "all-benchmark": "yarn build && NODE_ENV='production' ts-node test/benchmark/index.ts",
+    "benchmark:reducer": "NODE_ENV='production' ts-node test/performance/benchmark-reducer.ts",
     "benchmark:base": "NODE_ENV='production' ts-node test/performance/benchmark.ts",
     "benchmark:object": "NODE_ENV='production' ts-node test/performance/benchmark-object.ts",
     "benchmark:array": "NODE_ENV='production' ts-node test/performance/benchmark-array.ts",
