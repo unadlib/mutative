@@ -194,6 +194,7 @@ const MAX_ITERATIONS = 100;
   }
   console.timeEnd('immer:autoFreeze:nextAction');
 }
+console.log('---------------------------------');
 {
   setAutoFreeze(false);
   const initialState = createInitialState();
@@ -207,7 +208,7 @@ const MAX_ITERATIONS = 100;
   }
   console.timeEnd('immer:nextAction');
 }
-
+console.log('---------------------------------');
 {
   const initialState = createInitialState();
   console.time('mutative:autoFreeze');
@@ -220,7 +221,7 @@ const MAX_ITERATIONS = 100;
   }
   console.timeEnd('mutative:autoFreeze:nextAction');
 }
-
+console.log('---------------------------------');
 {
   const initialState = createInitialState();
   console.time('vanilla');
