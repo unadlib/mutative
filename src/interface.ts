@@ -50,7 +50,7 @@ export interface ProxyDraft<T = any> {
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
 }
 
-interface IPatch {
+export interface IPatch {
   op: (typeof Operation)[keyof typeof Operation];
   value?: any;
 }
