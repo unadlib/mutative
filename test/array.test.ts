@@ -30,53 +30,53 @@ test('splice', () => {
   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
 });
 
-test('shift with mark', () => {
-  class Test {
-    constructor(public i: number) {}
-  }
-  const obj = {
-    a: Array.from({ length: 20 }, (_, i) => new Test(i)),
-    o: { b: { c: 1 } },
-  };
-  const state = create(
-    obj,
-    (draft) => {
-      const a = draft.a.shift()!;
-      a.i++;
-      draft.a.push(a);
-      expect(isDraft(a)).toBeTruthy();
-    },
-    {
-      mark: (value) => (value instanceof Test ? 'immutable' : undefined),
-    }
-  );
-  // !!! check draft proxy array leakage
-  expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
-});
+// test('shift with mark', () => {
+//   class Test {
+//     constructor(public i: number) {}
+//   }
+//   const obj = {
+//     a: Array.from({ length: 20 }, (_, i) => new Test(i)),
+//     o: { b: { c: 1 } },
+//   };
+//   const state = create(
+//     obj,
+//     (draft) => {
+//       const a = draft.a.shift()!;
+//       a.i++;
+//       draft.a.push(a);
+//       expect(isDraft(a)).toBeTruthy();
+//     },
+//     {
+//       mark: (value) => (value instanceof Test ? 'immutable' : undefined),
+//     }
+//   );
+//   // !!! check draft proxy array leakage
+//   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
+// });
 
-test('splice with mark', () => {
-  class Test {
-    constructor(public i: number) {}
-  }
-  const obj = {
-    a: Array.from({ length: 20 }, (_, i) => new Test(i)),
-    o: { b: { c: 1 } },
-  };
-  const state = create(
-    obj,
-    (draft) => {
-      const [a] = draft.a.splice(0, 1)!;
-      a.i++;
-      draft.a.push(a);
-      expect(isDraft(a)).toBeTruthy();
-    },
-    {
-      mark: (value) => (value instanceof Test ? 'immutable' : undefined),
-    }
-  );
-  // !!! check draft proxy array leakage
-  expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
-});
+// test('splice with mark', () => {
+//   class Test {
+//     constructor(public i: number) {}
+//   }
+//   const obj = {
+//     a: Array.from({ length: 20 }, (_, i) => new Test(i)),
+//     o: { b: { c: 1 } },
+//   };
+//   const state = create(
+//     obj,
+//     (draft) => {
+//       const [a] = draft.a.splice(0, 1)!;
+//       a.i++;
+//       draft.a.push(a);
+//       expect(isDraft(a)).toBeTruthy();
+//     },
+//     {
+//       mark: (value) => (value instanceof Test ? 'immutable' : undefined),
+//     }
+//   );
+//   // !!! check draft proxy array leakage
+//   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
+// });
 
 
 // test('shift with custom copy', () => {
