@@ -1449,6 +1449,14 @@ test('array - update', () => {
   });
 
   checkPatches(obj, (d) => {
+    // d.o.b.c++;
+    // @ts-ignore
+    d.a.splice(0, 1, { i: d.o.b });
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
     d.o.b.c++;
     // @ts-ignore
     d.a.splice(0, 1, { i: -1 }, { i: d.o.b });
@@ -1504,6 +1512,14 @@ test('array - update', () => {
     d.a[10].i += 1;
     d.a.reverse();
     d.a[2].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    const a = d.a[0];
+    d.a.shift();
+    d.a[10].i += 1;
+    a.i += 1;
+    d.a.push(a);
   });
 });
 
@@ -1572,5 +1588,73 @@ test('array - update with prototype', () => {
     d.a[10].i += 1;
     Array.prototype.reverse.call(d.a);
     d.a[2].i += 1;
+  });
+});
+
+test('array - update primitive', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => i),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (d) => {
+    d.a.splice(0, 1);
+  });
+
+  checkPatches(obj, (d) => {
+    d.o.b.c++;
+    // @ts-ignore
+    d.a.splice(0, 1, { i: -1 }, { i: d.o.b });
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.shift();
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.shift();
+    d.a[0] += 1;
+    d.a[10] += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10] += 1;
+    d.a.splice(0, 1);
+    d.a[0] += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10] += 1;
+    d.a.shift();
+    d.a[0] += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.unshift(100);
+  });
+
+  checkPatches(obj, (d) => {
+    d.o.b.c++;
+    // @ts-ignore
+    d.a.unshift(0, { i: d.o.b });
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10] += 1;
+    d.a.unshift(-1);
+    d.a[2] += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.reverse();
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10] += 1;
+    d.a.reverse();
+    d.a[2] += 1;
   });
 });
