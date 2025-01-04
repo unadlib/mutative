@@ -53,8 +53,8 @@ const concat = (index) => ({
 
 const actions = {
   // add,
-  // remove,
-  update,
+  remove,
+  // update,
   // concat,
 };
 
