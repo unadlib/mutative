@@ -12,7 +12,7 @@ import { dataTypes } from './constant';
 export function draftify<
   T extends object,
   O extends PatchesOptions = false,
-  F extends boolean = false
+  F extends boolean = false,
 >(
   baseState: T,
   options: Options<O, F>
