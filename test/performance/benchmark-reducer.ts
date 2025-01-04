@@ -15,6 +15,7 @@ import {
 } from 'immer';
 import { create } from '../..';
 
+// repo: https://github.com/markerikson/immer-perf-tests
 function createInitialState() {
   const initialState = {
     largeArray: Array.from({ length: 10000 }, (_, i) => ({
