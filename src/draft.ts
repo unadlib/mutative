@@ -124,13 +124,13 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       (value === peek(target.original, key) ||
         target.options.skipFinalization!.has(value))
     ) {
-      const has = target.options.skipFinalization!.has(value);
-      if (target.options.skipFinalization!.has(value)) {
+      const shouldSkip = target.options.skipFinalization!.has(value);
+      if (shouldSkip) {
         target.options.skipFinalization!.delete(value);
       }
       ensureShallowCopy(target);
       target.copy![key] = createDraft({
-        original: has ? target.copy![key] : target.original[key],
+        original: shouldSkip ? target.copy![key] : target.original[key],
         parentDraft: target,
         key: target.type === DraftType.Array ? Number(key) : key,
         finalities: target.finalities,
@@ -148,9 +148,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     }
     if (arrayHandling && !isDraft(value) && isDraftable(value)) {
       target.options.skipFinalization!.add(value);
-    }
-    if (!arrayHandling && target.options.skipFinalization!.has(value)) {
-      target.options.skipFinalization!.delete(value);
     }
     return value;
   },
