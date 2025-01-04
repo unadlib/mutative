@@ -22,7 +22,7 @@ export function handleValue(
     !isDraftable(target, options) ||
     handledSet.has(target) ||
     Object.isFrozen(target) ||
-    options?.skipFinalization!.has(target)
+    (options!.skipFinalization!.has(target))
   )
     return;
   const isSet = target instanceof Set;
