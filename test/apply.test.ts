@@ -1438,3 +1438,139 @@ test('#70 - deep copy patches with Custom Set/Map', () => {
   expect(inversePatches[1].value).toBeInstanceOf(CustomSet);
   expect(prevState).toEqual(baseState);
 });
+
+test('array - update', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (d) => {
+    d.a.splice(0, 1);
+  });
+
+  checkPatches(obj, (d) => {
+    d.o.b.c++;
+    // @ts-ignore
+    d.a.splice(0, 1, { i: -1 }, { i: d.o.b });
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.shift();
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.shift();
+    d.a[0].i += 1;
+    d.a[10].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    d.a.splice(0, 1);
+    d.a[0].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    d.a.shift();
+    d.a[0].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.unshift({ i: -1 });
+  });
+
+  checkPatches(obj, (d) => {
+    d.o.b.c++;
+    // @ts-ignore
+    d.a.unshift({ i: -1 }, { i: d.o.b });
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    d.a.unshift({ i: -1 });
+    d.a[2].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.reverse();
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    d.a.reverse();
+    d.a[2].i += 1;
+  });
+});
+
+test('array - update with prototype', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (d) => {
+    Array.prototype.splice.call(d.a, 0, 1);
+  });
+
+  checkPatches(obj, (d) => {
+    d.o.b.c++;
+    // @ts-ignore
+    Array.prototype.splice.call(d.a, 0, 1, { i: -1 }, { i: d.o.b });
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
+    Array.prototype.shift.call(d.a);
+  });
+
+  checkPatches(obj, (d) => {
+    Array.prototype.shift.call(d.a);
+    d.a[0].i += 1;
+    d.a[10].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    Array.prototype.splice.call(d.a, 0, 1);
+    d.a[0].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    Array.prototype.shift.call(d.a);
+    d.a[0].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    Array.prototype.unshift.call(d.a, { i: -1 });
+  });
+
+  checkPatches(obj, (d) => {
+    d.o.b.c++;
+    // @ts-ignore
+    Array.prototype.unshift(d.a, { i: -1 }, { i: d.o.b });
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    Array.prototype.unshift.call(d.a, { i: -1 });
+    d.a[2].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    Array.prototype.reverse.call(d.a);
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    Array.prototype.reverse.call(d.a);
+    d.a[2].i += 1;
+  });
+});
