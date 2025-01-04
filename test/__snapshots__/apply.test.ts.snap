@@ -1194,6 +1194,24 @@ exports[`array - update 7`] = `
     "op": "replace",
     "path": [
       "a",
+      10,
+      "i",
+    ],
+    "value": 12,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+      "i",
+    ],
+    "value": 2,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
       0,
     ],
     "value": {
@@ -1393,6 +1411,24 @@ exports[`array - update 7`] = `
 
 exports[`array - update 8`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+      "i",
+    ],
+    "value": 11,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+      "i",
+    ],
+    "value": 1,
+  },
   {
     "op": "replace",
     "path": [
@@ -1603,6 +1639,15 @@ exports[`array - update 9`] = `
     "path": [
       "a",
       0,
+      "i",
+    ],
+    "value": 2,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
     ],
     "value": {
       "i": 2,
@@ -1801,6 +1846,15 @@ exports[`array - update 9`] = `
 
 exports[`array - update 10`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+      "i",
+    ],
+    "value": 1,
+  },
   {
     "op": "replace",
     "path": [
@@ -2011,6 +2065,15 @@ exports[`array - update 11`] = `
     "path": [
       "a",
       0,
+      "i",
+    ],
+    "value": 2,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
     ],
     "value": {
       "i": 2,
@@ -2209,6 +2272,15 @@ exports[`array - update 11`] = `
 
 exports[`array - update 12`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+      "i",
+    ],
+    "value": 1,
+  },
   {
     "op": "replace",
     "path": [
@@ -3711,6 +3783,15 @@ exports[`array - update 19`] = `
     "op": "replace",
     "path": [
       "a",
+      2,
+      "i",
+    ],
+    "value": 2,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
       0,
     ],
     "value": {
@@ -3922,6 +4003,15 @@ exports[`array - update 19`] = `
 
 exports[`array - update 20`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+      "i",
+    ],
+    "value": 1,
+  },
   {
     "op": "replace",
     "path": [
@@ -4139,6 +4229,15 @@ exports[`array - update 21`] = `
     "op": "replace",
     "path": [
       "a",
+      2,
+      "i",
+    ],
+    "value": 18,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
       0,
     ],
     "value": {
@@ -4340,6 +4439,15 @@ exports[`array - update 21`] = `
 
 exports[`array - update 22`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+      "i",
+    ],
+    "value": 17,
+  },
   {
     "op": "replace",
     "path": [

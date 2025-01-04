@@ -119,10 +119,18 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       return value;
     }
     // Ensure that the assigned values are not drafted
-    if (value === peek(target.original, key) && !arrayHandling) {
+    if (
+      !arrayHandling &&
+      (value === peek(target.original, key) ||
+        target.options.skipFinalization!.has(value))
+    ) {
+      const has = target.options.skipFinalization!.has(value);
+      if (target.options.skipFinalization!.has(value)) {
+        target.options.skipFinalization!.delete(value);
+      }
       ensureShallowCopy(target);
       target.copy![key] = createDraft({
-        original: target.original[key],
+        original: has ? target.copy![key] : target.original[key],
         parentDraft: target,
         key: target.type === DraftType.Array ? Number(key) : key,
         finalities: target.finalities,
@@ -138,9 +146,10 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       }
       return target.copy![key];
     }
-    if (arrayHandling && !isDraft(value)) {
+    if (arrayHandling && !isDraft(value) && isDraftable(value)) {
       target.options.skipFinalization!.add(value);
-    } else if (target.options.skipFinalization!.has(value)) {
+    }
+    if (!arrayHandling && target.options.skipFinalization!.has(value)) {
       target.options.skipFinalization!.delete(value);
     }
     return value;
@@ -295,7 +304,11 @@ export function createDraft<T extends object>(createDraftOptions: {
         }
         finalizeSetValue(proxyDraft);
         finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
-        if (__DEV__ && target.options.enableAutoFreeze) {
+        if (
+          __DEV__ &&
+          target.options.enableAutoFreeze &&
+          typeof updatedValue === 'object'
+        ) {
           target.options.updatedValues =
             target.options.updatedValues ?? new WeakMap();
           target.options.updatedValues.set(updatedValue, proxyDraft.original);
