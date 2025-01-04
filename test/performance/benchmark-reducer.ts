@@ -133,7 +133,7 @@ const createMutativeReducer =
       },
       isMutativeAutoFreeze ? { enableAutoFreeze: true } : undefined
     );
-const MAX_ITERATIONS = 1;
+const MAX_ITERATIONS = 10;
 
 Object.entries(actions).forEach(([actionName, action]) => {
   {
@@ -142,26 +142,34 @@ Object.entries(actions).forEach(([actionName, action]) => {
     const immerReducer = createMutativeReducer(produce);
     let next = immerReducer(initialState, action(0));
     console.timeEnd(`[${actionName}]immer:autoFreeze`);
-    console.time(`[${actionName}]immer:autoFreeze:nextAction`);
+    console.time(
+      `[${actionName}]immer:autoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       next = immerReducer(next, action(i));
     }
-    console.timeEnd(`[${actionName}]immer:autoFreeze:nextAction`);
+    console.timeEnd(
+      `[${actionName}]immer:autoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
   }
-  console.log('---------------------------------');
+  console.log('-------------------------------------------------------');
   {
     const initialState = createInitialState();
     console.time(`[${actionName}]mutative:autoFreeze`);
     const mutativeReducer = createMutativeReducer(create, true);
     let next = mutativeReducer(initialState, action(0));
     console.timeEnd(`[${actionName}]mutative:autoFreeze`);
-    console.time(`[${actionName}]mutative:autoFreeze:nextAction`);
+    console.time(
+      `[${actionName}]mutative:autoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       next = mutativeReducer(next, action(i));
     }
-    console.timeEnd(`[${actionName}]mutative:autoFreeze:nextAction`);
+    console.timeEnd(
+      `[${actionName}]mutative:autoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
   }
-  console.log('---------------------------------');
+  console.log('-------------------------------------------------------');
   {
     setAutoFreeze(false);
     const initialState = createInitialState();
@@ -169,36 +177,43 @@ Object.entries(actions).forEach(([actionName, action]) => {
     const immerReducer = createMutativeReducer(produce);
     let next = immerReducer(initialState, action(0));
     console.timeEnd(`[${actionName}]immer:noAutoFreeze`);
-    console.time(`[${actionName}]immer:noAutoFreeze:nextAction`);
-    for (let i = 1; i < 2; i++) {
+    console.time(
+      `[${actionName}]immer:noAutoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
+    for (let i = 1; i < MAX_ITERATIONS; i++) {
       immerReducer(initialState, action(i));
     }
-    console.timeEnd(`[${actionName}]immer:noAutoFreeze:nextAction`);
+    console.timeEnd(
+      `[${actionName}]immer:noAutoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
   }
-  console.log('---------------------------------');
+  console.log('-------------------------------------------------------');
   {
     const initialState = createInitialState();
     console.time(`[${actionName}]mutative:noAutoFreeze`);
     const mutativeReducer = createMutativeReducer(create);
     let next = mutativeReducer(initialState, action(0));
     console.timeEnd(`[${actionName}]mutative:noAutoFreeze`);
-    console.time(`[${actionName}]mutative:noAutoFreeze:nextAction`);
+    console.time(
+      `[${actionName}]mutative:noAutoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       next = mutativeReducer(next, action(i));
     }
-    console.timeEnd(`[${actionName}]mutative:noAutoFreeze:nextAction`);
+    console.timeEnd(
+      `[${actionName}]mutative:noAutoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
   }
-  console.log('---------------------------------');
+  console.log('-------------------------------------------------------');
   {
     const initialState = createInitialState();
     console.time(`[${actionName}]vanilla`);
     let next = vanillaReducer(initialState, action(0));
     console.timeEnd(`[${actionName}]vanilla`);
-    console.time(`[${actionName}]vanilla:nextAction`);
+    console.time(`[${actionName}]vanilla:nextAction(${MAX_ITERATIONS})`);
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       next = vanillaReducer(next, action(i));
     }
-    console.timeEnd(`[${actionName}]vanilla:nextAction`);
+    console.timeEnd(`[${actionName}]vanilla:nextAction(${MAX_ITERATIONS})`);
   }
-  console.log('=================================');
 });
