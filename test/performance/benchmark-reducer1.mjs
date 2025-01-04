@@ -2,6 +2,7 @@ import { produce as produce10, setAutoFreeze as setAutoFreeze10 } from 'immer';
 import { create as produceMutative } from '../../dist/mutative.esm.mjs';
 import { bench, run, summary } from 'mitata';
 
+// repo: https://github.com/markerikson/immer-perf-tests
 function createInitialState() {
   const initialState = {
     largeArray: Array.from({ length: 10000 }, (_, i) => ({
