@@ -11,7 +11,7 @@ test('shift', () => {
     draft.a.push(a);
     expect(isDraft(a)).toBeTruthy();
   });
-  // !!! Draft proxy array leakage
+  // !!! check draft proxy array leakage
   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
 });
 
@@ -26,7 +26,7 @@ test('splice', () => {
     draft.a.push(a);
     expect(isDraft(a)).toBeTruthy();
   });
-  // !!! Draft proxy array leakage
+  // !!! check draft proxy array leakage
   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
 });
 
@@ -50,7 +50,7 @@ test('shift with mark', () => {
       mark: (value) => (value instanceof Test ? 'immutable' : undefined),
     }
   );
-  // !!! Draft proxy array leakage
+  // !!! check draft proxy array leakage
   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
 });
 
@@ -74,7 +74,7 @@ test('splice with mark', () => {
       mark: (value) => (value instanceof Test ? 'immutable' : undefined),
     }
   );
-  // !!! Draft proxy array leakage
+  // !!! check draft proxy array leakage
   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
 });
 
@@ -98,7 +98,7 @@ test('splice with mark', () => {
 //       },
 //     }
 //   );
-//   // !!! Draft proxy array leakage
+//   // !!! check draft proxy array leakage
 //   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
 // });
 
@@ -121,6 +121,6 @@ test('splice with mark', () => {
 //       },
 //     }
 //   );
-//   // !!! Draft proxy array leakage
+//   // !!! check draft proxy array leakage
 //   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
 // });
