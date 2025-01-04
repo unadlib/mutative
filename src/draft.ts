@@ -3,8 +3,8 @@ import {
   Finalities,
   Patches,
   ProxyDraft,
-  Options,
   Operation,
+  DraftOptions,
 } from './interface';
 import { dataTypes, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
@@ -38,7 +38,7 @@ const draftsCache = new WeakSet<object>();
 
 let arrayHandling = false;
 
-const proxyArrayMethods = ['splice', 'shift', 'unshift', 'reverse'];
+const proxyArrayMethods = ['splice', 'shift', 'unshift'];
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
@@ -90,19 +90,39 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
       const value = desc?.value;
-      if (target.type === DraftType.Array) {
-        if (proxyArrayMethods.includes(key as string)) {
-          return function (this: any, ...args: any[]) {
-            let returnValue: any;
-            arrayHandling = true;
-            try {
-              returnValue = value.apply(this, args);
-            } finally {
-              arrayHandling = false;
+      if (
+        target.type === DraftType.Array &&
+        proxyArrayMethods.includes(key as string)
+      ) {
+        const handleItem = (item: any) => {
+          if (!isDraftable(item)) return item;
+          ensureShallowCopy(target);
+          const draft = createDraft({
+            original: item,
+            parentDraft: target,
+            key: undefined,
+            finalities: target.finalities,
+            options: target.options,
+          });
+          // TODO: support for custom shallow copy function
+          return draft;
+        };
+        return function (this: any, ...args: any[]) {
+          let returnValue: any;
+          arrayHandling = true;
+          try {
+            returnValue = value.apply(this, args);
+            if (key === 'splice' && returnValue.length > 0) {
+              returnValue = returnValue.map(handleItem);
+            }
+            if (key === 'shift' && typeof returnValue === 'object') {
+              returnValue = handleItem(returnValue);
             }
             return returnValue;
-          };
-        }
+          } finally {
+            arrayHandling = false;
+          }
+        };
       }
       return desc
         ? `value` in desc
@@ -122,11 +142,11 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (
       !arrayHandling &&
       (value === peek(target.original, key) ||
-        target.options.skipFinalization!.has(value))
+        target.options.skipFinalization.has(value))
     ) {
-      const shouldSkip = target.options.skipFinalization!.has(value);
+      const shouldSkip = target.options.skipFinalization.has(value);
       if (shouldSkip) {
-        target.options.skipFinalization!.delete(value);
+        target.options.skipFinalization.delete(value);
       }
       ensureShallowCopy(target);
       target.copy![key] = createDraft({
@@ -147,7 +167,8 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       return target.copy![key];
     }
     if (arrayHandling && !isDraft(value) && isDraftable(value)) {
-      target.options.skipFinalization!.add(value);
+      // !case: handle the case of assigning the original array item via array methods(`splice`, `shift``, `unshift`, `reverse`)
+      target.options.skipFinalization.add(value);
     }
     return value;
   },
@@ -254,7 +275,7 @@ export function createDraft<T extends object>(createDraftOptions: {
   parentDraft?: ProxyDraft | null;
   key?: string | number | symbol;
   finalities: Finalities;
-  options: Options<any, any>;
+  options: DraftOptions;
 }): T {
   const { original, parentDraft, key, finalities, options } =
     createDraftOptions;

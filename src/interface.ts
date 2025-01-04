@@ -42,10 +42,7 @@ export interface ProxyDraft<T = any> {
   copy: T | null;
   proxy: T | null;
   finalities: Finalities;
-  options: Options<any, any> & {
-    updatedValues?: WeakMap<any, any>;
-    skipFinalization?: WeakSet<any>;
-  };
+  options: DraftOptions;
   parent?: ProxyDraft | null;
   key?: string | number | symbol;
   setMap?: Map<any, ProxyDraft>;
@@ -131,6 +128,17 @@ export interface Options<O extends PatchesOptions, F extends boolean> {
    */
   mark?: Mark<O, F>;
 }
+
+export type DraftOptions = Options<any, any> & {
+  /**
+   * a collection for circular reference check
+   */
+  updatedValues?: WeakMap<any, any>;
+  /**
+   * a collection for array item skip deep check
+   */
+  skipFinalization: WeakSet<any>;
+};
 
 export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
   /**
