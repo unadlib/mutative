@@ -12,8 +12,6 @@ import {
 } from './draft';
 import { forEach } from './forEach';
 
-export const skipFinalization = new WeakSet();
-
 export function handleValue(
   target: any,
   handledSet: WeakSet<any>,
@@ -24,7 +22,7 @@ export function handleValue(
     !isDraftable(target, options) ||
     handledSet.has(target) ||
     Object.isFrozen(target) ||
-    skipFinalization.has(target)
+    options?.skipFinalization!.has(target)
   )
     return;
   const isSet = target instanceof Set;

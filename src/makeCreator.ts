@@ -20,7 +20,7 @@ import { RAW_RETURN_SYMBOL, dataTypes } from './constant';
 
 type MakeCreator = <
   _F extends boolean = false,
-  _O extends PatchesOptions = false
+  _O extends PatchesOptions = false,
 >(
   options?: ExternalOptions<_O, _F>
 ) => {
@@ -28,7 +28,7 @@ type MakeCreator = <
     T extends any,
     F extends boolean = _F,
     O extends PatchesOptions = _O,
-    R extends void | Promise<void> | T | Promise<T> = void
+    R extends void | Promise<void> | T | Promise<T> = void,
   >(
     base: T,
     mutate: (draft: Draft<T>) => R,
@@ -38,7 +38,7 @@ type MakeCreator = <
     T extends any,
     F extends boolean = _F,
     O extends PatchesOptions = _O,
-    R extends void | Promise<void> = void
+    R extends void | Promise<void> = void,
   >(
     base: T,
     mutate: (draft: T) => R,
@@ -49,7 +49,7 @@ type MakeCreator = <
     P extends any[] = [],
     F extends boolean = _F,
     O extends PatchesOptions = _O,
-    R extends void | Promise<void> = void
+    R extends void | Promise<void> = void,
   >(
     mutate: (draft: Draft<T>, ...args: P) => R,
     options?: ExternalOptions<O, F>
@@ -143,11 +143,14 @@ export const makeCreator: MakeCreator = (arg) => {
     const enablePatches = options.enablePatches ?? false;
     const strict = options.strict ?? false;
     const enableAutoFreeze = options.enableAutoFreeze ?? false;
-    const _options: Options<any, any> = {
+    const _options: Options<any, any> & {
+      skipFinalization: WeakSet<any>;
+    } = {
       enableAutoFreeze,
       mark,
       strict,
       enablePatches,
+      skipFinalization: new WeakSet(),
     };
     if (
       !isDraftable(state, _options) &&

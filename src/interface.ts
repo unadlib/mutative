@@ -42,7 +42,10 @@ export interface ProxyDraft<T = any> {
   copy: T | null;
   proxy: T | null;
   finalities: Finalities;
-  options: Options<any, any> & { updatedValues?: WeakMap<any, any> };
+  options: Options<any, any> & {
+    updatedValues?: WeakMap<any, any>;
+    skipFinalization?: WeakSet<any>;
+  };
   parent?: ProxyDraft | null;
   key?: string | number | symbol;
   setMap?: Map<any, ProxyDraft>;
@@ -62,30 +65,30 @@ export type Patch<P extends PatchesOptions = any> = P extends {
       path: string;
     }
   : P extends true | object
-  ? IPatch & {
-      path: (string | number)[];
-    }
-  : IPatch & {
-      path: string | (string | number)[];
-    };
+    ? IPatch & {
+        path: (string | number)[];
+      }
+    : IPatch & {
+        path: string | (string | number)[];
+      };
 
 export type Patches<P extends PatchesOptions = any> = Patch<P>[];
 
 export type Result<
   T extends any,
   O extends PatchesOptions,
-  F extends boolean
+  F extends boolean,
 > = O extends true | object
   ? [F extends true ? Immutable<T> : T, Patches<O>, Patches<O>]
   : F extends true
-  ? Immutable<T>
-  : T;
+    ? Immutable<T>
+    : T;
 
 export type CreateResult<
   T extends any,
   O extends PatchesOptions,
   F extends boolean,
-  R extends void | Promise<void> | T | Promise<T>
+  R extends void | Promise<void> | T | Promise<T>,
 > = R extends Promise<void> | Promise<T>
   ? Promise<Result<T, O, F>>
   : Result<T, O, F>;
@@ -99,8 +102,8 @@ export type Mark<O extends PatchesOptions, F extends boolean> = (
 ) => O extends true | object
   ? BaseMark
   : F extends true
-  ? BaseMark
-  : MarkWithCopy;
+    ? BaseMark
+    : MarkWithCopy;
 
 export interface ApplyMutableOptions {
   /**
@@ -161,8 +164,8 @@ export type IfAvailable<T, Fallback = void> = true | false extends (
 )
   ? Fallback
   : keyof T extends never
-  ? Fallback
-  : T;
+    ? Fallback
+    : T;
 type WeakReferences =
   | IfAvailable<WeakMap<any, any>>
   | IfAvailable<WeakSet<any>>;
@@ -171,14 +174,14 @@ type AtomicObject = Function | Promise<any> | Date | RegExp;
 export type Immutable<T> = T extends Primitive | AtomicObject
   ? T
   : T extends IfAvailable<ReadonlyMap<infer K, infer V>>
-  ? ImmutableMap<K, V>
-  : T extends IfAvailable<ReadonlySet<infer V>>
-  ? ImmutableSet<V>
-  : T extends WeakReferences
-  ? T
-  : T extends object
-  ? ImmutableObject<T>
-  : T;
+    ? ImmutableMap<K, V>
+    : T extends IfAvailable<ReadonlySet<infer V>>
+      ? ImmutableSet<V>
+      : T extends WeakReferences
+        ? T
+        : T extends object
+          ? ImmutableObject<T>
+          : T;
 
 type DraftedMap<K, V> = Map<K, Draft<V>>;
 type DraftedSet<T> = Set<Draft<T>>;
