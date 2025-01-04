@@ -22,7 +22,9 @@ export function handleValue(
     !isDraftable(target, options) ||
     handledSet.has(target) ||
     Object.isFrozen(target) ||
-    (options!.skipFinalization!.has(target))
+    options!.skipFinalization!.has(target)
+    // It should skip the finalization process
+    // This can avoid unnecessary deep traversal, as these objects are non-draft and do not contain draft in their deep object.
   )
     return;
   const isSet = target instanceof Set;
