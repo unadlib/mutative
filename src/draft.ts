@@ -30,7 +30,6 @@ import {
   markFinalization,
   finalizePatches,
   isDraft,
-  skipFinalization,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
@@ -88,29 +87,24 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
 
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
+      const value = desc?.value;
       if (target.type === DraftType.Array) {
-        if (
-          [
-            'splice',
-            'push',
-            'pop',
-            'shift',
-            'unshift',
-            'sort',
-            'reverse',
-          ].includes(key as string)
-        ) {
+        if (['splice', 'shift', 'unshift', 'reverse'].includes(key as string)) {
           return function (this: any, ...args: any[]) {
+            let returnValue: any;
             arrayHandling = true;
-            const result = desc!.value.apply(this, args);
-            arrayHandling = false;
-            return result;
+            try {
+              returnValue = value.apply(this, args);
+            } finally {
+              arrayHandling = false;
+            }
+            return returnValue;
           };
         }
       }
       return desc
         ? `value` in desc
-          ? desc.value
+          ? value
           : // !case: support for getter
             desc.get?.call(target.proxy)
         : undefined;
@@ -143,9 +137,9 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       return target.copy![key];
     }
     if (arrayHandling && !isDraft(value)) {
-      skipFinalization.add(value);
-    } else if (skipFinalization.has(value)) {
-      skipFinalization.delete(value);
+      target.options.skipFinalization!.add(value);
+    } else if (target.options.skipFinalization!.has(value)) {
+      target.options.skipFinalization!.delete(value);
     }
     return value;
   },
