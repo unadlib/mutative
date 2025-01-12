@@ -38,7 +38,7 @@ const draftsCache = new WeakSet<object>();
 
 let arrayHandling = false;
 
-const proxyArrayMethods = ['splice', 'shift', 'unshift'];
+const proxyArrayMethods = ['splice', 'shift', 'unshift', 'reverse', 'sort'];
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
@@ -112,10 +112,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
           arrayHandling = true;
           try {
             returnValue = value.apply(this, args);
-            if (key === 'splice' && returnValue.length > 0) {
-              returnValue = returnValue.map(handleItem);
-            }
-            if (key === 'shift' && typeof returnValue === 'object') {
+            if (typeof returnValue === 'object') {
               returnValue = handleItem(returnValue);
             }
             return returnValue;
