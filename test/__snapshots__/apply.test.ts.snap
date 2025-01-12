@@ -4639,6 +4639,15 @@ exports[`array - update 23`] = `
     "op": "replace",
     "path": [
       "a",
+      2,
+      "i",
+    ],
+    "value": 18,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
       0,
     ],
     "value": {
@@ -4840,6 +4849,15 @@ exports[`array - update 23`] = `
 
 exports[`array - update 24`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+      "i",
+    ],
+    "value": 17,
+  },
   {
     "op": "replace",
     "path": [
