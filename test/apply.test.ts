@@ -1729,7 +1729,7 @@ test('shift - 1', () => {
   });
 });
 
-test('unshift', () => {
+test('unshift - 1', () => {
   const obj = {
     a: Array.from({ length: 20 }, (_, i) => ({ i })),
     o: { b: { c: 1 } },
@@ -1741,7 +1741,7 @@ test('unshift', () => {
   });
 });
 
-test('splice', () => {
+test('splice - 1', () => {
   const obj = {
     a: Array.from({ length: 20 }, (_, i) => ({ i })),
     o: { b: { c: 1 } },
@@ -1754,7 +1754,7 @@ test('splice', () => {
   });
 });
 
-test('reverse', () => {
+test('reverse - 1', () => {
   const obj = {
     a: Array.from({ length: 20 }, (_, i) => ({ i })),
     o: { b: { c: 1 } },
@@ -1767,13 +1767,19 @@ test('reverse', () => {
   });
 });
 
-test('sort', () => {
+test('sort - 1', () => {
   const obj = {
     a: Array.from({ length: 20 }, (_, i) => ({ i })),
     o: { b: { c: 1 } },
   };
   checkPatches(obj, (draft) => {
-    draft.a.sort((a, b) => b.i - a.i);
+    draft.a.sort((a, b) => {
+      // @ts-ignore
+      a._i = 1;
+      // @ts-ignore
+      b._i = 1;
+      return b.i - a.i;
+    });
     draft.a.reverse();
     draft.a.unshift({ i: 42 });
     draft.a[0].i++;
