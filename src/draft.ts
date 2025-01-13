@@ -94,26 +94,20 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         target.type === DraftType.Array &&
         proxyArrayMethods.includes(key as string)
       ) {
-        const handleItem = (item: any) => {
-          if (!isDraftable(item)) return item;
-          ensureShallowCopy(target);
-          const draft = createDraft({
-            original: item,
-            parentDraft: target,
-            key: undefined,
-            finalities: target.finalities,
-            options: target.options,
-          });
-          // TODO: support for custom shallow copy function
-          return draft;
-        };
         return function (this: any, ...args: any[]) {
           let returnValue: any;
           arrayHandling = true;
           try {
             returnValue = value.apply(this, args);
-            if (typeof returnValue === 'object') {
-              returnValue = handleItem(returnValue);
+            if (isDraftable(returnValue)) {
+              returnValue = createDraft({
+                original: returnValue,
+                parentDraft: target,
+                key: undefined,
+                finalities: target.finalities,
+                options: target.options,
+              });
+              // TODO: support for custom shallow copy function;
             }
             return returnValue;
           } finally {
