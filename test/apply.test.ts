@@ -9,7 +9,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { create, apply, Patches, original } from '../src';
-import { deepClone, set } from '../src/utils';
+import { deepClone, isDraft, set } from '../src/utils';
 
 test('classic case', () => {
   const data = {
@@ -1658,3 +1658,125 @@ test('array - update primitive', () => {
     d.a[2] += 1;
   });
 });
+
+test('shift', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    const a = draft.a.shift()!;
+    a.i++;
+    draft.a.push(a);
+  });
+});
+
+test('unshift', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    draft.a.unshift({ i: 42 });
+  });
+});
+
+test('splice', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    const [a] = draft.a.splice(0, 1)!;
+    a.i++;
+    draft.a.push(a);
+  });
+});
+
+test('reverse', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    draft.a.reverse();
+  });
+});
+
+test('sort', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    draft.a.sort((a, b) => b.i - a.i);
+  });
+});
+
+test('shift - 1', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    const a = draft.a.shift()!;
+    a.i++;
+    draft.a.push(a);
+    draft.a[2].i++;
+    draft.a.sort((a, b) => b.i - a.i);
+    draft.a.unshift({ i: 42 });
+    draft.a.reverse();
+  });
+});
+
+test('unshift', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    draft.a.unshift({ i: 42 });
+    draft.a.sort((a, b) => b.i - a.i);
+    draft.a.reverse();
+  });
+});
+
+test('splice', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    const a = draft.a.splice(0, 1)!;
+    a[0].i++;
+    // @ts-ignore
+    draft.a.push(a);
+  });
+});
+
+test('reverse', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    draft.a.reverse();
+    draft.a.sort((a, b) => b.i - a.i);
+    draft.a.unshift({ i: 42 });
+    draft.a[0].i++;
+  });
+});
+
+test('sort', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    draft.a.sort((a, b) => b.i - a.i);
+    draft.a.reverse();
+    draft.a.unshift({ i: 42 });
+    draft.a[0].i++;
+  });
+});
+
