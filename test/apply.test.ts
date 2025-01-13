@@ -1719,10 +1719,10 @@ test('shift - 1', () => {
     o: { b: { c: 1 } },
   };
   checkPatches(obj, (draft) => {
+    draft.a[2].i++;
     const a = draft.a.shift()!;
     a.i++;
     draft.a.push(a);
-    draft.a[2].i++;
     draft.a.sort((a, b) => b.i - a.i);
     draft.a.unshift({ i: 42 });
     draft.a.reverse();
@@ -1747,6 +1747,7 @@ test('splice - 1', () => {
     o: { b: { c: 1 } },
   };
   checkPatches(obj, (draft) => {
+    draft.a[2].i++;
     const a = draft.a.splice(0, 1)!;
     a[0].i++;
     // @ts-ignore
@@ -1760,6 +1761,7 @@ test('reverse - 1', () => {
     o: { b: { c: 1 } },
   };
   checkPatches(obj, (draft) => {
+    draft.a[2].i++;
     draft.a.reverse();
     draft.a.sort((a, b) => b.i - a.i);
     draft.a.unshift({ i: 42 });
