@@ -9,7 +9,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { create, apply, Patches, original } from '../src';
-import { deepClone, set } from '../src/utils';
+import { deepClone, isDraft, set } from '../src/utils';
 
 test('classic case', () => {
   const data = {
