@@ -67,6 +67,24 @@ test('sort', () => {
   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(true);
 });
 
+test('sort - 1', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  const state = create(obj, (draft) => {
+    draft.a.sort((a, b) => {
+      // @ts-ignore
+      a._i = 1;
+      // @ts-ignore
+      b._i = 1;
+      return b.i - a.i;
+    });
+  });
+  expect(obj.a[0].i).toBe(state.a.slice(-1)[0].i);
+  expect(obj.a[0] !== state.a.slice(-1)[0]).toBe(true);
+});
+
 // test('shift with mark', () => {
 //   class Test {
 //     constructor(public i: number) {}
