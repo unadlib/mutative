@@ -1693,6 +1693,23 @@ test('splice', () => {
   });
 });
 
+test('splice - 1', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    draft.o.b.c++;
+    const b = draft.o.b;
+    // @ts-ignore
+    delete draft.o.b;
+    // @ts-ignore
+    const [a] = draft.a.splice(0, 1, { i: 42 }, { c: { d: { b } } })!;
+    a.i++;
+    draft.a.push(a);
+  });
+});
+
 test('reverse', () => {
   const obj = {
     a: Array.from({ length: 20 }, (_, i) => ({ i })),
@@ -1787,4 +1804,3 @@ test('sort - 1', () => {
     draft.a[0].i++;
   });
 });
-
