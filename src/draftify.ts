@@ -1,6 +1,6 @@
 import {
+  DraftOptions,
   Finalities,
-  Options,
   Patches,
   PatchesOptions,
   Result,
@@ -15,7 +15,7 @@ export function draftify<
   F extends boolean = false,
 >(
   baseState: T,
-  options: Options<O, F>
+  options: DraftOptions
 ): [T, (returnedValue: [T] | []) => Result<T, O, F>] {
   const finalities: Finalities = {
     draft: [],

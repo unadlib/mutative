@@ -6,6 +6,7 @@ import {
   ExternalOptions,
   PatchesOptions,
   Result,
+  DraftOptions,
 } from './interface';
 import { draftify } from './draftify';
 import {
@@ -143,11 +144,12 @@ export const makeCreator: MakeCreator = (arg) => {
     const enablePatches = options.enablePatches ?? false;
     const strict = options.strict ?? false;
     const enableAutoFreeze = options.enableAutoFreeze ?? false;
-    const _options: Options<any, any> = {
+    const _options: DraftOptions = {
       enableAutoFreeze,
       mark,
       strict,
       enablePatches,
+      skipFinalization: new WeakSet(),
     };
     if (
       !isDraftable(state, _options) &&
