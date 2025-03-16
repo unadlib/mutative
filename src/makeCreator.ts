@@ -144,7 +144,7 @@ export const makeCreator: MakeCreator = (arg) => {
     const enablePatches = options.enablePatches ?? false;
     const strict = options.strict ?? false;
     const enableAutoFreeze = options.enableAutoFreeze ?? false;
-    const enableOptimizedArray = options.enableOptimizedArray ?? true;
+    const enableOptimizedArray = options.enableOptimizedArray ?? false;
     const _options: DraftOptions = {
       enableAutoFreeze,
       mark,
