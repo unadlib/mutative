@@ -1,8 +1,7 @@
-import {
+import type {
   CreateResult,
   Draft,
   Mark,
-  Options,
   ExternalOptions,
   PatchesOptions,
   Result,

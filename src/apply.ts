@@ -1,4 +1,10 @@
-import { Draft, Options, Patches, DraftType, Operation } from './interface';
+import {
+  DraftType,
+  Operation,
+  type Draft,
+  type Options,
+  type Patches,
+} from './interface';
 import { deepClone, get, getType, isDraft, unescapePath } from './utils';
 import { create } from './create';
 
