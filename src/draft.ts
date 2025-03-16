@@ -138,11 +138,11 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (
       !arrayHandling &&
       (value === peek(target.original, key) ||
-        target.options.skipFinalization.has(value))
+        target.options.skipFinalization?.has(value))
     ) {
-      const shouldSkip = target.options.skipFinalization.has(value);
+      const shouldSkip = target.options.skipFinalization?.has(value);
       if (shouldSkip) {
-        target.options.skipFinalization.delete(value);
+        target.options.skipFinalization!.delete(value);
       }
       ensureShallowCopy(target);
       target.copy![key] = createDraft({
@@ -162,7 +162,12 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       }
       return target.copy![key];
     }
-    if (arrayHandling && !isDraft(value) && isDraftable(value)) {
+    if (
+      arrayHandling &&
+      target.options.skipFinalization &&
+      !isDraft(value) &&
+      isDraftable(value)
+    ) {
       // !case: handle the case of assigning the original array item via array methods(`splice`, `shift``, `unshift`, `reverse`)
       target.options.skipFinalization.add(value);
     }
