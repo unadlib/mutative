@@ -102,6 +102,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       const value = desc?.value;
       if (
         target.type === DraftType.Array &&
+        target.options.skipFinalization &&
         proxyArrayMethods.includes(key as string)
       ) {
         return function (this: any, ...args: any[]) {
