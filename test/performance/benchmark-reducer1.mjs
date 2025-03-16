@@ -42,21 +42,25 @@ const concat = (index) => ({
 });
 
 const actions = {
-  add,
+  // add,
   remove,
-  update,
-  concat,
+  // update,
+  // concat,
 };
 
 const immerProducers = {
   immer10: produce10,
-  mutative: produceMutative,
+  mutative: (data, fn, options) =>
+    produceMutative(data, fn, { ...options, enableOptimizedArray: false }),
+  mutativeOptimized: (data, fn, options) =>
+    produceMutative(data, fn, { ...options, enableOptimizedArray: true }),
 };
 
 const setAutoFreezes = {
   vanilla: () => {},
   immer10: setAutoFreeze10,
   mutative: () => {},
+  mutativeOptimized: () => {},
 };
 
 const vanillaReducer = (state = createInitialState(), action) => {
