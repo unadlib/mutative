@@ -227,3 +227,29 @@ test('sort - 1', () => {
     draft.a[0].i++;
   });
 });
+
+test('copyWithin - 1', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    draft.a.copyWithin(0, 3, 5);
+    draft.a.reverse();
+    draft.a.unshift({ i: 42 });
+    draft.a[0].i++;
+  });
+});
+
+test('copyWithin - 2', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (draft) => {
+    draft.a.copyWithin(1,3);
+    draft.a.reverse();
+    draft.a.unshift({ i: 42 });
+    draft.a[0].i++;
+  });
+});
