@@ -105,7 +105,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
           arrayHandling = true;
           try {
             returnValue = value.apply(this, args);
-            if (isDraftable(returnValue)) {
+            if (isDraftable(returnValue, target.options)) {
               returnValue = createDraft({
                 original: returnValue,
                 parentDraft: target,
@@ -113,7 +113,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
                 finalities: target.finalities,
                 options: target.options,
               });
-              // TODO: support for custom shallow copy function;
             }
             return returnValue;
           } finally {
