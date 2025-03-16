@@ -1,4 +1,4 @@
-import { Options } from './interface';
+import type { Options } from './interface';
 import { isDraftable } from './utils';
 
 let readable = false;
