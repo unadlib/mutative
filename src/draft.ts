@@ -38,6 +38,8 @@ const draftsCache = new WeakSet<object>();
 
 let arrayHandling = false;
 
+// The array methods that need to be handled by the draft.
+// `sort` is not included, because array items may be modified by mutations in the sort function, it has to be drafted.
 const proxyArrayMethods = [
   'splice',
   'shift',
@@ -170,7 +172,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       !isDraft(value) &&
       isDraftable(value)
     ) {
-      // !case: handle the case of assigning the original array item via array methods(`splice`, `shift``, `unshift`, `reverse`)
+      // !case: handle the case of assigning the original array item via array methods(`splice`, `shift``, `unshift`, `reverse`, `copyWithin`)
       skipFinalization.add(value);
     }
     return value;
