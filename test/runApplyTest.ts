@@ -1485,6 +1485,18 @@ export const runApplyTest = (enableOptimizedArray: boolean) => {
     });
 
     checkPatches(obj, (d) => {
+      d.a.splice(0, 1, { i: 100 });
+      d.a[10].i += 1;
+    });
+
+    checkPatches(obj, (d) => {
+      const a0 = d.a[0];
+      d.a[0].i += 1;
+      const [a] = d.a.splice(0, 1, { i: 100 });
+      expect(a === a0).toBeTruthy();
+    });
+
+    checkPatches(obj, (d) => {
       d.a[10].i += 1;
       d.a.shift();
       d.a[0].i += 1;
@@ -1521,6 +1533,112 @@ export const runApplyTest = (enableOptimizedArray: boolean) => {
     checkPatches(obj, (d) => {
       const a = d.a[0];
       d.a.shift();
+      d.a[10].i += 1;
+      a.i += 1;
+      d.a.push(a);
+    });
+  });
+
+  test('array - copyWithin', () => {
+    const obj = {
+      a: Array.from({ length: 20 }, (_, i) => ({ i })),
+      o: { b: { c: 1 } },
+    };
+    checkPatches(obj, (d) => {
+      d.a.copyWithin(0, 1, 2);
+    });
+
+    checkPatches(obj, (d) => {
+      d.a.copyWithin(1, 2);
+    });
+
+    checkPatches(obj, (d) => {
+      const result = d.a.copyWithin(1, 2);
+      expect(result).toBe(d.a);
+      result[0].i += 1;
+    });
+
+    checkPatches(obj, (d) => {
+      // d.o.b.c++;
+      // @ts-ignore
+      d.a.copyWithin(0, 1, 2);
+      // @ts-ignore
+      delete d.o.b;
+    });
+
+    checkPatches(obj, (d) => {
+      d.o.b.c++;
+      // @ts-ignore
+      d.a.copyWithin(1, 2);
+      // @ts-ignore
+      delete d.o.b;
+    });
+
+    checkPatches(obj, (d) => {
+      d.a.shift();
+    });
+
+    checkPatches(obj, (d) => {
+      d.a.shift();
+      d.a[0].i += 1;
+      d.a[10].i += 1;
+    });
+
+    checkPatches(obj, (d) => {
+      d.a[10].i += 1;
+      d.a.copyWithin(0, 1);
+      d.a[0].i += 1;
+    });
+
+    checkPatches(obj, (d) => {
+      d.a.copyWithin(0, 1, 2);
+      d.a[10].i += 1;
+    });
+
+    checkPatches(obj, (d) => {
+      d.a[10].i += 1;
+      d.a.shift();
+      d.a.copyWithin(0, 1, 2);
+      d.a[0].i += 1;
+    });
+
+    checkPatches(obj, (d) => {
+      d.a.unshift({ i: -1 });
+      d.a.copyWithin(0, 1, 2);
+    });
+
+    checkPatches(obj, (d) => {
+      d.o.b.c++;
+      // @ts-ignore
+      d.a.unshift({ i: -1 }, { i: d.o.b });
+      d.a.copyWithin(0, 1, 2);
+      // @ts-ignore
+      delete d.o.b;
+    });
+
+    checkPatches(obj, (d) => {
+      d.a[10].i += 1;
+      d.a.unshift({ i: -1 });
+      d.a.copyWithin(0, 1, 2);
+      d.a[2].i += 1;
+    });
+
+    checkPatches(obj, (d) => {
+      d.a.reverse();
+      d.a.copyWithin(0, 1, 2);
+    });
+
+    checkPatches(obj, (d) => {
+      d.a[10].i += 1;
+      d.a.reverse();
+      d.a.copyWithin(0, 1, 2);
+      d.a[2].i += 1;
+    });
+
+    checkPatches(obj, (d) => {
+      const a = d.a[0];
+      d.a.shift();
+      d.a.copyWithin(0, 1, 2);
       d.a[10].i += 1;
       a.i += 1;
       d.a.push(a);

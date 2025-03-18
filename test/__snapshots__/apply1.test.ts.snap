@@ -284,6 +284,5395 @@ exports[`#879 delete item from array 2`] = `
 ]
 `;
 
+exports[`array - copyWithin 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 3`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 4`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 5`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+      "i",
+    ],
+    "value": 1,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 6`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+      "i",
+    ],
+    "value": 0,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 7`] = `
+[
+  {
+    "op": "remove",
+    "path": [
+      "o",
+      "b",
+    ],
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 8`] = `
+[
+  {
+    "op": "add",
+    "path": [
+      "o",
+      "b",
+    ],
+    "value": {
+      "c": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 9`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "remove",
+    "path": [
+      "o",
+      "b",
+    ],
+  },
+]
+`;
+
+exports[`array - copyWithin 10`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "o",
+      "b",
+    ],
+    "value": {
+      "c": 1,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 11`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      "length",
+    ],
+    "value": 19,
+  },
+]
+`;
+
+exports[`array - copyWithin 12`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 13`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      "length",
+    ],
+    "value": 19,
+  },
+]
+`;
+
+exports[`array - copyWithin 14`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 15`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 16`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 17`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+      "i",
+    ],
+    "value": 11,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 18`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+      "i",
+    ],
+    "value": 10,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 19`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      "length",
+    ],
+    "value": 19,
+  },
+]
+`;
+
+exports[`array - copyWithin 20`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 21`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      20,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 22`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      "length",
+    ],
+    "value": 20,
+  },
+]
+`;
+
+exports[`array - copyWithin 23`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": {
+        "c": 2,
+      },
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": {
+        "c": 2,
+      },
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      20,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      21,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "remove",
+    "path": [
+      "o",
+      "b",
+    ],
+  },
+]
+`;
+
+exports[`array - copyWithin 24`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      "length",
+    ],
+    "value": 20,
+  },
+  {
+    "op": "add",
+    "path": [
+      "o",
+      "b",
+    ],
+    "value": {
+      "c": 1,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 25`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      20,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 26`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      "length",
+    ],
+    "value": 20,
+  },
+]
+`;
+
+exports[`array - copyWithin 27`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 28`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 29`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 30`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 31`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+]
+`;
+
+exports[`array - copyWithin 32`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
 exports[`array - update 1`] = `
 [
   {
@@ -2418,6 +7807,84 @@ exports[`array - update 13`] = `
     "op": "replace",
     "path": [
       "a",
+      10,
+      "i",
+    ],
+    "value": 11,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 100,
+    },
+  },
+]
+`;
+
+exports[`array - update 14`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+      "i",
+    ],
+    "value": 10,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+]
+`;
+
+exports[`array - update 15`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 100,
+    },
+  },
+]
+`;
+
+exports[`array - update 16`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+]
+`;
+
+exports[`array - update 17`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
       0,
     ],
     "value": {
@@ -2615,873 +8082,6 @@ exports[`array - update 13`] = `
 ]
 `;
 
-exports[`array - update 14`] = `
-[
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      0,
-    ],
-    "value": {
-      "i": 0,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      1,
-    ],
-    "value": {
-      "i": 1,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      2,
-    ],
-    "value": {
-      "i": 2,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      3,
-    ],
-    "value": {
-      "i": 3,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      4,
-    ],
-    "value": {
-      "i": 4,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      5,
-    ],
-    "value": {
-      "i": 5,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      6,
-    ],
-    "value": {
-      "i": 6,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      7,
-    ],
-    "value": {
-      "i": 7,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      8,
-    ],
-    "value": {
-      "i": 8,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      9,
-    ],
-    "value": {
-      "i": 9,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      10,
-    ],
-    "value": {
-      "i": 10,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      11,
-    ],
-    "value": {
-      "i": 11,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      12,
-    ],
-    "value": {
-      "i": 12,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      13,
-    ],
-    "value": {
-      "i": 13,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      14,
-    ],
-    "value": {
-      "i": 14,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      15,
-    ],
-    "value": {
-      "i": 15,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      16,
-    ],
-    "value": {
-      "i": 16,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      17,
-    ],
-    "value": {
-      "i": 17,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      18,
-    ],
-    "value": {
-      "i": 18,
-    },
-  },
-  {
-    "op": "add",
-    "path": [
-      "a",
-      19,
-    ],
-    "value": {
-      "i": 19,
-    },
-  },
-]
-`;
-
-exports[`array - update 15`] = `
-[
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      0,
-    ],
-    "value": {
-      "i": -1,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      1,
-    ],
-    "value": {
-      "i": 0,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      2,
-    ],
-    "value": {
-      "i": 1,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      3,
-    ],
-    "value": {
-      "i": 2,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      4,
-    ],
-    "value": {
-      "i": 3,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      5,
-    ],
-    "value": {
-      "i": 4,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      6,
-    ],
-    "value": {
-      "i": 5,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      7,
-    ],
-    "value": {
-      "i": 6,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      8,
-    ],
-    "value": {
-      "i": 7,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      9,
-    ],
-    "value": {
-      "i": 8,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      10,
-    ],
-    "value": {
-      "i": 9,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      11,
-    ],
-    "value": {
-      "i": 10,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      12,
-    ],
-    "value": {
-      "i": 11,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      13,
-    ],
-    "value": {
-      "i": 12,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      14,
-    ],
-    "value": {
-      "i": 13,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      15,
-    ],
-    "value": {
-      "i": 14,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      16,
-    ],
-    "value": {
-      "i": 15,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      17,
-    ],
-    "value": {
-      "i": 16,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      18,
-    ],
-    "value": {
-      "i": 17,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      19,
-    ],
-    "value": {
-      "i": 18,
-    },
-  },
-  {
-    "op": "add",
-    "path": [
-      "a",
-      20,
-    ],
-    "value": {
-      "i": 19,
-    },
-  },
-]
-`;
-
-exports[`array - update 16`] = `
-[
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      0,
-    ],
-    "value": {
-      "i": 0,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      1,
-    ],
-    "value": {
-      "i": 1,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      2,
-    ],
-    "value": {
-      "i": 2,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      3,
-    ],
-    "value": {
-      "i": 3,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      4,
-    ],
-    "value": {
-      "i": 4,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      5,
-    ],
-    "value": {
-      "i": 5,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      6,
-    ],
-    "value": {
-      "i": 6,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      7,
-    ],
-    "value": {
-      "i": 7,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      8,
-    ],
-    "value": {
-      "i": 8,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      9,
-    ],
-    "value": {
-      "i": 9,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      10,
-    ],
-    "value": {
-      "i": 10,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      11,
-    ],
-    "value": {
-      "i": 11,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      12,
-    ],
-    "value": {
-      "i": 12,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      13,
-    ],
-    "value": {
-      "i": 13,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      14,
-    ],
-    "value": {
-      "i": 14,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      15,
-    ],
-    "value": {
-      "i": 15,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      16,
-    ],
-    "value": {
-      "i": 16,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      17,
-    ],
-    "value": {
-      "i": 17,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      18,
-    ],
-    "value": {
-      "i": 18,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      19,
-    ],
-    "value": {
-      "i": 19,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      "length",
-    ],
-    "value": 20,
-  },
-]
-`;
-
-exports[`array - update 17`] = `
-[
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      0,
-    ],
-    "value": {
-      "i": -1,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      1,
-    ],
-    "value": {
-      "i": {
-        "c": 2,
-      },
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      2,
-    ],
-    "value": {
-      "i": 0,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      3,
-    ],
-    "value": {
-      "i": 1,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      4,
-    ],
-    "value": {
-      "i": 2,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      5,
-    ],
-    "value": {
-      "i": 3,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      6,
-    ],
-    "value": {
-      "i": 4,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      7,
-    ],
-    "value": {
-      "i": 5,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      8,
-    ],
-    "value": {
-      "i": 6,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      9,
-    ],
-    "value": {
-      "i": 7,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      10,
-    ],
-    "value": {
-      "i": 8,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      11,
-    ],
-    "value": {
-      "i": 9,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      12,
-    ],
-    "value": {
-      "i": 10,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      13,
-    ],
-    "value": {
-      "i": 11,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      14,
-    ],
-    "value": {
-      "i": 12,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      15,
-    ],
-    "value": {
-      "i": 13,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      16,
-    ],
-    "value": {
-      "i": 14,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      17,
-    ],
-    "value": {
-      "i": 15,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      18,
-    ],
-    "value": {
-      "i": 16,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      19,
-    ],
-    "value": {
-      "i": 17,
-    },
-  },
-  {
-    "op": "add",
-    "path": [
-      "a",
-      20,
-    ],
-    "value": {
-      "i": 18,
-    },
-  },
-  {
-    "op": "add",
-    "path": [
-      "a",
-      21,
-    ],
-    "value": {
-      "i": 19,
-    },
-  },
-  {
-    "op": "remove",
-    "path": [
-      "o",
-      "b",
-    ],
-  },
-]
-`;
-
 exports[`array - update 18`] = `
 [
   {
@@ -3675,31 +8275,13 @@ exports[`array - update 18`] = `
     },
   },
   {
-    "op": "replace",
+    "op": "add",
     "path": [
       "a",
       19,
     ],
     "value": {
       "i": 19,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      "length",
-    ],
-    "value": 20,
-  },
-  {
-    "op": "add",
-    "path": [
-      "o",
-      "b",
-    ],
-    "value": {
-      "c": 1,
     },
   },
 ]
@@ -3734,7 +8316,7 @@ exports[`array - update 19`] = `
       2,
     ],
     "value": {
-      "i": 2,
+      "i": 1,
     },
   },
   {
@@ -3824,7 +8406,7 @@ exports[`array - update 19`] = `
       11,
     ],
     "value": {
-      "i": 11,
+      "i": 10,
     },
   },
   {
@@ -4142,7 +8724,7 @@ exports[`array - update 21`] = `
       0,
     ],
     "value": {
-      "i": 19,
+      "i": -1,
     },
   },
   {
@@ -4152,7 +8734,9 @@ exports[`array - update 21`] = `
       1,
     ],
     "value": {
-      "i": 18,
+      "i": {
+        "c": 2,
+      },
     },
   },
   {
@@ -4162,7 +8746,7 @@ exports[`array - update 21`] = `
       2,
     ],
     "value": {
-      "i": 17,
+      "i": 0,
     },
   },
   {
@@ -4172,7 +8756,7 @@ exports[`array - update 21`] = `
       3,
     ],
     "value": {
-      "i": 16,
+      "i": 1,
     },
   },
   {
@@ -4182,7 +8766,7 @@ exports[`array - update 21`] = `
       4,
     ],
     "value": {
-      "i": 15,
+      "i": 2,
     },
   },
   {
@@ -4192,7 +8776,7 @@ exports[`array - update 21`] = `
       5,
     ],
     "value": {
-      "i": 14,
+      "i": 3,
     },
   },
   {
@@ -4202,7 +8786,7 @@ exports[`array - update 21`] = `
       6,
     ],
     "value": {
-      "i": 13,
+      "i": 4,
     },
   },
   {
@@ -4212,7 +8796,7 @@ exports[`array - update 21`] = `
       7,
     ],
     "value": {
-      "i": 12,
+      "i": 5,
     },
   },
   {
@@ -4222,7 +8806,7 @@ exports[`array - update 21`] = `
       8,
     ],
     "value": {
-      "i": 11,
+      "i": 6,
     },
   },
   {
@@ -4232,7 +8816,7 @@ exports[`array - update 21`] = `
       9,
     ],
     "value": {
-      "i": 10,
+      "i": 7,
     },
   },
   {
@@ -4242,7 +8826,7 @@ exports[`array - update 21`] = `
       10,
     ],
     "value": {
-      "i": 9,
+      "i": 8,
     },
   },
   {
@@ -4252,7 +8836,7 @@ exports[`array - update 21`] = `
       11,
     ],
     "value": {
-      "i": 8,
+      "i": 9,
     },
   },
   {
@@ -4262,7 +8846,7 @@ exports[`array - update 21`] = `
       12,
     ],
     "value": {
-      "i": 7,
+      "i": 10,
     },
   },
   {
@@ -4272,7 +8856,7 @@ exports[`array - update 21`] = `
       13,
     ],
     "value": {
-      "i": 6,
+      "i": 11,
     },
   },
   {
@@ -4282,7 +8866,7 @@ exports[`array - update 21`] = `
       14,
     ],
     "value": {
-      "i": 5,
+      "i": 12,
     },
   },
   {
@@ -4292,7 +8876,7 @@ exports[`array - update 21`] = `
       15,
     ],
     "value": {
-      "i": 4,
+      "i": 13,
     },
   },
   {
@@ -4302,7 +8886,7 @@ exports[`array - update 21`] = `
       16,
     ],
     "value": {
-      "i": 3,
+      "i": 14,
     },
   },
   {
@@ -4312,7 +8896,7 @@ exports[`array - update 21`] = `
       17,
     ],
     "value": {
-      "i": 2,
+      "i": 15,
     },
   },
   {
@@ -4322,7 +8906,7 @@ exports[`array - update 21`] = `
       18,
     ],
     "value": {
-      "i": 1,
+      "i": 16,
     },
   },
   {
@@ -4332,8 +8916,35 @@ exports[`array - update 21`] = `
       19,
     ],
     "value": {
-      "i": 0,
+      "i": 17,
     },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      20,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      21,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "remove",
+    "path": [
+      "o",
+      "b",
+    ],
   },
 ]
 `;
@@ -4540,6 +9151,24 @@ exports[`array - update 22`] = `
       "i": 19,
     },
   },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      "length",
+    ],
+    "value": 20,
+  },
+  {
+    "op": "add",
+    "path": [
+      "o",
+      "b",
+    ],
+    "value": {
+      "c": 1,
+    },
+  },
 ]
 `;
 
@@ -4552,7 +9181,7 @@ exports[`array - update 23`] = `
       0,
     ],
     "value": {
-      "i": 19,
+      "i": -1,
     },
   },
   {
@@ -4562,7 +9191,7 @@ exports[`array - update 23`] = `
       1,
     ],
     "value": {
-      "i": 18,
+      "i": 0,
     },
   },
   {
@@ -4572,7 +9201,7 @@ exports[`array - update 23`] = `
       2,
     ],
     "value": {
-      "i": 18,
+      "i": 2,
     },
   },
   {
@@ -4582,7 +9211,7 @@ exports[`array - update 23`] = `
       3,
     ],
     "value": {
-      "i": 16,
+      "i": 2,
     },
   },
   {
@@ -4592,7 +9221,7 @@ exports[`array - update 23`] = `
       4,
     ],
     "value": {
-      "i": 15,
+      "i": 3,
     },
   },
   {
@@ -4602,7 +9231,7 @@ exports[`array - update 23`] = `
       5,
     ],
     "value": {
-      "i": 14,
+      "i": 4,
     },
   },
   {
@@ -4612,7 +9241,7 @@ exports[`array - update 23`] = `
       6,
     ],
     "value": {
-      "i": 13,
+      "i": 5,
     },
   },
   {
@@ -4622,7 +9251,7 @@ exports[`array - update 23`] = `
       7,
     ],
     "value": {
-      "i": 12,
+      "i": 6,
     },
   },
   {
@@ -4632,7 +9261,7 @@ exports[`array - update 23`] = `
       8,
     ],
     "value": {
-      "i": 11,
+      "i": 7,
     },
   },
   {
@@ -4642,7 +9271,7 @@ exports[`array - update 23`] = `
       9,
     ],
     "value": {
-      "i": 11,
+      "i": 8,
     },
   },
   {
@@ -4662,7 +9291,7 @@ exports[`array - update 23`] = `
       11,
     ],
     "value": {
-      "i": 8,
+      "i": 11,
     },
   },
   {
@@ -4672,7 +9301,7 @@ exports[`array - update 23`] = `
       12,
     ],
     "value": {
-      "i": 7,
+      "i": 11,
     },
   },
   {
@@ -4682,7 +9311,7 @@ exports[`array - update 23`] = `
       13,
     ],
     "value": {
-      "i": 6,
+      "i": 12,
     },
   },
   {
@@ -4692,7 +9321,7 @@ exports[`array - update 23`] = `
       14,
     ],
     "value": {
-      "i": 5,
+      "i": 13,
     },
   },
   {
@@ -4702,7 +9331,7 @@ exports[`array - update 23`] = `
       15,
     ],
     "value": {
-      "i": 4,
+      "i": 14,
     },
   },
   {
@@ -4712,7 +9341,7 @@ exports[`array - update 23`] = `
       16,
     ],
     "value": {
-      "i": 3,
+      "i": 15,
     },
   },
   {
@@ -4722,7 +9351,7 @@ exports[`array - update 23`] = `
       17,
     ],
     "value": {
-      "i": 2,
+      "i": 16,
     },
   },
   {
@@ -4732,7 +9361,7 @@ exports[`array - update 23`] = `
       18,
     ],
     "value": {
-      "i": 1,
+      "i": 17,
     },
   },
   {
@@ -4742,7 +9371,17 @@ exports[`array - update 23`] = `
       19,
     ],
     "value": {
-      "i": 0,
+      "i": 18,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      20,
+    ],
+    "value": {
+      "i": 19,
     },
   },
 ]
@@ -4950,10 +9589,838 @@ exports[`array - update 24`] = `
       "i": 19,
     },
   },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      "length",
+    ],
+    "value": 20,
+  },
 ]
 `;
 
 exports[`array - update 25`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+]
+`;
+
+exports[`array - update 26`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - update 27`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+]
+`;
+
+exports[`array - update 28`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "i": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "i": 1,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "i": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "i": 3,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "i": 4,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      5,
+    ],
+    "value": {
+      "i": 5,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      6,
+    ],
+    "value": {
+      "i": 6,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      7,
+    ],
+    "value": {
+      "i": 7,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      8,
+    ],
+    "value": {
+      "i": 8,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      9,
+    ],
+    "value": {
+      "i": 9,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      10,
+    ],
+    "value": {
+      "i": 10,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      11,
+    ],
+    "value": {
+      "i": 11,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      12,
+    ],
+    "value": {
+      "i": 12,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      13,
+    ],
+    "value": {
+      "i": 13,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      14,
+    ],
+    "value": {
+      "i": 14,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      15,
+    ],
+    "value": {
+      "i": 15,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      16,
+    ],
+    "value": {
+      "i": 16,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      17,
+    ],
+    "value": {
+      "i": 17,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      18,
+    ],
+    "value": {
+      "i": 18,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      19,
+    ],
+    "value": {
+      "i": 19,
+    },
+  },
+]
+`;
+
+exports[`array - update 29`] = `
 [
   {
     "op": "replace",
@@ -5158,7 +10625,7 @@ exports[`array - update 25`] = `
 ]
 `;
 
-exports[`array - update 26`] = `
+exports[`array - update 30`] = `
 [
   {
     "op": "replace",
