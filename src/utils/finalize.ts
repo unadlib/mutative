@@ -99,8 +99,11 @@ export function finalizePatches(
     target.assignedMap &&
     target.assignedMap.size > 0 &&
     !target.finalized;
+  const parentAssigned = target.parent?.assignedMap?.get(
+    target.parent.type === DraftType.Array ? target.key!.toString() : target.key
+  );
   if (shouldFinalize) {
-    if (patches && inversePatches) {
+    if (!parentAssigned && patches && inversePatches) {
       const basePath = getPath(target);
       if (basePath) {
         generatePatches(target, basePath, patches, inversePatches);

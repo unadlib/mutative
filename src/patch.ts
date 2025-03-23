@@ -4,7 +4,15 @@ import {
   type Patches,
   type ProxyDraft,
 } from './interface';
-import { cloneIfNeeded, escapePath, get, has, isEqual } from './utils';
+import {
+  cloneIfNeeded,
+  escapePath,
+  get,
+  getProxyDraft,
+  has,
+  isEqual,
+  latest,
+} from './utils';
 
 function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
@@ -20,7 +28,12 @@ function generateArrayPatches(
     [patches, inversePatches] = [inversePatches, patches];
   }
   for (let index = 0; index < original.length; index += 1) {
-    if (assignedMap!.get(index.toString()) && copy[index] !== original[index]) {
+    const currentProxyDraft = getProxyDraft(copy[index]);
+    if (
+      assignedMap!.get(index.toString()) &&
+      (currentProxyDraft ? latest(currentProxyDraft) : copy[index]) !==
+        original[index]
+    ) {
       const _path = basePath.concat([index]);
       const path = escapePath(_path, pathAsArray);
       patches.push({

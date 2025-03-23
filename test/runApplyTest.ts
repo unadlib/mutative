@@ -1504,6 +1504,14 @@ export const runApplyTest = (enableOptimizedArray: boolean) => {
     });
 
     checkPatches(obj, (d) => {
+      d.a[10].i += 1;
+      const data = { i: -1 };
+      d.a.unshift(data, data);
+      d.a[2].i += 1;
+      d.a[0].i += 1;
+    });
+
+    checkPatches(obj, (d) => {
       d.a.reverse();
     });
 
