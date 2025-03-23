@@ -524,16 +524,6 @@ exports[`copyWithin - 2 1`] = `
     "op": "replace",
     "path": [
       "a",
-      11,
-    ],
-    "value": {
-      "i": 11,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
       12,
     ],
     "value": {
@@ -733,16 +723,6 @@ exports[`copyWithin - 2 2`] = `
     ],
     "value": {
       "i": 10,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      11,
-    ],
-    "value": {
-      "i": 11,
     },
   },
   {
@@ -1670,16 +1650,6 @@ exports[`shift - 1 1`] = `
     "op": "replace",
     "path": [
       "a",
-      1,
-    ],
-    "value": {
-      "i": 1,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
       2,
     ],
     "value": {
@@ -1706,15 +1676,6 @@ exports[`shift - 1 1`] = `
       "i": 42,
     },
   },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      0,
-      "i",
-    ],
-    "value": 1,
-  },
 ]
 `;
 
@@ -1728,16 +1689,6 @@ exports[`shift - 1 2`] = `
     ],
     "value": {
       "i": 0,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      1,
-    ],
-    "value": {
-      "i": 1,
     },
   },
   {
@@ -1768,15 +1719,6 @@ exports[`shift - 1 2`] = `
     ],
     "value": 20,
   },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      0,
-      "i",
-    ],
-    "value": 0,
-  },
 ]
 `;
 
@@ -1790,16 +1732,6 @@ exports[`shift 1`] = `
     ],
     "value": {
       "i": 2,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      1,
-    ],
-    "value": {
-      "i": 1,
     },
   },
   {
@@ -1845,16 +1777,6 @@ exports[`shift 2`] = `
     ],
     "value": {
       "i": 0,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      1,
-    ],
-    "value": {
-      "i": 1,
     },
   },
   {
