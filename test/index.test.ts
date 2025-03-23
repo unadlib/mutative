@@ -62,6 +62,33 @@ test('no update object with NaN', () => {
   expect(state).toBe(data);
 });
 
+test('classic case', () => {
+  const data = {
+    a: {
+      c: 1,
+    },
+    b: 2,
+  };
+  const [state, patches, inversePatches] = create(
+    data,
+    (draft) => {
+      const a = draft.a;
+      // @ts-expect-error
+      delete draft.a;
+      a.c = 2;
+      // @ts-expect-error
+      draft.a1 = a;
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  const prevState = apply(state, inversePatches);
+  expect(prevState).toEqual(data);
+  const nextState = apply(data, patches);
+  expect(nextState).toEqual(state);
+});
+
 test('check array options error', () => {
   for (const key of [
     -1,

@@ -36,6 +36,8 @@ import { generatePatches } from './patch';
 
 // The array methods that need to be handled by the draft.
 // `sort` is not included, because array items may be modified by mutations in the sort function, it has to be drafted.
+// `copyWithin` is not included, it would require implementing a complete check of array copy reference relationships,
+// which might result in limited performance gains and increased maintenance complexity.
 const proxyArrayMethods = ['splice', 'shift', 'unshift', 'reverse'];
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
