@@ -1,3 +1,3 @@
 import { runApplyTest } from './runApplyTest';
 
-runApplyTest(true);
+runApplyTest(false);
