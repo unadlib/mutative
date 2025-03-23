@@ -12,33 +12,6 @@ import { create, apply, Patches, original } from '../src';
 import { deepClone, isDraft, set } from '../src/utils';
 
 export const runApplyTest = (enableOptimizedArray: boolean) => {
-  test('classic case', () => {
-    const data = {
-      a: {
-        c: 1,
-      },
-      b: 2,
-    };
-    const [state, patches, inversePatches] = create(
-      data,
-      (draft) => {
-        const a = draft.a;
-        // @ts-expect-error
-        delete draft.a;
-        a.c = 2;
-        // @ts-expect-error
-        draft.a1 = a;
-      },
-      {
-        enablePatches: true,
-      }
-    );
-    const prevState = apply(state, inversePatches);
-    expect(prevState).toEqual(data);
-    const nextState = apply(data, patches);
-    expect(nextState).toEqual(state);
-  });
-
   function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
     const [state, patches, inversePatches] = create(data as any, fn, {
       enablePatches: true,
@@ -1494,6 +1467,16 @@ export const runApplyTest = (enableOptimizedArray: boolean) => {
       d.a[0].i += 1;
       const [a] = d.a.splice(0, 1, { i: 100 });
       expect(a === a0).toBeTruthy();
+    });
+
+    checkPatches(obj, (d) => {
+      const a0 = d.a[0];
+      d.a[0].i += 1;
+      const data = { i: 100 };
+      const [a] = d.a.splice(0, 1, data, data);
+      expect(a === a0).toBeTruthy();
+      d.a[1].i += 2;
+      d.a[0].i += 3;
     });
 
     checkPatches(obj, (d) => {
