@@ -33,7 +33,7 @@ import { create } from './create';
 export function apply<
   T extends object,
   F extends boolean = false,
-  A extends ApplyOptions<F> = ApplyOptions<F>
+  A extends ApplyOptions<F> = ApplyOptions<F>,
 >(state: T, patches: Patches, applyOptions?: A): ApplyResult<T, F, A> {
   let i: number;
   for (i = patches.length - 1; i >= 0; i -= 1) {
@@ -124,6 +124,15 @@ export function apply<
     });
   };
   if ((applyOptions as ApplyMutableOptions)?.mutable) {
+    if (__DEV__) {
+      if (
+        Object.keys(applyOptions!).filter((key) => key !== 'mutable').length
+      ) {
+        console.warn(
+          'The "mutable" option is not allowed to be used with other options.'
+        );
+      }
+    }
     mutate(state);
     return undefined as ApplyResult<T, F, A>;
   }
