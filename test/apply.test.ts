@@ -1658,3 +1658,46 @@ test('array - update primitive', () => {
     d.a[2] += 1;
   });
 });
+
+test('base - mutate', () => {
+  const baseState = {
+    a: {
+      c: 1,
+    },
+  };
+  const [state, patches, inversePatches] = create(
+    baseState,
+    (draft) => {
+      draft.a.c = 2;
+    },
+    {
+      enablePatches: true,
+    }
+  );
+  expect(state).toEqual({ a: { c: 2 } });
+  expect({ patches, inversePatches }).toEqual({
+    patches: [
+      {
+        op: 'replace',
+        path: ['a', 'c'],
+        value: 2,
+      },
+    ],
+    inversePatches: [
+      {
+        op: 'replace',
+        path: ['a', 'c'],
+        value: 1,
+      },
+    ],
+  });
+  const nextState = apply(baseState, patches);
+  expect(nextState).toEqual({ a: { c: 2 } });
+  expect(baseState).toEqual({ a: { c: 1 } });
+
+  const result = apply(baseState, patches, {
+    mutable: true,
+  });
+  expect(baseState).toEqual({ a: { c: 2 } });
+  expect(result).toBeUndefined();
+});
