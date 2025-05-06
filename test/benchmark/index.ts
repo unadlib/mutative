@@ -1,4 +1,5 @@
 /* eslint-disable no-loop-func */
+(globalThis as any).__DEV__ = false;
 import fs from 'fs';
 import { spawn } from 'child_process';
 import path from 'path';

@@ -7,10 +7,10 @@ import {
   getValue,
   isDraft,
   isDraftable,
-  isEqual,
   set,
 } from './draft';
 import { forEach } from './forEach';
+import { objectIs } from '../generic-utils/equality';
 
 export function handleValue(
   target: any,
@@ -121,7 +121,7 @@ export function markFinalization(
     }
     proxyDraft.callbacks.push((patches, inversePatches) => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
-      if (isEqual(get(copy, key), value)) {
+      if (objectIs(get(copy, key), value)) {
         let updatedValue = proxyDraft.original;
         if (proxyDraft.copy) {
           updatedValue = proxyDraft.copy;
@@ -148,7 +148,7 @@ export function markFinalization(
     // !case: assign the non-draft value
     target.finalities.draft.push(() => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
-      if (isEqual(get(copy, key), value)) {
+      if (objectIs(get(copy, key), value)) {
         finalizeAssigned(target, key);
       }
     });

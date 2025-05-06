@@ -1,10 +1,5 @@
 // @ts-nocheck
-import {
-  produce,
-  setAutoFreeze,
-  freeze,
-  enableMapSet,
-} from '../src/immer';
+import { produce, setAutoFreeze, freeze, enableMapSet } from '../src/immer';
 
 enableMapSet();
 

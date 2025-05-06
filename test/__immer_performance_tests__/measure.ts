@@ -1,5 +1,6 @@
 // @ts-nocheck
 'use strict';
+(globalThis as any).__DEV__ = false;
 
 function measureTime(setup, fn) {
   if (!fn) {
