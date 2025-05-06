@@ -146,5 +146,5 @@ export function apply<
   return create<T, F>(state, mutate, {
     ...applyOptions,
     enablePatches: false,
-  }) as any;
+  }) as T as ApplyResult<T, F, A>;
 }
