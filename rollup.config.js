@@ -35,7 +35,7 @@ export default [
         declarationDir: 'dist',
       }),
       replace({
-        __DEV__: 'false',
+        "__DEV__": 'false',
         preventAssignment: true,
       }),
     ],
@@ -76,7 +76,7 @@ export default [
         declarationDir: 'dist',
       }),
       replace({
-        __DEV__: 'true',
+        "__DEV__": 'true',
         preventAssignment: true,
       }),
       {

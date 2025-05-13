@@ -124,7 +124,7 @@ const run = (size: number) => {
     .add(
       'Set - shallow copy with difference()',
       () => {
-        const state = Set.prototype.difference.call(baseState, new Set())
+        const state = Set.prototype.difference.call(baseState, new Set());
       },
       {
         onStart: () => {

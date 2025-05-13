@@ -1,6 +1,8 @@
 import { DraftType } from '../interface';
 import { getType, isDraft } from './draft';
 
+import { MutativeMap } from '../MutativeMap';
+
 function throwFrozenError() {
   throw new Error('Cannot modify frozen object');
 }
@@ -39,7 +41,9 @@ export function deepFreeze(
               const parent = stack![index];
               if (
                 typeof key === 'object' &&
-                (parent instanceof Map || parent instanceof Set)
+                (parent instanceof Map ||
+                  parent instanceof MutativeMap ||
+                  parent instanceof Set)
               )
                 return Array.from(parent.keys()).indexOf(key);
               return key;
@@ -63,6 +67,14 @@ export function deepFreeze(
   const type = getType(target);
   switch (type) {
     case DraftType.Map:
+      for (const [key, value] of target) {
+        if (isFreezable(key)) deepFreeze(key, key, updatedValues, stack, keys);
+        if (isFreezable(value))
+          deepFreeze(value, key, updatedValues, stack, keys);
+      }
+      target.set = target.clear = target.delete = throwFrozenError;
+      break;
+    case DraftType.MutativeMap:
       for (const [key, value] of target) {
         if (isFreezable(key)) deepFreeze(key, key, updatedValues, stack, keys);
         if (isFreezable(value))

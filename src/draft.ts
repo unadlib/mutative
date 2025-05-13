@@ -18,7 +18,6 @@ import {
   getType,
   getValue,
   has,
-  isEqual,
   isDraftable,
   latest,
   markChanged,
@@ -32,15 +31,21 @@ import {
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
+import { objectIs } from './generic-utils/equality';
+import {
+  mutativeMapHandler,
+  mutativeMapHandlerKeys,
+} from './mutativeMapHandlers';
+import { MutativeMap } from './MutativeMap';
 
 const draftsCache = new WeakSet<object>();
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
-    const copy = target.copy?.[key];
+    const copyValue = target.copy?.[key];
     // Improve draft reading performance by caching the draft copy.
-    if (copy && draftsCache.has(copy)) {
-      return copy;
+    if (copyValue && draftsCache.has(copyValue)) {
+      return copyValue;
     }
     if (key === PROXY_DRAFT) return target;
     let markResult: any;
@@ -49,7 +54,9 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       // or `Uncaught TypeError: Method get Set.prototype.size called on incompatible receiver #<Set>`
       const value =
         key === 'size' &&
-        (target.original instanceof Map || target.original instanceof Set)
+        (target.original instanceof Map ||
+          target.original instanceof MutativeMap ||
+          target.original instanceof Set)
           ? Reflect.get(target.original, key)
           : Reflect.get(target.original, key, receiver);
       markResult = target.options.mark(value, dataTypes);
@@ -64,6 +71,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
 
     if (source instanceof Map && mapHandlerKeys.includes(key as any)) {
       if (key === 'size') {
+        // TODO [documentation] why this "fast-path" here?
         return Object.getOwnPropertyDescriptor(mapHandler, 'size')!.get!.call(
           target.proxy
         );
@@ -74,8 +82,27 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       }
     }
 
+    if (
+      source instanceof MutativeMap &&
+      mutativeMapHandlerKeys.includes(key as any)
+    ) {
+      if (key === 'size') {
+        // TODO [documentation] why this "fast-path" here?
+        return Object.getOwnPropertyDescriptor(mutativeMapHandler, 'size')!.get!.call(
+          target.proxy
+        );
+      }
+      const handle = mutativeMapHandler[
+        key as keyof typeof mutativeMapHandler
+      ] as Function;
+      if (handle) {
+        return handle.bind(target.proxy);
+      }
+    }
+
     if (source instanceof Set && setHandlerKeys.includes(key as any)) {
       if (key === 'size') {
+        // TODO [documentation] why this "fast-path" here?
         return Object.getOwnPropertyDescriptor(setHandler, 'size')!.get!.call(
           target.proxy
         );
@@ -86,6 +113,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       }
     }
 
+    // TODO [bug] isn't this potentially wrong for map entries with string keys, because e.g. if mutativeMap['valuesArray'] is called and an entry with 'valuesArray' exists as key, it may not attempt to find a property 'valuesArray' on the MutativeMap object itself, which is not correct. Fixing it by adding mutativeMapHandler, but generally makes no sense here to consider map entries here. Will probably just make issues for custom map implementations (which seem to be supported based on some code I looked at). Test with '_size'.
     if (!has(source, key)) {
       const desc = getDescriptor(source, key);
       return desc
@@ -152,7 +180,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     }
     const current = peek(latest(target), key);
     const currentProxyDraft = getProxyDraft(current);
-    if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
+    if (currentProxyDraft && objectIs(currentProxyDraft.original, value)) {
       // !case: ignore the case of assigning the original draftable value to a draft
       target.copy![key] = value;
       target.assignedMap = target.assignedMap ?? new Map();
@@ -161,13 +189,13 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     }
     // !case: handle new props with value 'undefined'
     if (
-      isEqual(value, current) &&
+      objectIs(value, current) &&
       (value !== undefined || has(target.original, key))
     )
       return true;
     ensureShallowCopy(target);
     markChanged(target);
-    if (has(target.original, key) && isEqual(value, target.original[key])) {
+    if (has(target.original, key) && objectIs(value, target.original[key])) {
       // !case: handle the case of assigning the original non-draftable value to a draft
       target.assignedMap!.delete(key);
     } else {
@@ -243,6 +271,7 @@ export function createDraft<T extends object>(createDraftOptions: {
     options,
     // Mapping of draft Set items to their corresponding draft values.
     setMap:
+      // TODO [performance] so are Sets slower than Maps because of always creating a new Map with all the entries even though it is only read?
       type === DraftType.Set
         ? new Map((original as Set<any>).entries())
         : undefined,
