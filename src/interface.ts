@@ -4,6 +4,7 @@ export const enum DraftType {
   Object,
   Array,
   Map,
+  MutativeMap,
   Set,
 }
 
@@ -45,7 +46,13 @@ export interface ProxyDraft<T = any> {
   options: Options<any, any> & { updatedValues?: WeakMap<any, any> };
   parent?: ProxyDraft | null;
   key?: string | number | symbol;
+  /**
+   * Only for Set to store drafts.
+   */
   setMap?: Map<any, ProxyDraft>;
+  /**
+   * Marks which keys have been assigned new values (also during drafting properties).
+   */
   assignedMap?: Map<any, boolean>;
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
 }

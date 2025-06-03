@@ -1,5 +1,6 @@
 import { DraftType, Operation, Patches, ProxyDraft } from './interface';
-import { cloneIfNeeded, escapePath, get, has, isEqual } from './utils';
+import { cloneIfNeeded, escapePath, get, has } from './utils';
+import { objectIs } from './generic-utils/equality';
 
 function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
@@ -83,7 +84,7 @@ function generatePatchesFromAssigned(
       : has(original, key)
       ? Operation.Replace
       : Operation.Add;
-    if (isEqual(originalValue, value) && op === Operation.Replace) return;
+    if (objectIs(originalValue, value) && op === Operation.Replace) return;
     const _path = basePath.concat(key);
     const path = escapePath(_path, pathAsArray);
     patches.push(op === Operation.Remove ? { op, path } : { op, path, value });

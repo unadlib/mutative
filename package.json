@@ -35,14 +35,17 @@
     "benchmark:object": "NODE_ENV='production' ts-node test/performance/benchmark-object.ts",
     "benchmark:array": "NODE_ENV='production' ts-node test/performance/benchmark-array.ts",
     "benchmark:class": "NODE_ENV='production' ts-node test/performance/benchmark-class.ts",
+    "benchmark:map": "NODE_ENV='production' ts-node test/benchmark/map.ts",
+    "benchmark:map-batch": "NODE_ENV='production' ts-node test/benchmark/map-batch.ts",
     "performance:read-only": "yarn build && NODE_ENV='production' ts-node test/performance/read-draft/index.ts",
     "performance:immer": "cd test/__immer_performance_tests__ && NODE_ENV='production' ts-node add-data.ts && NODE_ENV='production' ts-node todo.ts && NODE_ENV='production' ts-node incremental.ts",
     "performance:basic": "cd test/performance && NODE_ENV='production' ts-node index.ts",
     "performance:set-map": "cd test/performance && NODE_ENV='production' ts-node set-map.ts",
+    "performance:mutative-set-map": "cd test/performance && NODE_ENV='production' ts-node mutative-set-map.ts",
     "performance:big-object": "cd test/performance && NODE_ENV='production' ts-node big-object.ts",
     "performance:sample": "cd test/performance && NODE_ENV='production' ts-node sample.ts",
     "performance:array-object": "cd test/performance && NODE_ENV='production' ts-node array-object.ts",
-    "performance": "yarn build && yarn performance:immer && yarn performance:basic && yarn performance:set-map && yarn performance:big-object && yarn performance:sample && yarn performance:array-object",
+    "performance": "yarn build && yarn performance:immer && yarn performance:basic && yarn performance:set-map && yarn performance:mutative-set-map && yarn performance:big-object && yarn performance:sample && yarn performance:array-object",
     "build": "yarn clean && rollup --config --bundleConfigAsCjs",
     "build:doc": "rimraf docs && typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts --readme none",
     "commit": "yarn git-cz",
@@ -86,7 +89,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.1",
     "@size-limit/esbuild": "^11.1.6",
@@ -118,12 +121,15 @@
     "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
     "prettier": "^3.3.3",
+    "prettier-2": "npm:prettier@^2",
+    "pretty-format": "^29.7.0",
     "quickchart-js": "^3.1.2",
     "redux": "^5.0.1",
     "rimraf": "^3.0.2",
-    "rollup": "^4.9.0",
+    "rollup": "^4.28.1",
     "seamless-immutable": "^7.1.4",
     "size-limit": "^11.1.6",
+    "superjson": "^2.2.2",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
@@ -137,26 +143,5 @@
       "path": "cz-conventional-changelog"
     }
   },
-  "jest": {
-    "preset": "ts-jest",
-    "coveragePathIgnorePatterns": [
-      "<rootDir>/test/"
-    ],
-    "transform": {
-      "\\.[jt]sx?$": [
-        "ts-jest",
-        {
-          "tsconfig": {
-            "noImplicitReturns": false,
-            "noFallthroughCasesInSwitch": false,
-            "noUnusedLocals": false,
-            "noUnusedParameters": false
-          }
-        }
-      ]
-    },
-    "globals": {
-      "__DEV__": true
-    }
-  }
+  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }

@@ -2,6 +2,8 @@ import { DraftType, Mark, ProxyDraft } from '../interface';
 import { dataTypes, PROXY_DRAFT } from '../constant';
 import { has } from './proto';
 
+import { MutativeMap } from '../MutativeMap';
+
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
 }
@@ -33,6 +35,7 @@ export function isDraftable(value: any, options?: { mark?: Mark<any, any> }) {
     Object.getPrototypeOf(value) === Object.prototype ||
     Array.isArray(value) ||
     value instanceof Map ||
+    value instanceof MutativeMap ||
     value instanceof Set ||
     (!!options?.mark &&
       ((markResult = options.mark(value, dataTypes)) === dataTypes.immutable ||
@@ -79,17 +82,21 @@ export function getPath(
 export function getType(target: any) {
   if (Array.isArray(target)) return DraftType.Array;
   if (target instanceof Map) return DraftType.Map;
+  if (target instanceof MutativeMap) return DraftType.MutativeMap;
   if (target instanceof Set) return DraftType.Set;
   return DraftType.Object;
 }
 
 export function get(target: any, key: PropertyKey) {
-  return getType(target) === DraftType.Map ? target.get(key) : target[key];
+  return getType(target) === DraftType.Map ||
+    getType(target) === DraftType.MutativeMap
+    ? target.get(key)
+    : target[key];
 }
 
 export function set(target: any, key: PropertyKey, value: any) {
   const type = getType(target);
-  if (type === DraftType.Map) {
+  if (type === DraftType.Map || type === DraftType.MutativeMap) {
     target.set(key, value);
   } else {
     target[key] = value;
@@ -102,17 +109,10 @@ export function peek(target: any, key: PropertyKey) {
   return source[key];
 }
 
-export function isEqual(x: any, y: any) {
-  if (x === y) {
-    return x !== 0 || 1 / x === 1 / y;
-  } else {
-    return x !== x && y !== y;
-  }
-}
-
 export function revokeProxy(proxyDraft: ProxyDraft | null) {
   if (!proxyDraft) return;
   while (proxyDraft.finalities.revoke.length > 0) {
+    // TODO [performance] this can't be the fastest way to revoke all proxies. Shouldn't it just be iterated over and then cleared or just left alone and be garbage-collected anyhow?
     const revoke = proxyDraft.finalities.revoke.pop()!;
     revoke();
   }

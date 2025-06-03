@@ -104,3 +104,9 @@ dist
 .tern-port
 
 benchmark.csv
+
+# IntelliJ
+/.idea
+
+# MacOS Finder files
+.DS_Store

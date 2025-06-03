@@ -1,5 +1,6 @@
 // @ts-nocheck
 'use strict';
+(globalThis as any).__DEV__ = false;
 
 import { produce, setAutoFreeze } from 'immer';
 import cloneDeep from 'lodash.clonedeep';

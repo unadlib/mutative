@@ -1,5 +1,6 @@
 /* eslint-disable prefer-template */
 // @ts-nocheck
+(globalThis as any).__DEV__ = false;
 import { produce } from 'immer';
 import { create } from '../../..';
 import { createTable, updateTable } from './mockPhysics';
