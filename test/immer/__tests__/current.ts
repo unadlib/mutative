@@ -25,7 +25,7 @@ function runTests(name) {
     it('must be called on draft', () => {
       expect(() => {
         current({});
-      }).toThrowError(
+      }).toThrow(
         isProd
           ? '[Immer] minified error nr: 10. Full error at: https://bit.ly/3cXEKWf'
           : 'current() is only used for Draft, parameter: [object Object]'

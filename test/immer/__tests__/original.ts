@@ -29,12 +29,12 @@ describe('original', () => {
     produce(baseState, (draftState) => {
       draftState.c = {};
       draftState.d = 3;
-      expect(() => original(draftState.c)).toThrowError(
+      expect(() => original(draftState.c)).toThrow(
         isProd
           ? `[Immer] minified error nr: 15. Full error at: https://bit.ly/3cXEKWf`
           : `original() is only used for a draft, parameter: [object Object]`
       );
-      expect(() => original(draftState.d)).toThrowError(
+      expect(() => original(draftState.d)).toThrow(
         isProd
           ? `[Immer] minified error nr: 15. Full error at: https://bit.ly/3cXEKWf`
           : `original() is only used for a draft, parameter: 3`
@@ -43,12 +43,12 @@ describe('original', () => {
   });
 
   it('should return undefined for an object that is not proxied', () => {
-    expect(() => original({})).toThrowError(
+    expect(() => original({})).toThrow(
       isProd
         ? `[Immer] minified error nr: 15. Full error at: https://bit.ly/3cXEKWf`
         : `original() is only used for a draft, parameter: [object Object]`
     );
-    expect(() => original(3)).toThrowError(
+    expect(() => original(3)).toThrow(
       isProd
         ? `[Immer] minified error nr: 15. Full error at: https://bit.ly/3cXEKWf`
         : `original() is only used for a draft, parameter: 3`

@@ -52,7 +52,7 @@ test('base enableAutoFreeze: true - with rawReturn()', () => {
       },
       { enableAutoFreeze: true }
     );
-  }).toThrowError();
+  }).toThrow();
 });
 
 describe.each([{ useRawReturn: true }, { useRawReturn: false }])(
@@ -318,8 +318,8 @@ test('mix more type draft with rawReturn() and enable strict mode', () => {
         data = Array.from(data);
       }
       JSON.stringify(data);
-    }).not.toThrowError();
-    expect(console.warn).toBeCalledTimes(1);
+    }).not.toThrow();
+    expect(console.warn).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith(
       `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
     );
@@ -346,7 +346,7 @@ test('mix more type draft without rawReturn()', () => {
         data = Array.from(data);
       }
       JSON.stringify(data);
-    }).not.toThrowError();
+    }).not.toThrow();
   });
 });
 
@@ -366,7 +366,7 @@ test('mix more type operated draft without rawReturn()', () => {
         draft.a.b += 1;
         return callback(draft);
       });
-    }).toThrowError(
+    }).toThrow(
       `Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.`
     );
   });
@@ -386,7 +386,7 @@ test('mix more type draft with rawReturn()', () => {
   ].forEach((callback: any) => {
     expect(() =>
       expect(create({ a: { b: 1 } }, callback)).toEqual({})
-    ).toThrowError();
+    ).toThrow();
   });
 });
 
@@ -496,7 +496,7 @@ test('mixed draft', () => {
   });
   expect(state).toEqual({ a: 2, b: { c: 1 } });
   expect(isDraft(state.b)).toBeFalsy();
-  expect(console.warn).toBeCalledTimes(0);
+  expect(console.warn).toHaveBeenCalledTimes(0);
 });
 
 test('mixed draft with rawReturn()', () => {
@@ -512,11 +512,11 @@ test('mixed draft with rawReturn()', () => {
   });
   expect(() => {
     JSON.stringify(state);
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     isDraft(state.b);
-  }).toThrowError();
-  expect(console.warn).toBeCalledTimes(0);
+  }).toThrow();
+  expect(console.warn).toHaveBeenCalledTimes(0);
 });
 
 test('mixed draft with rawReturn() and strict mode', () => {
@@ -538,8 +538,8 @@ test('mixed draft with rawReturn() and strict mode', () => {
   );
   expect(state).toEqual({ a: 2, b: { c: 1 } });
   expect(isDraft(state.b)).toBeFalsy();
-  expect(console.warn).toBeCalledTimes(1);
-  expect(console.warn).toBeCalledWith(
+  expect(console.warn).toHaveBeenCalledTimes(1);
+  expect(console.warn).toHaveBeenCalledWith(
     `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
   );
   warn.mockRestore();
@@ -564,8 +564,8 @@ test('no mixed draft with strict mode', () => {
   );
   expect(state).toEqual({ a: 2, b: { c: 1 } });
   expect(isDraft(state.b)).toBeFalsy();
-  expect(console.warn).toBeCalledTimes(1);
-  expect(console.warn).toBeCalledWith(
+  expect(console.warn).toHaveBeenCalledTimes(1);
+  expect(console.warn).toHaveBeenCalledWith(
     `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`
   );
 });

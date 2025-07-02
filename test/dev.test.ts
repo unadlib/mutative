@@ -23,7 +23,7 @@ test('custom shallow copy without checking in prod mode', () => {
         },
       }
     );
-  }).not.toThrowError();
+  }).not.toThrow();
 
   expect(() => {
     create(
@@ -41,7 +41,7 @@ test('custom shallow copy without checking in prod mode', () => {
         },
       }
     );
-  }).not.toThrowError();
+  }).not.toThrow();
 });
 
 test('custom shallow copy with checking in dev mode', () => {

@@ -14,9 +14,9 @@ function runTests(name) {
     it('should check arguments', () => {
       expect(() => produce()).toThrowErrorMatchingSnapshot();
       // !!! This is different from immer
-      expect(() => produce({})).not.toThrowError();
+      expect(() => produce({})).not.toThrow();
       // !!! This is different from immer
-      expect(() => produce({}, {})).not.toThrowError();
+      expect(() => produce({}, {})).not.toThrow();
       expect(() => produce({}, () => {}, [])).toThrowErrorMatchingSnapshot();
     });
 

@@ -20,7 +20,7 @@ test('check makeCreator options', () => {
     expect(() => {
       // @ts-expect-error
       makeCreator(arg);
-    }).toThrowError(`'options' should be an object.`);
+    }).toThrow(`'options' should be an object.`);
   });
 });
 
@@ -92,7 +92,7 @@ test('check strict', () => {
     const state = create(baseState, (draft) => {
       draft.c.x = 1;
     });
-  }).toThrowError();
+  }).toThrow();
 });
 
 test('check strict - override', () => {
@@ -111,7 +111,7 @@ test('check strict - override', () => {
       },
       { strict: false }
     );
-  }).not.toThrowError();
+  }).not.toThrow();
 });
 
 test('check mark', () => {

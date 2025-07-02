@@ -574,7 +574,7 @@ describe('duplex', function () {
 
       expect(() => {
         finalize();
-      }).toThrowError();
+      }).toThrow();
     });
 
     it('should not generate the same patch twice (add)', function () {
@@ -598,7 +598,7 @@ describe('duplex', function () {
 
       expect(() => {
         finalize();
-      }).toThrowError();
+      }).toThrow();
     });
 
     it('should not generate the same patch twice (remove)', function () {
@@ -621,7 +621,7 @@ describe('duplex', function () {
 
       expect(() => {
         finalize();
-      }).toThrowError();
+      }).toThrow();
     });
 
     it('should throw error with change array properties', function () {
@@ -635,7 +635,7 @@ describe('duplex', function () {
 
       expect(() => {
         draft.array.value = 1;
-      }).toThrowError();
+      }).toThrow();
 
       finalize();
     });

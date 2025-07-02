@@ -5,7 +5,7 @@ test('error when using Maps', () => {
   // !!! This is different from immer
   expect(() => {
     produce(new Map(), function () {});
-  }).not.toThrowError();
+  }).not.toThrow();
 });
 
 test('error when using patches - 1', () => {
@@ -16,19 +16,19 @@ test('error when using patches - 1', () => {
       function () {},
       function () {}
     );
-  }).not.toThrowError();
+  }).not.toThrow();
 });
 
 test('error when using patches - 2', () => {
   // !!! This is different from immer
   expect(() => {
     produceWithPatches({}, function () {});
-  }).not.toThrowError();
+  }).not.toThrow();
 });
 
 test('error when using patches - 3', () => {
   // !!! This is different from immer
   expect(() => {
     applyPatches({}, []);
-  }).not.toThrowError();
+  }).not.toThrow();
 });

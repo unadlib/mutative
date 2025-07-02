@@ -1632,12 +1632,12 @@ function runBaseTest(name, autoFreeze, useStrictShallowCopy, useListener) {
         });
         expect(() => {
           origin.b.value = 'yes';
-        }).toThrowError(
+        }).toThrow(
           "Cannot assign to read only property 'value' of object '#<Object>'"
         );
         expect(() => {
           next.b.value = 'yes';
-        }).toThrowError(
+        }).toThrow(
           "Cannot assign to read only property 'value' of object '#<Object>'"
         ); // should throw!
       });
@@ -1654,11 +1654,11 @@ function runBaseTest(name, autoFreeze, useStrictShallowCopy, useListener) {
 
         expect(() => {
           project.id = 2; // Does not throw error
-        }).toThrowError("Cannot assign to read only property 'id'");
+        }).toThrow("Cannot assign to read only property 'id'");
 
         expect(() => {
           Object.assign(project, { id: 2 }); // Uncaught TypeError: Cannot assign to read only property 'id' of object '#<Object>'
-        }).toThrowError("Cannot assign to read only property 'id'");
+        }).toThrow("Cannot assign to read only property 'id'");
       });
 
     describe('recipe functions', () => {
@@ -2421,7 +2421,7 @@ function testLiteralTypes(produce) {
             produce(value, (draft) => {
               draft.foo = true;
             })
-          ).toThrowError(
+          ).toThrow(
             isProd
               ? '[Immer] minified error nr: 1'
               : 'Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable.'

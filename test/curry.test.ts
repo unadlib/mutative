@@ -35,7 +35,7 @@ describe('Currying', () => {
     expect(() => {
       // @ts-expect-error
       state.foobar.bar = 'new baz';
-    }).toThrowError();
+    }).toThrow();
   });
 
   test('Currying with enablePatches', () => {
@@ -92,7 +92,7 @@ describe('Currying', () => {
     expect(() => {
       // @ts-expect-error
       state.foobar.bar = 'new baz';
-    }).toThrowError();
+    }).toThrow();
   });
 
   test('Currying with undraftable state', () => {
@@ -190,7 +190,7 @@ describe('Currying', () => {
 
   test('Currying a draft', () => {
     create({ a: 1 }, (draft) => {
-      expect(() => create(draft)).not.toThrowError();
+      expect(() => create(draft)).not.toThrow();
     });
   });
 
@@ -502,7 +502,7 @@ test(`check Primitive type`, () => {
     new WeakMap(),
     new WeakSet(),
   ].forEach((value: any) => {
-    expect(() => create(value)).toThrowError();
+    expect(() => create(value)).toThrow();
   });
 });
 
@@ -527,6 +527,6 @@ test(`check Primitive type with patches`, () => {
     new WeakMap(),
     new WeakSet(),
   ].forEach((value: any) => {
-    expect(() => create(value, { enablePatches: true })).toThrowError();
+    expect(() => create(value, { enablePatches: true })).toThrow();
   });
 });

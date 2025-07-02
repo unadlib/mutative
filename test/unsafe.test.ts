@@ -54,7 +54,7 @@ test('base with strict mode', () => {
         strict: true,
       }
     );
-  }).toThrowError();
+  }).toThrow();
 });
 
 test('base without strict mode', () => {
@@ -101,7 +101,7 @@ test('base without strict mode', () => {
         strict: false,
       }
     );
-  }).not.toThrowError();
+  }).not.toThrow();
 });
 
 test('access primitive type and immutable object', () => {
@@ -134,7 +134,7 @@ test('access primitive type and immutable object', () => {
           strict: true,
         }
       );
-    }).not.toThrowError();
+    }).not.toThrow();
   });
 });
 
@@ -153,7 +153,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).not.toThrowError();
+      }).not.toThrow();
       expect(() => {
         create(
           { value },
@@ -164,7 +164,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).toThrowError();
+      }).toThrow();
       expect(() => {
         create(
           { value },
@@ -178,7 +178,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).toThrowError();
+      }).toThrow();
 
       // array
       expect(() => {
@@ -193,7 +193,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).not.toThrowError();
+      }).not.toThrow();
 
       expect(() => {
         create(
@@ -205,7 +205,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).toThrowError();
+      }).toThrow();
 
       expect(() => {
         create(
@@ -220,7 +220,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).toThrowError();
+      }).toThrow();
 
       // set
       expect(() => {
@@ -235,7 +235,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).not.toThrowError();
+      }).not.toThrow();
 
       expect(() => {
         create(
@@ -247,7 +247,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).toThrowError();
+      }).toThrow();
 
       expect(() => {
         create(
@@ -262,7 +262,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).toThrowError();
+      }).toThrow();
 
       // map
       expect(() => {
@@ -277,7 +277,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).not.toThrowError();
+      }).not.toThrow();
 
       expect(() => {
         create(
@@ -289,7 +289,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).toThrowError();
+      }).toThrow();
 
       expect(() => {
         create(
@@ -304,7 +304,7 @@ test('access mutable type', () => {
             strict: true,
           }
         );
-      }).toThrowError();
+      }).toThrow();
     }
   );
 });
@@ -391,7 +391,7 @@ test('object with mutable mark in strict mode', () => {
         },
       }
     );
-  }).toThrowError();
+  }).toThrow();
 });
 
 test('array with mutable mark in strict mode', () => {
@@ -435,7 +435,7 @@ test('array with mutable mark in strict mode', () => {
         },
       }
     );
-  }).toThrowError();
+  }).toThrow();
 });
 
 test('set with mutable mark in strict mode', () => {
@@ -479,7 +479,7 @@ test('set with mutable mark in strict mode', () => {
         },
       }
     );
-  }).toThrowError();
+  }).toThrow();
 });
 
 test('map with mutable mark in strict mode', () => {
@@ -523,7 +523,7 @@ test('map with mutable mark in strict mode', () => {
         },
       }
     );
-  }).toThrowError();
+  }).toThrow();
 });
 
 test('change Date instance - custom shallow copy', () => {

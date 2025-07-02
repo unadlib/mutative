@@ -1244,7 +1244,7 @@ test('different options - apply patches', () => {
         apply(draft, [], {
           enableAutoFreeze: false,
         });
-      }).toThrowError(`Cannot apply patches with options to a draft.`);
+      }).toThrow(`Cannot apply patches with options to a draft.`);
     },
     { enableAutoFreeze: true }
   );
@@ -1253,7 +1253,7 @@ test('different options - apply patches', () => {
 test('set - patches', () => {
   expect(() => {
     apply(new Set([0]), [{ op: 'replace', path: [0], value: 1 }]);
-  }).toThrowError(`Cannot apply replace patch to set.`);
+  }).toThrow(`Cannot apply replace patch to set.`);
 });
 
 test('array - patches', () => {
@@ -1264,12 +1264,12 @@ test('array - patches', () => {
 test('unexpected - patches', () => {
   expect(() => {
     apply({ a: {} }, [{ op: 'replace', path: ['__proto__', 'a'], value: 1 }]);
-  }).toThrowError(
+  }).toThrow(
     `Patching reserved attributes like __proto__ and constructor is not allowed.`
   );
   expect(() => {
     apply({ a: {} }, [{ op: 'replace', path: ['constructor', 'a'], value: 1 }]);
-  }).toThrowError(
+  }).toThrow(
     `Patching reserved attributes like __proto__ and constructor is not allowed.`
   );
 });

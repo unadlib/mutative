@@ -71,7 +71,7 @@ test('Unexpected operation check of Set draft', () => {
         // @ts-ignore
         draft.x = 1;
       });
-    }).not.toThrowError();
+    }).not.toThrow();
   }
   {
     const data = new Set([1]);
@@ -80,7 +80,7 @@ test('Unexpected operation check of Set draft', () => {
         // @ts-ignore
         draft.x = 1;
       });
-    }).toThrowError(`Map/Set draft does not support any property assignment.`);
+    }).toThrow(`Map/Set draft does not support any property assignment.`);
   }
 });
 
@@ -94,7 +94,7 @@ test('Unexpected operation check of Map draft', () => {
         // @ts-ignore
         draft.x = 1;
       });
-    }).not.toThrowError();
+    }).not.toThrow();
   }
 
   {
@@ -104,7 +104,7 @@ test('Unexpected operation check of Map draft', () => {
         // @ts-ignore
         draft.x = 1;
       });
-    }).toThrowError(`Map/Set draft does not support any property assignment.`);
+    }).toThrow(`Map/Set draft does not support any property assignment.`);
   }
 });
 
@@ -123,7 +123,7 @@ test('immer failed case - freeze Map key', () => {
     expect(() => {
       // @ts-ignore
       Array.from(state.keys())[0].a = 2;
-    }).not.toThrowError();
+    }).not.toThrow();
   }
 
   {
@@ -141,7 +141,7 @@ test('immer failed case - freeze Map key', () => {
     expect(() => {
       // @ts-ignore
       Array.from(state.keys())[0].a = 2;
-    }).toThrowError();
+    }).toThrow();
   }
 });
 
@@ -165,7 +165,7 @@ test('immer failed case - escaped draft', () => {
 
     expect(() => {
       JSON.stringify(state);
-    }).toThrowError();
+    }).toThrow();
   }
 
   {
@@ -186,7 +186,7 @@ test('immer failed case - escaped draft', () => {
 
     expect(() => {
       JSON.stringify(state);
-    }).not.toThrowError();
+    }).not.toThrow();
   }
 });
 
@@ -270,7 +270,7 @@ test('circular reference', () => {
       produce(data, () => {
         //
       });
-    }).not.toThrowError();
+    }).not.toThrow();
   }
 
   {
@@ -350,10 +350,10 @@ test('#18 - set: assigning a non-draft with the same key - 1', () => {
       // @ts-ignore
       // eslint-disable-next-line no-unused-expressions
       Array.from(produced[0].array[0].one)[0].three;
-    }).toThrowError();
+    }).toThrow();
 
     //  @ts-ignore
-    expect(() => applyPatches(baseState, produced[1])).toThrowError();
+    expect(() => applyPatches(baseState, produced[1])).toThrow();
     // @ts-ignore
     expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
   }
@@ -372,7 +372,7 @@ test('#18 - set: assigning a non-draft with the same key - 2', () => {
       draft.c = new Set([draft.c[0], f]);
     });
     //  @ts-ignore
-    expect(() => applyPatches(baseState, produced[1])).toThrowError();
+    expect(() => applyPatches(baseState, produced[1])).toThrow();
     // @ts-ignore
     expect(applyPatches(produced[0], produced[2])).toEqual(baseState);
   }
@@ -460,7 +460,7 @@ test('produce leaks proxy objects when symbols are present', () => {
         // @ts-ignore
         draft.child.count++;
       });
-    }).toThrowError();
+    }).toThrow();
   }
   {
     const Parent = Symbol();
@@ -481,7 +481,7 @@ test('produce leaks proxy objects when symbols are present', () => {
         // @ts-ignore
         draft.child.count++;
       });
-    }).not.toThrowError();
+    }).not.toThrow();
   }
 });
 
@@ -494,7 +494,7 @@ test('error key setting in array', () => {
           // @ts-ignore
           draft[key] = 'new str';
         });
-      }).not.toThrowError();
+      }).not.toThrow();
     }
   }
   {

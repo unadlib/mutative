@@ -89,7 +89,7 @@ test('check array options error', () => {
         // @ts-ignore
         draft[key] = 'new str';
       });
-    }).not.toThrowError();
+    }).not.toThrow();
   }
 });
 
@@ -1370,19 +1370,19 @@ test('base freeze', () => {
   expect(() => {
     // @ts-expect-error
     state.bar.a = 3;
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // @ts-expect-error
     state.list.push({ id: 3 });
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // @ts-expect-error
     state.list[0].id = 3;
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // @ts-expect-error
     state.list[1].id = 3;
-  }).toThrowError();
+  }).toThrow();
 
   const state1 = create(
     state,
@@ -1398,15 +1398,15 @@ test('base freeze', () => {
   expect(() => {
     // @ts-expect-error
     state1.list[0].id = 3;
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // @ts-expect-error
     state1.list[1].id = 3;
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // @ts-expect-error
     state1.bar.a = 4;
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // `state1.list` is not frozen, because `state1` has been changed in the previous step
     // just check runtime mutable
@@ -1436,15 +1436,15 @@ test('base set freeze', () => {
   expect(() => {
     // @ts-expect-error
     state.set.add(4);
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // @ts-expect-error
     state.set.delete(1);
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // @ts-expect-error
     state.set.clear();
-  }).toThrowError();
+  }).toThrow();
 });
 
 test('base map freeze', () => {
@@ -1475,15 +1475,15 @@ test('base map freeze', () => {
   expect(() => {
     // @ts-expect-error
     state.map.set(4, 4);
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // @ts-expect-error
     state.map.delete(1);
-  }).toThrowError();
+  }).toThrow();
   expect(() => {
     // @ts-expect-error
     state.map.clear();
-  }).toThrowError();
+  }).toThrow();
 });
 
 test('base map with deep object', () => {
@@ -2283,7 +2283,7 @@ test("Nested and chained produce usage results in error: Cannot perform 'get' on
 
   expect(() => {
     JSON.stringify(newState);
-  }).not.toThrowError();
+  }).not.toThrow();
 });
 
 test('when nesting patches and changing the level of tree structure data', () => {
@@ -2324,7 +2324,7 @@ test('when nesting patches and changing the level of tree structure data', () =>
     }
   );
 
-  expect(() => JSON.stringify(_nextState)).not.toThrowError();
+  expect(() => JSON.stringify(_nextState)).not.toThrow();
 });
 
 test('Set assignment should not have an additional key', () => {
@@ -3794,7 +3794,7 @@ test('base check mark function - Multiple mark config', () => {
           ],
         }
       );
-    }).toThrowError();
+    }).toThrow();
   });
 });
 

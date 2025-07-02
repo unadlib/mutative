@@ -932,19 +932,19 @@ describe('freeze', () => {
     expect(() => {
       // @ts-expect-error
       state.bar.a = 3;
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // @ts-expect-error
       state.list.push({ id: 3 });
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // @ts-expect-error
       state.list[0].id = 3;
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // @ts-expect-error
       state.list[1].id = 3;
-    }).toThrowError();
+    }).toThrow();
 
     const state1 = create(
       state,
@@ -960,15 +960,15 @@ describe('freeze', () => {
     expect(() => {
       // @ts-expect-error
       state1.list[0].id = 3;
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // @ts-expect-error
       state1.list[1].id = 3;
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // @ts-expect-error
       state1.bar.a = 4;
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // just check runtime mutable
       // @ts-ignore
@@ -997,15 +997,15 @@ describe('freeze', () => {
     expect(() => {
       // @ts-expect-error
       state.set.add(4);
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // @ts-expect-error
       state.set.delete(1);
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // @ts-expect-error
       state.set.clear();
-    }).toThrowError();
+    }).toThrow();
   });
 
   test('map', () => {
@@ -1036,15 +1036,15 @@ describe('freeze', () => {
     expect(() => {
       // @ts-expect-error
       state.map.set(4, 4);
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // @ts-expect-error
       state.map.delete(1);
-    }).toThrowError();
+    }).toThrow();
     expect(() => {
       // @ts-expect-error
       state.map.clear();
-    }).toThrowError();
+    }).toThrow();
   });
 });
 
@@ -1104,7 +1104,7 @@ describe('hook in options', () => {
           },
         }
       );
-    }).toThrowError(/Unsupported mark result/);
+    }).toThrow(/Unsupported mark result/);
   });
 
   test('only mutable object', () => {
@@ -1869,7 +1869,7 @@ describe('error', () => {
       create(data, (draft) => {
         Object.defineProperty(draft, 'foo', {});
       });
-    }).toThrowError(`Cannot call 'defineProperty()' on drafts`);
+    }).toThrow(`Cannot call 'defineProperty()' on drafts`);
   });
 
   test('not support: setPrototypeOf', () => {
@@ -1879,7 +1879,7 @@ describe('error', () => {
       create(data, (draft) => {
         Object.setPrototypeOf(draft, {});
       });
-    }).toThrowError(`Cannot call 'setPrototypeOf()' on drafts`);
+    }).toThrow(`Cannot call 'setPrototypeOf()' on drafts`);
   });
 });
 
@@ -2016,7 +2016,7 @@ test('enablePatches and changes', () => {
         enablePatches: true,
       }
     );
-  }).not.toThrowError();
+  }).not.toThrow();
 });
 
 test(`Don't auto freeze non-enumerable or symbolic properties`, () => {

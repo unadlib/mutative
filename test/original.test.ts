@@ -18,12 +18,12 @@ describe('original', () => {
         draft.arr[0].foo = 'baz';
         expect(isDraft(draft.arr[0])).toBe(true);
         expect(original(draft.arr[0])).toEqual({ foo: 'bar' });
-        expect(() => original(draft.arr[0].bar!)).toThrowError();
+        expect(() => original(draft.arr[0].bar!)).toThrow();
         // !new props
         draft.arr[0].bar = { foobar: 'str' };
         draft.arr[0].bar.foobar = 'baz';
         expect(isDraft(draft.arr[0].bar)).toBe(false);
-        expect(() => original(draft.arr[0].bar)).toThrowError();
+        expect(() => original(draft.arr[0].bar)).toThrow();
 
         Array.from(draft.set.values())[0].foo = 'baz';
         expect(isDraft(Array.from(draft.set.values())[0])).toBe(true);
@@ -36,7 +36,7 @@ describe('original', () => {
         expect(isDraft(Array.from(draft.set.values())[0].bar)).toBe(false);
         expect(() =>
           original(Array.from(draft.set.values())[0].bar)
-        ).toThrowError();
+        ).toThrow();
 
         draft.map.get('foo')!.foo = 'baz';
         expect(isDraft(draft.map.get('foo'))).toBe(true);
@@ -45,7 +45,7 @@ describe('original', () => {
         draft.map.get('foo')!.bar = { foobar: 'str' };
         draft.map.get('foo')!.bar!.foobar = 'baz';
         expect(isDraft(draft.map.get('foo')!.bar)).toBe(false);
-        expect(() => original(draft.map.get('foo')!.bar)).toThrowError();
+        expect(() => original(draft.map.get('foo')!.bar)).toThrow();
 
         draft.obj.foo = 'baz';
         expect(isDraft(draft.obj)).toBe(true);
@@ -54,16 +54,16 @@ describe('original', () => {
         draft.obj.bar = { foobar: 'str' };
         draft.obj.bar!.foobar = 'baz';
         expect(isDraft(draft.obj.bar)).toBe(false);
-        expect(() => original(draft.obj.bar)).toThrowError();
+        expect(() => original(draft.obj.bar)).toThrow();
       }
     );
   });
 
   test('should return undefined for an object that is not proxied', () => {
-    expect(() => original({})).toThrowError(
+    expect(() => original({})).toThrow(
       `original() is only used for a draft, parameter: [object Object]`
     );
-    expect(() => original(3)).toThrowError(
+    expect(() => original(3)).toThrow(
       `original() is only used for a draft, parameter: 3`
     );
   });
