@@ -1,8 +1,9 @@
 import { apply, create } from '../src';
 
+global.__DEV__ = false;
+
 test('check not warn when apply patches with other options in prod mode', () => {
   {
-    global.__DEV__ = false;
     const baseState = { foo: { bar: 'test' } };
     const warn = console.warn;
     jest.spyOn(console, 'warn').mockImplementation(() => {});
