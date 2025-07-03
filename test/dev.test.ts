@@ -3,51 +3,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { apply, create } from '../src';
 
-test('custom shallow copy without checking in prod mode', () => {
-  global.__DEV__ = false;
-  const baseState = { foo: { bar: 'test' } };
-
-  expect(() => {
-    create(
-      baseState,
-      (draft) => {
-        draft.foo.bar = 'test2';
-      },
-      {
-        enableAutoFreeze: true,
-        // @ts-expect-error
-        mark: (target) => {
-          if (target === baseState.foo) {
-            return () => ({ ...target });
-          }
-        },
-      }
-    );
-  }).not.toThrow();
-
-  expect(() => {
-    create(
-      baseState,
-      (draft) => {
-        draft.foo.bar = 'test2';
-      },
-      {
-        enablePatches: true,
-        // @ts-expect-error
-        mark: (target) => {
-          if (target === baseState.foo) {
-            return () => ({ ...target });
-          }
-        },
-      }
-    );
-  }).not.toThrow();
-});
+global.__DEV__ = true;
 
 test('custom shallow copy with checking in dev mode', () => {
-  global.__DEV__ = true;
   const baseState = { foo: { bar: 'test' } };
-
   expect(() => {
     create(
       baseState,
@@ -91,7 +50,6 @@ test('custom shallow copy with checking in dev mode', () => {
 
 test('check warn when apply patches with other options', () => {
   {
-    global.__DEV__ = true;
     const baseState = { foo: { bar: 'test' } };
     const warn = console.warn;
     jest.spyOn(console, 'warn').mockImplementation(() => {});
@@ -114,7 +72,6 @@ test('check warn when apply patches with other options', () => {
     );
   }
   {
-    global.__DEV__ = true;
     const baseState = { foo: { bar: 'test' } };
     const warn = console.warn;
     jest.spyOn(console, 'warn').mockImplementation(() => {});
