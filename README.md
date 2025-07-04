@@ -1,6 +1,6 @@
 # Mutative
 
-<a href="https://mutative.js.org/" target="_blank"><img src="https://raw.githubusercontent.com/unadlib/mutative/main/website/static/img/ mutative.png" height="120" alt="Mutative Logo" /></a>
+<a href="https://mutative.js.org/" target="_blank"><img src="https://raw.githubusercontent.com/unadlib/mutative/main/website/static/img/ mutative.png" height="120" alt="Mutative Logo" style="max-width: 100%;height: 128px;"/></a>
 
 ![Node CI](https://github.com/unadlib/mutative/workflows/Node%20CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/unadlib/mutative/badge.svg?branch=main)](https://coveralls.io/github/unadlib/mutative?branch=main)
