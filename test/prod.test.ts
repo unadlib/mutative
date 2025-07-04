@@ -1,4 +1,4 @@
-import { apply, create } from '../src';
+import { apply, create, isDraft } from '../src';
 
 global.__DEV__ = false;
 
@@ -67,4 +67,25 @@ test('custom shallow copy without checking in prod mode', () => {
       }
     );
   }).not.toThrow();
+});
+
+test('wraps unowned draft with its own draft', () => {
+  create(
+    { a: {} },
+    (parent) => {
+      create(
+        { a: parent.a },
+        (child) => {
+          expect(child.a).not.toBe(parent.a);
+          expect(isDraft(child.a)).toBeTruthy();
+        },
+        {
+          enableAutoFreeze: true,
+        }
+      );
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
 });

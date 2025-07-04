@@ -4266,3 +4266,59 @@ test('CustomMap', () => {
   // @ts-ignore
   expect(newState.getIdentity()).toBe('CustomMap');
 });
+
+test('Set.prototype[Symbol.iterator]', () => {
+  const state = new Set([{ a: 1 }, { b: 2 }, { c: 3 }]);
+  const newState = create(state, (draft) => {
+    expect(draft[Symbol.iterator]).toBeDefined();
+    // @ts-ignore
+    draft[Symbol.iterator]().next().value.a = 2;
+    expect(draft[Symbol.iterator]().next().value).toEqual({ a: 2 });
+  });
+  expect(newState instanceof Set).toBeTruthy();
+  expect(newState[Symbol.iterator]).toBeDefined();
+  expect(newState[Symbol.iterator]).toBe(newState[Symbol.iterator]);
+  expect([...newState]).toEqual([{ a: 2 }, { b: 2 }, { c: 3 }]);
+});
+
+test('Map.prototype[Symbol.iterator]', () => {
+  const state = new Map([
+    [1, { a: 1 }],
+    [2, { b: 2 }],
+    [3, { c: 3 }],
+  ]);
+  const newState = create(state, (draft) => {
+    expect(draft[Symbol.iterator]).toBeDefined();
+    // @ts-ignore
+    draft[Symbol.iterator]().next().value[1].a = 2;
+    expect(draft[Symbol.iterator]().next().value).toEqual([1, { a: 2 }]);
+  });
+  expect(newState instanceof Map).toBeTruthy();
+  expect(newState[Symbol.iterator]).toBeDefined();
+  expect(newState[Symbol.iterator]).toBe(newState[Symbol.iterator]);
+  expect([...newState]).toEqual([
+    [1, { a: 2 }],
+    [2, { b: 2 }],
+    [3, { c: 3 }],
+  ]);
+});
+
+test('object with writable false', () => {
+  const state = { a: { b: 1 } };
+  Object.defineProperty(state, 'b', {
+    value: { c: 1 },
+    writable: false,
+  });
+  const newState = create(
+    state,
+    (draft) => {
+      // @ts-ignore
+      draft.b.c = 2;
+    },
+    {
+      mark: () => 'immutable',
+    }
+  );
+  // @ts-ignore
+  expect(newState.b.c).toBe(2);
+});
