@@ -69,9 +69,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         );
       }
       const handle = mapHandler[key as keyof typeof mapHandler] as Function;
-      if (handle) {
-        return handle.bind(target.proxy);
-      }
+      return handle.bind(target.proxy);
     }
 
     if (source instanceof Set && setHandlerKeys.includes(key as any)) {
@@ -81,9 +79,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         );
       }
       const handle = setHandler[key as keyof typeof setHandler] as Function;
-      if (handle) {
-        return handle.bind(target.proxy);
-      }
+      return handle.bind(target.proxy);
     }
 
     if (!has(source, key)) {
