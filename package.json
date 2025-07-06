@@ -112,7 +112,7 @@
     "fast-json-patch": "^3.1.1",
     "immer": "^10.1.1",
     "immutable": "^4.0.0",
-    "jest": "^30.0.3",
+    "jest": "^30.0.4",
     "jsdoc-tests": "^1.1.0",
     "json2csv": "^5.0.7",
     "lodash": "^4.17.21",
