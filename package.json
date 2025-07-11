@@ -90,7 +90,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.1",
     "@size-limit/esbuild": "^11.1.6",
-    "@size-limit/esbuild-why": "^8.2.6",
+    "@size-limit/esbuild-why": "^11.2.0",
     "@size-limit/preset-small-lib": "^11.1.6",
     "@size-limit/webpack": "^11.1.6",
     "@size-limit/webpack-why": "^11.1.6",
