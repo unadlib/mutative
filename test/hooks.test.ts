@@ -21,7 +21,7 @@ describe('hooks', () => {
       },
       {
         hooks: {
-          onOperation: (event) => {
+          onChange: (event) => {
             operations.push(event);
           },
         },
@@ -74,7 +74,7 @@ describe('hooks', () => {
       },
       {
         hooks: {
-          onOperation: (event) => {
+          onChange: (event) => {
             operations.push(event);
           },
         },
@@ -133,7 +133,7 @@ describe('hooks', () => {
       },
       {
         hooks: {
-          onOperation: (event) => {
+          onChange: (event) => {
             operations.push(event);
           },
         },
@@ -191,7 +191,7 @@ describe('hooks', () => {
       },
       {
         hooks: {
-          onOperation: (event) => {
+          onChange: (event) => {
             operations.push(event);
           },
         },
@@ -241,7 +241,7 @@ describe('hooks', () => {
       },
       {
         hooks: {
-          onOperation: () => {
+          onChange: () => {
             throw new Error('Hook error');
           },
         },
@@ -265,7 +265,7 @@ describe('hooks', () => {
       },
       {
         hooks: {
-          onOperation: (event) => {
+          onChange: (event) => {
             operations.push(event);
           },
         },

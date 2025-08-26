@@ -109,13 +109,16 @@ export interface ApplyMutableOptions {
   mutable?: boolean;
 }
 
-export interface OperationEvent {
+export interface ChangeInput {
   kind: 'set' | 'delete' | 'map.set' | 'map.delete' | 'map.clear' | 'set.add' | 'set.delete' | 'set.clear';
-  key?: any;
   prev?: any;
   next?: any;
   value?: any;
   existed?: boolean;
+}
+
+export interface ChangeEvent extends ChangeInput {
+  key?: any;
   path: (string | number)[];
 }
 
@@ -141,7 +144,7 @@ export interface Options<O extends PatchesOptions, F extends boolean> {
    * Hooks for operation events.
    */
   hooks?: {
-    onOperation?: (event: OperationEvent) => void;
+    onChange?: (event: ChangeEvent) => void;
   };
 }
 
@@ -167,7 +170,7 @@ export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
    * Hooks for operation events.
    */
   hooks?: {
-    onOperation?: (event: OperationEvent) => void;
+    onChange?: (event: ChangeEvent) => void;
   };
 }
 

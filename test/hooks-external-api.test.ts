@@ -13,7 +13,7 @@ describe('hooks external API', () => {
       },
       {
         hooks: {
-          onOperation: (event) => {
+          onChange: (event) => {
             operations.push(event);
           },
         },
@@ -45,7 +45,7 @@ describe('hooks external API', () => {
       },
       {
         hooks: {
-          onOperation: (event) => {
+          onChange: (event) => {
             operations.push(event);
           },
         },

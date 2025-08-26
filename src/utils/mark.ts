@@ -1,6 +1,6 @@
-import { ProxyDraft, OperationEvent } from '../interface';
+import { ProxyDraft, ChangeInput } from '../interface';
 
-export function markChanged(proxyDraft: ProxyDraft, key?: string | number | symbol, operation?: Omit<OperationEvent, 'path' | 'key'>) {
+export function markChanged(proxyDraft: ProxyDraft, key?: string | number | symbol, operation?: ChangeInput) {
   proxyDraft.assignedMap = proxyDraft.assignedMap ?? new Map();
   if (!proxyDraft.operated) {
     proxyDraft.operated = true;
@@ -10,7 +10,7 @@ export function markChanged(proxyDraft: ProxyDraft, key?: string | number | symb
   }
   
   // Emit operation hook if provided
-  if (operation && proxyDraft.options.hooks?.onOperation) {
+  if (operation && proxyDraft.options.hooks?.onChange) {
     try {
       // Build path from root to this node
       const path: (string | number)[] = [];
@@ -28,7 +28,7 @@ export function markChanged(proxyDraft: ProxyDraft, key?: string | number | symb
         path.push(key as string | number);
       }
       
-      proxyDraft.options.hooks.onOperation({
+      proxyDraft.options.hooks.onChange({
         ...operation,
         path,
         key,
