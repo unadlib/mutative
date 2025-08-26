@@ -7,7 +7,6 @@ import {
   isDraftable,
   markChanged,
   markFinalization,
-  _emitOp,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
@@ -76,11 +75,10 @@ export const setHandler = {
     const target = getProxyDraft(this)!;
     if (!this.has(value)) {
       ensureShallowCopy(target);
-      markChanged(target);
+      markChanged(target, undefined, { kind:'set.add', value });
       target.assignedMap!.set(value, true);
       target.setMap!.set(value, value);
       markFinalization(target, value, value, generatePatches);
-      _emitOp(target, undefined, { kind:'set.add', value });
     }
     return this;
   },
@@ -91,7 +89,6 @@ export const setHandler = {
     }
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
-    markChanged(target);
     const valueProxyDraft = getProxyDraft(value)!;
     let ok: boolean;
     if (valueProxyDraft && target.setMap!.has(valueProxyDraft.original)) {
@@ -111,19 +108,18 @@ export const setHandler = {
       // delete reassigned or non-draftable values
       ok = target.setMap!.delete(value);
     }
-    _emitOp(target, undefined, { kind:'set.delete', value, existed: ok || existed });
+    markChanged(target, undefined, { kind:'set.delete', value, existed: ok || existed });
     return ok;
   },
   clear() {
     if (!this.size) return;
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
-    markChanged(target);
+    markChanged(target, undefined, { kind:'set.clear' });
     for (const value of target.original) {
       target.assignedMap!.set(value, false);
     }
     target.setMap!.clear();
-    _emitOp(target, undefined, { kind:'set.clear' });
   },
   values(): IterableIterator<any> {
     const target = getProxyDraft(this)!;

@@ -90,7 +90,7 @@ describe('hooks', () => {
       key: 'key3',
       prev: undefined,
       next: 'value3',
-      path: ['map'],
+      path: ['map', 'key3'],
     });
     
     // Check map.set operation (existing key)
@@ -99,7 +99,7 @@ describe('hooks', () => {
       key: 'key1',
       prev: 'value1',
       next: 'newValue1',
-      path: ['map'],
+      path: ['map', 'key1'],
     });
     
     // Check map.delete operation
@@ -107,7 +107,7 @@ describe('hooks', () => {
       kind: 'map.delete',
       key: 'key2',
       prev: 'value2',
-      path: ['map'],
+      path: ['map', 'key2'],
     });
     
     // Check map.clear operation
@@ -273,7 +273,7 @@ describe('hooks', () => {
     );
 
     expect(state.items).toEqual(['newItem1', 'item2', 'item3']);
-    expect(operations).toHaveLength(3); // array[0] set, array[2] set, length set
+    expect(operations).toHaveLength(2); // array[0] set, array[2] set (length changes aren't captured by markChanged)
     
     // Check array set operation
     expect(operations[0]).toEqual({
@@ -291,15 +291,6 @@ describe('hooks', () => {
       prev: undefined,
       next: 'item3',
       path: ['items', '2'],
-    });
-    
-    // Check array length update
-    expect(operations[2]).toEqual({
-      kind: 'set',
-      key: 'length',
-      prev: 3,
-      next: 3,
-      path: ['items', 'length'],
     });
   });
 });

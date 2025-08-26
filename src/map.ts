@@ -10,7 +10,6 @@ import {
   latest,
   markChanged,
   markFinalization,
-  _emitOp,
 } from './utils';
 
 export const mapHandler = {
@@ -27,11 +26,10 @@ export const mapHandler = {
     const prev = source.get(key);
     if (!source.has(key) || !isEqual(prev, value)) {
       ensureShallowCopy(target);
-      markChanged(target);
+      markChanged(target, key, { kind:'map.set', prev, next: value });
       target.assignedMap!.set(key, true);
       target.copy.set(key, value);
       markFinalization(target, key, value, generatePatches);
-      _emitOp(target, undefined, { kind:'map.set', key, prev, next: value });
     }
     return this;
   },
@@ -42,27 +40,25 @@ export const mapHandler = {
     const target = getProxyDraft(this)!;
     const prev = latest(target).get(key);
     ensureShallowCopy(target);
-    markChanged(target);
+    markChanged(target, key, { kind:'map.delete', prev });
     if (target.original.has(key)) {
       target.assignedMap!.set(key, false);
     } else {
       target.assignedMap!.delete(key);
     }
     target.copy.delete(key);
-    _emitOp(target, undefined, { kind:'map.delete', key, prev });
     return true;
   },
   clear() {
     const target = getProxyDraft(this)!;
     if (!this.size) return;
     ensureShallowCopy(target);
-    markChanged(target);
+    markChanged(target, undefined, { kind:'map.clear' });
     target.assignedMap = new Map();
     for (const [key] of target.original) {
       target.assignedMap.set(key, false);
     }
     target.copy!.clear();
-    _emitOp(target, undefined, { kind:'map.clear' });
   },
   forEach(callback: (value: any, key: any, self: any) => void, thisArg?: any) {
     const target = getProxyDraft(this)!;

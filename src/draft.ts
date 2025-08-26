@@ -29,7 +29,6 @@ import {
   finalizeSetValue,
   markFinalization,
   finalizePatches,
-  _emitOp,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
@@ -148,7 +147,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       return true;
     }
     const current = peek(latest(target), key);
-    _emitOp(target, key, { kind: 'set', key, prev: current, next: value });
     const currentProxyDraft = getProxyDraft(current);
     if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
       // !case: ignore the case of assigning the original draftable value to a draft
@@ -164,7 +162,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     )
       return true;
     ensureShallowCopy(target);
-    markChanged(target);
+    markChanged(target, key, { kind: 'set', prev: current, next: value });
     if (has(target.original, key) && isEqual(value, target.original[key])) {
       // !case: handle the case of assigning the original non-draftable value to a draft
       target.assignedMap!.delete(key);
@@ -209,7 +207,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (prev !== undefined || key in target.original) {
       // !case: delete an existing key
       ensureShallowCopy(target);
-      markChanged(target);
+      markChanged(target, key, { kind: 'delete', prev });
       target.assignedMap!.set(key, false);
     } else {
       target.assignedMap = target.assignedMap ?? new Map();
@@ -217,7 +215,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       target.assignedMap.delete(key);
     }
     if (target.copy) delete target.copy[key];
-    _emitOp(target, key, { kind: 'delete', key, prev });
     return true;
   },
 };
