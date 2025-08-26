@@ -148,7 +148,7 @@ export const makeCreator: MakeCreator = (arg) => {
       mark,
       strict,
       enablePatches,
-      hooks: options.hooks,
+      onChange: options.onChange,
     };
     if (
       !isDraftable(state, _options) &&

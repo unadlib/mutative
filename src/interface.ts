@@ -141,11 +141,9 @@ export interface Options<O extends PatchesOptions, F extends boolean> {
    */
   mark?: Mark<O, F>;
   /**
-   * Hooks for operation events.
+   * onChange callback. When set, caller can be aware of each change as it happens.
    */
-  hooks?: {
-    onChange?: (event: ChangeEvent) => void;
-  };
+  onChange?: (event: ChangeEvent) => void;
 }
 
 export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
@@ -167,11 +165,9 @@ export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
    */
   mark?: Mark<O, F>[] | Mark<O, F>;
   /**
-   * Hooks for operation events.
+   * onChange callback. When set, caller can be aware of each change as it happens.
    */
-  hooks?: {
-    onChange?: (event: ChangeEvent) => void;
-  };
+  onChange?: (event: ChangeEvent) => void;
 }
 
 // Exclude `symbol`

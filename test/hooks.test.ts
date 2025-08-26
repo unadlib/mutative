@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 import { create } from '../src';
 
-describe('hooks', () => {
-  test('object operations with hooks', () => {
+describe('onChange', () => {
+  test('object operations', () => {
     const operations: any[] = [];
     const baseState: {
       name: string;
@@ -20,10 +20,8 @@ describe('hooks', () => {
         delete draft.age;
       },
       {
-        hooks: {
-          onChange: (event) => {
-            operations.push(event);
-          },
+        onChange: (event) => {
+          operations.push(event);
         },
       }
     );
@@ -58,7 +56,7 @@ describe('hooks', () => {
     });
   });
 
-  test('map operations with hooks', () => {
+  test('map operations', () => {
     const operations: any[] = [];
     const baseState = {
       map: new Map([['key1', 'value1'], ['key2', 'value2']]),
@@ -73,10 +71,8 @@ describe('hooks', () => {
         draft.map.clear();
       },
       {
-        hooks: {
-          onChange: (event) => {
-            operations.push(event);
-          },
+        onChange: (event) => {
+          operations.push(event);
         },
       }
     );
@@ -117,7 +113,7 @@ describe('hooks', () => {
     });
   });
 
-  test('set operations with hooks', () => {
+  test('set operations', () => {
     const operations: any[] = [];
     const baseState = {
       set: new Set(['value1', 'value2']),
@@ -132,10 +128,8 @@ describe('hooks', () => {
         draft.set.clear();
       },
       {
-        hooks: {
-          onChange: (event) => {
-            operations.push(event);
-          },
+        onChange: (event) => {
+          operations.push(event);
         },
       }
     );
@@ -165,7 +159,7 @@ describe('hooks', () => {
     });
   });
 
-  test('nested object operations with hooks', () => {
+  test('nested object operations', () => {
     const operations: any[] = [];
     const baseState: {
       user: {
@@ -190,10 +184,8 @@ describe('hooks', () => {
         delete draft.user.profile.age;
       },
       {
-        hooks: {
-          onChange: (event) => {
-            operations.push(event);
-          },
+        onChange: (event) => {
+          operations.push(event);
         },
       }
     );
@@ -219,18 +211,7 @@ describe('hooks', () => {
     });
   });
 
-  test('no hooks provided', () => {
-    const baseState = { name: 'Alice' };
-
-    // Should not throw when no hooks are provided
-    const state = create(baseState, (draft) => {
-      draft.name = 'Bob';
-    });
-
-    expect(state).toEqual({ name: 'Bob' });
-  });
-
-  test('hooks with error handling', () => {
+  test('with error handling', () => {
     const baseState = { name: 'Alice' };
 
     // Should not throw even if hook throws an error
@@ -240,10 +221,8 @@ describe('hooks', () => {
         draft.name = 'Bob';
       },
       {
-        hooks: {
-          onChange: () => {
-            throw new Error('Hook error');
-          },
+        onChange: () => {
+          throw new Error('Hook error');
         },
       }
     );
@@ -251,7 +230,7 @@ describe('hooks', () => {
     expect(state).toEqual({ name: 'Bob' });
   });
 
-  test('array operations with hooks', () => {
+  test('array operations', () => {
     const operations: any[] = [];
     const baseState = {
       items: ['item1', 'item2'],
@@ -264,10 +243,8 @@ describe('hooks', () => {
         draft.items.push('item3');
       },
       {
-        hooks: {
-          onChange: (event) => {
-            operations.push(event);
-          },
+        onChange: (event) => {
+          operations.push(event);
         },
       }
     );

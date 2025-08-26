@@ -10,7 +10,7 @@ export function markChanged(proxyDraft: ProxyDraft, key?: string | number | symb
   }
   
   // Emit operation hook if provided
-  if (operation && proxyDraft.options.hooks?.onChange) {
+  if (operation && proxyDraft.options.onChange) {
     try {
       // Build path from root to this node
       const path: (string | number)[] = [];
@@ -28,7 +28,7 @@ export function markChanged(proxyDraft: ProxyDraft, key?: string | number | symb
         path.push(key as string | number);
       }
       
-      proxyDraft.options.hooks.onChange({
+      proxyDraft.options.onChange({
         ...operation,
         path,
         key,
