@@ -89,6 +89,7 @@ export const setHandler = {
     }
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
+    markChanged(target, undefined, { kind:'set.delete', value, existed });
     const valueProxyDraft = getProxyDraft(value)!;
     let ok: boolean;
     if (valueProxyDraft && target.setMap!.has(valueProxyDraft.original)) {
@@ -108,7 +109,6 @@ export const setHandler = {
       // delete reassigned or non-draftable values
       ok = target.setMap!.delete(value);
     }
-    markChanged(target, undefined, { kind:'set.delete', value, existed: ok || existed });
     return ok;
   },
   clear() {

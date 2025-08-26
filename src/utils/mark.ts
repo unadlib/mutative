@@ -1,12 +1,6 @@
-import { ProxyDraft } from '../interface';
+import { ProxyDraft, OperationEvent } from '../interface';
 
-export function markChanged(proxyDraft: ProxyDraft, key?: string | number | symbol, operation?: {
-  kind: 'set' | 'delete' | 'map.set' | 'map.delete' | 'map.clear' | 'set.add' | 'set.delete' | 'set.clear';
-  prev?: any;
-  next?: any;
-  value?: any;
-  existed?: boolean;
-}) {
+export function markChanged(proxyDraft: ProxyDraft, key?: string | number | symbol, operation?: Omit<OperationEvent, 'path' | 'key'>) {
   proxyDraft.assignedMap = proxyDraft.assignedMap ?? new Map();
   if (!proxyDraft.operated) {
     proxyDraft.operated = true;

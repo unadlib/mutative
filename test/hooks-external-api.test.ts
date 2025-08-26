@@ -6,7 +6,6 @@ describe('hooks external API', () => {
     const operations: any[] = [];
     const baseState = { name: 'Alice', age: 30 };
 
-    // This should work but currently doesn't because hooks aren't properly propagated
     const state = create(
       baseState,
       (draft) => {
@@ -22,7 +21,7 @@ describe('hooks external API', () => {
     );
 
     expect(state).toEqual({ name: 'Bob', age: 30 });
-    expect(operations).toHaveLength(1); // This will fail if hooks aren't working
+    expect(operations).toHaveLength(1);
     expect(operations[0]).toEqual({
       kind: 'set',
       key: 'name',
