@@ -29,6 +29,7 @@ import {
   finalizeSetValue,
   markFinalization,
   finalizePatches,
+  _emitOp,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
@@ -147,6 +148,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       return true;
     }
     const current = peek(latest(target), key);
+    _emitOp(target, key, { kind: 'set', key, prev: current, next: value });
     const currentProxyDraft = getProxyDraft(current);
     if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
       // !case: ignore the case of assigning the original draftable value to a draft
@@ -203,7 +205,8 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (target.type === DraftType.Array) {
       return proxyHandler.set!.call(this, target, key, undefined, target.proxy);
     }
-    if (peek(target.original, key) !== undefined || key in target.original) {
+    const prev = peek(target.original, key);
+    if (prev !== undefined || key in target.original) {
       // !case: delete an existing key
       ensureShallowCopy(target);
       markChanged(target);
@@ -214,6 +217,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       target.assignedMap.delete(key);
     }
     if (target.copy) delete target.copy[key];
+    _emitOp(target, key, { kind: 'delete', key, prev });
     return true;
   },
 };

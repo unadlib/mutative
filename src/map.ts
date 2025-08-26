@@ -10,6 +10,7 @@ import {
   latest,
   markChanged,
   markFinalization,
+  _emitOp,
 } from './utils';
 
 export const mapHandler = {
@@ -23,12 +24,14 @@ export const mapHandler = {
   set(key: any, value: any) {
     const target = getProxyDraft(this)!;
     const source = latest(target);
-    if (!source.has(key) || !isEqual(source.get(key), value)) {
+    const prev = source.get(key);
+    if (!source.has(key) || !isEqual(prev, value)) {
       ensureShallowCopy(target);
       markChanged(target);
       target.assignedMap!.set(key, true);
       target.copy.set(key, value);
       markFinalization(target, key, value, generatePatches);
+      _emitOp(target, undefined, { kind:'map.set', key, prev, next: value });
     }
     return this;
   },
@@ -37,6 +40,7 @@ export const mapHandler = {
       return false;
     }
     const target = getProxyDraft(this)!;
+    const prev = latest(target).get(key);
     ensureShallowCopy(target);
     markChanged(target);
     if (target.original.has(key)) {
@@ -45,6 +49,7 @@ export const mapHandler = {
       target.assignedMap!.delete(key);
     }
     target.copy.delete(key);
+    _emitOp(target, undefined, { kind:'map.delete', key, prev });
     return true;
   },
   clear() {
@@ -57,6 +62,7 @@ export const mapHandler = {
       target.assignedMap.set(key, false);
     }
     target.copy!.clear();
+    _emitOp(target, undefined, { kind:'map.clear' });
   },
   forEach(callback: (value: any, key: any, self: any) => void, thisArg?: any) {
     const target = getProxyDraft(this)!;

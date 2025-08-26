@@ -7,6 +7,7 @@ import {
   isDraftable,
   markChanged,
   markFinalization,
+  _emitOp,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
@@ -79,31 +80,39 @@ export const setHandler = {
       target.assignedMap!.set(value, true);
       target.setMap!.set(value, value);
       markFinalization(target, value, value, generatePatches);
+      _emitOp(target, undefined, { kind:'set.add', value });
     }
     return this;
   },
   delete(value: any): boolean {
-    if (!this.has(value)) {
+    const existed = this.has(value);
+    if (!existed) {
       return false;
     }
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
     markChanged(target);
     const valueProxyDraft = getProxyDraft(value)!;
+    let ok: boolean;
     if (valueProxyDraft && target.setMap!.has(valueProxyDraft.original)) {
       // delete drafted
       target.assignedMap!.set(valueProxyDraft.original, false);
-      return target.setMap!.delete(valueProxyDraft.original);
+      ok = target.setMap!.delete(valueProxyDraft.original);
     }
-    if (!valueProxyDraft && target.setMap!.has(value)) {
-      // non-draftable values
-      target.assignedMap!.set(value, false);
-    } else {
-      // reassigned
-      target.assignedMap!.delete(value);
+    else {
+      if (!valueProxyDraft && target.setMap!.has(value)) {
+        // non-draftable values
+        target.assignedMap!.set(value, false);
+      }
+      else {
+        // reassigned
+        target.assignedMap!.delete(value);
+      }
+      // delete reassigned or non-draftable values
+      ok = target.setMap!.delete(value);
     }
-    // delete reassigned or non-draftable values
-    return target.setMap!.delete(value);
+    _emitOp(target, undefined, { kind:'set.delete', value, existed: ok || existed });
+    return ok;
   },
   clear() {
     if (!this.size) return;
@@ -114,6 +123,7 @@ export const setHandler = {
       target.assignedMap!.set(value, false);
     }
     target.setMap!.clear();
+    _emitOp(target, undefined, { kind:'set.clear' });
   },
   values(): IterableIterator<any> {
     const target = getProxyDraft(this)!;
