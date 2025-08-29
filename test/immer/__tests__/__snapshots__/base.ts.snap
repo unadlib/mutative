@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false array drafts throws when a non-numeric property is added 1`] = `"Only supports setting array indices and the 'length' property."`;
 

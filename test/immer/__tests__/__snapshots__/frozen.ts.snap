@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`auto freeze - proxy will freeze maps 1`] = `"Cannot modify frozen object"`;
 

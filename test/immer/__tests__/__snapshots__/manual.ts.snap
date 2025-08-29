@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`manual - proxy cannot finishDraft twice 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
 
