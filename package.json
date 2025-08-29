@@ -104,7 +104,7 @@
     "deep-freeze": "^0.0.1",
     "eslint": "^9.34.0",
     "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-prettier": "^10.1.5",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-jsx-a11y": "^6.10.0",
     "eslint-plugin-prettier": "^5.2.1",
