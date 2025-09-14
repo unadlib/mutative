@@ -118,6 +118,7 @@
     "json2csv": "^5.0.7",
     "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
+    "mitata": "^1.0.34",
     "prettier": "^3.6.2",
     "quickchart-js": "^3.1.3",
     "redux": "^5.0.1",

@@ -143,13 +143,12 @@ export const makeCreator: MakeCreator = (arg) => {
     const enablePatches = options.enablePatches ?? false;
     const strict = options.strict ?? false;
     const enableAutoFreeze = options.enableAutoFreeze ?? false;
-    const enableOptimizedArray = options.enableOptimizedArray ?? false;
     const _options: DraftOptions = {
       enableAutoFreeze,
       mark,
       strict,
       enablePatches,
-      skipFinalization: enableOptimizedArray ? new WeakSet() : undefined,
+      skipFinalization: new WeakSet(),
     };
     if (
       !isDraftable(state, _options) &&

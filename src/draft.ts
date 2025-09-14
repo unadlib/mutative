@@ -69,7 +69,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     const skipFinalization = target.options.skipFinalization;
 
     if (
-      skipFinalization &&
       source[key] &&
       target.finalities.draftsCache.has(source[key])
     ) {
@@ -101,7 +100,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       const value = desc?.value;
       if (
         target.type === DraftType.Array &&
-        skipFinalization &&
         proxyArrayMethods.includes(key as string)
       ) {
         return function (this: any, ...args: any[]) {
@@ -141,11 +139,11 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     // Ensure that the assigned values are not drafted
     if (
       !target.finalities.arrayHandling &&
-      (value === peek(target.original, key) || skipFinalization?.has(value))
+      (value === peek(target.original, key) || skipFinalization.has(value))
     ) {
-      const shouldSkip = skipFinalization?.has(value);
+      const shouldSkip = skipFinalization.has(value);
       if (shouldSkip) {
-        skipFinalization!.delete(value);
+        skipFinalization.delete(value);
       }
       ensureShallowCopy(target);
       target.copy![key] = createDraft({
@@ -167,7 +165,6 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     }
     if (
       target.finalities.arrayHandling &&
-      skipFinalization &&
       !isDraft(value) &&
       isDraftable(value)
     ) {

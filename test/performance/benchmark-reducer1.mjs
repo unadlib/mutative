@@ -1,5 +1,5 @@
 import { produce as produce10, setAutoFreeze as setAutoFreeze10 } from 'immer';
-import { create as produceMutative } from '../../dist/mutative.esm.mjs';
+import { create as produceMutative } from '../..';
 import { bench, run, summary } from 'mitata';
 
 // repo: https://github.com/markerikson/immer-perf-tests
@@ -42,10 +42,10 @@ const concat = (index) => ({
 });
 
 const actions = {
-  // add,
+  add,
   remove,
-  // update,
-  // concat,
+  update,
+  concat,
 };
 
 const immerProducers = {

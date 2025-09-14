@@ -139,7 +139,7 @@ export type DraftOptions = Options<any, any> & {
   /**
    * a collection for array item skip deep check
    */
-  skipFinalization?: WeakSet<any>;
+  skipFinalization: WeakSet<any>;
 };
 
 export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
@@ -160,10 +160,6 @@ export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
    * And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
    */
   mark?: Mark<O, F>[] | Mark<O, F>;
-  /**
-   * Enable optimized array for improving performance.
-   */
-  enableOptimizedArray?: boolean;
 }
 
 // Exclude `symbol`
