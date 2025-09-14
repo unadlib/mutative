@@ -721,3 +721,79 @@ test('CustomMap', () => {
     expect(newState.getIdentity()).toBe('CustomMap');
   }
 });
+
+test('Unexpected undefined not assigned', () => {
+  {
+    // #1160 https://github.com/immerjs/immer/issues/1160
+    const proto = { [immerable]: true, name: undefined };
+    const foo = Object.create(proto);
+
+    // Initial state: foo should not have own property 'name'
+    expect(Object.prototype.hasOwnProperty.call(foo, 'name')).toBe(false);
+
+    enablePatches();
+    // @ts-ignore
+    const [foo_next, patches, _] = produceWithPatches(foo, (x) => {
+      x.name = undefined;
+    });
+
+    // Immer should produce empty patches when setting undefined
+    expect(patches).toEqual([]);
+
+    // After immer produce, foo should still not have own property 'name'
+    expect(Object.prototype.hasOwnProperty.call(foo, 'name')).toBe(false);
+    // foo_next should also not have own property 'name'
+    expect(Object.prototype.hasOwnProperty.call(foo_next, 'name')).toBe(false);
+
+    // Manually assigning undefined should create own property
+    foo.name = undefined;
+    expect(Object.prototype.hasOwnProperty.call(foo, 'name')).toBe(true);
+
+    // [hasOwnProp] foo: false
+    // [immer] produce foo_next from immer
+    // [immer] foo_next patches: [
+    //   {
+    //     op: "add",
+    //     path: [ "name" ],
+    //     value: undefined,
+    //   }
+    // ]
+    // [hasOwnProp] foo: false
+    // [hasOwnProp] foo_next: true
+    // [vanilla] assign name manually
+    // [hasOwnProp] foo: true
+  }
+  {
+    const immerable = Symbol();
+    const proto = { [immerable]: true, name: undefined };
+    const foo = Object.create(proto);
+
+    const [foo_next, patches, _] = create(
+      foo,
+      (x) => {
+        x.name = undefined;
+      },
+      {
+        enablePatches: true,
+        mark: (target) => {
+          if (target && target[immerable]) {
+            return 'immutable';
+          }
+        },
+      }
+    );
+
+    expect(patches).toEqual([
+      {
+        op: 'add',
+        path: ['name'],
+        value: undefined,
+      },
+    ]);
+    expect(Object.prototype.hasOwnProperty.call(foo, 'name')).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(foo_next, 'name')).toBe(true);
+
+    foo.name = undefined;
+    expect(Object.prototype.hasOwnProperty.call(foo, 'name')).toBe(true);
+  }
+});
