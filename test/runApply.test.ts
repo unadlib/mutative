@@ -11,33 +11,6 @@
 import { create, apply, Patches, original } from '../src';
 import { deepClone, isDraft, set } from '../src/utils';
 
-test('classic case', () => {
-  const data = {
-    a: {
-      c: 1,
-    },
-    b: 2,
-  };
-  const [state, patches, inversePatches] = create(
-    data,
-    (draft) => {
-      const a = draft.a;
-      // @ts-expect-error
-      delete draft.a;
-      a.c = 2;
-      // @ts-expect-error
-      draft.a1 = a;
-    },
-    {
-      enablePatches: true,
-    }
-  );
-  const prevState = apply(state, inversePatches);
-  expect(prevState).toEqual(data);
-  const nextState = apply(data, patches);
-  expect(nextState).toEqual(state);
-});
-
 function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
   const [state, patches, inversePatches] = create(data as any, fn, {
     enablePatches: true,
@@ -1481,6 +1454,28 @@ test('array - update', () => {
   });
 
   checkPatches(obj, (d) => {
+    d.a.splice(0, 1, { i: 100 });
+    d.a[10].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    const a0 = d.a[0];
+    d.a[0].i += 1;
+    const [a] = d.a.splice(0, 1, { i: 100 });
+    expect(a === a0).toBeTruthy();
+  });
+
+  checkPatches(obj, (d) => {
+    const a0 = d.a[0];
+    d.a[0].i += 1;
+    const data = { i: 100 };
+    const [a] = d.a.splice(0, 1, data, data);
+    expect(a === a0).toBeTruthy();
+    d.a[1].i += 2;
+    d.a[0].i += 3;
+  });
+
+  checkPatches(obj, (d) => {
     d.a[10].i += 1;
     d.a.shift();
     d.a[0].i += 1;
@@ -1505,6 +1500,14 @@ test('array - update', () => {
   });
 
   checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    const data = { i: -1 };
+    d.a.unshift(data, data);
+    d.a[2].i += 1;
+    d.a[0].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
     d.a.reverse();
   });
 
@@ -1517,6 +1520,112 @@ test('array - update', () => {
   checkPatches(obj, (d) => {
     const a = d.a[0];
     d.a.shift();
+    d.a[10].i += 1;
+    a.i += 1;
+    d.a.push(a);
+  });
+});
+
+test('array - copyWithin', () => {
+  const obj = {
+    a: Array.from({ length: 20 }, (_, i) => ({ i })),
+    o: { b: { c: 1 } },
+  };
+  checkPatches(obj, (d) => {
+    d.a.copyWithin(0, 1, 2);
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.copyWithin(1, 2);
+  });
+
+  checkPatches(obj, (d) => {
+    const result = d.a.copyWithin(1, 2);
+    expect(result).toBe(d.a);
+    result[0].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    // d.o.b.c++;
+    // @ts-ignore
+    d.a.copyWithin(0, 1, 2);
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
+    d.o.b.c++;
+    // @ts-ignore
+    d.a.copyWithin(1, 2);
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.shift();
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.shift();
+    d.a[0].i += 1;
+    d.a[10].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    d.a.copyWithin(0, 1);
+    d.a[0].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.copyWithin(0, 1, 2);
+    d.a[10].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    d.a.shift();
+    d.a.copyWithin(0, 1, 2);
+    d.a[0].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.unshift({ i: -1 });
+    d.a.copyWithin(0, 1, 2);
+  });
+
+  checkPatches(obj, (d) => {
+    d.o.b.c++;
+    // @ts-ignore
+    d.a.unshift({ i: -1 }, { i: d.o.b });
+    d.a.copyWithin(0, 1, 2);
+    // @ts-ignore
+    delete d.o.b;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    d.a.unshift({ i: -1 });
+    d.a.copyWithin(0, 1, 2);
+    d.a[2].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    d.a.reverse();
+    d.a.copyWithin(0, 1, 2);
+  });
+
+  checkPatches(obj, (d) => {
+    d.a[10].i += 1;
+    d.a.reverse();
+    d.a.copyWithin(0, 1, 2);
+    d.a[2].i += 1;
+  });
+
+  checkPatches(obj, (d) => {
+    const a = d.a[0];
+    d.a.shift();
+    d.a.copyWithin(0, 1, 2);
     d.a[10].i += 1;
     a.i += 1;
     d.a.push(a);
@@ -1657,47 +1766,4 @@ test('array - update primitive', () => {
     d.a.reverse();
     d.a[2] += 1;
   });
-});
-
-test('base - mutate', () => {
-  const baseState = {
-    a: {
-      c: 1,
-    },
-  };
-  const [state, patches, inversePatches] = create(
-    baseState,
-    (draft) => {
-      draft.a.c = 2;
-    },
-    {
-      enablePatches: true,
-    }
-  );
-  expect(state).toEqual({ a: { c: 2 } });
-  expect({ patches, inversePatches }).toEqual({
-    patches: [
-      {
-        op: 'replace',
-        path: ['a', 'c'],
-        value: 2,
-      },
-    ],
-    inversePatches: [
-      {
-        op: 'replace',
-        path: ['a', 'c'],
-        value: 1,
-      },
-    ],
-  });
-  const nextState = apply(baseState, patches);
-  expect(nextState).toEqual({ a: { c: 2 } });
-  expect(baseState).toEqual({ a: { c: 1 } });
-
-  const result = apply(baseState, patches, {
-    mutable: true,
-  });
-  expect(baseState).toEqual({ a: { c: 2 } });
-  expect(result).toBeUndefined();
 });

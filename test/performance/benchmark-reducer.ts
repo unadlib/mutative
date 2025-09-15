@@ -15,6 +15,7 @@ import {
 } from 'immer';
 import { create } from '../..';
 
+// repo: https://github.com/markerikson/immer-perf-tests
 function createInitialState() {
   const initialState = {
     largeArray: Array.from({ length: 10000 }, (_, i) => ({
@@ -37,8 +38,6 @@ function createInitialState() {
   return initialState;
 }
 
-const MAX = 1;
-
 const add = (index) => ({
   type: 'test/addItem',
   payload: { id: index, value: index, nested: { data: index } },
@@ -54,10 +53,10 @@ const concat = (index) => ({
 });
 
 const actions = {
-  add,
+  // add,
   remove,
-  update,
-  concat,
+  // update,
+  // concat,
 };
 
 const vanillaReducer = (state = createInitialState(), action) => {
@@ -104,132 +103,118 @@ const vanillaReducer = (state = createInitialState(), action) => {
 };
 
 const createMutativeReducer =
-  (produce) =>
+  (produce, isMutativeAutoFreeze) =>
   (state = createInitialState(), action) =>
-    produce(state, (draft) => {
-      switch (action.type) {
-        case 'test/addItem':
-          draft.largeArray.push(action.payload);
-          break;
-        case 'test/removeItem':
-          draft.largeArray.splice(action.payload, 1);
-          break;
-        case 'test/updateItem': {
-          const item = draft.largeArray.find(
-            (item) => item.id === action.payload.id
-          );
-          item.value = action.payload.value;
-          item.nested.data = action.payload.nestedData;
-          break;
+    produce(
+      state,
+      (draft) => {
+        switch (action.type) {
+          case 'test/addItem':
+            draft.largeArray.push(action.payload);
+            break;
+          case 'test/removeItem':
+            draft.largeArray.splice(action.payload, 1);
+            break;
+          case 'test/updateItem': {
+            const item = draft.largeArray.find(
+              (item) => item.id === action.payload.id
+            );
+            item.value = action.payload.value;
+            item.nested.data = action.payload.nestedData;
+            break;
+          }
+          case 'test/concatArray': {
+            const length = state.largeArray.length;
+            const newArray = action.payload.concat(state.largeArray);
+            newArray.length = length;
+            draft.largeArray = newArray;
+            break;
+          }
         }
-        case 'test/concatArray': {
-          const length = state.largeArray.length;
-          const newArray = action.payload.concat(state.largeArray);
-          newArray.length = length;
-          draft.largeArray = newArray;
-          break;
-        }
-      }
-    });
-const MAX_ITERATIONS = 100;
-// {
-//   const initialState = createInitialState();
-//   console.time('immer:autoFreeze');
-//   const immerReducer = createMutativeReducer(produce);
-//   let next = immerReducer(initialState, add(0));
-//   console.timeEnd('immer:autoFreeze');
-//   console.time('immer:autoFreeze:nextAction');
-//   for (let i = 0; i < MAX_ITERATIONS; i++) {
-//     next = immerReducer(next, add(i));
-//   }
-//   console.timeEnd('immer:autoFreeze:nextAction');
-// }
-// {
-//   setAutoFreeze(false);
-//   const initialState = createInitialState();
-//   console.time('immer');
-//   const immerReducer = createMutativeReducer(produce);
-//   let next = immerReducer(initialState, add(0));
-//   console.timeEnd('immer');
-//   console.time('immer:nextAction');
-//   for (let i = 0; i < MAX_ITERATIONS; i++) {
-//     next = immerReducer(next, add(i));
-//   }
-//   console.timeEnd('immer:nextAction');
-// }
-// {
-//   const initialState = createInitialState();
-//   console.time('immer:autoFreeze');
-//   const immerReducer = createMutativeReducer(produce);
-//   let next = immerReducer(initialState, update(0));
-//   console.timeEnd('immer:autoFreeze');
-//   console.time('immer:autoFreeze:nextAction');
-//   for (let i = 0; i < MAX_ITERATIONS; i++) {
-//     next = immerReducer(next, update(i));
-//   }
-//   console.timeEnd('immer:autoFreeze:nextAction');
-// }
-// {
-//   setAutoFreeze(false);
-//   const initialState = createInitialState();
-//   console.time('immer');
-//   const immerReducer = createMutativeReducer(produce);
-//   let next = immerReducer(initialState, update(0));
-//   console.timeEnd('immer');
-//   console.time('immer:nextAction');
-//   for (let i = 0; i < MAX_ITERATIONS; i++) {
-//     next = immerReducer(next, update(i));
-//   }
-//   console.timeEnd('immer:nextAction');
-// }
-{
-  const initialState = createInitialState();
-  console.time('immer:autoFreeze');
-  const immerReducer = createMutativeReducer(produce);
-  let next = immerReducer(initialState, remove(0));
-  console.timeEnd('immer:autoFreeze');
-  console.time('immer:autoFreeze:nextAction');
-  for (let i = 0; i < MAX_ITERATIONS; i++) {
-    next = immerReducer(next, remove(i));
-  }
-  console.timeEnd('immer:autoFreeze:nextAction');
-}
-{
-  setAutoFreeze(false);
-  const initialState = createInitialState();
-  console.time('immer');
-  const immerReducer = createMutativeReducer(produce);
-  let next = immerReducer(initialState, remove(0));
-  console.timeEnd('immer');
-  console.time('immer:nextAction');
-  for (let i = 0; i < MAX_ITERATIONS; i++) {
-    next = immerReducer(next, remove(i));
-  }
-  console.timeEnd('immer:nextAction');
-}
+      },
+      isMutativeAutoFreeze ? { enableAutoFreeze: true } : undefined
+    );
+const MAX_ITERATIONS = 10;
 
-{
-  const initialState = createInitialState();
-  console.time('mutative:autoFreeze');
-  const mutativeReducer = createMutativeReducer(create);
-  let next = mutativeReducer(initialState, remove(0));
-  console.timeEnd('mutative:autoFreeze');
-  console.time('mutative:autoFreeze:nextAction');
-  for (let i = 0; i < MAX_ITERATIONS; i++) {
-    next = mutativeReducer(next, remove(i));
+Object.entries(actions).forEach(([actionName, action]) => {
+  {
+    const initialState = createInitialState();
+    console.time(`[${actionName}]immer:autoFreeze`);
+    const immerReducer = createMutativeReducer(produce);
+    let next = immerReducer(initialState, action(0));
+    console.timeEnd(`[${actionName}]immer:autoFreeze`);
+    console.time(
+      `[${actionName}]immer:autoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
+      next = immerReducer(next, action(i));
+    }
+    console.timeEnd(
+      `[${actionName}]immer:autoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
   }
-  console.timeEnd('mutative:autoFreeze:nextAction');
-}
-
-{
-  const initialState = createInitialState();
-  console.time('vanilla');
-  let next = vanillaReducer(initialState, remove(0));
-  console.timeEnd('vanilla');
-  console.time('vanilla:nextAction');
-  for (let i = 0; i < MAX_ITERATIONS; i++) {
-    next = vanillaReducer(next, remove(i));
+  console.log('-------------------------------------------------------');
+  {
+    const initialState = createInitialState();
+    console.time(`[${actionName}]mutative:autoFreeze`);
+    const mutativeReducer = createMutativeReducer(create, true);
+    let next = mutativeReducer(initialState, action(0));
+    console.timeEnd(`[${actionName}]mutative:autoFreeze`);
+    console.time(
+      `[${actionName}]mutative:autoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
+      next = mutativeReducer(next, action(i));
+    }
+    console.timeEnd(
+      `[${actionName}]mutative:autoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
   }
-  console.timeEnd('vanilla:nextAction');
-}
-
+  console.log('-------------------------------------------------------');
+  {
+    setAutoFreeze(false);
+    const initialState = createInitialState();
+    console.time(`[${actionName}]immer:noAutoFreeze`);
+    const immerReducer = createMutativeReducer(produce);
+    let next = immerReducer(initialState, action(0));
+    console.timeEnd(`[${actionName}]immer:noAutoFreeze`);
+    console.time(
+      `[${actionName}]immer:noAutoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
+    for (let i = 1; i < MAX_ITERATIONS; i++) {
+      immerReducer(initialState, action(i));
+    }
+    console.timeEnd(
+      `[${actionName}]immer:noAutoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
+  }
+  console.log('-------------------------------------------------------');
+  {
+    const initialState = createInitialState();
+    console.time(`[${actionName}]mutative:noAutoFreeze`);
+    const mutativeReducer = createMutativeReducer(create);
+    let next = mutativeReducer(initialState, action(0));
+    console.timeEnd(`[${actionName}]mutative:noAutoFreeze`);
+    console.time(
+      `[${actionName}]mutative:noAutoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
+      next = mutativeReducer(next, action(i));
+    }
+    console.timeEnd(
+      `[${actionName}]mutative:noAutoFreeze:nextAction(${MAX_ITERATIONS})`
+    );
+  }
+  console.log('-------------------------------------------------------');
+  {
+    const initialState = createInitialState();
+    console.time(`[${actionName}]vanilla`);
+    let next = vanillaReducer(initialState, action(0));
+    console.timeEnd(`[${actionName}]vanilla`);
+    console.time(`[${actionName}]vanilla:nextAction(${MAX_ITERATIONS})`);
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
+      next = vanillaReducer(next, action(i));
+    }
+    console.timeEnd(`[${actionName}]vanilla:nextAction(${MAX_ITERATIONS})`);
+  }
+});

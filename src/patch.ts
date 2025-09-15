@@ -1,5 +1,18 @@
-import { DraftType, Operation, Patches, ProxyDraft } from './interface';
-import { cloneIfNeeded, escapePath, get, has, isEqual } from './utils';
+import {
+  DraftType,
+  Operation,
+  type Patches,
+  type ProxyDraft,
+} from './interface';
+import {
+  cloneIfNeeded,
+  escapePath,
+  get,
+  getProxyDraft,
+  has,
+  isEqual,
+  latest,
+} from './utils';
 
 function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
@@ -15,7 +28,12 @@ function generateArrayPatches(
     [patches, inversePatches] = [inversePatches, patches];
   }
   for (let index = 0; index < original.length; index += 1) {
-    if (assignedMap!.get(index.toString()) && copy[index] !== original[index]) {
+    const currentProxyDraft = getProxyDraft(copy[index]);
+    if (
+      assignedMap!.get(index.toString()) &&
+      (currentProxyDraft ? latest(currentProxyDraft) : copy[index]) !==
+        original[index]
+    ) {
       const _path = basePath.concat([index]);
       const path = escapePath(_path, pathAsArray);
       patches.push({
@@ -81,8 +99,8 @@ function generatePatchesFromAssigned(
     const op = !assignedValue
       ? Operation.Remove
       : has(original, key)
-      ? Operation.Replace
-      : Operation.Add;
+        ? Operation.Replace
+        : Operation.Add;
     if (isEqual(originalValue, value) && op === Operation.Replace) return;
     const _path = basePath.concat(key);
     const path = escapePath(_path, pathAsArray);
@@ -91,8 +109,8 @@ function generatePatchesFromAssigned(
       op === Operation.Add
         ? { op: Operation.Remove, path }
         : op === Operation.Remove
-        ? { op: Operation.Add, path, value: originalValue }
-        : { op: Operation.Replace, path, value: originalValue }
+          ? { op: Operation.Add, path, value: originalValue }
+          : { op: Operation.Replace, path, value: originalValue }
     );
   });
 }

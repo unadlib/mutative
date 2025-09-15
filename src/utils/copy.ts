@@ -93,10 +93,9 @@ export function ensureShallowCopy(target: ProxyDraft) {
   target.copy = shallowCopy(target.original, target.options)!;
 }
 
-function deepClone<T>(target: T): T;
-function deepClone(target: any) {
-  if (!isDraftable(target)) return getValue(target);
-  if (Array.isArray(target)) return target.map(deepClone);
+function deepClone<T>(target: T): T {
+  if (!isDraftable(target)) return getValue(target as object) as T;
+  if (Array.isArray(target)) return target.map(deepClone) as T;
   if (target instanceof Map) {
     const iterable = Array.from(target.entries()).map(([k, v]) => [
       k,
@@ -106,7 +105,7 @@ function deepClone(target: any) {
       const SubClass = Object.getPrototypeOf(target).constructor;
       return new SubClass(iterable);
     }
-    return new Map(iterable);
+    return new Map(iterable) as T;
   }
   if (target instanceof Set) {
     const iterable = Array.from(target).map(deepClone);
@@ -114,7 +113,7 @@ function deepClone(target: any) {
       const SubClass = Object.getPrototypeOf(target).constructor;
       return new SubClass(iterable);
     }
-    return new Set(iterable);
+    return new Set(iterable) as T;
   }
   const copy = Object.create(Object.getPrototypeOf(target));
   for (const key in target) copy[key] = deepClone(target[key]);

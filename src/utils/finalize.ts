@@ -15,13 +15,16 @@ import { forEach } from './forEach';
 export function handleValue(
   target: any,
   handledSet: WeakSet<any>,
-  options?: ProxyDraft['options']
+  options: ProxyDraft['options']
 ) {
   if (
     isDraft(target) ||
     !isDraftable(target, options) ||
     handledSet.has(target) ||
-    Object.isFrozen(target)
+    Object.isFrozen(target) ||
+    options.skipFinalization.has(target)
+    // It should skip the finalization process
+    // This can avoid unnecessary deep traversal, as these objects are non-draft and do not contain draft in their deep object.
   )
     return;
   const isSet = target instanceof Set;
@@ -96,8 +99,11 @@ export function finalizePatches(
     target.assignedMap &&
     target.assignedMap.size > 0 &&
     !target.finalized;
+  const parentAssigned = target.parent?.assignedMap?.get(
+    target.parent.type === DraftType.Array ? target.key!.toString() : target.key
+  );
   if (shouldFinalize) {
-    if (patches && inversePatches) {
+    if (!parentAssigned && patches && inversePatches) {
       const basePath = getPath(target);
       if (basePath) {
         generatePatches(target, basePath, patches, inversePatches);

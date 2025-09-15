@@ -1,4 +1,4 @@
-import { type Draft, DraftType, type ProxyDraft } from './interface';
+import { DraftType, type Draft, type ProxyDraft } from './interface';
 import {
   forEach,
   get,
