@@ -29,17 +29,16 @@ import {
   finalizeSetValue,
   markFinalization,
   finalizePatches,
+  isDraft,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
-
-const draftsCache = new WeakSet<object>();
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
     const copy = target.copy?.[key];
     // Improve draft reading performance by caching the draft copy.
-    if (copy && draftsCache.has(copy)) {
+    if (copy && target.finalities.draftsCache.has(copy)) {
       return copy;
     }
     if (key === PROXY_DRAFT) return target;
@@ -117,6 +116,9 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         return subProxyDraft.copy;
       }
       return target.copy![key];
+    }
+    if (isDraft(value)) {
+      target.finalities.draftsCache.add(value);
     }
     return value;
   },
@@ -252,7 +254,6 @@ export function createDraft<T extends object>(createDraftOptions: {
     proxyHandler
   );
   finalities.revoke.push(revoke);
-  draftsCache.add(proxy);
   proxyDraft.proxy = proxy;
   if (parentDraft) {
     const target = parentDraft;
