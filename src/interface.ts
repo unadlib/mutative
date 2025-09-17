@@ -32,6 +32,7 @@ export interface Finalities {
   draft: ((patches?: Patches, inversePatches?: Patches) => void)[];
   revoke: (() => void)[];
   handledSet: WeakSet<any>;
+  draftsCache: WeakSet<object>;
 }
 
 export interface ProxyDraft<T = any> {
