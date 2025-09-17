@@ -20,7 +20,7 @@ export function getProxyDraft<T extends any>(value: T): ProxyDraft | null {
 
 export function getValue<T extends object>(value: T): T {
   const proxyDraft = getProxyDraft(value);
-  return proxyDraft ? proxyDraft.copy ?? proxyDraft.original : value;
+  return proxyDraft ? (proxyDraft.copy ?? proxyDraft.original) : value;
 }
 
 /**

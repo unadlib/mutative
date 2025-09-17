@@ -34,9 +34,7 @@ describe('original', () => {
         Array.from(draft.set.values())[0].bar = { foobar: 'str' };
         Array.from(draft.set.values())[0].bar!.foobar = 'baz';
         expect(isDraft(Array.from(draft.set.values())[0].bar)).toBe(false);
-        expect(() =>
-          original(Array.from(draft.set.values())[0].bar)
-        ).toThrow();
+        expect(() => original(Array.from(draft.set.values())[0].bar)).toThrow();
 
         draft.map.get('foo')!.foo = 'baz';
         expect(isDraft(draft.map.get('foo'))).toBe(true);

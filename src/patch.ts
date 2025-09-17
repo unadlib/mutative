@@ -81,8 +81,8 @@ function generatePatchesFromAssigned(
     const op = !assignedValue
       ? Operation.Remove
       : has(original, key)
-      ? Operation.Replace
-      : Operation.Add;
+        ? Operation.Replace
+        : Operation.Add;
     if (isEqual(originalValue, value) && op === Operation.Replace) return;
     const _path = basePath.concat(key);
     const path = escapePath(_path, pathAsArray);
@@ -91,8 +91,8 @@ function generatePatchesFromAssigned(
       op === Operation.Add
         ? { op: Operation.Remove, path }
         : op === Operation.Remove
-        ? { op: Operation.Add, path, value: originalValue }
-        : { op: Operation.Replace, path, value: originalValue }
+          ? { op: Operation.Add, path, value: originalValue }
+          : { op: Operation.Replace, path, value: originalValue }
     );
   });
 }

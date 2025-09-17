@@ -232,4 +232,3 @@ const MAX_ITERATIONS = 100;
   }
   console.timeEnd('vanilla:nextAction');
 }
-

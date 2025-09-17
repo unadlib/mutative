@@ -316,10 +316,10 @@ export function finalizeDraft<T>(
   const state = hasReturnedValue
     ? returnedValue[0]
     : proxyDraft
-    ? proxyDraft.operated
-      ? proxyDraft.copy
-      : proxyDraft.original
-    : result;
+      ? proxyDraft.operated
+        ? proxyDraft.copy
+        : proxyDraft.original
+      : result;
   if (proxyDraft) revokeProxy(proxyDraft);
   if (enableAutoFreeze) {
     deepFreeze(state, state, proxyDraft?.options.updatedValues);

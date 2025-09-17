@@ -190,8 +190,10 @@ describe('curried producer', () => {
     // With initial state:
     {
       type Recipe = (state?: State | undefined, ...rest: number[]) => State;
-      let bar = produce((state: Draft<State>, ...args: number[]) => {},
-      _ as State);
+      let bar = produce(
+        (state: Draft<State>, ...args: number[]) => {},
+        _ as State
+      );
       assert(bar, _ as Recipe);
       bar(_ as State, 1, 2);
       bar(_ as State);

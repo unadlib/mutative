@@ -81,8 +81,7 @@ export {
   castDraft,
 } from '../../../src';
 
-export const applyPatches = (base: any, patches: any) =>
-  apply(base, patches);
+export const applyPatches = (base: any, patches: any) => apply(base, patches);
 
 export const enablePatches = () => {};
 

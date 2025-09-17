@@ -1,9 +1,5 @@
 // @ts-nocheck
-import {
-  produce,
-  produceWithPatches,
-  enablePatches,
-} from '../src/immer';
+import { produce, produceWithPatches, enablePatches } from '../src/immer';
 
 enablePatches();
 

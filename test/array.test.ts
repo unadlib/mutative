@@ -78,7 +78,6 @@ test('splice with mark', () => {
   expect(obj.a[0] === state.a.slice(-1)[0]).toBe(false);
 });
 
-
 // test('shift with custom copy', () => {
 //   const obj = {
 //     a: Array.from({ length: 20 }, (_, i) => new Date(i)),
