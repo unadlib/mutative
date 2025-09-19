@@ -17,4 +17,5 @@ export type {
   Patch,
   ExternalOptions as Options,
   PatchesOptions,
+  DraftedObject,
 } from './interface';
