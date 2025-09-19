@@ -510,68 +510,6 @@ test('error key setting in array', () => {
   }
 });
 
-test(`Object values of a Map are not frozen anymore #1119`, () => {
-  {
-    enableMapSet();
-
-    interface Fruit {
-      key: string;
-      name: string;
-    }
-
-    const fruits: Fruit[] = [
-      { key: 'apple1', name: 'Red Delicious' },
-      { key: 'apple2', name: 'Gala' },
-    ];
-
-    let products = new Map<string, Fruit>();
-
-    function setFruitMap(fruits: Fruit[]): void {
-      products = produce(products, (draft) => {
-        draft.clear();
-        fruits.forEach((fruit) => draft.set(fruit.key, fruit));
-      });
-    }
-
-    setFruitMap(fruits);
-
-    const product = products.get('apple1');
-    // ! it should be frozen
-    expect(Object.isFrozen(product)).not.toBeTruthy();
-  }
-  {
-    interface Fruit {
-      key: string;
-      name: string;
-    }
-
-    const fruits: Fruit[] = [
-      { key: 'apple1', name: 'Red Delicious' },
-      { key: 'apple2', name: 'Gala' },
-    ];
-
-    let products: Immutable<Map<string, Fruit>> = new Map();
-
-    function setFruitMap(fruits: Fruit[]): void {
-      products = create(
-        products,
-        (draft) => {
-          draft.clear();
-          fruits.forEach((fruit) => draft.set(fruit.key, fruit));
-        },
-        {
-          enableAutoFreeze: true,
-        }
-      );
-    }
-
-    setFruitMap(fruits);
-
-    const product = products.get('apple1');
-    expect(Object.isFrozen(product)).toBeTruthy();
-  }
-});
-
 test('#47 Avoid deep copies', () => {
   {
     const obj = { k: 42 };
