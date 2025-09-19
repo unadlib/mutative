@@ -183,7 +183,7 @@ export type Immutable<T> = T extends Primitive | AtomicObject
 
 type DraftedMap<K, V> = Map<K, Draft<V>>;
 type DraftedSet<T> = Set<Draft<T>>;
-type DraftedObject<T> = {
+export type DraftedObject<T> = {
   -readonly [K in keyof T]: Draft<T[K]>;
 };
 
