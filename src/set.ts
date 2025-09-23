@@ -75,7 +75,7 @@ export const setHandler = {
     const target = getProxyDraft(this)!;
     if (!this.has(value)) {
       ensureShallowCopy(target);
-      markChanged(target);
+      markChanged(target, undefined, { kind:'set.add', value });
       target.assignedMap!.set(value, true);
       target.setMap!.set(value, value);
       markFinalization(target, value, value, generatePatches);
@@ -83,33 +83,39 @@ export const setHandler = {
     return this;
   },
   delete(value: any): boolean {
-    if (!this.has(value)) {
+    const existed = this.has(value);
+    if (!existed) {
       return false;
     }
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
-    markChanged(target);
+    markChanged(target, undefined, { kind:'set.delete', value, existed });
     const valueProxyDraft = getProxyDraft(value)!;
+    let ok: boolean;
     if (valueProxyDraft && target.setMap!.has(valueProxyDraft.original)) {
       // delete drafted
       target.assignedMap!.set(valueProxyDraft.original, false);
-      return target.setMap!.delete(valueProxyDraft.original);
+      ok = target.setMap!.delete(valueProxyDraft.original);
     }
-    if (!valueProxyDraft && target.setMap!.has(value)) {
-      // non-draftable values
-      target.assignedMap!.set(value, false);
-    } else {
-      // reassigned
-      target.assignedMap!.delete(value);
+    else {
+      if (!valueProxyDraft && target.setMap!.has(value)) {
+        // non-draftable values
+        target.assignedMap!.set(value, false);
+      }
+      else {
+        // reassigned
+        target.assignedMap!.delete(value);
+      }
+      // delete reassigned or non-draftable values
+      ok = target.setMap!.delete(value);
     }
-    // delete reassigned or non-draftable values
-    return target.setMap!.delete(value);
+    return ok;
   },
   clear() {
     if (!this.size) return;
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
-    markChanged(target);
+    markChanged(target, undefined, { kind:'set.clear' });
     for (const value of target.original) {
       target.assignedMap!.set(value, false);
     }
