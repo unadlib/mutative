@@ -15,3 +15,6 @@ The following are other libraries created based on Mutative:
 - [usm](https://github.com/unadlib/usm) - A universal state modular library, supports Redux(5.x), MobX(6.x), Vuex(4.x) and Angular(2.0+).
 - [xstate-mutative](https://github.com/mutativejs/xstate-mutative) - A faster and more flexible utilities for using Mutative with XState.
 - [reactant](https://github.com/unadlib/reactant) - Reactant - A framework for building React applications with Mutative.
+- [mutative-yjs](https://github.com/mutativejs/mutative-yjs) - A library for building Yjs collaborative web applications with Mutative.
+- [travels](https://github.com/mutativejs/travels) - A fast, framework-agnostic undo/redo core powered by Mutative JSON Patch.
+- [zustand-travel](https://github.com/mutativejs/zustand-travel) - A powerful and high-performance time-travel middleware for Zustand.
