@@ -276,24 +276,17 @@ export class MutativeMap<K, V> {
    * This is especially useful when a lot of entries were changed recently.
    * @return The number of entries that were in the patch data. If this was high, compacting was very useful.
    */
-  compact<K, V>(mutativeMap: MutativeMap<K, V>): number {
-    let patchDataSize = mutativeMap.patchData.size;
+  compact(): number {
+    let patchDataSize = this.patchData.size;
     if (patchDataSize === 0) {
       return 0;
     }
-    // TODO [MutativeMap] test compacting MutativeMap (especially during mutation. Should that even be allowed? May hurt performance by compacting before unchanged draft values were finalized, which will make patchData grow unnecessarily)
-    const mapWithAllData = new Map(mutativeMap.entries());
-    const allData = new Map<K, V>(mapWithAllData);
-    // for (const [key, value] of mutativeMap.patchData) {
-    //   assertAlways(!isDraft(value), () => `Draft value for key=${key} found in patch data while compacting`);
-    //   if (value === removedValueSymbol) {
-    //     allData.delete(key);
-    //   } else {
-    //     allData.set(key, value as V);
-    //   }
-    // }
-    mutativeMap.patchData = new Map();
-    mutativeMap.immutableData = allData;
+    // TODO [MutativeMap] [unimportant] test compacting MutativeMap during mutation. But not relevant? Should that even be allowed? May hurt performance by compacting before unchanged draft values were finalized, which will make patchData grow unnecessarily)
+
+    const mapWithAllData: Map<K, V> = new Map<K, V>(this.entries());
+
+    this.patchData = new Map();
+    this.immutableData = mapWithAllData;
     return patchDataSize;
   }
 }
