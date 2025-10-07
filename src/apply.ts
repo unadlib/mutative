@@ -80,6 +80,9 @@ export function apply<
           typeof key !== 'number' &&
           typeof key !== 'symbol'
         ) {
+          // keyForCheck cannot be undefined here, because:
+          // - If key is a symbol, this conditional block will not be entered
+          // - All other types will be converted to String(key)
           key = keyForCheck!;
         }
         // use `index` in Set draft
