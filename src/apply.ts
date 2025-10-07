@@ -57,18 +57,30 @@ export function apply<
       for (let index = 0; index < path.length - 1; index += 1) {
         const parentType = getType(base);
         let key = path[index];
-        if (typeof key !== 'string' && typeof key !== 'number') {
-          key = String(key);
-        }
+        const keyForCheck =
+          typeof key === 'symbol' ? undefined : String(key as any);
         if (
           ((parentType === DraftType.Object ||
             parentType === DraftType.Array) &&
-            (key === '__proto__' || key === 'constructor')) ||
-          (typeof base === 'function' && key === 'prototype')
+            keyForCheck !== undefined &&
+            (keyForCheck === '__proto__' || keyForCheck === 'constructor')) ||
+          (typeof base === 'function' &&
+            keyForCheck !== undefined &&
+            keyForCheck === 'prototype')
         ) {
           throw new Error(
             `Patching reserved attributes like __proto__ and constructor is not allowed.`
           );
+        }
+        if (
+          (parentType === DraftType.Object ||
+            parentType === DraftType.Array ||
+            typeof base === 'function') &&
+          typeof key !== 'string' &&
+          typeof key !== 'number' &&
+          typeof key !== 'symbol'
+        ) {
+          key = keyForCheck!;
         }
         // use `index` in Set draft
         base = get(parentType === DraftType.Set ? Array.from(base) : base, key);

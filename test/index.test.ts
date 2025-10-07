@@ -4086,6 +4086,58 @@ test('#59 - Failure to apply inverse patchset(Map)', () => {
   expect(reverted2).toEqual(newState);
 });
 
+test('apply - map with object key', () => {
+  const key = { id: 1 };
+  const base = {
+    map: new Map([[key, { value: 1 }]]),
+  };
+  const [next, patches, inverse] = create(
+    base,
+    (draft) => {
+      draft.map.get(key)!.value = 2;
+    },
+    { enablePatches: true }
+  );
+  expect(apply(base, patches)).toEqual(next);
+  expect(apply(next, inverse)).toEqual(base);
+});
+
+test('apply - symbol key on object', () => {
+  const sym = Symbol('key');
+  const base = {
+    obj: {
+      [sym]: { value: 1 },
+    },
+  };
+  const [next, patches, inverse] = create(
+    base,
+    (draft) => {
+      draft.obj[sym].value = 2;
+    },
+    { enablePatches: true }
+  );
+  expect(apply(base, patches)).toEqual(next);
+  expect(apply(next, inverse)).toEqual(base);
+});
+
+test('apply - coerces non-primitive intermediate key for object', () => {
+  const objectKey: any = { toString: () => 'customKey' };
+  const base = {
+    foo: {
+      customKey: { value: 1 },
+    },
+  };
+  const patches: any = [
+    { op: 'replace', path: ['foo', objectKey, 'value'], value: 2 },
+  ];
+  const applied = apply(base, patches);
+  expect(applied).toEqual({
+    foo: {
+      customKey: { value: 2 },
+    },
+  });
+});
+
 test('#61 - type issue: current of Draft<T> type should return T type', () => {
   function test<T extends { x: { y: ReadonlySet<string> } }>(base: T): T {
     const [draft, f] = create(base);
