@@ -735,3 +735,69 @@ test('Unexpected undefined not assigned', () => {
     expect(Object.prototype.hasOwnProperty.call(foo, 'name')).toBe(true);
   }
 });
+
+test('apply - map with object key', () => {
+  {
+    enablePatches();
+    enableMapSet();
+    const key = { id: 1 };
+    const base = {
+      map: new Map([[key, { value: 1 }]]),
+    };
+    const [next, patches, inverse] = produceWithPatches(base, (draft) => {
+      draft.map.get(key)!.value = 2;
+    });
+    expect(() => applyPatches(base, patches)).toThrow();
+    expect(() => applyPatches(next, inverse)).toThrow();
+  }
+  {
+    const key = { id: 1 };
+    const base = {
+      map: new Map([[key, { value: 1 }]]),
+    };
+    const [next, patches, inverse] = create(
+      base,
+      (draft) => {
+        draft.map.get(key)!.value = 2;
+      },
+      { enablePatches: true }
+    );
+    expect(apply(base, patches)).toEqual(next);
+    expect(apply(next, inverse)).toEqual(base);
+  }
+});
+
+test('apply - symbol key on object', () => {
+  {
+    enablePatches();
+    const sym = Symbol('key');
+    const base = {
+      obj: {
+        [sym]: { value: 1 },
+      },
+    };
+    const [next, patches, inverse] = produceWithPatches(base, (draft) => {
+      draft.obj[sym].value = 2;
+    });
+    expect(() => applyPatches(base, patches)).toThrow();
+    expect(() => applyPatches(next, inverse)).toThrow();
+  }
+  {
+    const sym = Symbol('key');
+    const base = {
+      obj: {
+        [sym]: { value: 1 },
+      },
+    };
+    const [next, patches, inverse] = create(
+      base,
+      (draft) => {
+        draft.obj[sym].value = 2;
+      },
+      { enablePatches: true }
+    );
+    expect(apply(base, patches)).toEqual(next);
+    expect(apply(next, inverse)).toEqual(base);
+  }
+});
+
