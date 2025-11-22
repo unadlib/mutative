@@ -21,6 +21,7 @@ import {
   immerable,
 } from 'immer';
 import { create, apply, current } from '../src';
+import { deepClone } from '../src/utils';
 
 enableMapSet();
 
@@ -801,3 +802,110 @@ test('apply - symbol key on object', () => {
   }
 });
 
+
+test('#70 - deep copy patches with Custom Set/Map', () => {
+  {
+    // immer
+    class CustomSet<T> extends Set<T> {
+      // @ts-ignore
+      [immerable] = true;
+    }
+    class CustomMap<K, V> extends Map<K, V> {
+      // @ts-ignore
+      [immerable] = true;
+    }
+    const baseState = {
+      map: new CustomMap<any, any>(),
+      set: new CustomSet<any>(),
+    };
+    setUseStrictShallowCopy(true);
+    const [state, patches, inversePatches] = produceWithPatches(
+      baseState,
+      (draft) => {
+        draft.map = new CustomMap<any, any>([[1, 1]]);
+        draft.set = new CustomSet<any>([1]);
+      },
+    );
+    const nextState = applyPatches(baseState, patches);
+    expect(patches[0].value).toBeInstanceOf(CustomMap);
+    expect(patches[1].value).toBeInstanceOf(CustomSet);
+    // !!! it should be true, but it's false
+    expect(nextState.map instanceof CustomMap).toBe(false);
+    expect(nextState.set instanceof CustomSet).toBe(false);
+    // expect(nextState).toEqual(state);
+    // const prevState = applyPatches(state, inversePatches);
+    // expect(inversePatches[0].value).toBeInstanceOf(CustomMap);
+    // expect(inversePatches[1].value).toBeInstanceOf(CustomSet);
+    // expect(prevState).toEqual(baseState);
+  }
+  {
+    // mutative
+    class CustomSet<T> extends Set<T> { }
+    class CustomMap<K, V> extends Map<K, V> { }
+    const baseState = {
+      map: new CustomMap<any, any>(),
+      set: new CustomSet<any>(),
+    };
+    const [state, patches, inversePatches] = create(
+      baseState,
+      (draft) => {
+        draft.map = new CustomMap<any, any>([[1, 1]]);
+        draft.set = new CustomSet<any>([1]);
+      },
+      {
+        enablePatches: true,
+      }
+    );
+    const nextState = apply(baseState, patches);
+    expect(patches[0].value).toBeInstanceOf(CustomMap);
+    expect(patches[1].value).toBeInstanceOf(CustomSet);
+    expect(nextState.map instanceof CustomMap).toBe(true);
+    expect(nextState.set instanceof CustomSet).toBe(true);
+    expect(nextState).toEqual(state);
+    const prevState = apply(state, inversePatches);
+    expect(inversePatches[0].value).toBeInstanceOf(CustomMap);
+    expect(inversePatches[1].value).toBeInstanceOf(CustomSet);
+    expect(prevState).toEqual(baseState);
+  }
+});
+
+test('enablePatches and assign with ref array', () => {
+  function checkMutativePatches<T>(data: T, fn: (checkPatches: T) => void) {
+    const [state, patches, inversePatches] = create(data as any, fn, {
+      enablePatches: true,
+    }) as any;
+    const mutatedResult = deepClone(data);
+    fn(mutatedResult);
+    expect(state).toEqual(mutatedResult);
+    const prevState = apply(state, inversePatches);
+    expect(prevState).toEqual(data);
+    const nextState = apply(data as any, patches);
+    expect(nextState).toEqual(state);
+  }
+
+  function checkImmerPatches<T>(data: T, fn: (checkPatches: T) => void) {
+    const [state, patches, inversePatches] = produceWithPatches(data as any, fn) as any;
+    const mutatedResult = deepClone(data);
+    fn(mutatedResult);
+    expect(state).toEqual(mutatedResult);
+    const prevState = applyPatches(state, inversePatches);
+    // !!! immer: it should be equal
+    expect(prevState).not.toEqual(data);
+    const nextState = applyPatches(data as any, patches);
+    // !!! immer: it should be equal
+    expect(nextState).not.toEqual(state);
+  }
+  const state = { a: { b: { c: 1 } }, arr0: [{ a: 1 }], arr1: [{ a: 1 }] };
+  const fn = (draft: any) => {
+    draft.arr0.push(draft.arr1);
+    draft.arr1[0].a = 222;
+  };
+  checkImmerPatches(
+    state,
+    fn
+  );
+  checkMutativePatches(
+    state,
+    fn
+  );
+});
