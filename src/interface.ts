@@ -110,6 +110,19 @@ export interface ApplyMutableOptions {
   mutable?: boolean;
 }
 
+export interface ChangeInput {
+  kind: 'set' | 'delete' | 'map.set' | 'map.delete' | 'map.clear' | 'set.add' | 'set.delete' | 'set.clear';
+  prev?: any;
+  next?: any;
+  value?: any;
+  existed?: boolean;
+}
+
+export interface ChangeEvent extends ChangeInput {
+  key?: any;
+  path: (string | number)[];
+}
+
 export interface Options<O extends PatchesOptions, F extends boolean> {
   /**
    * In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.
@@ -128,6 +141,10 @@ export interface Options<O extends PatchesOptions, F extends boolean> {
    * And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
    */
   mark?: Mark<O, F>;
+  /**
+   * onChange callback. When set, caller can be aware of each change as it happens.
+   */
+  onChange?: (event: ChangeEvent) => void;
 }
 
 export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
@@ -148,6 +165,10 @@ export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
    * And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
    */
   mark?: Mark<O, F>[] | Mark<O, F>;
+  /**
+   * onChange callback. When set, caller can be aware of each change as it happens.
+   */
+  onChange?: (event: ChangeEvent) => void;
 }
 
 // Exclude `symbol`
