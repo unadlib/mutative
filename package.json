@@ -44,6 +44,7 @@
     "performance:array-object": "cd test/performance && NODE_ENV='production' ts-node array-object.ts",
     "performance": "yarn build && yarn performance:immer && yarn performance:basic && yarn performance:set-map && yarn performance:big-object && yarn performance:sample && yarn performance:array-object",
     "build": "yarn clean && rollup --config --bundleConfigAsCjs",
+    "build:analyze": "yarn clean && ANALYZE=true rollup --config --bundleConfigAsCjs",
     "build:doc": "rimraf docs && typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts --readme none",
     "commit": "yarn git-cz",
     "size": "size-limit",
@@ -130,6 +131,7 @@
     "typedoc": "^0.28.12",
     "typedoc-plugin-markdown": "^4.8.1",
     "typescript": "^5.8.3",
+    "vite-bundle-analyzer": "^1.3.2",
     "yargs": "^17.7.2"
   },
   "config": {
