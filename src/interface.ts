@@ -160,10 +160,6 @@ export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
    * And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
    */
   mark?: Mark<O, F>[] | Mark<O, F>;
-  /**
-   * Enable optimized array for improving performance.
-   */
-  enableOptimizedArray?: boolean;
 }
 
 // Exclude `symbol`
@@ -206,14 +202,14 @@ type DraftedObject<T> = {
 export type Draft<T> = T extends Primitive | AtomicObject
   ? T
   : T extends IfAvailable<ReadonlyMap<infer K, infer V>>
-  ? DraftedMap<K, V>
-  : T extends IfAvailable<ReadonlySet<infer V>>
-  ? DraftedSet<V>
-  : T extends WeakReferences
-  ? T
-  : T extends object
-  ? DraftedObject<T>
-  : T;
+    ? DraftedMap<K, V>
+    : T extends IfAvailable<ReadonlySet<infer V>>
+      ? DraftedSet<V>
+      : T extends WeakReferences
+        ? T
+        : T extends object
+          ? DraftedObject<T>
+          : T;
 
 export type ApplyOptions<F extends boolean> =
   | Pick<
@@ -225,5 +221,5 @@ export type ApplyOptions<F extends boolean> =
 export type ApplyResult<
   T extends object,
   F extends boolean = false,
-  A extends ApplyOptions<F> = ApplyOptions<F>
+  A extends ApplyOptions<F> = ApplyOptions<F>,
 > = A extends { mutable: true } ? void : T;

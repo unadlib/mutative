@@ -12,6 +12,7 @@ import {
   enablePatches,
   produceWithPatches,
   setAutoFreeze,
+  enableArrayMethods,
 } from 'immer';
 // import {
 //   produce,
@@ -20,6 +21,8 @@ import {
 //   setAutoFreeze,
 // } from '../../../temp/immer/dist';
 import { create } from '../..';
+
+enableArrayMethods();
 
 const labels = [];
 const result = [
