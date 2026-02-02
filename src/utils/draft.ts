@@ -105,9 +105,8 @@ export function peek(target: any, key: PropertyKey) {
 export function isEqual(x: any, y: any) {
   if (x === y) {
     return x !== 0 || 1 / x === 1 / y;
-  } else {
-    return x !== x && y !== y;
   }
+  return x !== x && y !== y;
 }
 
 export function revokeProxy(proxyDraft: ProxyDraft | null) {

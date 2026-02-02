@@ -20,12 +20,18 @@ import {
 //   setAutoFreeze,
 // } from '../../../temp/immer/dist';
 import { create } from '../..';
+import { create as createOldMutative } from 'mutative-130';
 
 const labels = [];
 const result = [
   {
     label: 'Mutative',
     backgroundColor: 'rgba(54, 162, 235, 0.5)',
+    data: [],
+  },
+  {
+    label: 'Old',
+    backgroundColor: 'rgba(235, 54, 208, 0.5)',
     data: [],
   },
   {
@@ -102,6 +108,21 @@ suite
     }
   )
   .add(
+    'Old - No Freeze',
+    () => {
+      const state = createOldMutative(baseState, (draft) => {
+        draft.arr.push(i);
+        draft.map[i] = { i };
+      });
+    },
+    {
+      onStart: () => {
+        i = Math.random();
+        baseState = getData();
+      },
+    }
+  )
+  .add(
     'Immer - No Freeze',
     () => {
       const state = produce(baseState, (draft: any) => {
@@ -122,6 +143,28 @@ suite
     'Mutative - Freeze',
     () => {
       const state = create(
+        baseState,
+        (draft) => {
+          draft.arr.push(i);
+          draft.map[i] = { i };
+        },
+        {
+          enableAutoFreeze: true,
+          enablePatches: false,
+        }
+      );
+    },
+    {
+      onStart: () => {
+        i = Math.random();
+        baseState = getData();
+      },
+    }
+  )
+  .add(
+    'Old - Freeze',
+    () => {
+      const state = createOldMutative(
         baseState,
         (draft) => {
           draft.arr.push(i);
@@ -180,6 +223,28 @@ suite
     }
   )
   .add(
+    'Old - Patches and No Freeze',
+    () => {
+      const state = createOldMutative(
+        baseState,
+        (draft) => {
+          draft.arr.push(i);
+          draft.map[i] = { i };
+        },
+        {
+          enableAutoFreeze: false,
+          enablePatches: true,
+        }
+      );
+    },
+    {
+      onStart: () => {
+        i = Math.random();
+        baseState = getData();
+      },
+    }
+  )
+  .add(
     'Immer - Patches and No Freeze',
     () => {
       const state = produceWithPatches(baseState, (draft: any) => {
@@ -201,6 +266,28 @@ suite
     'Mutative - Patches and Freeze',
     () => {
       const state = create(
+        baseState,
+        (draft) => {
+          draft.arr.push(i);
+          draft.map[i] = { i };
+        },
+        {
+          enableAutoFreeze: true,
+          enablePatches: true,
+        }
+      );
+    },
+    {
+      onStart: () => {
+        i = Math.random();
+        baseState = getData();
+      },
+    }
+  )
+  .add(
+    'Old - Patches and Freeze',
+    () => {
+      const state = createOldMutative(
         baseState,
         (draft) => {
           draft.arr.push(i);

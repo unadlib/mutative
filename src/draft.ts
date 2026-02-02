@@ -81,7 +81,21 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       return handle.bind(target.proxy);
     }
 
-    if (!has(source, key)) {
+    const isArrayTarget = target.type === DraftType.Array;
+    const isArrayIndex =
+      isArrayTarget &&
+      typeof key !== 'symbol' &&
+      key !== 'length' &&
+      Number.isInteger(Number(key)) &&
+      Number(key) >= 0;
+
+    if (isArrayIndex && !target.copy && key in target.original) {
+      // fast path: direct array index read without descriptor/has
+      const direct = (source as any)[key as any];
+      if (direct === null || typeof direct !== 'object') return direct;
+    }
+
+    if (!isArrayIndex && !has(source, key)) {
       const desc = getDescriptor(source, key);
       return desc
         ? `value` in desc
@@ -90,7 +104,11 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
             desc.get?.call(target.proxy)
         : undefined;
     }
-    const value = source[key];
+    if (isArrayTarget && key === 'length') {
+      return (source as any).length;
+    }
+
+    const value = isArrayIndex ? (source as any)[key as any] : source[key];
     if (target.options.strict) {
       checkReadable(value, target.options);
     }
@@ -129,27 +147,50 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       );
     }
     let _key: number;
-    if (
-      target.type === DraftType.Array &&
-      key !== 'length' &&
-      !(
+    if (target.type === DraftType.Array && key !== 'length') {
+      if (
         Number.isInteger((_key = Number(key))) &&
         _key >= 0 &&
         (key === 0 || _key === 0 || String(_key) === String(key))
-      )
-    ) {
-      throw new Error(
-        `Only supports setting array indices and the 'length' property.`
-      );
+      ) {
+        // fast path continues
+      } else {
+        throw new Error(
+          `Only supports setting array indices and the 'length' property.`
+        );
+      }
     }
-    const desc = getDescriptor(latest(target), key);
-    if (desc?.set) {
-      // !case: cover the case of setter
-      desc.set.call(target.proxy, value);
+    const isArrayTarget = target.type === DraftType.Array;
+    const isArrayIndex =
+      isArrayTarget &&
+      typeof key !== 'symbol' &&
+      key !== 'length' &&
+      Number.isInteger(Number(key)) &&
+      Number(key) >= 0;
+
+    if (!isArrayIndex || key === 'length') {
+      const desc = getDescriptor(latest(target), key);
+      if (desc?.set) {
+        // !case: cover the case of setter
+        desc.set.call(target.proxy, value);
+        return true;
+      }
+    }
+
+    const currentSource = latest(target);
+    const current = isArrayIndex
+      ? currentSource[key as any]
+      : peek(currentSource, key);
+
+    if (
+      isEqual(current, value) &&
+      (value !== undefined || has(target.original, key))
+    ) {
       return true;
     }
-    const current = peek(latest(target), key);
-    const currentProxyDraft = getProxyDraft(current);
+
+    const currentProxyDraft =
+      current && typeof current === 'object' ? getProxyDraft(current) : null;
     if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
       // !case: ignore the case of assigning the original draftable value to a draft
       target.copy![key] = value;
