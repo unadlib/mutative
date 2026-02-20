@@ -7836,9 +7836,9 @@ typedoc-plugin-markdown@^4.8.1:
   integrity sha512-ug7fc4j0SiJxSwBGLncpSo8tLvrT9VONvPUQqQDTKPxCoFQBADLli832RGPtj6sfSVJebNSrHZQRUdEryYH/7g==
 
 typedoc@^0.28.12:
-  version "0.28.12"
-  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.28.12.tgz#1baa55ab242e237fc896bc01b57cf5f8bd995d32"
-  integrity sha512-H5ODu4f7N+myG4MfuSp2Vh6wV+WLoZaEYxKPt2y8hmmqNEMVrH69DAjjdmYivF4tP/C2jrIZCZhPalZlTU/ipA==
+  version "0.28.14"
+  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.28.14.tgz#f48d650efc983b5cb3034b3b0e986b1702074326"
+  integrity sha512-ftJYPvpVfQvFzpkoSfHLkJybdA/geDJ8BGQt/ZnkkhnBYoYW6lBgPQXu6vqLxO4X75dA55hX8Af847H5KXlEFA==
   dependencies:
     "@gerrit0/mini-shiki" "^3.12.0"
     lunr "^2.3.9"
