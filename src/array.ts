@@ -128,8 +128,8 @@ function createArrayCopy(target: ProxyDraft<any[]>) {
   applyCachedArrayDrafts(target, pendingCopy);
   // Species constructors can re-enter the draft while the copy is being built.
   const previousCopy = target.copy;
+  const wasOperated = target.operated;
   const assignedMapSize = target.assignedMap?.size ?? 0;
-  const draftFinalityCount = target.finalities.draft.length;
   target.copy = pendingCopy as any;
 
   try {
@@ -139,8 +139,8 @@ function createArrayCopy(target: ProxyDraft<any[]>) {
   } catch (error) {
     if (
       target.copy === pendingCopy &&
-      (target.assignedMap?.size ?? 0) === assignedMapSize &&
-      target.finalities.draft.length === draftFinalityCount
+      target.operated === wasOperated &&
+      (target.assignedMap?.size ?? 0) === assignedMapSize
     ) {
       target.copy = previousCopy;
     }

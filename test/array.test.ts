@@ -542,6 +542,37 @@ test('failed lazy array copy is not reused after species constructor throws', ()
   expect(list[0].i).toBe(0);
 });
 
+test('failed lazy array copy rolls back after read-only species re-entry', () => {
+  const list = [{ i: 0 }, { i: 1 }] as any;
+  let draftArray: typeof list | undefined;
+  class ThrowingCopy extends Array<{ i: number }> {
+    constructor(length: number) {
+      super(length);
+      if (draftArray) {
+        expect(isDraft(draftArray[0])).toBe(true);
+      }
+      throw new Error('copy boom');
+    }
+  }
+  Object.defineProperty(list, 'constructor', {
+    configurable: true,
+    value: {
+      [Symbol.species]: ThrowingCopy,
+    },
+  });
+
+  expect(() => {
+    create({ list }, (draft) => {
+      draftArray = draft.list;
+      try {
+        draft.list.shift();
+      } catch {}
+      draft.list[0].i = 9;
+    });
+  }).toThrow('copy boom');
+  expect(list[0].i).toBe(0);
+});
+
 test('lazy array mutation copy follows non-array species', () => {
   class Copy {
     [key: number]: any;
