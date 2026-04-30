@@ -127,11 +127,25 @@ function createArrayCopy(target: ProxyDraft<any[]>) {
   copyArrayValues(original, pendingCopy);
   applyCachedArrayDrafts(target, pendingCopy);
   // Species constructors can re-enter the draft while the copy is being built.
+  const previousCopy = target.copy;
+  const assignedMapSize = target.assignedMap?.size ?? 0;
+  const draftFinalityCount = target.finalities.draft.length;
   target.copy = pendingCopy as any;
 
-  const copy = arraySpeciesCreate(original, 0);
-  copyArrayValues(target.copy as any[], copy);
-  return copy;
+  try {
+    const copy = arraySpeciesCreate(original, 0);
+    copyArrayValues(target.copy as any[], copy);
+    return copy;
+  } catch (error) {
+    if (
+      target.copy === pendingCopy &&
+      (target.assignedMap?.size ?? 0) === assignedMapSize &&
+      target.finalities.draft.length === draftFinalityCount
+    ) {
+      target.copy = previousCopy;
+    }
+    throw error;
+  }
 }
 
 function prepareArrayCopy(target: ProxyDraft<any[]>) {
@@ -297,12 +311,12 @@ export const arrayHandler = {
     if (copy.length !== length) {
       copy.length = length;
     }
+    const result = draftRemovedValues(target, start, source, copy, deleteCount);
     const assignedFlags = getAssignedFlags(target, length);
     assignedFlags.length = length;
     const insertedFlags = args.slice(2).map((value, index) =>
       isAssignedInsertedValue(target, start + index, value)
     );
-    const result = draftRemovedValues(target, start, source, copy, deleteCount);
     if (args.length === 1) {
       Reflect.apply(Array.prototype.splice, copy, [start]);
       Reflect.apply(Array.prototype.splice, assignedFlags, [start]);

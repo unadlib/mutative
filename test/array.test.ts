@@ -161,6 +161,11 @@ test('splice removed non-array species has length', () => {
   });
 
   create({ list }, (draft) => {
+    const empty = draft.list.splice() as any;
+    expect(empty).toBeInstanceOf(RemovedItems);
+    expect(empty.length).toBe(0);
+    expect(Object.keys(empty)).toEqual(['length']);
+
     const removed = draft.list.splice(1, 1) as any;
     expect(removed).toBeInstanceOf(RemovedItems);
     expect(removed.length).toBe(1);
@@ -168,10 +173,7 @@ test('splice removed non-array species has length', () => {
     expect(isDraft(removed[0])).toBeTruthy();
     expect(removed[0].i).toBe(1);
 
-    const empty = draft.list.splice() as any;
-    expect(Array.isArray(empty)).toBe(true);
-    expect(empty.length).toBe(0);
-    expect(Object.keys(empty)).toEqual([]);
+    expect((draft.list as any).splice).toBeUndefined();
   });
 });
 
@@ -224,7 +226,7 @@ test('array own mutation method is not overridden by lazy handler', () => {
   expect(state.list).toEqual([{ i: 99 }, { i: 1 }]);
 });
 
-test('array own mutation method is still used after lazy array copy', () => {
+test('array own mutation method is not reused after lazy array copy', () => {
   const list = [{ i: 0 }, { i: 1 }] as any;
   Object.defineProperty(list, 'splice', {
     configurable: true,
@@ -236,10 +238,10 @@ test('array own mutation method is still used after lazy array copy', () => {
 
   const state = create({ list }, (draft) => {
     draft.list.shift();
-    expect((draft.list as any).splice()).toBe('custom splice');
+    expect((draft.list as any).splice()).toEqual([]);
   });
 
-  expect(state.list).toEqual([{ i: 99 }]);
+  expect(state.list).toEqual([{ i: 1 }]);
 });
 
 test('lazy array mutation methods keep native receiver semantics', () => {
@@ -453,6 +455,91 @@ test('lazy splice removed array follows copy species after copy exists', () => {
     expect(removed).toBeInstanceOf(RemovedItems);
     expect(removed[0].i).toBe(1);
   });
+});
+
+test('lazy array mutation does not add original methods after non-array copy exists', () => {
+  class Copy {
+    [key: number]: any;
+    length: number;
+
+    constructor(length: number) {
+      this.length = length;
+    }
+  }
+  const list = [{ i: 0 }, { i: 1 }] as any;
+  Object.defineProperty(list, 'constructor', {
+    configurable: true,
+    value: {
+      [Symbol.species]: Copy,
+    },
+  });
+
+  create({ list }, (draft) => {
+    draft.list.shift();
+    expect((draft.list as any).splice).toBeUndefined();
+  });
+});
+
+test('lazy splice keeps assigned flags from removed species re-entry', () => {
+  const obj0 = { i: 0 };
+  const obj1 = { i: 1 };
+  const obj2 = { i: 2 };
+  let draftArray: any[] | undefined;
+  let removedSpeciesCalls = 0;
+  class Items extends Array<{ i: number }> {
+    constructor(length: number) {
+      super(length);
+      if (length === 1) {
+        removedSpeciesCalls += 1;
+        if (removedSpeciesCalls === 1) {
+          draftArray![2] = obj0;
+        }
+      }
+    }
+  }
+  const list = [obj0, obj1, obj2] as any;
+  Object.defineProperty(list, 'constructor', {
+    configurable: true,
+    value: {
+      [Symbol.species]: Items,
+    },
+  });
+
+  const state = create({ list }, (draft) => {
+    draftArray = draft.list;
+    draft.list.splice(0, 1);
+    expect(isDraft(draft.list[1])).toBe(false);
+    draft.list[1].i = 9;
+  });
+
+  expect(obj0.i).toBe(9);
+  expect(state.list[1]).toBe(obj0);
+});
+
+test('failed lazy array copy is not reused after species constructor throws', () => {
+  class ThrowingCopy extends Array<{ i: number }> {
+    constructor(length: number) {
+      super(length);
+      throw new Error('copy boom');
+    }
+  }
+  const list = [{ i: 0 }, { i: 1 }] as any;
+  Object.defineProperty(list, 'constructor', {
+    configurable: true,
+    value: {
+      [Symbol.species]: ThrowingCopy,
+    },
+  });
+
+  expect(() => {
+    create({ list }, (draft) => {
+      try {
+        draft.list.shift();
+      } catch {}
+      draft.list[0].i = 9;
+    });
+  }).toThrow('copy boom');
+  expect(list[0].i).toBe(0);
 });
 
 test('lazy array mutation copy follows non-array species', () => {

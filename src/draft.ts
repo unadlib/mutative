@@ -89,29 +89,11 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
 
     if (!has(source, key)) {
       if (isLazyArrayDraft(target) && arrayHandlerKeys.includes(key as any)) {
-        if (has(target.original as any, key)) {
-          return (target.original as any)[key];
-        }
         const sourceDesc = getDescriptor(source, key);
-        if (sourceDesc) {
-          if (
-            'value' in sourceDesc &&
-            sourceDesc.value === (Array.prototype as any)[key]
-          ) {
-            const handle = arrayHandler[
-              key as keyof typeof arrayHandler
-            ] as Function;
-            return handle;
-          }
-          return 'value' in sourceDesc
-            ? sourceDesc.value
-            : sourceDesc.get?.call(target.proxy);
-        }
-        const originalDesc = getDescriptor(target.original as any, key);
         if (
-          originalDesc &&
-          'value' in originalDesc &&
-          originalDesc.value === (Array.prototype as any)[key]
+          sourceDesc &&
+          'value' in sourceDesc &&
+          sourceDesc.value === (Array.prototype as any)[key]
         ) {
           const handle = arrayHandler[
             key as keyof typeof arrayHandler
