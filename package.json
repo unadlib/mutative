@@ -34,6 +34,7 @@
     "benchmark:base": "NODE_ENV='production' ts-node test/performance/benchmark.ts",
     "benchmark:object": "NODE_ENV='production' ts-node test/performance/benchmark-object.ts",
     "benchmark:array": "NODE_ENV='production' ts-node test/performance/benchmark-array.ts",
+    "benchmark:array-npm": "yarn build && MUTATIVE_BENCH_USE_DIST=true NODE_ENV='production' ts-node test/benchmark/array-current-vs-npm.ts",
     "benchmark:class": "NODE_ENV='production' ts-node test/performance/benchmark-class.ts",
     "performance:read-only": "yarn build && NODE_ENV='production' ts-node test/performance/read-draft/index.ts",
     "performance:immer": "cd test/__immer_performance_tests__ && NODE_ENV='production' ts-node add-data.ts && NODE_ENV='production' ts-node todo.ts && NODE_ENV='production' ts-node incremental.ts",

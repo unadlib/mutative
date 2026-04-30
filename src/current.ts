@@ -9,6 +9,7 @@ import {
   isDraft,
   isDraftable,
   isEqual,
+  isLazyArrayDraft,
   set,
   shallowCopy,
 } from './utils';
@@ -68,6 +69,15 @@ function getCurrent(target: any) {
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   let currentValue: any;
   function ensureShallowCopy() {
+    if (proxyDraft && isLazyArrayDraft(proxyDraft) && !proxyDraft.copy) {
+      currentValue = shallowCopy(proxyDraft.original, proxyDraft.options);
+      proxyDraft.arrayDrafts?.forEach((draft, index) => {
+        if (index in currentValue) {
+          currentValue[index] = draft;
+        }
+      });
+      return;
+    }
     currentValue =
       type === DraftType.Map
         ? !isBaseMapInstance(target)

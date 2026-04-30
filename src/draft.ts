@@ -7,6 +7,7 @@ import {
   Operation,
 } from './interface';
 import { dataTypes, PROXY_DRAFT } from './constant';
+import { arrayHandler, arrayHandlerKeys, draftArrayValue } from './array';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
 import { internal } from './internal';
@@ -27,9 +28,14 @@ import {
   set,
   revokeProxy,
   finalizeSetValue,
+  finalizeArrayValue,
   markFinalization,
   finalizePatches,
   isDraft,
+  getArrayIndex,
+  isArrayIndex,
+  isLazyArrayDraft,
+  isOriginalArrayValue,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
@@ -82,6 +88,37 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     }
 
     if (!has(source, key)) {
+      if (isLazyArrayDraft(target) && arrayHandlerKeys.includes(key as any)) {
+        if (has(target.original as any, key)) {
+          return (target.original as any)[key];
+        }
+        const sourceDesc = getDescriptor(source, key);
+        if (sourceDesc) {
+          if (
+            'value' in sourceDesc &&
+            sourceDesc.value === (Array.prototype as any)[key]
+          ) {
+            const handle = arrayHandler[
+              key as keyof typeof arrayHandler
+            ] as Function;
+            return handle;
+          }
+          return 'value' in sourceDesc
+            ? sourceDesc.value
+            : sourceDesc.get?.call(target.proxy);
+        }
+        const originalDesc = getDescriptor(target.original as any, key);
+        if (
+          originalDesc &&
+          'value' in originalDesc &&
+          originalDesc.value === (Array.prototype as any)[key]
+        ) {
+          const handle = arrayHandler[
+            key as keyof typeof arrayHandler
+          ] as Function;
+          return handle;
+        }
+      }
       const desc = getDescriptor(source, key);
       return desc
         ? `value` in desc
@@ -96,6 +133,19 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     }
     if (target.finalized || !isDraftable(value, target.options)) {
       return value;
+    }
+    if (
+      isLazyArrayDraft(target) &&
+      isArrayIndex(key) &&
+      isOriginalArrayValue(target, value)
+    ) {
+      const index = getArrayIndex(key);
+      if (!target.copy && value === peek(target.original, key)) {
+        return draftArrayValue(target, index, value, { cache: true });
+      }
+      if (target.copy) {
+        return draftArrayValue(target, index, value, { setCopy: true });
+      }
     }
     // Ensure that the assigned values are not drafted
     if (value === peek(target.original, key)) {
@@ -128,15 +178,10 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         `Map/Set draft does not support any property assignment.`
       );
     }
-    let _key: number;
     if (
       target.type === DraftType.Array &&
       key !== 'length' &&
-      !(
-        Number.isInteger((_key = Number(key))) &&
-        _key >= 0 &&
-        (key === 0 || _key === 0 || String(_key) === String(key))
-      )
+      !isArrayIndex(key)
     ) {
       throw new Error(
         `Only supports setting array indices and the 'length' property.`
@@ -148,10 +193,15 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       desc.set.call(target.proxy, value);
       return true;
     }
-    const current = peek(latest(target), key);
+    const current =
+      isLazyArrayDraft(target) && isArrayIndex(key) && !target.copy
+        ? (target.arrayDrafts?.get(getArrayIndex(key)) ??
+          peek(latest(target), key))
+        : peek(latest(target), key);
     const currentProxyDraft = getProxyDraft(current);
     if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
       // !case: ignore the case of assigning the original draftable value to a draft
+      ensureShallowCopy(target);
       target.copy![key] = value;
       target.assignedMap = target.assignedMap ?? new Map();
       target.assignedMap.set(key, false);
@@ -185,11 +235,15 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     const source = latest(target);
     const descriptor = Reflect.getOwnPropertyDescriptor(source, key);
     if (!descriptor) return descriptor;
+    const value =
+      isLazyArrayDraft(target) && isArrayIndex(key) && !target.copy
+        ? (target.arrayDrafts?.get(getArrayIndex(key)) ?? source[key])
+        : source[key];
     return {
       writable: true,
       configurable: target.type !== DraftType.Array || key !== 'length',
       enumerable: descriptor.enumerable,
-      value: source[key],
+      value,
     };
   },
   getPrototypeOf(target: ProxyDraft) {
@@ -249,17 +303,20 @@ export function createDraft<T extends object>(createDraftOptions: {
   if (key || 'key' in createDraftOptions) {
     proxyDraft.key = key;
   }
-  const { proxy, revoke } = Proxy.revocable<any>(
-    type === DraftType.Array ? Object.assign([], proxyDraft) : proxyDraft,
-    proxyHandler
-  );
+  const proxyTarget =
+    type === DraftType.Array ? Object.assign([], proxyDraft) : proxyDraft;
+  const { proxy, revoke } = Proxy.revocable<any>(proxyTarget, proxyHandler);
   finalities.revoke.push(revoke);
+  proxyTarget.proxy = proxy;
   proxyDraft.proxy = proxy;
   if (parentDraft) {
     const target = parentDraft;
     target.finalities.draft.push((patches, inversePatches) => {
       const oldProxyDraft = getProxyDraft(proxy)!;
       // if target is a Set draft, `setMap` is the real Set copies proxy mapping.
+      if (target.type === DraftType.Array && !target.copy) {
+        ensureShallowCopy(target);
+      }
       let copy = target.type === DraftType.Set ? target.setMap : target.copy;
       const draft = get(copy, key!);
       const proxyDraft = getProxyDraft(draft);
@@ -270,6 +327,7 @@ export function createDraft<T extends object>(createDraftOptions: {
           updatedValue = getValue(draft);
         }
         finalizeSetValue(proxyDraft);
+        finalizeArrayValue(proxyDraft);
         finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
         if (__DEV__ && target.options.enableAutoFreeze) {
           target.options.updatedValues =
@@ -289,6 +347,7 @@ export function createDraft<T extends object>(createDraftOptions: {
     const target = getProxyDraft(proxy)!;
     target.finalities.draft.push((patches, inversePatches) => {
       finalizeSetValue(target);
+      finalizeArrayValue(target);
       finalizePatches(target, generatePatches, patches, inversePatches);
     });
   }
