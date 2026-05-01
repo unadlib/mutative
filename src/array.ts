@@ -75,10 +75,19 @@ function applyNativeArrayMethod(
   return Reflect.apply((Array.prototype as any)[method], value, args);
 }
 
+function createArrayDataProperty(target: any, index: number, value: any) {
+  Object.defineProperty(target, index, {
+    value,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+}
+
 function copyArrayValues(source: any[], target: any[]) {
   for (let index = 0; index < source.length; index += 1) {
     if (index in source) {
-      target[index] = source[index];
+      createArrayDataProperty(target, index, source[index]);
     }
   }
   target.length = source.length;
@@ -257,7 +266,11 @@ function draftRemovedValues(
   for (let index = 0; index < count; index += 1) {
     const key = start + index;
     if (key in source) {
-      result[index] = draftArrayValue(target, key, source[key]);
+      createArrayDataProperty(
+        result,
+        index,
+        draftArrayValue(target, key, source[key])
+      );
     }
   }
   result.length = count;

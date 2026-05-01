@@ -440,6 +440,32 @@ test('lazy array mutation copy follows own array species', () => {
   expect(state.list).toBeInstanceOf(Copy);
 });
 
+test('lazy array mutation copy creates data properties over species setters', () => {
+  let setterCalls = 0;
+  class Copy extends Array<{ i: number }> {}
+  Object.defineProperty(Copy.prototype, '0', {
+    configurable: true,
+    set() {
+      setterCalls += 1;
+    },
+  });
+  const list = [{ i: 0 }, { i: 1 }] as any;
+  Object.defineProperty(list, 'constructor', {
+    configurable: true,
+    value: {
+      [Symbol.species]: Copy,
+    },
+  });
+
+  const state = create({ list }, (draft) => {
+    draft.list.shift();
+  });
+
+  expect(setterCalls).toBe(0);
+  expect(Object.prototype.hasOwnProperty.call(state.list, '0')).toBe(true);
+  expect(state.list[0]).toEqual({ i: 1 });
+});
+
 test('lazy array mutation uses copy prototype method after copy exists', () => {
   class Copy extends Array<{ i: number }> {}
   Object.defineProperty(Copy.prototype, 'splice', {
@@ -486,6 +512,32 @@ test('lazy splice removed array follows copy species after copy exists', () => {
     const removed = draft.list.splice(0, 1);
     expect(removed).toBeInstanceOf(RemovedItems);
     expect(removed[0].i).toBe(1);
+  });
+});
+
+test('lazy splice removed array creates data properties over species setters', () => {
+  let setterCalls = 0;
+  class RemovedItems extends Array<{ i: number }> {}
+  Object.defineProperty(RemovedItems.prototype, '0', {
+    configurable: true,
+    set() {
+      setterCalls += 1;
+    },
+  });
+  const list = [{ i: 0 }, { i: 1 }] as any;
+  Object.defineProperty(list, 'constructor', {
+    configurable: true,
+    value: {
+      [Symbol.species]: RemovedItems,
+    },
+  });
+
+  create({ list }, (draft) => {
+    const removed = draft.list.splice(0, 1);
+
+    expect(setterCalls).toBe(0);
+    expect(Object.prototype.hasOwnProperty.call(removed, '0')).toBe(true);
+    expect(removed[0].i).toBe(0);
   });
 });
 
