@@ -605,6 +605,44 @@ test('failed lazy array copy rolls back after read-only species re-entry', () =>
   expect(list[0].i).toBe(0);
 });
 
+test('failed lazy array copy retries after read-only re-entry with prior operation', () => {
+  const list = [{ i: 0 }, { i: 1 }] as any;
+  let draftArray: typeof list | undefined;
+  let speciesCalls = 0;
+  class SometimesCopy extends Array<{ i: number }> {
+    constructor(length: number) {
+      super(length);
+      speciesCalls += 1;
+      if (draftArray && speciesCalls === 1) {
+        expect(isDraft(draftArray[1])).toBe(true);
+        throw new Error('copy boom');
+      }
+    }
+  }
+  Object.defineProperty(list, 'constructor', {
+    configurable: true,
+    value: {
+      [Symbol.species]: SometimesCopy,
+    },
+  });
+
+  const state = create({ list }, (draft) => {
+    draftArray = draft.list;
+    draft.list[0].i = 7;
+    try {
+      draft.list.shift();
+    } catch (error) {
+      expect((error as Error).message).toBe('copy boom');
+    }
+  }) as any;
+
+  expect(speciesCalls).toBe(2);
+  expect(state.list).toBeInstanceOf(SometimesCopy);
+  expect(state.list.length).toBe(2);
+  expect(Array.from(state.list, (item: any) => item.i)).toEqual([7, 1]);
+  expect(list).toEqual([{ i: 0 }, { i: 1 }]);
+});
+
 test('failed lazy array copy keeps write re-entry after prior operation', () => {
   const list = [{ i: 0 }, { i: 1 }] as any;
   let draftArray: typeof list | undefined;

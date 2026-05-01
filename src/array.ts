@@ -95,6 +95,42 @@ function applyCachedArrayDrafts(target: ProxyDraft<any[]>, copy: any[]) {
   }
 }
 
+function isSamePendingArrayValue(value: any, previousValue: any) {
+  if (isEqual(value, previousValue)) return true;
+  const proxyDraft = getProxyDraft(value);
+  return (
+    !!proxyDraft &&
+    !proxyDraft.operated &&
+    isEqual(proxyDraft.original, previousValue)
+  );
+}
+
+function hasPendingArrayCopyChanges(copy: any[], previous: any[]) {
+  if (copy.length !== previous.length) return true;
+  for (let index = 0; index < copy.length; index += 1) {
+    const copyHasValue = index in copy;
+    const previousHasValue = index in previous;
+    if (
+      copyHasValue !== previousHasValue ||
+      (copyHasValue && !isSamePendingArrayValue(copy[index], previous[index]))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function cachePendingArrayDrafts(target: ProxyDraft<any[]>, copy: any[]) {
+  for (let index = 0; index < copy.length; index += 1) {
+    if (!(index in copy)) continue;
+    const proxyDraft = getProxyDraft(copy[index]);
+    if (proxyDraft) {
+      target.arrayDrafts = target.arrayDrafts ?? new Map();
+      target.arrayDrafts.set(index, copy[index]);
+    }
+  }
+}
+
 function getAssignedFlags(target: ProxyDraft<any[]>, length: number) {
   return Array.from({ length }, (_, index) =>
     isAssignedArrayIndex(target, index)
@@ -126,10 +162,10 @@ function createArrayCopy(target: ProxyDraft<any[]>) {
   const pendingCopy = new Array(original.length);
   copyArrayValues(original, pendingCopy);
   applyCachedArrayDrafts(target, pendingCopy);
+  const previousPendingCopy = new Array(pendingCopy.length);
+  copyArrayValues(pendingCopy, previousPendingCopy);
   // Species constructors can re-enter the draft while the copy is being built.
   const previousCopy = target.copy;
-  const wasOperated = target.operated;
-  const assignedMapSize = target.assignedMap?.size ?? 0;
   target.copy = pendingCopy as any;
 
   try {
@@ -139,10 +175,9 @@ function createArrayCopy(target: ProxyDraft<any[]>) {
   } catch (error) {
     if (
       target.copy === pendingCopy &&
-      !wasOperated &&
-      !target.operated &&
-      (target.assignedMap?.size ?? 0) === assignedMapSize
+      !hasPendingArrayCopyChanges(pendingCopy, previousPendingCopy)
     ) {
+      cachePendingArrayDrafts(target, pendingCopy);
       target.copy = previousCopy;
     }
     throw error;
