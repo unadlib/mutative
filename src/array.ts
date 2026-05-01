@@ -139,7 +139,8 @@ function createArrayCopy(target: ProxyDraft<any[]>) {
   } catch (error) {
     if (
       target.copy === pendingCopy &&
-      target.operated === wasOperated &&
+      !wasOperated &&
+      !target.operated &&
       (target.assignedMap?.size ?? 0) === assignedMapSize
     ) {
       target.copy = previousCopy;
