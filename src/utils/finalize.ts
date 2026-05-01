@@ -5,6 +5,7 @@ import {
   getPath,
   getProxyDraft,
   getValue,
+  isAssignedArrayIndex,
   isDraft,
   isDraftable,
   isEqual,
@@ -104,6 +105,8 @@ export function finalizeArrayValue(target: ProxyDraft) {
           target.options.updatedValues.set(updatedValue, proxyDraft.original);
         }
         target.copy[index] = updatedValue;
+      } else if (isAssignedArrayIndex(target, index)) {
+        finalizeAssigned(target, index);
       }
     }
   }

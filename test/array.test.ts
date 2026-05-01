@@ -299,6 +299,38 @@ test('lazy inserted assignment flags move with array mutations', () => {
   expect(state.list[0].i).toBe(9);
 });
 
+test('lazy moved assigned values finalize nested drafts', () => {
+  const mutations = [
+    {
+      mutate(draft: any) {
+        draft.list.unshift({ nested: draft.holder });
+        draft.list.reverse();
+      },
+      index: 2,
+    },
+    {
+      mutate(draft: any) {
+        draft.list.splice(1, 0, { nested: draft.holder });
+        draft.list.shift();
+      },
+      index: 0,
+    },
+  ];
+
+  mutations.forEach(({ mutate, index }) => {
+    const base = {
+      list: [{ i: 0 }, { i: 1 }],
+      holder: { j: 1 },
+    };
+
+    const state = create(base, mutate) as any;
+
+    expect(state.list[index].nested.j).toBe(1);
+    expect(isDraft(state.list[index].nested)).toBe(false);
+    expect(state.list[index].nested).toBe(base.holder);
+  });
+});
+
 test('array subclass prototype mutation method is not overridden by lazy handler', () => {
   class Items extends Array<{ i: number }> {}
   Object.defineProperty(Items.prototype, 'splice', {
