@@ -17,6 +17,7 @@ import {
 } from './utils';
 import { current, handleReturnValue } from './current';
 import { RAW_RETURN_SYMBOL, dataTypes } from './constant';
+import { die } from './error';
 
 type MakeCreator = <
   _F extends boolean = false,
@@ -154,16 +155,12 @@ export const makeCreator: MakeCreator = (arg) => {
       typeof state === 'object' &&
       state !== null
     ) {
-      throw new Error(
-        `Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable.`
-      );
+      die(0);
     }
     const [draft, finalize] = draftify(state, _options);
     if (typeof arg1 !== 'function') {
       if (!isDraftable(state, _options)) {
-        throw new Error(
-          `Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable.`
-        );
+        die(0);
       }
       return [draft, finalize];
     }
@@ -182,9 +179,7 @@ export const makeCreator: MakeCreator = (arg) => {
           !isEqual(value, draft) &&
           proxyDraft?.operated
         ) {
-          throw new Error(
-            `Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.`
-          );
+          die(5);
         }
         const rawReturnValue = value?.[RAW_RETURN_SYMBOL] as [any] | undefined;
         if (rawReturnValue) {
@@ -211,7 +206,7 @@ export const makeCreator: MakeCreator = (arg) => {
       const returnedProxyDraft = getProxyDraft(value)!;
       if (_options === returnedProxyDraft.options) {
         if (returnedProxyDraft.operated) {
-          throw new Error(`Cannot return a modified child draft.`);
+          die(6);
         }
         return finalize([current(value)]);
       }

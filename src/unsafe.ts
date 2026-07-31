@@ -1,5 +1,6 @@
 import { Options } from './interface';
 import { isDraftable } from './utils';
+import { die } from './error';
 
 let readable = false;
 
@@ -14,9 +15,7 @@ export const checkReadable = (
     (!isDraftable(value, options) || ignoreCheckDraftable) &&
     !readable
   ) {
-    throw new Error(
-      `Strict mode: Mutable data cannot be accessed directly, please use 'unsafe(callback)' wrap.`
-    );
+    die(8);
   }
 };
 

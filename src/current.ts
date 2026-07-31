@@ -12,6 +12,7 @@ import {
   set,
   shallowCopy,
 } from './utils';
+import { die } from './error';
 
 export function handleReturnValue<T extends object>(options: {
   rootDraft: ProxyDraft<any> | undefined;
@@ -132,7 +133,7 @@ export function current<T extends object>(target: Draft<T>): T;
 export function current<T extends object>(target: T): T;
 export function current<T extends object>(target: T | Draft<T>): T {
   if (!isDraft(target)) {
-    throw new Error(`current() is only used for Draft, parameter: ${target}`);
+    die(7, target);
   }
   return getCurrent(target);
 }

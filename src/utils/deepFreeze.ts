@@ -1,8 +1,9 @@
 import { DraftType } from '../interface';
 import { getType, isDraft } from './draft';
+import { die } from '../error';
 
 function throwFrozenError() {
-  throw new Error('Cannot modify frozen object');
+  die(11);
 }
 
 function isFreezable(value: any) {

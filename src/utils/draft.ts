@@ -1,6 +1,7 @@
 import { DraftType, Mark, ProxyDraft } from '../interface';
 import { dataTypes, PROXY_DRAFT } from '../constant';
 import { has } from './proto';
+import { die } from '../error';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
@@ -146,7 +147,7 @@ export function resolvePath(base: any, path: (string | number)[]) {
     // use `index` in Set draft
     base = get(getType(base) === DraftType.Set ? Array.from(base) : base, key);
     if (typeof base !== 'object') {
-      throw new Error(`Cannot resolve patch at '${path.join('/')}'.`);
+      die(12, path);
     }
   }
   return base;

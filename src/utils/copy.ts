@@ -2,6 +2,7 @@ import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 import { isBaseMapInstance, isBaseSetInstance } from './proto';
+import { die } from '../error';
 
 function strictCopy(target: any) {
   const copy = Object.create(Object.getPrototypeOf(target));
@@ -64,7 +65,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
       }
       return markResult();
     }
-    throw new Error(`Unsupported mark result: ${markResult}`);
+    die(9, markResult);
   } else if (
     typeof original === 'object' &&
     Object.getPrototypeOf(original) === Object.prototype
@@ -82,9 +83,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
     });
     return copy;
   } else {
-    throw new Error(
-      `Please check mark() to ensure that it is a stable marker draftable function.`
-    );
+    die(10);
   }
 }
 
