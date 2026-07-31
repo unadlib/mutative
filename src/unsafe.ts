@@ -1,6 +1,6 @@
 import { Options } from './interface';
 import { isDraftable } from './utils';
-import { die } from './error';
+import { die, ErrorCode } from './error';
 
 let readable = false;
 
@@ -15,7 +15,7 @@ export const checkReadable = (
     (!isDraftable(value, options) || ignoreCheckDraftable) &&
     !readable
   ) {
-    die(8);
+    die(ErrorCode.StrictModeAccess);
   }
 };
 

@@ -33,7 +33,7 @@ import {
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
-import { die } from './error';
+import { die, ErrorCode } from './error';
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
@@ -125,7 +125,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
   },
   set(target: ProxyDraft, key: string | number | symbol, value: any) {
     if (target.type === DraftType.Set || target.type === DraftType.Map) {
-      die(1);
+      die(ErrorCode.CannotAssignToMapOrSet);
     }
     let _key: number;
     if (
@@ -137,7 +137,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         (key === 0 || _key === 0 || String(_key) === String(key))
       )
     ) {
-      die(2);
+      die(ErrorCode.InvalidArrayIndex);
     }
     const desc = getDescriptor(latest(target), key);
     if (desc?.set) {
@@ -193,10 +193,10 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     return Reflect.getPrototypeOf(target.original);
   },
   setPrototypeOf() {
-    die(3);
+    die(ErrorCode.CannotSetPrototypeOfDraft);
   },
   defineProperty() {
-    die(4);
+    die(ErrorCode.CannotDefinePropertyOnDraft);
   },
   deleteProperty(target: ProxyDraft, key: string | symbol) {
     if (target.type === DraftType.Array) {

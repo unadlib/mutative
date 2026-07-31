@@ -2,7 +2,7 @@ import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 import { isBaseMapInstance, isBaseSetInstance } from './proto';
-import { die } from '../error';
+import { die, ErrorCode } from '../error';
 
 function strictCopy(target: any) {
   const copy = Object.create(Object.getPrototypeOf(target));
@@ -65,7 +65,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
       }
       return markResult();
     }
-    die(9, markResult);
+    die(ErrorCode.UnsupportedMarkResult, markResult);
   } else if (
     typeof original === 'object' &&
     Object.getPrototypeOf(original) === Object.prototype
@@ -83,7 +83,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
     });
     return copy;
   } else {
-    die(10);
+    die(ErrorCode.InvalidMark);
   }
 }
 

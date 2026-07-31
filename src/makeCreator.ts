@@ -17,7 +17,7 @@ import {
 } from './utils';
 import { current, handleReturnValue } from './current';
 import { RAW_RETURN_SYMBOL, dataTypes } from './constant';
-import { die } from './error';
+import { die, ErrorCode } from './error';
 
 type MakeCreator = <
   _F extends boolean = false,
@@ -155,12 +155,12 @@ export const makeCreator: MakeCreator = (arg) => {
       typeof state === 'object' &&
       state !== null
     ) {
-      die(0);
+      die(ErrorCode.InvalidBaseState);
     }
     const [draft, finalize] = draftify(state, _options);
     if (typeof arg1 !== 'function') {
       if (!isDraftable(state, _options)) {
-        die(0);
+        die(ErrorCode.InvalidBaseState);
       }
       return [draft, finalize];
     }
@@ -179,7 +179,7 @@ export const makeCreator: MakeCreator = (arg) => {
           !isEqual(value, draft) &&
           proxyDraft?.operated
         ) {
-          die(5);
+          die(ErrorCode.MutateAndReturn);
         }
         const rawReturnValue = value?.[RAW_RETURN_SYMBOL] as [any] | undefined;
         if (rawReturnValue) {
@@ -206,7 +206,7 @@ export const makeCreator: MakeCreator = (arg) => {
       const returnedProxyDraft = getProxyDraft(value)!;
       if (_options === returnedProxyDraft.options) {
         if (returnedProxyDraft.operated) {
-          die(6);
+          die(ErrorCode.CannotReturnModifiedChildDraft);
         }
         return finalize([current(value)]);
       }

@@ -12,7 +12,7 @@ import {
   set,
   shallowCopy,
 } from './utils';
-import { die } from './error';
+import { die, ErrorCode } from './error';
 
 export function handleReturnValue<T extends object>(options: {
   rootDraft: ProxyDraft<any> | undefined;
@@ -133,7 +133,7 @@ export function current<T extends object>(target: Draft<T>): T;
 export function current<T extends object>(target: T): T;
 export function current<T extends object>(target: T | Draft<T>): T {
   if (!isDraft(target)) {
-    die(7, target);
+    die(ErrorCode.CurrentOnNonDraft, target);
   }
   return getCurrent(target);
 }
