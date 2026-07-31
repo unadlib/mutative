@@ -1,9 +1,19 @@
 ---
 title: Production error codes
+description: Decode minified Mutative production errors and find their full development messages.
 ---
 
-Mutative removes full error messages from production bundles. Use the code in
-the production error to find the original message below.
+In Mutative's minified production build, full error messages are replaced with
+numeric codes to reduce the number of bytes sent to users.
+
+When debugging locally, we recommend using the development build. It retains
+the full error messages, additional validation, and warnings that provide more
+context about potential problems in your application.
+
+If an exception occurs in production, its message includes an error code and a
+link to this page. Find that code in the table below to recover the full
+development message. The source identifier is provided for contributors
+working on Mutative itself.
 
 | Code | Source identifier                | Development error                                                                                             |
 | ---: | -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
