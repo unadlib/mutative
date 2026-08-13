@@ -15,7 +15,7 @@ const getNextIterator =
   (
     target: ProxyDraft<any>,
     iterator: IterableIterator<any>,
-    { isValuesIterator }: { isValuesIterator: boolean }
+    isValuesIterator: boolean
   ) =>
   () => {
     const result = iterator.next();
@@ -121,7 +121,7 @@ export const setHandler = {
     const iterator = target.setMap!.keys();
     return {
       [Symbol.iterator]: () => this.values(),
-      next: getNextIterator(target, iterator, { isValuesIterator: true }),
+      next: getNextIterator(target, iterator, true),
     };
   },
   entries(): IterableIterator<[any, any]> {
@@ -130,9 +130,11 @@ export const setHandler = {
     const iterator = target.setMap!.keys();
     return {
       [Symbol.iterator]: () => this.entries(),
-      next: getNextIterator(target, iterator, {
-        isValuesIterator: false,
-      }) as () => IteratorReturnResult<any>,
+      next: getNextIterator(
+        target,
+        iterator,
+        false
+      ) as () => IteratorReturnResult<any>,
     };
   },
   keys(): IterableIterator<any> {
@@ -151,36 +153,31 @@ export const setHandler = {
   },
 };
 
-if (Set.prototype.difference) {
+if ('difference' in Set.prototype) {
   // for compatibility with new Set methods
   // https://github.com/tc39/proposal-set-methods
   // And `https://github.com/tc39/proposal-set-methods/blob/main/details.md#symbolspecies` has some details about the `@@species` symbol.
   // So we can't use SubSet instance constructor to get the constructor of the SubSet instance.
-  Object.assign(setHandler, {
-    intersection(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
-      return Set.prototype.intersection.call(new Set(this.values()), other);
-    },
-    union(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
-      return Set.prototype.union.call(new Set(this.values()), other);
-    },
-    difference(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
-      return Set.prototype.difference.call(new Set(this.values()), other);
-    },
-    symmetricDifference(this: Set<any>, other: ReadonlySetLike<any>): Set<any> {
-      return Set.prototype.symmetricDifference.call(
+  (
+    [
+      'intersection',
+      'union',
+      'difference',
+      'symmetricDifference',
+      'isSubsetOf',
+      'isSupersetOf',
+      'isDisjointFrom',
+    ] as const
+  ).forEach((method) => {
+    (setHandler as any)[method] = function (
+      this: Set<any>,
+      other: ReadonlySetLike<any>
+    ) {
+      return (Set.prototype[method] as Function).call(
         new Set(this.values()),
         other
       );
-    },
-    isSubsetOf(this: Set<any>, other: ReadonlySetLike<any>): boolean {
-      return Set.prototype.isSubsetOf.call(new Set(this.values()), other);
-    },
-    isSupersetOf(this: Set<any>, other: ReadonlySetLike<any>): boolean {
-      return Set.prototype.isSupersetOf.call(new Set(this.values()), other);
-    },
-    isDisjointFrom(this: Set<any>, other: ReadonlySetLike<any>): boolean {
-      return Set.prototype.isDisjointFrom.call(new Set(this.values()), other);
-    },
+    };
   });
 }
 

@@ -5,7 +5,10 @@ import replace from '@rollup/plugin-replace';
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import pkg from './package.json';
-import { adapter as analyzerAdapterForRollup, analyzer } from 'vite-bundle-analyzer';
+import {
+  adapter as analyzerAdapterForRollup,
+  analyzer,
+} from 'vite-bundle-analyzer';
 
 export default [
   {
@@ -80,10 +83,13 @@ export default [
         __DEV__: 'true',
         preventAssignment: true,
       }),
-      process.env.ANALYZE === 'true' && analyzerAdapterForRollup(analyzer({
-        analyzerMode: 'static',
-        openAnalyzer: true,
-      })),
+      process.env.ANALYZE === 'true' &&
+        analyzerAdapterForRollup(
+          analyzer({
+            analyzerMode: 'static',
+            openAnalyzer: true,
+          })
+        ),
       {
         name: 'create-cjs-index',
         buildEnd: () => {
