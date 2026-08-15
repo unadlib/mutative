@@ -5,6 +5,7 @@ import {
   getPath,
   getProxyDraft,
   getValue,
+  isAssignedArrayIndex,
   isDraft,
   isDraftable,
   isEqual,
@@ -82,6 +83,32 @@ export function finalizeSetValue(target: ProxyDraft) {
     target.setMap!.forEach((value) => {
       target.copy!.add(getValue(value));
     });
+  }
+}
+
+export function finalizeArrayValue(target: ProxyDraft) {
+  if (target.type === DraftType.Array && target.copy) {
+    for (let index = 0; index < target.copy.length; index += 1) {
+      if (!(index in target.copy)) continue;
+      const value = target.copy[index];
+      const proxyDraft = getProxyDraft(value);
+      if (proxyDraft) {
+        let updatedValue = proxyDraft.original;
+        if (proxyDraft.operated) {
+          updatedValue = getValue(value);
+        }
+        finalizeSetValue(proxyDraft);
+        finalizeArrayValue(proxyDraft);
+        if (__DEV__ && target.options.enableAutoFreeze) {
+          target.options.updatedValues =
+            target.options.updatedValues ?? new WeakMap();
+          target.options.updatedValues.set(updatedValue, proxyDraft.original);
+        }
+        target.copy[index] = updatedValue;
+      } else if (isAssignedArrayIndex(target, index)) {
+        finalizeAssigned(target, index);
+      }
+    }
   }
 }
 
