@@ -23,9 +23,10 @@ export const mapHandler = {
   set(key: any, value: any) {
     const target = getProxyDraft(this)!;
     const source = latest(target);
-    if (!source.has(key) || !isEqual(source.get(key), value)) {
+    const prev = source.get(key);
+    if (!source.has(key) || !isEqual(prev, value)) {
       ensureShallowCopy(target);
-      markChanged(target);
+      markChanged(target, key, { kind:'map.set', prev, next: value });
       target.assignedMap!.set(key, true);
       target.copy.set(key, value);
       markFinalization(target, key, value, generatePatches);
@@ -37,8 +38,9 @@ export const mapHandler = {
       return false;
     }
     const target = getProxyDraft(this)!;
+    const prev = latest(target).get(key);
     ensureShallowCopy(target);
-    markChanged(target);
+    markChanged(target, key, { kind:'map.delete', prev });
     if (target.original.has(key)) {
       target.assignedMap!.set(key, false);
     } else {
@@ -51,7 +53,7 @@ export const mapHandler = {
     const target = getProxyDraft(this)!;
     if (!this.size) return;
     ensureShallowCopy(target);
-    markChanged(target);
+    markChanged(target, undefined, { kind:'map.clear' });
     target.assignedMap = new Map();
     for (const [key] of target.original) {
       target.assignedMap.set(key, false);
