@@ -103,7 +103,7 @@ describe('Currying', () => {
     expect(() => {
       create(baseState);
     }).toThrowErrorMatchingInlineSnapshot(
-      `"Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable."`
+      `[Error: Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable.]`
     );
   });
   test('Currying with draftable state and hook', () => {

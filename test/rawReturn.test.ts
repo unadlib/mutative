@@ -9,7 +9,7 @@
 import { create, isDraft, rawReturn } from '../src';
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 test('base', () => {
@@ -192,17 +192,17 @@ test('error args', () => {
     // @ts-expect-error
     create(3, () => rawReturn(undefined, undefined))
   ).toThrowErrorMatchingInlineSnapshot(
-    `"rawReturn() must be called with one argument."`
+    `[Error: rawReturn() must be called with one argument.]`
   );
 
   expect(() =>
     // @ts-expect-error
     create({}, () => rawReturn())
   ).toThrowErrorMatchingInlineSnapshot(
-    `"rawReturn() must be called with a value."`
+    `[Error: rawReturn() must be called with a value.]`
   );
 
-  const logSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const logSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
   [
     -1,
@@ -232,7 +232,7 @@ test('check warning rawReturn() in strict mode', () => {
   class Foo {
     a?: any;
   }
-  const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   [
     (draft: any) => {
       return rawReturn({
@@ -292,7 +292,7 @@ test('return parent draft', () => {
 });
 
 test('mix more type draft with rawReturn() and enable strict mode', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   [
     (draft: any) => ({
       a: {
@@ -484,7 +484,7 @@ test('does not finalize upvalue drafts', () => {
 });
 
 test('mixed draft', () => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
   const baseState = { a: 1, b: { c: 1 } };
   const state = create(baseState, (draft) => {
     if (draft.b.c === 1) {
@@ -500,7 +500,7 @@ test('mixed draft', () => {
 });
 
 test('mixed draft with rawReturn()', () => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
   const baseState = { a: 1, b: { c: 1 } };
   const state = create(baseState, (draft) => {
     if (draft.b.c === 1) {
@@ -520,7 +520,7 @@ test('mixed draft with rawReturn()', () => {
 });
 
 test('mixed draft with rawReturn() and strict mode', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   const baseState = { a: 1, b: { c: 1 } };
   const state = create(
     baseState,
@@ -546,7 +546,7 @@ test('mixed draft with rawReturn() and strict mode', () => {
 });
 
 test('no mixed draft with strict mode', () => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
   const baseState = { a: 1, b: { c: 1 } };
   const state = create(
     baseState,

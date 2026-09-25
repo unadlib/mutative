@@ -24,7 +24,7 @@ test('custom shallow copy with checking in dev mode', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `"You can't use mark and patches or auto freeze together."`
+    `[Error: You can't use mark and patches or auto freeze together.]`
   );
 
   expect(() => {
@@ -44,7 +44,7 @@ test('custom shallow copy with checking in dev mode', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `"You can't use mark and patches or auto freeze together."`
+    `[Error: You can't use mark and patches or auto freeze together.]`
   );
 });
 
@@ -52,7 +52,7 @@ test('check warn when apply patches with other options', () => {
   {
     const baseState = { foo: { bar: 'test' } };
     const warn = console.warn;
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     apply(
       baseState,
       [
@@ -74,7 +74,7 @@ test('check warn when apply patches with other options', () => {
   {
     const baseState = { foo: { bar: 'test' } };
     const warn = console.warn;
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     apply(
       baseState,
       [

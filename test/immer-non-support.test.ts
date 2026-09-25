@@ -289,7 +289,7 @@ test('circular reference', () => {
         }
       );
     }).toThrowErrorMatchingInlineSnapshot(
-      `"Forbids circular reference: ~/a/b"`
+      `[Error: Forbids circular reference: ~/a/b]`
     );
   }
 });

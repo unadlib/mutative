@@ -1569,7 +1569,7 @@ test('array - update with prototype', () => {
   checkPatches(obj, (d) => {
     d.o.b.c++;
     // @ts-ignore
-    Array.prototype.unshift(d.a, { i: -1 }, { i: d.o.b });
+    Array.prototype.unshift.call(d.a, { i: -1 }, { i: d.o.b });
     // @ts-ignore
     delete d.o.b;
   });

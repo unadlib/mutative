@@ -1,13 +1,13 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`auto freeze - proxy will freeze maps 1`] = `"Cannot modify frozen object"`;
+exports[`auto freeze - proxy > will freeze maps 1`] = `[Error: Cannot modify frozen object]`;
 
-exports[`auto freeze - proxy will freeze maps 2`] = `"Cannot modify frozen object"`;
+exports[`auto freeze - proxy > will freeze maps 2`] = `[Error: Cannot modify frozen object]`;
 
-exports[`auto freeze - proxy will freeze maps 3`] = `"Cannot modify frozen object"`;
+exports[`auto freeze - proxy > will freeze maps 3`] = `[Error: Cannot modify frozen object]`;
 
-exports[`auto freeze - proxy will freeze sets 1`] = `"Cannot modify frozen object"`;
+exports[`auto freeze - proxy > will freeze sets 1`] = `[Error: Cannot modify frozen object]`;
 
-exports[`auto freeze - proxy will freeze sets 2`] = `"Cannot modify frozen object"`;
+exports[`auto freeze - proxy > will freeze sets 2`] = `[Error: Cannot modify frozen object]`;
 
-exports[`auto freeze - proxy will freeze sets 3`] = `"Cannot modify frozen object"`;
+exports[`auto freeze - proxy > will freeze sets 3`] = `[Error: Cannot modify frozen object]`;

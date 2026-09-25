@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "../global.d.ts",
+    "**/*.test.ts",
+    "**/__tests__/**/*.ts",
+    "*.snap.ts"
+  ],
+  "compilerOptions": {
+    "rootDir": "..",
+    "types": ["node", "vitest/globals"],
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  }
+}

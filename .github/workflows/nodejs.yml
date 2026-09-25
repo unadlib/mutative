@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x, 24.x]
 
     steps:
     - uses: actions/checkout@v7
@@ -19,10 +19,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: pnpm
-    - name: pnpm install, build, and test
+    - name: pnpm install, build, type-check, and test
       run: |
         pnpm install --frozen-lockfile
         pnpm build
+        pnpm type-check
         pnpm test
       env:
         CI: true

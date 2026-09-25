@@ -2000,7 +2000,7 @@ test('copy error: check stable mark()', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `"Please check mark() to ensure that it is a stable marker draftable function."`
+    `[Error: Please check mark() to ensure that it is a stable marker draftable function.]`
   );
 });
 
@@ -2063,8 +2063,8 @@ test('create options', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(`
-    "Invalid options: () => {
-                //
-            }, 'options' should be an object."
+    [Error: Invalid options: () => {
+    			//
+    		}, 'options' should be an object.]
   `);
 });

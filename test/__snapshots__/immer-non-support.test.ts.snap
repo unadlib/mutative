@@ -1,9 +1,9 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`error key setting in array 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`error key setting in array 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`error key setting in array 2`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`error key setting in array 2`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`error key setting in array 3`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`error key setting in array 3`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`error key setting in array 4`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`error key setting in array 4`] = `[Error: Only supports setting array indices and the 'length' property.]`;
