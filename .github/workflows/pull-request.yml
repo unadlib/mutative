@@ -11,17 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v7
+
+    - uses: pnpm/action-setup@v6
 
     - name: Use Node.js 22.x
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v7
       with:
         node-version: 22.x
+        cache: pnpm
 
-    - name: yarn install, yarn test:coverage
+    - name: pnpm install, pnpm test:coverage
       run: |
-        yarn install
-        yarn test --coverage
+        pnpm install --frozen-lockfile
+        pnpm test --coverage
 
     - name: Coverage
       uses: romeovs/lcov-reporter-action@v0.4.0

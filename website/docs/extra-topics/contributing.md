@@ -9,8 +9,8 @@ Mutative goal is to provide efficient and immutable updates. The focus is on per
 ### Development Workflow
 
 - Clone Mutative repo.
-- Run `yarn install` to install all the dependencies.
-- Run `yarn prettier` to format the code.
-- `yarn test --watch` runs an interactive test watcher.
-- Run `yarn commit` to make a git commit.
+- Run `pnpm install` to install all the dependencies.
+- Run `pnpm prettier` to format the code.
+- `pnpm test --watch` runs an interactive test watcher.
+- Run `pnpm commit` to make a git commit.
 - Create a pull request.
