@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "printWidth": 80,
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "build",
+    "coverage",
+    "**/*.html",
+    "**/.git",
+    "**/.svn",
+    "**/.hg",
+    "**/node_modules",
+    "**/*/*.snap.ts",
+    "**/*/*.snap.tsx"
+  ]
+}

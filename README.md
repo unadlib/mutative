@@ -719,7 +719,7 @@ Development Workflow:
 
 - Clone Mutative repo.
 - Run `pnpm install` to install all the dependencies.
-- Run `pnpm prettier` to format the code.
+- Run `pnpm format` to format the code.
 - `pnpm test --watch` runs an interactive test watcher.
 - Run `pnpm commit` to make a git commit.
 
