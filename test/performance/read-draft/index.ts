@@ -1,4 +1,5 @@
 /* eslint-disable prefer-template */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-nocheck
 import { produce } from 'immer';
 import { create } from '../../..';

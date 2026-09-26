@@ -1,17 +1,17 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`check array options error 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`check array options error 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`check array options error 2`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`check array options error 2`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`check array options error 3`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`check array options error 3`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`check array options error 4`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`check array options error 4`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`check array options error 5`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`check array options error 5`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`check array options error 6`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`check array options error 6`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`check array options error 7`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`check array options error 7`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`check array options error 8`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`check array options error 8`] = `[Error: Only supports setting array indices and the 'length' property.]`;

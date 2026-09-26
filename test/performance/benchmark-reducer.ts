@@ -1,5 +1,7 @@
 /* eslint-disable import/no-relative-packages */
 /* eslint-disable prefer-template */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable default-param-last */
 // @ts-nocheck
 import fs from 'fs';
 import https from 'https';

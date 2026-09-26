@@ -2,7 +2,7 @@
 'use strict';
 import { produce, setAutoFreeze } from 'immer';
 import cloneDeep from 'lodash.clonedeep';
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 import { measure } from './measure';
 import { create } from '../..';
 

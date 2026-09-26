@@ -9,7 +9,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { create, apply, Patches, original } from '../src';
-import { deepClone, set } from '../src/utils';
+import { deepClone } from '../src/utils';
 
 test('classic case', () => {
   const data = {
@@ -1569,7 +1569,7 @@ test('array - update with prototype', () => {
   checkPatches(obj, (d) => {
     d.o.b.c++;
     // @ts-ignore
-    Array.prototype.unshift(d.a, { i: -1 }, { i: d.o.b });
+    Array.prototype.unshift.call(d.a, { i: -1 }, { i: d.o.b });
     // @ts-ignore
     delete d.o.b;
   });

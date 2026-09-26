@@ -7,7 +7,7 @@ function measureTime(setup, fn) {
     setup = () => {};
   }
   const args = setup();
-  global.gc && global.gc();
+  global.gc?.();
   const startTime = Date.now();
   fn(args);
   const endTime = Date.now();

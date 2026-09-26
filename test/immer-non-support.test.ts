@@ -289,7 +289,7 @@ test('circular reference', () => {
         }
       );
     }).toThrowErrorMatchingInlineSnapshot(
-      `"Forbids circular reference: ~/a/b"`
+      `[Error: Forbids circular reference: ~/a/b]`
     );
   }
 });
@@ -802,7 +802,6 @@ test('apply - symbol key on object', () => {
   }
 });
 
-
 test('#70 - deep copy patches with Custom Set/Map', () => {
   {
     // immer
@@ -824,7 +823,7 @@ test('#70 - deep copy patches with Custom Set/Map', () => {
       (draft) => {
         draft.map = new CustomMap<any, any>([[1, 1]]);
         draft.set = new CustomSet<any>([1]);
-      },
+      }
     );
     const nextState = applyPatches(baseState, patches);
     expect(patches[0].value).toBeInstanceOf(CustomMap);
@@ -840,8 +839,8 @@ test('#70 - deep copy patches with Custom Set/Map', () => {
   }
   {
     // mutative
-    class CustomSet<T> extends Set<T> { }
-    class CustomMap<K, V> extends Map<K, V> { }
+    class CustomSet<T> extends Set<T> {}
+    class CustomMap<K, V> extends Map<K, V> {}
     const baseState = {
       map: new CustomMap<any, any>(),
       set: new CustomSet<any>(),
@@ -884,7 +883,10 @@ test('enablePatches and assign with ref array', () => {
   }
 
   function checkImmerPatches<T>(data: T, fn: (checkPatches: T) => void) {
-    const [state, patches, inversePatches] = produceWithPatches(data as any, fn) as any;
+    const [state, patches, inversePatches] = produceWithPatches(
+      data as any,
+      fn
+    ) as any;
     const mutatedResult = deepClone(data);
     fn(mutatedResult);
     expect(state).toEqual(mutatedResult);
@@ -900,12 +902,6 @@ test('enablePatches and assign with ref array', () => {
     draft.arr0.push(draft.arr1);
     draft.arr1[0].a = 222;
   };
-  checkImmerPatches(
-    state,
-    fn
-  );
-  checkMutativePatches(
-    state,
-    fn
-  );
+  checkImmerPatches(state, fn);
+  checkMutativePatches(state, fn);
 });

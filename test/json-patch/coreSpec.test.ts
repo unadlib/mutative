@@ -1,9 +1,10 @@
+/* eslint-disable prefer-arrow-callback */
 // @ts-nocheck
 import { apply } from '../../src';
 
-const applyOperation = (state: any, patches: any) => {
-  return { newDocument: apply(state, [patches]) };
-};
+const applyOperation = (state: any, patches: any) => ({
+  newDocument: apply(state, [patches]),
+});
 
 describe('root replacement with applyOperation', function () {
   describe('add operation', function () {
@@ -836,7 +837,7 @@ describe('core', function () {
         },
       ],
     };
-    const newObj = apply(
+    apply(
       obj,
       [
         {
@@ -847,7 +848,7 @@ describe('core', function () {
       ],
       false,
       false
-    ).newDocument;
+    );
 
     expect(obj).toEqual({
       foo: 1,

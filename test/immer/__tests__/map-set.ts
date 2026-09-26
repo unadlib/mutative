@@ -13,7 +13,7 @@ import {
 enableMapSet();
 enablePatches();
 
-jest.setTimeout(1000);
+vi.setConfig({ testTimeout: 1000 });
 
 runBaseTest('proxy (no freeze)', true, false);
 runBaseTest('proxy (autofreeze)', true, true);

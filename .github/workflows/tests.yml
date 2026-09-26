@@ -12,18 +12,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v7
+
+    - uses: pnpm/action-setup@v6
 
     - name: Use Node.js 22.x
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v7
       with:
         node-version: 22.x
+        cache: pnpm
 
-    - name: yarn install, yarn test:coverage
+    - name: pnpm install, pnpm test:coverage
       run: |
-        yarn install
+        pnpm install --frozen-lockfile
         echo repo_token: ${{ secrets.COVERALLS_REPO_TOKEN }} > .coveralls.yml
-        yarn test:coverage
+        pnpm test:coverage
 
     - name: Coveralls
       uses: coverallsapp/github-action@master

@@ -381,8 +381,6 @@ describe('duplex', function () {
         data: { foo: 'bar' },
       };
 
-      let patches = [];
-
       let [draft, finalize] = create(obj, {
         enablePatches: { pathAsArray: false },
       });
@@ -563,7 +561,7 @@ describe('duplex', function () {
 
       draft.lastName = 'Wester';
 
-      let [state, patches] = finalize();
+      let [, patches] = finalize();
       expect(patches).toEqual([
         {
           op: 'replace',
@@ -587,7 +585,7 @@ describe('duplex', function () {
 
       draft.firstName = 'Albert';
 
-      let [state, patches] = finalize();
+      let [, patches] = finalize();
       expect(patches).toEqual([
         {
           op: 'add',
@@ -611,7 +609,7 @@ describe('duplex', function () {
 
       delete draft.lastName;
 
-      let [state, patches] = finalize();
+      let [, patches] = finalize();
       expect(patches).toEqual([
         {
           op: 'remove',
@@ -644,9 +642,9 @@ describe('duplex', function () {
       const a = {};
       a.self = a;
       const obj = {
-        a: a,
+        a,
         b: 3,
-        toJSON: function () {
+        toJSON() {
           return {
             b: this.b,
           };
@@ -657,7 +655,7 @@ describe('duplex', function () {
         enablePatches: { pathAsArray: false },
       });
       draft.b = 5;
-      let [state, patches] = finalize();
+      let [, patches] = finalize();
       expect(patches.length).toEqual(1);
     });
 
@@ -712,7 +710,7 @@ describe('duplex', function () {
         });
         draft.foo = undefined;
 
-        let [state, patches] = finalize();
+        let [, patches] = finalize();
         // !different from Mutative
         // expect(patches).toEqual([
         //   {
@@ -739,7 +737,7 @@ describe('duplex', function () {
         });
         draft.baz = undefined;
 
-        let [state, patches] = finalize();
+        let [, patches] = finalize();
         // !different from Mutative
         // expect(patches).toEqual([]);
         expect(patches).toEqual([
@@ -761,7 +759,7 @@ describe('duplex', function () {
         });
         draft.foo[1] = undefined;
 
-        let [state, patches] = finalize();
+        let [, patches] = finalize();
         // !different from Mutative
 
         expect(patches).toEqual([
@@ -784,7 +782,7 @@ describe('duplex', function () {
         });
         draft.foo = 'something';
 
-        let [state, patches] = finalize();
+        let [, patches] = finalize();
         // !different from Mutative
         expect(patches).toEqual([
           {
@@ -804,7 +802,7 @@ describe('duplex', function () {
         });
         draft.foo[1] = 1;
 
-        let [state, patches] = finalize();
+        let [, patches] = finalize();
         expect(patches).toEqual([
           {
             op: 'replace',
@@ -828,13 +826,9 @@ describe('duplex', function () {
             obj.baz = undefined;
           };
 
-          const [state, patches, inversePatches] = create(
-            objFactory(),
-            objChanger,
-            {
-              enablePatches: { pathAsArray: false },
-            }
-          );
+          const [, patches, inversePatches] = create(objFactory(), objChanger, {
+            enablePatches: { pathAsArray: false },
+          });
 
           // const genereatedPatches = getPatchesUsingGenerate(
           //   objFactory,
@@ -874,13 +868,9 @@ describe('duplex', function () {
             delete obj.foo;
           };
 
-          const [state, patches, inversePatches] = create(
-            objFactory(),
-            objChanger,
-            {
-              enablePatches: { pathAsArray: false },
-            }
-          );
+          const [, patches, inversePatches] = create(objFactory(), objChanger, {
+            enablePatches: { pathAsArray: false },
+          });
 
           // !different from Mutative
           expect(patches).toEqual([
@@ -914,13 +904,9 @@ describe('duplex', function () {
             obj.foo = 'something';
           };
 
-          const [state, patches, inversePatches] = create(
-            objFactory(),
-            objChanger,
-            {
-              enablePatches: { pathAsArray: false },
-            }
-          );
+          const [, patches, inversePatches] = create(objFactory(), objChanger, {
+            enablePatches: { pathAsArray: false },
+          });
 
           // !different from Mutative
           expect(patches).toEqual([
@@ -961,13 +947,9 @@ describe('duplex', function () {
             obj.foo = undefined;
           };
 
-          const [state, patches, inversePatches] = create(
-            objFactory(),
-            objChanger,
-            {
-              enablePatches: { pathAsArray: false },
-            }
-          );
+          const [, patches, inversePatches] = create(objFactory(), objChanger, {
+            enablePatches: { pathAsArray: false },
+          });
           // !different from Mutative
           expect(patches).toEqual([
             {
@@ -1005,13 +987,9 @@ describe('duplex', function () {
             obj.foo[1] = undefined;
           };
 
-          const [state, patches, inversePatches] = create(
-            objFactory(),
-            objChanger,
-            {
-              enablePatches: { pathAsArray: false },
-            }
-          );
+          const [, patches, inversePatches] = create(objFactory(), objChanger, {
+            enablePatches: { pathAsArray: false },
+          });
 
           // !different from Mutative
           expect(patches).toEqual([
@@ -1049,13 +1027,9 @@ describe('duplex', function () {
             obj.foo[1] = 1;
           };
 
-          const [state, patches, inversePatches] = create(
-            objFactory(),
-            objChanger,
-            {
-              enablePatches: { pathAsArray: false },
-            }
-          );
+          const [, patches, inversePatches] = create(objFactory(), objChanger, {
+            enablePatches: { pathAsArray: false },
+          });
 
           expect(patches).toEqual([
             {

@@ -1,310 +1,310 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false array drafts throws when a non-numeric property is added 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > array drafts > throws when a non-numeric property is added 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false array drafts throws when a non-numeric property is deleted 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > array drafts > throws when a non-numeric property is deleted 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false map drafts revokes map proxies 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > map drafts > revokes map proxies 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false map drafts revokes map proxies 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > map drafts > revokes map proxies 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false recipe functions cannot return a modified child draft 1`] = `"Cannot return a modified child draft."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > recipe functions > cannot return a modified child draft 1`] = `[Error: Cannot return a modified child draft.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false recipe functions cannot return an object that references itself 1`] = `"Maximum call stack size exceeded"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > recipe functions > cannot return an object that references itself 1`] = `[RangeError: Maximum call stack size exceeded]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false revokes the draft once produce returns 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > revokes the draft once produce returns 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false revokes the draft once produce returns 2`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > revokes the draft once produce returns 2`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false revokes the draft once produce returns 3`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > revokes the draft once produce returns 3`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false revokes the draft once produce returns 4`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > revokes the draft once produce returns 4`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false revokes the draft once produce returns 5`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > revokes the draft once produce returns 5`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false revokes the draft once produce returns 6`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > revokes the draft once produce returns 6`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > revokes the draft once produce returns 7`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > revokes the draft once produce returns 8`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > set drafts > revokes sets 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > set drafts > revokes sets 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > throws when Object.defineProperty() is used on drafts 1`] = `[Error: Cannot call 'defineProperty()' on drafts]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > throws when Object.setPrototypeOf() is used on a draft 1`] = `[Error: Cannot call 'setPrototypeOf()' on drafts]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false throws when the draft is modified and another object is returned 1`] = `"Either the value is returned as a new non-draft value, or only the draft is modified without returning any value."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=false > throws when the draft is modified and another object is returned 1`] = `[Error: Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true array drafts throws when a non-numeric property is added 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > array drafts > throws when a non-numeric property is added 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true array drafts throws when a non-numeric property is deleted 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > array drafts > throws when a non-numeric property is deleted 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true map drafts revokes map proxies 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > map drafts > revokes map proxies 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true map drafts revokes map proxies 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > map drafts > revokes map proxies 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true recipe functions cannot return a modified child draft 1`] = `"Cannot return a modified child draft."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > recipe functions > cannot return a modified child draft 1`] = `[Error: Cannot return a modified child draft.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true recipe functions cannot return an object that references itself 1`] = `"Maximum call stack size exceeded"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > recipe functions > cannot return an object that references itself 1`] = `[RangeError: Maximum call stack size exceeded]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true revokes the draft once produce returns 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > revokes the draft once produce returns 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true revokes the draft once produce returns 2`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > revokes the draft once produce returns 2`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true revokes the draft once produce returns 3`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > revokes the draft once produce returns 3`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true revokes the draft once produce returns 4`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > revokes the draft once produce returns 4`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true revokes the draft once produce returns 5`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > revokes the draft once produce returns 5`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true revokes the draft once produce returns 6`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > revokes the draft once produce returns 6`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > revokes the draft once produce returns 7`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > revokes the draft once produce returns 8`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > set drafts > revokes sets 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > set drafts > revokes sets 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > throws when Object.defineProperty() is used on drafts 1`] = `[Error: Cannot call 'defineProperty()' on drafts]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > throws when Object.setPrototypeOf() is used on a draft 1`] = `[Error: Cannot call 'setPrototypeOf()' on drafts]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true throws when the draft is modified and another object is returned 1`] = `"Either the value is returned as a new non-draft value, or only the draft is modified without returning any value."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=false:use-listener=true > throws when the draft is modified and another object is returned 1`] = `[Error: Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false array drafts throws when a non-numeric property is added 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > array drafts > throws when a non-numeric property is added 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false array drafts throws when a non-numeric property is deleted 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > array drafts > throws when a non-numeric property is deleted 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false map drafts revokes map proxies 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > map drafts > revokes map proxies 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false map drafts revokes map proxies 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > map drafts > revokes map proxies 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false recipe functions cannot return a modified child draft 1`] = `"Cannot return a modified child draft."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > recipe functions > cannot return a modified child draft 1`] = `[Error: Cannot return a modified child draft.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false recipe functions cannot return an object that references itself 1`] = `"Maximum call stack size exceeded"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > recipe functions > cannot return an object that references itself 1`] = `[RangeError: Maximum call stack size exceeded]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false revokes the draft once produce returns 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > revokes the draft once produce returns 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false revokes the draft once produce returns 2`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > revokes the draft once produce returns 2`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false revokes the draft once produce returns 3`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > revokes the draft once produce returns 3`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false revokes the draft once produce returns 4`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > revokes the draft once produce returns 4`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false revokes the draft once produce returns 5`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > revokes the draft once produce returns 5`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false revokes the draft once produce returns 6`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > revokes the draft once produce returns 6`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > revokes the draft once produce returns 7`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > revokes the draft once produce returns 8`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > set drafts > revokes sets 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > set drafts > revokes sets 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > throws when Object.defineProperty() is used on drafts 1`] = `[Error: Cannot call 'defineProperty()' on drafts]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > throws when Object.setPrototypeOf() is used on a draft 1`] = `[Error: Cannot call 'setPrototypeOf()' on drafts]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false throws when the draft is modified and another object is returned 1`] = `"Either the value is returned as a new non-draft value, or only the draft is modified without returning any value."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=false > throws when the draft is modified and another object is returned 1`] = `[Error: Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true array drafts throws when a non-numeric property is added 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > array drafts > throws when a non-numeric property is added 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true array drafts throws when a non-numeric property is deleted 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > array drafts > throws when a non-numeric property is deleted 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true map drafts revokes map proxies 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > map drafts > revokes map proxies 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true map drafts revokes map proxies 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > map drafts > revokes map proxies 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true recipe functions cannot return a modified child draft 1`] = `"Cannot return a modified child draft."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > recipe functions > cannot return a modified child draft 1`] = `[Error: Cannot return a modified child draft.]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true recipe functions cannot return an object that references itself 1`] = `"Maximum call stack size exceeded"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > recipe functions > cannot return an object that references itself 1`] = `[RangeError: Maximum call stack size exceeded]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true revokes the draft once produce returns 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > revokes the draft once produce returns 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true revokes the draft once produce returns 2`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > revokes the draft once produce returns 2`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true revokes the draft once produce returns 3`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > revokes the draft once produce returns 3`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true revokes the draft once produce returns 4`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > revokes the draft once produce returns 4`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true revokes the draft once produce returns 5`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > revokes the draft once produce returns 5`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true revokes the draft once produce returns 6`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > revokes the draft once produce returns 6`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > revokes the draft once produce returns 7`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > revokes the draft once produce returns 8`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > set drafts > revokes sets 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > set drafts > revokes sets 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > throws when Object.defineProperty() is used on drafts 1`] = `[Error: Cannot call 'defineProperty()' on drafts]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > throws when Object.setPrototypeOf() is used on a draft 1`] = `[Error: Cannot call 'setPrototypeOf()' on drafts]`;
 
-exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true throws when the draft is modified and another object is returned 1`] = `"Either the value is returned as a new non-draft value, or only the draft is modified without returning any value."`;
+exports[`base functionality - auto-freeze=false:shallow-copy=true:use-listener=true > throws when the draft is modified and another object is returned 1`] = `[Error: Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false array drafts throws when a non-numeric property is added 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > array drafts > throws when a non-numeric property is added 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false array drafts throws when a non-numeric property is deleted 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > array drafts > throws when a non-numeric property is deleted 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false map drafts revokes map proxies 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > map drafts > revokes map proxies 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false map drafts revokes map proxies 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > map drafts > revokes map proxies 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false recipe functions cannot return a modified child draft 1`] = `"Cannot return a modified child draft."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > recipe functions > cannot return a modified child draft 1`] = `[Error: Cannot return a modified child draft.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false recipe functions cannot return an object that references itself 1`] = `"Maximum call stack size exceeded"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > recipe functions > cannot return an object that references itself 1`] = `[RangeError: Maximum call stack size exceeded]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false revokes the draft once produce returns 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > revokes the draft once produce returns 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false revokes the draft once produce returns 2`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > revokes the draft once produce returns 2`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false revokes the draft once produce returns 3`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > revokes the draft once produce returns 3`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false revokes the draft once produce returns 4`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > revokes the draft once produce returns 4`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false revokes the draft once produce returns 5`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > revokes the draft once produce returns 5`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false revokes the draft once produce returns 6`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > revokes the draft once produce returns 6`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > revokes the draft once produce returns 7`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > revokes the draft once produce returns 8`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > set drafts > revokes sets 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > set drafts > revokes sets 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > throws when Object.defineProperty() is used on drafts 1`] = `[Error: Cannot call 'defineProperty()' on drafts]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > throws when Object.setPrototypeOf() is used on a draft 1`] = `[Error: Cannot call 'setPrototypeOf()' on drafts]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false throws when the draft is modified and another object is returned 1`] = `"Either the value is returned as a new non-draft value, or only the draft is modified without returning any value."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=false > throws when the draft is modified and another object is returned 1`] = `[Error: Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true array drafts throws when a non-numeric property is added 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > array drafts > throws when a non-numeric property is added 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true array drafts throws when a non-numeric property is deleted 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > array drafts > throws when a non-numeric property is deleted 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true map drafts revokes map proxies 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > map drafts > revokes map proxies 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true map drafts revokes map proxies 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > map drafts > revokes map proxies 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true recipe functions cannot return a modified child draft 1`] = `"Cannot return a modified child draft."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > recipe functions > cannot return a modified child draft 1`] = `[Error: Cannot return a modified child draft.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true recipe functions cannot return an object that references itself 1`] = `"Maximum call stack size exceeded"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > recipe functions > cannot return an object that references itself 1`] = `[RangeError: Maximum call stack size exceeded]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true revokes the draft once produce returns 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > revokes the draft once produce returns 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true revokes the draft once produce returns 2`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > revokes the draft once produce returns 2`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true revokes the draft once produce returns 3`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > revokes the draft once produce returns 3`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true revokes the draft once produce returns 4`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > revokes the draft once produce returns 4`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true revokes the draft once produce returns 5`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > revokes the draft once produce returns 5`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true revokes the draft once produce returns 6`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > revokes the draft once produce returns 6`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > revokes the draft once produce returns 7`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > revokes the draft once produce returns 8`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > set drafts > revokes sets 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > set drafts > revokes sets 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > throws when Object.defineProperty() is used on drafts 1`] = `[Error: Cannot call 'defineProperty()' on drafts]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > throws when Object.setPrototypeOf() is used on a draft 1`] = `[Error: Cannot call 'setPrototypeOf()' on drafts]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true throws when the draft is modified and another object is returned 1`] = `"Either the value is returned as a new non-draft value, or only the draft is modified without returning any value."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=false:use-listener=true > throws when the draft is modified and another object is returned 1`] = `[Error: Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false array drafts throws when a non-numeric property is added 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > array drafts > throws when a non-numeric property is added 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false array drafts throws when a non-numeric property is deleted 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > array drafts > throws when a non-numeric property is deleted 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false map drafts revokes map proxies 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > map drafts > revokes map proxies 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false map drafts revokes map proxies 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > map drafts > revokes map proxies 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false recipe functions cannot return a modified child draft 1`] = `"Cannot return a modified child draft."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > recipe functions > cannot return a modified child draft 1`] = `[Error: Cannot return a modified child draft.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false recipe functions cannot return an object that references itself 1`] = `"Maximum call stack size exceeded"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > recipe functions > cannot return an object that references itself 1`] = `[RangeError: Maximum call stack size exceeded]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false revokes the draft once produce returns 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > revokes the draft once produce returns 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false revokes the draft once produce returns 2`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > revokes the draft once produce returns 2`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false revokes the draft once produce returns 3`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > revokes the draft once produce returns 3`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false revokes the draft once produce returns 4`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > revokes the draft once produce returns 4`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false revokes the draft once produce returns 5`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > revokes the draft once produce returns 5`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false revokes the draft once produce returns 6`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > revokes the draft once produce returns 6`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > revokes the draft once produce returns 7`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > revokes the draft once produce returns 8`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > set drafts > revokes sets 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > set drafts > revokes sets 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > throws when Object.defineProperty() is used on drafts 1`] = `[Error: Cannot call 'defineProperty()' on drafts]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > throws when Object.setPrototypeOf() is used on a draft 1`] = `[Error: Cannot call 'setPrototypeOf()' on drafts]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false throws when the draft is modified and another object is returned 1`] = `"Either the value is returned as a new non-draft value, or only the draft is modified without returning any value."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=false > throws when the draft is modified and another object is returned 1`] = `[Error: Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true array drafts throws when a non-numeric property is added 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > array drafts > throws when a non-numeric property is added 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true array drafts throws when a non-numeric property is deleted 1`] = `"Only supports setting array indices and the 'length' property."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > array drafts > throws when a non-numeric property is deleted 1`] = `[Error: Only supports setting array indices and the 'length' property.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true map drafts revokes map proxies 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > map drafts > revokes map proxies 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true map drafts revokes map proxies 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > map drafts > revokes map proxies 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true recipe functions cannot return a modified child draft 1`] = `"Cannot return a modified child draft."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > recipe functions > cannot return a modified child draft 1`] = `[Error: Cannot return a modified child draft.]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true recipe functions cannot return an object that references itself 1`] = `"Maximum call stack size exceeded"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > recipe functions > cannot return an object that references itself 1`] = `[RangeError: Maximum call stack size exceeded]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true revokes the draft once produce returns 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > revokes the draft once produce returns 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true revokes the draft once produce returns 2`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > revokes the draft once produce returns 2`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true revokes the draft once produce returns 3`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > revokes the draft once produce returns 3`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true revokes the draft once produce returns 4`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > revokes the draft once produce returns 4`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true revokes the draft once produce returns 5`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > revokes the draft once produce returns 5`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true revokes the draft once produce returns 6`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > revokes the draft once produce returns 6`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true revokes the draft once produce returns 7`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > revokes the draft once produce returns 7`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true revokes the draft once produce returns 8`] = `"Cannot perform 'set' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > revokes the draft once produce returns 8`] = `[TypeError: Cannot perform 'set' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true set drafts revokes sets 1`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > set drafts > revokes sets 1`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true set drafts revokes sets 2`] = `"Cannot perform 'get' on a proxy that has been revoked"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > set drafts > revokes sets 2`] = `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true throws when Object.defineProperty() is used on drafts 1`] = `"Cannot call 'defineProperty()' on drafts"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > throws when Object.defineProperty() is used on drafts 1`] = `[Error: Cannot call 'defineProperty()' on drafts]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true throws when Object.setPrototypeOf() is used on a draft 1`] = `"Cannot call 'setPrototypeOf()' on drafts"`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > throws when Object.setPrototypeOf() is used on a draft 1`] = `[Error: Cannot call 'setPrototypeOf()' on drafts]`;
 
-exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true throws when the draft is modified and another object is returned 1`] = `"Either the value is returned as a new non-draft value, or only the draft is modified without returning any value."`;
+exports[`base functionality - auto-freeze=true:shallow-copy=true:use-listener=true > throws when the draft is modified and another object is returned 1`] = `[Error: Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.]`;
 
-exports[`complex nesting map / set / object modify deep object 1`] = `
+exports[`complex nesting map / set / object > modify deep object 1`] = `
 {
   "map": Map {
     "set1" => Set {
@@ -324,7 +324,7 @@ exports[`complex nesting map / set / object modify deep object 1`] = `
 }
 `;
 
-exports[`complex nesting map / set / object modify deep object 2`] = `
+exports[`complex nesting map / set / object > modify deep object 2`] = `
 [
   {
     "op": "replace",
@@ -339,7 +339,7 @@ exports[`complex nesting map / set / object modify deep object 2`] = `
 ]
 `;
 
-exports[`complex nesting map / set / object modify deep object 3`] = `
+exports[`complex nesting map / set / object > modify deep object 3`] = `
 {
   "map": Map {
     "set1" => Set {
@@ -359,7 +359,7 @@ exports[`complex nesting map / set / object modify deep object 3`] = `
 }
 `;
 
-exports[`complex nesting map / set / object modify deep object 4`] = `
+exports[`complex nesting map / set / object > modify deep object 4`] = `
 [
   {
     "op": "replace",
@@ -374,7 +374,7 @@ exports[`complex nesting map / set / object modify deep object 4`] = `
 ]
 `;
 
-exports[`complex nesting map / set / object modify deep object 5`] = `
+exports[`complex nesting map / set / object > modify deep object 5`] = `
 {
   "map": Map {
     "set1" => Set {
@@ -394,7 +394,7 @@ exports[`complex nesting map / set / object modify deep object 5`] = `
 }
 `;
 
-exports[`complex nesting map / set / object modify deep object 6`] = `
+exports[`complex nesting map / set / object > modify deep object 6`] = `
 [
   {
     "op": "replace",
@@ -409,7 +409,7 @@ exports[`complex nesting map / set / object modify deep object 6`] = `
 ]
 `;
 
-exports[`complex nesting map / set / object modify deep object 7`] = `
+exports[`complex nesting map / set / object > modify deep object 7`] = `
 {
   "map": Map {
     "set1" => Set {
@@ -429,7 +429,7 @@ exports[`complex nesting map / set / object modify deep object 7`] = `
 }
 `;
 
-exports[`complex nesting map / set / object modify deep object 8`] = `
+exports[`complex nesting map / set / object > modify deep object 8`] = `
 [
   {
     "op": "replace",
@@ -444,7 +444,7 @@ exports[`complex nesting map / set / object modify deep object 8`] = `
 ]
 `;
 
-exports[`complex nesting map / set / object modify deep object 9`] = `
+exports[`complex nesting map / set / object > modify deep object 9`] = `
 {
   "map": Map {
     "set1" => Set {
@@ -464,7 +464,7 @@ exports[`complex nesting map / set / object modify deep object 9`] = `
 }
 `;
 
-exports[`complex nesting map / set / object modify deep object 10`] = `
+exports[`complex nesting map / set / object > modify deep object 10`] = `
 [
   {
     "op": "replace",
@@ -479,7 +479,7 @@ exports[`complex nesting map / set / object modify deep object 10`] = `
 ]
 `;
 
-exports[`complex nesting map / set / object modify deep object 11`] = `
+exports[`complex nesting map / set / object > modify deep object 11`] = `
 {
   "map": Map {
     "set1" => Set {
@@ -499,7 +499,7 @@ exports[`complex nesting map / set / object modify deep object 11`] = `
 }
 `;
 
-exports[`complex nesting map / set / object modify deep object 12`] = `
+exports[`complex nesting map / set / object > modify deep object 12`] = `
 [
   {
     "op": "replace",
@@ -514,7 +514,7 @@ exports[`complex nesting map / set / object modify deep object 12`] = `
 ]
 `;
 
-exports[`complex nesting map / set / object modify deep object 13`] = `
+exports[`complex nesting map / set / object > modify deep object 13`] = `
 {
   "map": Map {
     "set1" => Set {
@@ -534,7 +534,7 @@ exports[`complex nesting map / set / object modify deep object 13`] = `
 }
 `;
 
-exports[`complex nesting map / set / object modify deep object 14`] = `
+exports[`complex nesting map / set / object > modify deep object 14`] = `
 [
   {
     "op": "replace",
@@ -549,7 +549,7 @@ exports[`complex nesting map / set / object modify deep object 14`] = `
 ]
 `;
 
-exports[`complex nesting map / set / object modify deep object 15`] = `
+exports[`complex nesting map / set / object > modify deep object 15`] = `
 {
   "map": Map {
     "set1" => Set {
@@ -569,7 +569,7 @@ exports[`complex nesting map / set / object modify deep object 15`] = `
 }
 `;
 
-exports[`complex nesting map / set / object modify deep object 16`] = `
+exports[`complex nesting map / set / object > modify deep object 16`] = `
 [
   {
     "op": "replace",

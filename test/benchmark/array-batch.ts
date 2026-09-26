@@ -1,6 +1,7 @@
 /* eslint-disable no-unreachable-loop */
 /* eslint-disable import/no-relative-packages */
 /* eslint-disable prefer-template */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-nocheck
 import fs from 'fs';
 import path from 'path';

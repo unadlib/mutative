@@ -508,7 +508,7 @@ describe('base', () => {
     const state = create(data, (draft) => {
       const iterator = draft.map.values();
       iterator.next().value!.x = 1;
-      for (const [key, item] of draft.map) {
+      for (const [, item] of draft.map) {
         if (item.x === 1) {
           item.c = 2;
         }
@@ -1639,11 +1639,9 @@ describe('class instance ', () => {
   });
 
   test('getter only', () => {
-    let getterCalled = 0;
     class State {
       x = 0;
       get y() {
-        getterCalled++;
         return this.x;
       }
     }
@@ -2000,7 +1998,7 @@ test('copy error: check stable mark()', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `"Please check mark() to ensure that it is a stable marker draftable function."`
+    `[Error: Please check mark() to ensure that it is a stable marker draftable function.]`
   );
 });
 
@@ -2063,8 +2061,8 @@ test('create options', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(`
-    "Invalid options: () => {
-                //
-            }, 'options' should be an object."
+    [Error: Invalid options: () => {
+    			//
+    		}, 'options' should be an object.]
   `);
 });

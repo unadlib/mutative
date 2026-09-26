@@ -1,17 +1,16 @@
 /* eslint-disable prefer-template */
 /* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-nocheck
 'use strict';
 
 import { enablePatches, produce, setAutoFreeze } from 'immer';
 import cloneDeep from 'lodash.clonedeep';
-import immutable from 'immutable';
+import { List, Record } from 'immutable';
 import Seamless from 'seamless-immutable';
 import deepFreeze from 'deep-freeze';
 import { create } from '../..';
 import { measure } from './measure';
-
-const { List, Record } = immutable;
 
 function freeze(x) {
   Object.freeze(x);

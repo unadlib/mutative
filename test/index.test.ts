@@ -2357,7 +2357,9 @@ test('circular reference - object - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/a/b]`
+  );
 });
 
 test('circular reference - object - 1 - 1', () => {
@@ -2374,7 +2376,9 @@ test('circular reference - object - 1 - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/a/b]`
+  );
 });
 
 test('circular reference - object - 2', () => {
@@ -2393,7 +2397,9 @@ test('circular reference - object - 2', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/a/b]`
+  );
 });
 
 test('circular reference - object - 2 - 1', () => {
@@ -2410,7 +2416,9 @@ test('circular reference - object - 2 - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/a/b]`
+  );
 });
 
 test('circular reference - object - 3', () => {
@@ -2429,7 +2437,9 @@ test('circular reference - object - 3', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/a/b]`
+  );
 });
 
 test('circular reference - object - 3 - 1', () => {
@@ -2446,7 +2456,9 @@ test('circular reference - object - 3 - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/a/b"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/a/b]`
+  );
 });
 
 test('circular reference - object - 4', () => {
@@ -2463,7 +2475,9 @@ test('circular reference - object - 4', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/c1"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/c1]`
+  );
 });
 
 test('circular reference - object - 4 - 1', () => {
@@ -2480,7 +2494,7 @@ test('circular reference - object - 4 - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+  }).toThrowErrorMatchingInlineSnapshot(`[Error: Forbids circular reference]`);
 });
 
 test('circular reference - array - 1', () => {
@@ -2498,7 +2512,9 @@ test('circular reference - array - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/1/a"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/1/a]`
+  );
 });
 
 test('circular reference - array - 1 - 1', () => {
@@ -2515,7 +2531,9 @@ test('circular reference - array - 1 - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/1/a"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/1/a]`
+  );
 });
 
 test('circular reference - array - 2', () => {
@@ -2533,7 +2551,9 @@ test('circular reference - array - 2', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/2"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/2]`
+  );
 });
 
 test('circular reference - array - 2 - 1', () => {
@@ -2550,7 +2570,7 @@ test('circular reference - array - 2 - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+  }).toThrowErrorMatchingInlineSnapshot(`[Error: Forbids circular reference]`);
 });
 
 test('circular reference - set - 1', () => {
@@ -2571,7 +2591,7 @@ test('circular reference - set - 1', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `"Forbids circular reference: ~/1/a/b"`
+    `[Error: Forbids circular reference: ~/1/a/b]`
   );
 });
 
@@ -2591,7 +2611,7 @@ test('circular reference - set - 1 - 1', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `"Forbids circular reference: ~/1/a/b"`
+    `[Error: Forbids circular reference: ~/1/a/b]`
   );
 });
 
@@ -2610,7 +2630,9 @@ test('circular reference - set - 2', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/2"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/2]`
+  );
 });
 
 test('circular reference - set - 2 - 1', () => {
@@ -2627,7 +2649,7 @@ test('circular reference - set - 2 - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+  }).toThrowErrorMatchingInlineSnapshot(`[Error: Forbids circular reference]`);
 });
 
 test('circular reference - map - 1', () => {
@@ -2658,7 +2680,7 @@ test('circular reference - map - 1', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `"Forbids circular reference: ~/[Symbol(1)]/a/b"`
+    `[Error: Forbids circular reference: ~/[Symbol(1)]/a/b]`
   );
 });
 
@@ -2689,7 +2711,7 @@ test('circular reference - map - 1 - 1', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `"Forbids circular reference: ~/1/a/b"`
+    `[Error: Forbids circular reference: ~/1/a/b]`
   );
 });
 
@@ -2710,7 +2732,9 @@ test('circular reference - map - 2', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/2"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/2]`
+  );
 });
 
 test('circular reference - map - 2 - 1', () => {
@@ -2730,7 +2754,7 @@ test('circular reference - map - 2 - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+  }).toThrowErrorMatchingInlineSnapshot(`[Error: Forbids circular reference]`);
 });
 
 test('circular reference - map - 3', () => {
@@ -2750,7 +2774,9 @@ test('circular reference - map - 3', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference: ~/2"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Forbids circular reference: ~/2]`
+  );
 });
 
 test('circular reference - map - 3 - 1', () => {
@@ -2770,7 +2796,7 @@ test('circular reference - map - 3 - 1', () => {
         enableAutoFreeze: true,
       }
     );
-  }).toThrowErrorMatchingInlineSnapshot(`"Forbids circular reference"`);
+  }).toThrowErrorMatchingInlineSnapshot(`[Error: Forbids circular reference]`);
 });
 
 test('can return an object that references itself', () => {
@@ -2780,7 +2806,9 @@ test('can return an object that references itself', () => {
   expect(() => {
     // @ts-expect-error
     create(res, (draft) => res.self, { enableAutoFreeze: true });
-  }).toThrowErrorMatchingInlineSnapshot(`"Maximum call stack size exceeded"`);
+  }).toThrowErrorMatchingInlineSnapshot(
+    `[RangeError: Maximum call stack size exceeded]`
+  );
 });
 
 test('#18 - array: assigning a non-draft with the same key', () => {
@@ -3591,7 +3619,7 @@ test('async throw error', async () => {
   }
   expect(state).toBeUndefined();
   expect(() => baseDraft.a).toThrowErrorMatchingInlineSnapshot(
-    `"Cannot perform 'get' on a proxy that has been revoked"`
+    `[TypeError: Cannot perform 'get' on a proxy that has been revoked]`
   );
 });
 
@@ -4147,7 +4175,7 @@ test('#61 - type issue: current of Draft<T> type should return T type', () => {
       // @ts-expect-error
       const value = current({ x: { y: new Set(['a', 'b']) } } as T);
     }).toThrowErrorMatchingInlineSnapshot(
-      `"current() is only used for Draft, parameter: [object Object]"`
+      `[Error: current() is only used for Draft, parameter: [object Object]]`
     );
     return f();
   }
@@ -4172,6 +4200,7 @@ describe('set - new API', () => {
       draft.odds.values().next().value.a = 2;
     });
     // @ts-ignore
+    // eslint-disable-next-line no-extend-native
     Set.prototype.difference = difference;
   });
 

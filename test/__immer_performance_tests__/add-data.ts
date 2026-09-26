@@ -1,19 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-nocheck
 'use strict';
 
 import { produce, setAutoFreeze } from 'immer';
 import cloneDeep from 'lodash.clonedeep';
-import immutable from 'immutable';
+import { fromJS } from 'immutable';
 import Seamless from 'seamless-immutable';
 import deepFreeze from 'deep-freeze';
 import { measure } from './measure';
 import { create } from '../..';
-
-const { fromJS } = immutable;
+import dataSet from './data.json' assert { type: 'json' };
 
 console.log('\n# add-data - loading large set of data\n');
-
-import dataSet from './data.json' assert { type: 'json' };
 
 const baseState = {
   data: null,
@@ -77,7 +75,7 @@ measure('seamless-immutable + asMutable', () => {
   seamlessBaseState.set('data', dataSet).asMutable({ deep: true });
 });
 
-measure('immer - without autofreeze * ' + MAX, () => {
+measure(`immer - without autofreeze * ${MAX}`, () => {
   setAutoFreeze(false);
   for (let i = 0; i < MAX; i++)
     produce(baseState, (draft) => {
@@ -85,7 +83,7 @@ measure('immer - without autofreeze * ' + MAX, () => {
     });
 });
 
-measure('immer - with autofreeze * ' + MAX, () => {
+measure(`immer - with autofreeze * ${MAX}`, () => {
   setAutoFreeze(true);
   for (let i = 0; i < MAX; i++)
     produce(frozenBazeState, (draft) => {
@@ -94,7 +92,7 @@ measure('immer - with autofreeze * ' + MAX, () => {
 });
 
 measure(
-  'mutative without autofreeze * ' + MAX,
+  `mutative without autofreeze * ${MAX}`,
   () => cloneDeep(baseState),
   (baseState) => {
     for (let i = 0; i < MAX; i++)
@@ -105,7 +103,7 @@ measure(
 );
 
 measure(
-  'mutative with autofreeze * ' + MAX,
+  `mutative with autofreeze * ${MAX}`,
   () => cloneDeep(baseState),
   (baseState) => {
     for (let i = 0; i < MAX; i++)

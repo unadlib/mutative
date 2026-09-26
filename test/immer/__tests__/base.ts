@@ -19,7 +19,7 @@ import {
 enablePatches();
 enableMapSet();
 
-jest.setTimeout(1000);
+vi.setConfig({ testTimeout: 1000 });
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -2110,7 +2110,7 @@ function runBaseTest(name, autoFreeze, useStrictShallowCopy, useListener) {
   });
 
   if (!autoFreeze) {
-    describe('#613', () => {
+    test('#613', () => {
       const x1 = {};
       const y1 = produce(x1, (draft) => {
         draft.foo = produce({ bar: 'baz' }, (draft1) => {
@@ -2257,7 +2257,7 @@ function testObjectTypes(produce) {
     });
   });
 
-  describe('setter only', () => {
+  test('setter only', () => {
     let setterCalled = 0;
     class State {
       [immerable] = true;
@@ -2279,7 +2279,7 @@ function testObjectTypes(produce) {
     expect(state.x).toBe(0);
   });
 
-  describe('getter only', () => {
+  test('getter only', () => {
     let getterCalled = 0;
     class State {
       [immerable] = true;
@@ -2304,7 +2304,7 @@ function testObjectTypes(produce) {
     expect(state.x).toBe(0);
   });
 
-  describe('own setter only', () => {
+  test('own setter only', () => {
     let setterCalled = 0;
     const state = {
       x: 0,
@@ -2327,7 +2327,7 @@ function testObjectTypes(produce) {
     expect(state.x).toBe(0);
   });
 
-  describe('own getter only', () => {
+  test('own getter only', () => {
     let getterCalled = 0;
     const state = {
       x: 0,
@@ -2350,7 +2350,7 @@ function testObjectTypes(produce) {
     expect(state.x).toBe(0);
   });
 
-  describe('#620', () => {
+  test('#620', () => {
     const customSymbol = Symbol('customSymbol');
 
     class TestClass {

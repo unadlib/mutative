@@ -130,7 +130,7 @@ Immer - Patches and Freeze x 287 ops/sec ±0.84% (93 runs sampled)
 The fastest method is Mutative - No Freeze
 ```
 
-Run `yarn benchmark` to measure performance.
+Run `pnpm benchmark` to measure performance.
 
 > OS: macOS 14.7, CPU: Apple M1 Max, Node.js: v22.11.0
 
@@ -138,7 +138,7 @@ Immer relies on auto-freeze to be enabled, if auto-freeze is disabled, Immer wil
 
 So if you are using Immer, you will have to enable auto-freeze for performance. Mutative is disabled auto-freeze by default. With the default configuration of both, we can see the 17x performance gap between Mutative (`6,783 ops/sec`) and Immer (`392 ops/sec`).
 
-Overall, Mutative has a huge performance lead over Immer in [more performance testing scenarios](https://github.com/unadlib/mutative/tree/main/test/performance). Run `yarn performance` to get all the performance results locally.
+Overall, Mutative has a huge performance lead over Immer in [more performance testing scenarios](https://github.com/unadlib/mutative/tree/main/test/performance). Run `pnpm performance` to get all the performance results locally.
 
 <details>
 <summary><b>More Performance Testing Scenarios, Mutative is up to `2.5X-82.9` faster than Immer:  </b></summary>
@@ -718,10 +718,10 @@ Mutative goal is to provide efficient and immutable updates. The focus is on per
 Development Workflow:
 
 - Clone Mutative repo.
-- Run `yarn install` to install all the dependencies.
-- Run `yarn prettier` to format the code.
-- `yarn test --watch` runs an interactive test watcher.
-- Run `yarn commit` to make a git commit.
+- Run `pnpm install` to install all the dependencies.
+- Run `pnpm format` to format the code.
+- `pnpm test --watch` runs an interactive test watcher.
+- Run `pnpm commit` to make a git commit.
 
 ## License
 

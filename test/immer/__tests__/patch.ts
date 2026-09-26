@@ -13,21 +13,21 @@ import {
 enablePatches();
 enableMapSet();
 
-jest.setTimeout(1000);
+vi.setConfig({ testTimeout: 1000 });
 
 const isProd = process.env.NODE_ENV === 'production';
 
 function runPatchTest(base, producer, patches, inversePathes, expectedResult) {
-  let resultProxies, resultEs5;
+  let recordedPatches;
+  let recordedInversePatches;
+  // Produce outside of `describe`: Vitest collects `describe` callbacks lazily,
+  // and callers read the result during collection.
+  const res = produce(base, producer, (p, i) => {
+    recordedPatches = p;
+    recordedInversePatches = i;
+  });
 
-  function runPatchTestHelper() {
-    let recordedPatches;
-    let recordedInversePatches;
-    const res = produce(base, producer, (p, i) => {
-      recordedPatches = p;
-      recordedInversePatches = i;
-    });
-
+  describe(`proxy`, () => {
     if (expectedResult !== undefined)
       test('produced the correct result', () => {
         expect(res).toEqual(expectedResult);
@@ -46,15 +46,9 @@ function runPatchTest(base, producer, patches, inversePathes, expectedResult) {
     test('patches can be reversed', () => {
       expect(applyPatches(res, recordedInversePatches)).toEqual(base);
     });
-
-    return res;
-  }
-
-  describe(`proxy`, () => {
-    resultProxies = runPatchTestHelper();
   });
 
-  return resultProxies;
+  return res;
 }
 
 describe('applyPatches', () => {
