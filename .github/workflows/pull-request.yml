@@ -21,9 +21,12 @@ jobs:
         node-version: 22.x
         cache: pnpm
 
-    - name: pnpm install, pnpm test:coverage
+    - name: pnpm install, lint, format check, type-check, pnpm test:coverage
       run: |
         pnpm install --frozen-lockfile
+        pnpm lint
+        pnpm format --check
+        pnpm type-check
         pnpm test --coverage
 
     - name: Coverage
