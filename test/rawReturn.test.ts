@@ -74,7 +74,7 @@ describe.each([{ useRawReturn: true }, { useRawReturn: false }])(
         Symbol('foo'),
       ].forEach((value: any) => {
         expect(
-          create(value, (draft) => {
+          create(value, () => {
             return useRawReturn ? rawReturn(undefined) : '';
           })
         ).toBe(useRawReturn ? undefined : '');
@@ -100,7 +100,7 @@ describe.each([{ useRawReturn: true }, { useRawReturn: false }])(
         expect(
           create(
             value,
-            (draft) => {
+            () => {
               return useRawReturn ? rawReturn(undefined) : '';
             },
             {
@@ -134,7 +134,7 @@ describe.each([{ useRawReturn: true }, { useRawReturn: false }])(
         expect(
           create(
             value,
-            (draft) => {
+            () => {
               return useRawReturn ? rawReturn(undefined) : '';
             },
             {
@@ -169,7 +169,7 @@ describe.each([{ useRawReturn: true }, { useRawReturn: false }])(
         await expect(
           await create(
             value,
-            async (draft) => {
+            async () => {
               return useRawReturn ? rawReturn(undefined) : '';
             },
             {
@@ -456,7 +456,7 @@ test('deep draft', () => {
 
 test('case', () => {
   const baseState = { foo: 'bar' };
-  const state = create(baseState as { foo: string } | undefined, (draft) => {
+  const state = create(baseState as { foo: string } | undefined, () => {
     return rawReturn(undefined);
   });
   expect(state).toBe(undefined);

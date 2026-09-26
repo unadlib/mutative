@@ -7,7 +7,7 @@ describe('original', () => {
       foo: string;
       bar?: { foobar: string };
     }
-    const value = create(
+    create(
       {
         arr: [{ foo: 'bar' } as Item],
         set: new Set<Item>([{ foo: 'bar' }]),

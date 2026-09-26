@@ -18,22 +18,22 @@ const getData = () => {
     const id = `id-${i}`;
 
     arrayBaseState.push({
-      id: id,
-      todo: 'todo_' + i,
+      id,
+      todo: `todo_${i}`,
       done: false,
       someThingCompletelyIrrelevant: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
     });
 
     objectBaseState[id] = {
-      id: id,
-      todo: 'todo_' + i,
+      id,
+      todo: `todo_${i}`,
       done: false,
       someThingCompletelyIrrelevant: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
     };
 
     mapBaseState.set(id, {
-      id: id,
-      todo: 'todo_' + i,
+      id,
+      todo: `todo_${i}`,
       done: false,
       someThingCompletelyIrrelevant: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
     });
@@ -123,9 +123,7 @@ console.log('----------------------------------------');
 
 measure(
   '[FIRST-TIME][ARRAY] mutative (proxy) - without autofreeze',
-  () => {
-    return getData().arrayBaseState;
-  },
+  () => getData().arrayBaseState,
   (arrayBaseState: any) => {
     create(arrayBaseState, (draft: any) => {
       draft[0].done = true;
@@ -135,9 +133,7 @@ measure(
 
 measure(
   '[FIRST-TIME][OBJECT] mutative (proxy) - without autofreeze',
-  () => {
-    return getData().objectBaseState;
-  },
+  () => getData().objectBaseState,
   (objectBaseState: any) => {
     create(objectBaseState, (draft: any) => {
       draft[`id-0`].done = true;
@@ -147,9 +143,7 @@ measure(
 
 measure(
   '[FIRST-TIME][MAP] mutative (proxy) - without autofreeze',
-  () => {
-    return getData().mapBaseState;
-  },
+  () => getData().mapBaseState,
   (mapBaseState: any) => {
     create(mapBaseState, (draft: any) => {
       draft.get('id-0').done = true;
@@ -159,9 +153,7 @@ measure(
 
 measure(
   '[FIRST-TIME][ARRAY] mutative (proxy) - with autofreeze',
-  () => {
-    return getData().arrayBaseState;
-  },
+  () => getData().arrayBaseState,
   (arrayBaseState: any) => {
     create(
       arrayBaseState,
@@ -177,9 +169,7 @@ measure(
 
 measure(
   '[FIRST-TIME][OBJECT] mutative (proxy) - with autofreeze',
-  () => {
-    return getData().objectBaseState;
-  },
+  () => getData().objectBaseState,
   (objectBaseState: any) => {
     create(
       objectBaseState,
@@ -195,9 +185,7 @@ measure(
 
 measure(
   '[FIRST-TIME][MAP] mutative (proxy) - with autofreeze',
-  () => {
-    return getData().mapBaseState;
-  },
+  () => getData().mapBaseState,
   (mapBaseState: any) => {
     create(
       mapBaseState,

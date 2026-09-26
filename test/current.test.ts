@@ -6,7 +6,7 @@ import { create, current, isDraft } from '../src';
 
 describe('current', () => {
   test('base', () => {
-    const state = create({ a: { b: { c: 1 } }, d: { f: 1 } }, (draft) => {
+    create({ a: { b: { c: 1 } }, d: { f: 1 } }, (draft) => {
       draft.a.b.c = 2;
       expect(current(draft.a)).toEqual({ b: { c: 2 } });
       // The node `a` has been modified.
@@ -26,7 +26,7 @@ describe('current', () => {
       a: 1,
       set,
     };
-    const value = create(
+    create(
       {
         arr: [{ foo: 'bar' } as Item],
         set: new Set<Item>([{ foo: 'bar' }]),
@@ -308,9 +308,11 @@ test('nested create() - Avoid deep copies', () => {
 });
 
 test('#61 - type issue: current of Draft<T> type should return T type', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function test<T extends { x: { y: ReadonlySet<string> } }>(base: T): T {
     const [draft] = create(base);
     const currentValue0 = current(draft); // Type Draft<T> is assignable to type T
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const currentValue1: T = current(base); // T is assignable to type T
     return currentValue0;
   }

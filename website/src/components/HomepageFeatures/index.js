@@ -5,7 +5,7 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/jsx-filename-extension */
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
 
@@ -41,7 +41,7 @@ const FeatureList = [
   },
 ];
 
-function Feature({ Svg, title, description }) {
+function Feature({ title, description }) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center padding-horiz--md">

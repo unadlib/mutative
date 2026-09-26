@@ -29,7 +29,7 @@ test('check enableAutoFreeze', () => {
     enableAutoFreeze: true,
   });
   const baseState = { foo: { bar: 'str' }, arr: [] };
-  const state = create(baseState, (draft) => {
+  const state = create(baseState, () => {
     //
   });
   expect(Object.isFrozen(state)).toBeTruthy();
@@ -42,7 +42,7 @@ test('check enableAutoFreeze - override', () => {
   const baseState = { foo: { bar: 'str' }, arr: [] };
   const state = create(
     baseState,
-    (draft) => {
+    () => {
       //
     },
     {
@@ -57,7 +57,7 @@ test('check enablePatches', () => {
     enablePatches: true,
   });
   const baseState = { foo: { bar: 'str' }, arr: [] };
-  const state = create(baseState, (draft) => {
+  const state = create(baseState, () => {
     //
   });
   expect(Array.isArray(state)).toBeTruthy();
@@ -70,7 +70,7 @@ test('check enablePatches - override', () => {
   const baseState = { foo: { bar: 'str' }, arr: [] };
   const state = create(
     baseState,
-    (draft) => {
+    () => {
       //
     },
     {
@@ -89,7 +89,7 @@ test('check strict', () => {
   }
   const baseState = { foo: { bar: 'str' }, arr: [], c: new C() };
   expect(() => {
-    const state = create(baseState, (draft) => {
+    create(baseState, (draft) => {
       draft.c.x = 1;
     });
   }).toThrow();
@@ -104,7 +104,7 @@ test('check strict - override', () => {
   }
   const baseState = { foo: { bar: 'str' }, arr: [], c: new C() };
   expect(() => {
-    const state = create(
+    create(
       baseState,
       (draft) => {
         draft.c.x = 1;

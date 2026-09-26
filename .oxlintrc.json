@@ -3,7 +3,7 @@
   "plugins": ["import", "jsx-a11y", "react", "typescript"],
   "categories": { "correctness": "off" },
   "env": { "builtin": true, "browser": true, "node": true, "vitest": true },
-  "ignorePatterns": ["test/immer/**"],
+  "ignorePatterns": ["test/immer/**", "test/*.snap.ts"],
   "rules": {
     "array-callback-return": ["error", { "allowImplicit": true }],
     "arrow-body-style": [

@@ -51,7 +51,6 @@ test('custom shallow copy with checking in dev mode', () => {
 test('check warn when apply patches with other options', () => {
   {
     const baseState = { foo: { bar: 'test' } };
-    const warn = console.warn;
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     apply(
       baseState,
@@ -73,7 +72,6 @@ test('check warn when apply patches with other options', () => {
   }
   {
     const baseState = { foo: { bar: 'test' } };
-    const warn = console.warn;
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     apply(
       baseState,

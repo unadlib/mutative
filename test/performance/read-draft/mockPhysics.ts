@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // our pretend physics engine
 interface Vec2 {
   x: number;

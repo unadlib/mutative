@@ -4200,6 +4200,7 @@ describe('set - new API', () => {
       draft.odds.values().next().value.a = 2;
     });
     // @ts-ignore
+    // eslint-disable-next-line no-extend-native
     Set.prototype.difference = difference;
   });
 

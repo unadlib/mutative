@@ -71,7 +71,7 @@ export function getPath(
   try {
     // check if the path is valid
     resolvePath(target.copy, path);
-  } catch (e) {
+  } catch {
     return null;
   }
   return path;

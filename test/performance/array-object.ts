@@ -23,22 +23,22 @@ for (let i = 0; i < MAX; i++) {
   const id = `id-${i}`;
 
   arrayBaseState.push({
-    id: id,
-    todo: 'todo_' + i,
+    id,
+    todo: `todo_${i}`,
     done: false,
     someThingCompletelyIrrelevant: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
   });
 
   objectBaseState[id] = {
-    id: id,
-    todo: 'todo_' + i,
+    id,
+    todo: `todo_${i}`,
     done: false,
     someThingCompletelyIrrelevant: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
   };
 
   mapBaseState.set(id, {
-    id: id,
-    todo: 'todo_' + i,
+    id,
+    todo: `todo_${i}`,
     done: false,
     someThingCompletelyIrrelevant: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
   });

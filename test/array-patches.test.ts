@@ -8,22 +8,9 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {
-  produce,
-  enableMapSet,
-  setAutoFreeze,
-  Immutable,
-  produceWithPatches,
-  enablePatches,
-  applyPatches,
-  setUseStrictShallowCopy,
-  current as immerCurrent,
-  createDraft,
-  finishDraft,
-  immerable,
-} from 'immer';
-import { create, apply, Patches, original } from '../src';
-import { deepClone, isDraft, set } from '../src/utils';
+import { produceWithPatches, enablePatches } from 'immer';
+import { create, apply } from '../src';
+import { deepClone } from '../src/utils';
 
 function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
   const [state, patches, inversePatches] = create(data as any, fn, {
@@ -57,7 +44,7 @@ test('shift', () => {
   };
   {
     enablePatches();
-    const [state, patches, inversePatches] = produceWithPatches(obj, fn);
+    const [, patches, inversePatches] = produceWithPatches(obj, fn);
     console.log('immer patches:', patches);
     console.log('immer inversePatches:', inversePatches);
   }
