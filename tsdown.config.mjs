@@ -1,5 +1,8 @@
 import { defineConfig } from 'tsdown';
 import { analyzer, unstableRolldownAdapter } from 'vite-bundle-analyzer';
+import { typescript, terser } from './scripts/build-plugins.mjs';
+
+const compiler = typescript();
 
 const variants = [
   ['cjs-production', 'cjs', 'mutative.cjs.production.min.js', false, true],
@@ -22,11 +25,18 @@ export default defineConfig(
     platform: format === 'cjs' ? 'node' : 'browser',
     target: 'es2015',
     sourcemap: true,
-    minify,
+    minify: false,
     define: { __DEV__: String(development) },
     globalName: format === 'umd' ? 'Mutative' : undefined,
-    outputOptions: { entryFileNames: fileName, sourcemapExcludeSources: true },
+    outputOptions: {
+      entryFileNames: fileName,
+      sourcemapExcludeSources: true,
+      strict: true,
+      generatedCode: { symbols: false },
+    },
     plugins: [
+      compiler,
+      ...(minify ? [terser()] : []),
       ...(process.env.ANALYZE === 'true' && name === 'esm-development'
         ? [
             unstableRolldownAdapter(

@@ -13,6 +13,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
+import { SourceMap } from 'node:module';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
@@ -84,6 +85,43 @@ try {
     assert.match(code, /Minified Mutative error/);
   }
 
+  // Both the TypeScript transform and the minifier must map back to the
+  // shipped TypeScript sources, not to intermediate JavaScript files.
+  for (const name of bundles) {
+    const code = readFileSync(join(root, 'dist', name), 'utf8');
+    const map = JSON.parse(
+      readFileSync(join(root, 'dist', `${name}.map`), 'utf8')
+    );
+    for (const source of map.sources) {
+      assert.ok(
+        source.startsWith('../src/'),
+        `${name}: unexpected source ${source}`
+      );
+      assert.ok(
+        existsSync(join(root, 'dist', source)),
+        `${name}: missing source ${source}`
+      );
+    }
+    const marker = name.includes('production')
+      ? 'Minified Mutative error'
+      : 'current() is only used for Draft';
+    const offset = code.indexOf(marker);
+    assert.ok(offset >= 0, `${name}: missing diagnostic marker`);
+    const lines = code.slice(0, offset).split('\n');
+    const entry = new SourceMap(map).findEntry(
+      lines.length - 1,
+      lines.at(-1).length
+    );
+    assert.equal(entry.originalSource, '../src/error.ts');
+    const sourceLine = readFileSync(join(root, 'src/error.ts'), 'utf8').split(
+      '\n'
+    )[entry.originalLine];
+    assert.ok(
+      sourceLine.includes(marker),
+      `${name}: incorrect source map location`
+    );
+  }
+
   const [pack] = JSON.parse(
     execFileSync(
       'npm',
@@ -150,6 +188,7 @@ try {
          const api = require('mutative');
          assert.deepEqual(Object.keys(api).sort(), ${JSON.stringify(expectedExports)});
          assert.equal(api.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
+         assert.throws(() => api.apply(Object.freeze({ count: 1 }), [{ op: 'replace', path: ['count'], value: 2 }], { mutable: true }), TypeError);
          assert.equal(require('mutative/dist/mutative.cjs.production.min.js').create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
          assert.equal(require('mutative/dist/mutative.umd.production.min.js').create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
          assert.throws(() => api.current({}), /${mode === 'production' ? 'Minified Mutative error #7' : 'current\\(\\) is only used for Draft'}/);`,
@@ -181,6 +220,14 @@ try {
         ? /Minified Mutative error #7/
         : /current\(\) is only used for Draft/
     );
+    assert.throws(
+      () =>
+        vm.runInNewContext(
+          "Mutative.apply(Object.freeze({ count: 1 }), [{ op: 'replace', path: ['count'], value: 2 }], { mutable: true })",
+          context
+        ),
+      { name: 'TypeError' }
+    );
   }
 
   run(
@@ -192,6 +239,7 @@ try {
        import * as api from 'mutative';
        assert.deepEqual(Object.keys(api).sort(), ${JSON.stringify(expectedExports)});
        assert.equal(api.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
+       assert.throws(() => api.apply(Object.freeze({ count: 1 }), [{ op: 'replace', path: ['count'], value: 2 }], { mutable: true }), TypeError);
        assert.throws(() => api.current({}), /current\\(\\) is only used for Draft/);
        const deep = await import('mutative/dist/mutative.esm.mjs');
        assert.equal(deep.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);`,
