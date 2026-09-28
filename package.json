@@ -13,9 +13,14 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/mutative.esm.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/mutative.esm.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     },
     "./*": "./*"
   },
@@ -44,7 +49,7 @@
     "performance:sample": "cd test/performance && NODE_ENV='production' ts-node sample.ts",
     "performance:array-object": "cd test/performance && NODE_ENV='production' ts-node array-object.ts",
     "performance": "pnpm build && pnpm performance:immer && pnpm performance:basic && pnpm performance:set-map && pnpm performance:big-object && pnpm performance:sample && pnpm performance:array-object",
-    "build": "pnpm run clean && tsdown && tsc --noEmit false --emitDeclarationOnly --outDir dist && node scripts/write-cjs-entry.mjs",
+    "build": "pnpm run clean && tsdown && tsc --noEmit false --emitDeclarationOnly --outDir dist && node scripts/write-package-entries.mjs",
     "build:analyze": "ANALYZE=true pnpm build",
     "build:doc": "rimraf docs && typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts --readme none",
     "commit": "git-cz",

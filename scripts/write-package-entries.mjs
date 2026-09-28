@@ -12,3 +12,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 `
 );
+
+// The ESM facade gives NodeNext a declaration with the same module kind as
+// mutative.esm.mjs while reusing the complete declaration tree from tsc.
+writeFileSync('dist/index.d.mts', "export * from './index.js';\n");
