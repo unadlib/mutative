@@ -35,7 +35,7 @@ export default defineConfig(
       generatedCode: { symbols: false },
     },
     plugins: [
-      compiler,
+      compiler(),
       ...(minify ? [terser()] : []),
       ...(process.env.ANALYZE === 'true' && name === 'esm-development'
         ? [

@@ -2,18 +2,24 @@ import { resolve } from 'node:path';
 import ts from 'typescript';
 import { minify } from 'terser';
 
-// Compile once for all six bundles. Program-level compilation preserves const
-// enum inlining and the TypeScript lowering used before the bundler migration.
-export function typescript() {
+// Program-level compilation preserves cross-module const-enum inlining.
+function compileTypescript(watch) {
   const configPath = resolve('tsconfig.json');
-  const config = ts.readConfigFile(configPath, ts.sys.readFile);
+  const files = new Set([configPath]);
+  watch(configPath);
+  const readFile = (file) => {
+    files.add(resolve(file));
+    watch(resolve(file));
+    return ts.sys.readFile(file);
+  };
+  const config = ts.readConfigFile(configPath, readFile);
   if (config.error)
     throw new Error(
       ts.flattenDiagnosticMessageText(config.error.messageText, '\n')
     );
   const parsed = ts.parseJsonConfigFileContent(
     config.config,
-    ts.sys,
+    { ...ts.sys, readFile },
     process.cwd(),
     {
       noEmit: false,
@@ -22,6 +28,16 @@ export function typescript() {
     }
   );
   const program = ts.createProgram(parsed.fileNames, parsed.options);
+  for (const file of parsed.fileNames) files.add(resolve(file));
+  for (const source of program.getSourceFiles()) {
+    if (
+      !program.isSourceFileDefaultLibrary(source) &&
+      !program.isSourceFileFromExternalLibrary(source)
+    ) {
+      files.add(resolve(source.fileName));
+    }
+  }
+  for (const file of files) watch(file);
   const diagnostics = [...parsed.errors, ...ts.getPreEmitDiagnostics(program)];
   if (diagnostics.length) {
     throw new Error(
@@ -45,11 +61,39 @@ export function typescript() {
     }
     modules.set(id, output);
   });
-  return {
-    name: 'mutative:typescript',
-    load(id) {
-      return modules.get(id);
-    },
+  return { modules, files };
+}
+
+// Variants share completed compilations, but each keeps its own build snapshot.
+// One watcher's invalidation must not clear another watcher's active load data.
+export function typescript() {
+  let cached;
+  let generation = 0;
+  return () => {
+    let compilation;
+    return {
+      name: 'mutative:typescript',
+      watchChange() {
+        generation += 1;
+      },
+      buildStart() {
+        if (!cached || cached.generation !== generation) {
+          cached = {
+            ...compileTypescript((file) => this.addWatchFile(file)),
+            generation,
+          };
+        }
+        compilation = cached;
+        for (const file of compilation.files) this.addWatchFile(file);
+      },
+      load(id) {
+        const output = compilation.modules.get(id);
+        if (!output) return;
+        // TypeScript can erase imports after inlining const enum values.
+        for (const file of compilation.files) this.addWatchFile(file);
+        return output;
+      },
+    };
   };
 }
 
