@@ -27,6 +27,7 @@ jobs:
         pnpm build
         pnpm size
         pnpm test:package
+        pnpm test:build-watch
         pnpm type-check
         pnpm test
       env:

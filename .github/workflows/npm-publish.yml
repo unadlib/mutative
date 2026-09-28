@@ -21,6 +21,7 @@ jobs:
       - run: pnpm build
       - run: pnpm size
       - run: pnpm test:package
+      - run: pnpm test:build-watch
       - run: pnpm test
       - run: npm publish --provenance
         env:

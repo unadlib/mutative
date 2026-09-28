@@ -31,6 +31,7 @@
   "scripts": {
     "test": "vitest run",
     "test:package": "node scripts/check-package.mjs",
+    "test:build-watch": "node scripts/check-build-watch.mjs",
     "type-check": "tsc --noEmit && tsc --noEmit -p test",
     "lint": "oxlint",
     "clean": "rimraf dist",

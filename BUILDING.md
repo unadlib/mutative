@@ -9,6 +9,7 @@ pnpm install --frozen-lockfile
 pnpm build
 pnpm size
 pnpm test:package
+pnpm test:build-watch
 pnpm type-check
 pnpm test
 pnpm lint
@@ -96,3 +97,17 @@ consumer files are removed after the check.
 
 After changing the compiler or minifier, run these checks as well as the source
 tests. Source tests alone do not exercise the published JavaScript artifacts.
+
+## Watch regression checks
+
+`pnpm test:build-watch` starts tsdown in watch mode against a temporary
+TypeScript project. It verifies both CJS and ESM output after source edits,
+cross-file const-enum changes, a type error followed by recovery, and the
+addition and subsequent modification of a dependency. It checks executed output,
+not just rebuild messages. The watcher and temporary files are cleaned up on
+success or failure. Push, pull request and release workflows run this check.
+
+The TypeScript plugin watches the program's source and configuration inputs.
+Each output variant holds its own compilation snapshot during a build; completed
+compilations are shared until an input changes. Dependencies whose imports were
+erased by const-enum inlining are also watched and invalidate their consumers.
