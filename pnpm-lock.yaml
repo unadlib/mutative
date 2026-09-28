@@ -202,6 +202,9 @@ importers:
       deep-freeze:
         specifier: ^0.0.1
         version: 0.0.1
+      esbuild:
+        specifier: 0.24.0
+        version: 0.24.0
       fast-json-patch:
         specifier: ^3.1.1
         version: 3.1.1

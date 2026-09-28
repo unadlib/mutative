@@ -1,0 +1,75 @@
+{
+  "reference": {
+    "revision": "1c4856be45796f239d0f8cb3b79ea58e6aff2780",
+    "description": "Rollup build before the tsdown migration",
+    "node": "v24.16.0",
+    "commands": ["pnpm install --frozen-lockfile", "pnpm build"]
+  },
+  "budget": {
+    "maxGrowthPercent": 1,
+    "maxGrowthBytes": 64
+  },
+  "esbuild": "0.24.0",
+  "measurements": {
+    "artifact/mutative.cjs.production.min.js": {
+      "raw": 18896,
+      "gzip": 6337,
+      "brotli": 5789
+    },
+    "artifact/mutative.umd.production.min.js": {
+      "raw": 19051,
+      "gzip": 6404,
+      "brotli": 5854
+    },
+    "artifact/mutative.cjs.development.js": {
+      "raw": 65157,
+      "gzip": 12895,
+      "brotli": 11199
+    },
+    "artifact/mutative.umd.development.js": {
+      "raw": 72709,
+      "gzip": 13271,
+      "brotli": 11461
+    },
+    "artifact/mutative.esm.js": {
+      "raw": 64879,
+      "gzip": 12831,
+      "brotli": 11130
+    },
+    "artifact/mutative.esm.mjs": {
+      "raw": 64880,
+      "gzip": 12832,
+      "brotli": 11129
+    },
+    "consumer/import/create": {
+      "raw": 18722,
+      "gzip": 6449,
+      "brotli": 5819
+    },
+    "consumer/import/patches": {
+      "raw": 20495,
+      "gzip": 7093,
+      "brotli": 6393
+    },
+    "consumer/import/all": {
+      "raw": 21688,
+      "gzip": 7449,
+      "brotli": 6721
+    },
+    "consumer/require/create": {
+      "raw": 18552,
+      "gzip": 6518,
+      "brotli": 5966
+    },
+    "consumer/require/patches": {
+      "raw": 18620,
+      "gzip": 6554,
+      "brotli": 5994
+    },
+    "consumer/require/all": {
+      "raw": 18517,
+      "gzip": 6497,
+      "brotli": 5920
+    }
+  }
+}
