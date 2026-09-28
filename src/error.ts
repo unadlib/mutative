@@ -1,9 +1,7 @@
 /**
- * This exported const enum relies on the program-level TypeScript compilation
- * provided by `@rollup/plugin-typescript` to inline members across modules.
- * Isolated TypeScript transforms, such as Babel or SWC, may emit runtime enum
- * code instead. If the compiler changes, verify that production bundles contain
- * neither an `ErrorCode` object nor these member names.
+ * Error codes are kept as a const enum so production builds can inline them.
+ * Verify that production bundles contain neither an `ErrorCode` object nor
+ * the member names when changing the build toolchain.
  */
 export const enum ErrorCode {
   InvalidBaseState = 0,
