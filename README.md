@@ -717,6 +717,9 @@ Mutative goal is to provide efficient and immutable updates. The focus is on per
 
 Development Workflow:
 
+See [Building and validating Mutative](./BUILDING.md) for the build pipeline,
+package checks, and bundle-size regression policy.
+
 - Clone Mutative repo.
 - Run `pnpm install` to install all the dependencies.
 - Run `pnpm format` to format the code.
