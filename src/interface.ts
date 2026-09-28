@@ -47,6 +47,7 @@ export interface ProxyDraft<T = any> {
   parent?: ProxyDraft | null;
   key?: string | number | symbol;
   setMap?: Map<any, ProxyDraft>;
+  arrayDrafts?: Map<number, any>;
   assignedMap?: Map<any, boolean>;
   callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
 }

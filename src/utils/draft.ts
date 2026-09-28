@@ -7,6 +7,52 @@ export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
 }
 
+export function isLazyArrayDraft(proxyDraft: ProxyDraft) {
+  return (
+    proxyDraft.type === DraftType.Array && !proxyDraft.options.enablePatches
+  );
+}
+
+export function isArrayIndex(key: PropertyKey): key is string | number {
+  let index: number;
+  return (
+    key !== 'length' &&
+    typeof key !== 'symbol' &&
+    Number.isInteger((index = Number(key))) &&
+    index >= 0 &&
+    (key === 0 || index === 0 || String(index) === String(key))
+  );
+}
+
+export function getArrayIndex(key: string | number) {
+  return Number(key);
+}
+
+export function isAssignedArrayIndex(proxyDraft: ProxyDraft, index: number) {
+  return (
+    proxyDraft.assignedMap?.get(index) === true ||
+    proxyDraft.assignedMap?.get(String(index)) === true
+  );
+}
+
+export function setAssignedArrayIndex(
+  proxyDraft: ProxyDraft,
+  index: number,
+  assigned: boolean
+) {
+  if (!assigned) {
+    proxyDraft.assignedMap?.delete(index);
+    proxyDraft.assignedMap?.delete(String(index));
+    return;
+  }
+  proxyDraft.assignedMap = proxyDraft.assignedMap ?? new Map();
+  proxyDraft.assignedMap.set(index, true);
+}
+
+export function isOriginalArrayValue(proxyDraft: ProxyDraft, value: any) {
+  return Array.prototype.indexOf.call(proxyDraft.original, value) !== -1;
+}
+
 /**
  * Check if the value is a draft
  */

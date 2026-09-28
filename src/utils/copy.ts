@@ -1,4 +1,4 @@
-import type { Options, ProxyDraft } from '../interface';
+import { DraftType, type Options, type ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraft, isDraftable } from './draft';
 import { isBaseMapInstance, isBaseSetInstance } from './proto';
@@ -90,6 +90,16 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
 export function ensureShallowCopy(target: ProxyDraft) {
   if (target.copy) return;
   target.copy = shallowCopy(target.original, target.options)!;
+  if (target.type === DraftType.Array && target.arrayDrafts?.size) {
+    target.arrayDrafts.forEach((draft, index) => {
+      if (
+        index in (target.copy as any[]) &&
+        (target.copy as any[])[index] === (target.original as any[])[index]
+      ) {
+        (target.copy as any[])[index] = draft;
+      }
+    });
+  }
 }
 
 function deepClone<T>(target: T): T;
