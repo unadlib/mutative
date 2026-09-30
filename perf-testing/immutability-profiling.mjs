@@ -1,6 +1,7 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { Session } from 'node:inspector';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { do_not_optimize } from 'mitata';
 import { readOptions } from './options.mjs';
@@ -33,6 +34,11 @@ console.log(
 if (!options.check && !options.list) {
   if (typeof globalThis.gc !== 'function')
     throw new Error('Run with node --expose-gc');
+  const bundlePath = fileURLToPath(import.meta.url);
+  const bundleSourceMap = readFileSync(`${bundlePath}.map`, 'utf8');
+  const bundleSha256 = createHash('sha256')
+    .update(readFileSync(bundlePath))
+    .digest('hex');
   // The profile deliberately excludes startup, validation, setup, and warmup.
   for (const prepared of preparedScenarios) {
     for (let i = 0; i < Math.min(100, options.iterations); i++) {
@@ -71,6 +77,7 @@ if (!options.check && !options.list) {
     );
     mkdirSync(dirname(output), { recursive: true });
     writeFileSync(output, JSON.stringify(profile));
+    writeFileSync(`${output}.map`, bundleSourceMap);
     writeFileSync(
       `${output}.metadata.json`,
       `${JSON.stringify(
@@ -89,6 +96,11 @@ if (!options.check && !options.list) {
           samplingIntervalUs: 1000,
           arrayMethodsEnabled: false,
           setupAndWarmupProfiled: false,
+          bundle: {
+            url: import.meta.url,
+            sha256: bundleSha256,
+            sourceMapFile: basename(`${output}.map`),
+          },
         },
         null,
         2

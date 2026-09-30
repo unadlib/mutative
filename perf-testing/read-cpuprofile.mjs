@@ -18,6 +18,13 @@ const profilePath = process.argv[2] ? resolve(process.argv[2]) : latest();
 if (!profilePath)
   throw new Error('Usage: pnpm profile:immer:analyze [path-to-cpuprofile]');
 const profile = JSON.parse(readFileSync(profilePath, 'utf8'));
+const metadataPath = `${profilePath}.metadata.json`;
+const metadata = existsSync(metadataPath)
+  ? JSON.parse(readFileSync(metadataPath, 'utf8'))
+  : null;
+const profiledRoot = metadata?.bundle?.url
+  ? dirname(dirname(dirname(fileURLToPath(metadata.bundle.url))))
+  : root;
 assert.equal(
   profile.samples?.length,
   profile.timeDeltas?.length,
@@ -45,7 +52,15 @@ function describe(node) {
       ? fileURLToPath(source)
       : source;
     if (!sourceMaps.has(script)) {
-      const mapPath = `${script}.map`;
+      const snapshot =
+        metadata?.bundle?.sourceMapFile &&
+        script === fileURLToPath(metadata.bundle.url);
+      const mapPath = snapshot
+        ? resolve(dirname(profilePath), metadata.bundle.sourceMapFile)
+        : `${script}.map`;
+      if (snapshot && !existsSync(mapPath)) {
+        throw new Error(`Missing saved profile source map: ${mapPath}`);
+      }
       sourceMaps.set(
         script,
         existsSync(mapPath)
@@ -67,11 +82,13 @@ function describe(node) {
   let category = 'runtime / unmapped';
   if (source?.includes('/node_modules/') && /\/immer(?:@|\/)/.test(source))
     category = 'immer';
-  else if (source?.startsWith(`${join(root, 'src')}/`)) category = 'mutative';
-  else if (source?.startsWith(`${directory}/`)) category = 'workload / harness';
+  else if (source?.startsWith(`${join(profiledRoot, 'src')}/`))
+    category = 'mutative';
+  else if (source?.startsWith(`${join(profiledRoot, 'perf-testing')}/`))
+    category = 'workload / harness';
   if (name === '(garbage collector)') category = 'garbage collection';
   const location = source?.startsWith('/')
-    ? `${relative(root, source)}:${line + 1}`
+    ? `${relative(profiledRoot, source)}:${line + 1}`
     : source || name;
   return {
     name,

@@ -126,7 +126,10 @@ pnpm profile:immer:analyze
 
 The profiler starts after correctness checks, fixture setup, warmup, and an
 explicit GC. It samples at a requested 1 ms interval and writes a standard
-`.cpuprofile` plus metadata under the ignored results directory. Chrome DevTools
+`.cpuprofile` plus metadata and a source-map snapshot under the ignored results
+directory. Keep these three files together when moving profiles; the analyzer
+uses the saved map so rebuilding the bundle does not change historical source
+locations. Metadata also records the profiled bundle's SHA-256. Chrome DevTools
 can open the profile directly. The CLI analyzer maps frames back to source using
 Node's built-in `SourceMap`, and reports exclusive time by library/harness/GC
 plus the top functions with exclusive and inclusive times. Unlike the upstream
