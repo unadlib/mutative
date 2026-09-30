@@ -22,6 +22,8 @@ Mutative is a high-performance immutable update library, and Immer is a popular 
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 
+The [Immer array methods audit](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md) reproduces patch ordering, base mutation, and draft finalization failures in Immer 11.1.18 when `enableArrayMethods()` is enabled. The [reproduction tests](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.test.ts) include plugin-disabled controls and the same recipes run against Mutative. This correctness audit is separate from the historical performance measurements below.
+
 ## Mutative vs Immer Performance
 
 > Mutative passed all of Immer's test cases.
