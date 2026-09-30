@@ -1,5 +1,4 @@
 import { DraftType, Patches, ProxyDraft } from '../interface';
-import { ensureShallowCopy } from './copy';
 import {
   get,
   getPath,
@@ -30,7 +29,6 @@ export function handleValue(
   forEach(target, (key, value) => {
     if (isDraft(value)) {
       const proxyDraft = getProxyDraft(value)!;
-      ensureShallowCopy(proxyDraft);
       // A draft where a child node has been changed, or assigned a value
       const updatedValue =
         proxyDraft.assignedMap?.size || proxyDraft.operated
