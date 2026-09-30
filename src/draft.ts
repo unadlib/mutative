@@ -17,19 +17,16 @@ import {
   getProxyDraft,
   getType,
   getValue,
-  has,
   isEqual,
   isDraftable,
   latest,
   markChanged,
-  peek,
   get,
   set,
   revokeProxy,
   finalizeSetValue,
   markFinalization,
   finalizePatches,
-  isDraft,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
@@ -68,14 +65,10 @@ const hasOwn = Object.prototype.hasOwnProperty;
 
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
-    const copy = target.copy?.[key];
-    // Improve draft reading performance by caching the draft copy.
-    if (copy && target.finalities.draftsCache.has(copy)) {
-      return copy;
-    }
     if (key === PROXY_DRAFT) return target;
+    const { options, type } = target;
     let markResult: any;
-    if (target.options.mark) {
+    if (options.mark) {
       // handle `Uncaught TypeError: Method get Map.prototype.size called on incompatible receiver #<Map>`
       // or `Uncaught TypeError: Method get Set.prototype.size called on incompatible receiver #<Set>`
       const value =
@@ -83,37 +76,43 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         (target.original instanceof Map || target.original instanceof Set)
           ? Reflect.get(target.original, key)
           : Reflect.get(target.original, key, receiver);
-      markResult = target.options.mark(value, dataTypes);
+      markResult = options.mark(value, dataTypes);
       if (markResult === dataTypes.mutable) {
-        if (target.options.strict) {
-          checkReadable(value, target.options, true);
+        if (options.strict) {
+          checkReadable(value, options, true);
         }
         return value;
       }
     }
     const source = latest(target);
 
-    if (source instanceof Map && mapHandlerKeys.includes(key as any)) {
-      if (key === 'size') {
-        return Object.getOwnPropertyDescriptor(mapHandler, 'size')!.get!.call(
-          target.proxy
-        );
+    if (type === DraftType.Map) {
+      if (mapHandlerKeys.includes(key as any)) {
+        if (key === 'size') {
+          return Object.getOwnPropertyDescriptor(mapHandler, 'size')!.get!.call(
+            target.proxy
+          );
+        }
+        const handle = mapHandler[key as keyof typeof mapHandler] as Function;
+        return handle.bind(target.proxy);
       }
-      const handle = mapHandler[key as keyof typeof mapHandler] as Function;
-      return handle.bind(target.proxy);
+    } else if (type === DraftType.Set) {
+      if (setHandlerKeys.includes(key as any)) {
+        if (key === 'size') {
+          return Object.getOwnPropertyDescriptor(setHandler, 'size')!.get!.call(
+            target.proxy
+          );
+        }
+        const handle = setHandler[key as keyof typeof setHandler] as Function;
+        return handle.bind(target.proxy);
+      }
     }
 
-    if (source instanceof Set && setHandlerKeys.includes(key as any)) {
-      if (key === 'size') {
-        return Object.getOwnPropertyDescriptor(setHandler, 'size')!.get!.call(
-          target.proxy
-        );
-      }
-      const handle = setHandler[key as keyof typeof setHandler] as Function;
-      return handle.bind(target.proxy);
-    }
-
-    if (!has(source, key)) {
+    if (
+      type === DraftType.Map
+        ? !(source as Map<any, any>).has(key)
+        : !hasOwn.call(source, key)
+    ) {
       const desc = getDescriptor(source, key);
       return desc
         ? `value` in desc
@@ -123,36 +122,32 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
         : undefined;
     }
     const value = source[key];
-    if (target.options.strict) {
-      checkReadable(value, target.options);
+    if (options.strict) {
+      checkReadable(value, options);
     }
-    if (target.finalized || !isDraftable(value, target.options)) {
-      return value;
+    if (target.finalized) return value;
+    // A value that differs from the original at this key is either an
+    // existing child draft or an assigned value; neither is drafted again.
+    if (target.copy !== null && value !== target.original[key]) return value;
+    if (!isDraftable(value, options)) return value;
+    ensureShallowCopy(target);
+    const draft = createDraft({
+      original: value,
+      parentDraft: target,
+      key: type === DraftType.Array ? Number(key) : key,
+      finalities: target.finalities,
+      options,
+    });
+    target.copy![key] = draft;
+    // !case: support for custom shallow copy function
+    if (typeof markResult === 'function') {
+      const subProxyDraft = getProxyDraft(draft)!;
+      ensureShallowCopy(subProxyDraft);
+      // Trigger a custom shallow copy to update to a new copy
+      markChanged(subProxyDraft);
+      return subProxyDraft.copy;
     }
-    // Ensure that the assigned values are not drafted
-    if (value === peek(target.original, key)) {
-      ensureShallowCopy(target);
-      target.copy![key] = createDraft({
-        original: target.original[key],
-        parentDraft: target,
-        key: target.type === DraftType.Array ? Number(key) : key,
-        finalities: target.finalities,
-        options: target.options,
-      });
-      // !case: support for custom shallow copy function
-      if (typeof markResult === 'function') {
-        const subProxyDraft = getProxyDraft(target.copy![key])!;
-        ensureShallowCopy(subProxyDraft);
-        // Trigger a custom shallow copy to update to a new copy
-        markChanged(subProxyDraft);
-        return subProxyDraft.copy;
-      }
-      return target.copy![key];
-    }
-    if (isDraft(value)) {
-      target.finalities.draftsCache.add(value);
-    }
-    return value;
+    return draft;
   },
   set(target: ProxyDraft, key: string | number | symbol, value: any) {
     if (target.type === DraftType.Set || target.type === DraftType.Map) {
@@ -234,7 +229,7 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (target.type === DraftType.Array) {
       return proxyHandler.set!.call(this, target, key, undefined, target.proxy);
     }
-    if (peek(target.original, key) !== undefined || key in target.original) {
+    if (target.original[key] !== undefined || key in target.original) {
       // !case: delete an existing key
       ensureShallowCopy(target);
       markChanged(target);

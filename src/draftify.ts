@@ -21,7 +21,6 @@ export function draftify<
     draft: [],
     revoke: [],
     handledSet: new WeakSet<any>(),
-    draftsCache: new WeakSet<object>(),
   };
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
