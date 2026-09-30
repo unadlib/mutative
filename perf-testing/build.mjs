@@ -58,7 +58,10 @@ const buildInfo = {
 
 await build({
   absWorkingDir: root,
-  entryPoints: [join(directory, 'immutability-benchmarks.mjs')],
+  entryPoints: [
+    join(directory, 'immutability-benchmarks.mjs'),
+    join(directory, 'immutability-profiling.mjs'),
+  ],
   outdir: join(directory, 'dist'),
   outExtension: { '.js': '.mjs' },
   bundle: true,

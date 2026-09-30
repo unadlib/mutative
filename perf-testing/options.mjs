@@ -6,7 +6,7 @@ export function readOptions(defaults = {}) {
     options: {
       runs: { type: 'string', default: '3' },
       filter: { type: 'string', default: '.*' },
-      freeze: { type: 'string', default: 'both' },
+      freeze: { type: 'string', default: defaults.freeze ?? 'both' },
       library: { type: 'string', default: defaults.library ?? 'both' },
       'array-size': {
         type: 'string',
@@ -40,11 +40,11 @@ export function readOptions(defaults = {}) {
     },
   });
   if (values.help) {
-    console.log(`Usage: pnpm benchmark:immer [options]
+    console.log(`Usage: pnpm ${defaults.command ?? 'benchmark:immer'} [options]
   --runs N                 Independent processes (default: 3)
   --filter REGEX           Scenario names (default: all 21 scenarios)
-  --freeze both|off|on     Matched auto-freeze modes (default: both)
-  --library both|mutative|immer
+  --freeze both|off|on     Matched auto-freeze modes (default: ${defaults.freeze ?? 'both'})
+  --library both|mutative|immer (default: ${defaults.library ?? 'both'})
   --array-size N           Default: 100; minimum: 10
   --nested-array-size N    Default: 10
   --object-size-1 N        Default: 1000

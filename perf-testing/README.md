@@ -106,3 +106,30 @@ is generated because equal weighting of unrelated workloads is arbitrary.
 
 The suite is opt-in and has no noisy wall-clock threshold in normal unit tests.
 It does not change the existing benchmarks or the published package contents.
+
+## CPU profiling
+
+The upstream profiling and source-map analysis workflow is also ported. Profiling
+shares the benchmark's fixtures, recipes, validation, production inputs, and
+freeze rules; it does not maintain a separate copy of the workloads.
+
+```sh
+# One library and freeze mode per process; default: Mutative with freeze off
+pnpm profile:immer --library mutative --freeze off --filter '^rtkq-sequence$' --iterations 1000
+pnpm profile:immer --library immer --freeze off --filter '^rtkq-sequence$' --iterations 1000
+pnpm profile:immer --library mutative --freeze on --filter '^update-largeObject2$'
+
+# Analyze an explicit file, or the newest profile in perf-testing/results
+pnpm profile:immer:analyze perf-testing/results/example.cpuprofile
+pnpm profile:immer:analyze
+```
+
+The profiler starts after correctness checks, fixture setup, warmup, and an
+explicit GC. It samples at a requested 1 ms interval and writes a standard
+`.cpuprofile` plus metadata under the ignored results directory. Chrome DevTools
+can open the profile directly. The CLI analyzer maps frames back to source using
+Node's built-in `SourceMap`, and reports exclusive time by library/harness/GC
+plus the top functions with exclusive and inclusive times. Unlike the upstream
+analyzer, it needs no extra source-map dependency or historical-version aliases.
+Profiling has instrumentation overhead; use the benchmark reports for latency
+comparisons, and profiles to investigate hotspots.
