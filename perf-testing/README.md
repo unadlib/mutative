@@ -11,6 +11,9 @@ versions and unrelated immutable libraries are omitted. Neither the benchmark
 nor its runtime imports or calls `enableArrayMethods`; the plugin stays disabled.
 See the existing [array-method reproductions](../test/immer-array-methods.md).
 
+The [2026-09-30 local measurement archive](./reports/README.md) contains complete
+tables, JSON, scale comparisons, result limitations, and suggested next workloads.
+
 ## Run
 
 Use the repository's Node 22+ development toolchain. From the repository root:

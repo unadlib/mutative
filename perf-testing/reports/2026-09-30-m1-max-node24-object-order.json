@@ -1,0 +1,993 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-30T08:44:37.314Z",
+  "aggregation": "median of independent-process mean times; ratios use those medians",
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "recordedAt": "2026-09-30T08:44:11.765Z",
+      "runIndex": 0,
+      "build": {
+        "builtAt": "2026-09-30T08:37:55.441Z",
+        "gitRevision": "9184acb7760643fca890af9ccce1c10c2445c668",
+        "gitDirty": true,
+        "gitStatus": "?? perf-testing/reports/",
+        "mutativeSourceSha256": "db8bdf42f2d79b78a613ef9169fb96fd8d30ded0e768308dda04798cdb0977ad",
+        "versions": {
+          "mutative": "1.3.0",
+          "immer": "11.1.18",
+          "mitata": "1.0.34"
+        },
+        "productionInputs": {
+          "mutative": {
+            "path": "dist/mutative.cjs.production.min.js",
+            "sha256": "f339f5021704f2368ff982fdb444fb6a31faac9537d1990a47790f4106dbf02b"
+          },
+          "immer": {
+            "path": "node_modules/.pnpm/immer@11.1.18/node_modules/immer/dist/immer.production.mjs",
+            "sha256": "30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9"
+          }
+        },
+        "arrayMethodsEnabled": false
+      },
+      "environment": {
+        "node": "v24.16.0",
+        "v8": "13.6.233.17-node.49",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "25.6.0",
+        "cpu": "Apple M1 Max",
+        "logicalCpus": 10,
+        "memoryBytes": 68719476736,
+        "execArgv": ["--expose-gc", "--enable-source-maps"]
+      },
+      "config": {
+        "arraySize": 100,
+        "nestedArraySize": 10,
+        "largeObjectSize1": 1000,
+        "largeObjectSize2": 3000,
+        "multiUpdateCount": 5,
+        "reuseStateIterations": 10,
+        "rtkqCount": 100
+      },
+      "checks": 2,
+      "unit": "nanoseconds per full scenario iteration",
+      "methodology": {
+        "arrayMethodsEnabled": false,
+        "patchesEnabled": false,
+        "freezeOnInput": "deeply pre-frozen base and payloads",
+        "freezeOffInput": "unfrozen base and payloads",
+        "fixtureAndActionSetupTimed": false,
+        "stateResetPerIteration": true,
+        "gc": "Mitata once after warmup; natural GC included during timing",
+        "heapSampling": false,
+        "minCpuTimeNs": 642000000
+      },
+      "context": {
+        "now": 1790757846754,
+        "arch": "arm64-darwin",
+        "version": "24.16.0",
+        "runtime": "node",
+        "cpu": {
+          "name": "Apple M1 Max",
+          "freq": 3.1119442101407744
+        },
+        "noop": {
+          "fn": {
+            "kind": "fn",
+            "min": 0.06103515624636202,
+            "max": 13.7939453125,
+            "p25": 0.081298828125,
+            "p50": 0.081298828125,
+            "p75": 0.08154296875,
+            "p99": 0.091552734375,
+            "p999": 0.468017578125,
+            "avg": 0.08264922197075979,
+            "ticks": 7765397504,
+            "sampleCount": 1895849
+          },
+          "iter": {
+            "kind": "iter",
+            "min": 19.643310546875,
+            "max": 65.185546875,
+            "p25": 19.805908203125,
+            "p50": 20.3349609375,
+            "p75": 20.56884765625,
+            "p99": 26.753662109375,
+            "p999": 58.197021484375,
+            "avg": 20.587094182030018,
+            "ticks": 31145984,
+            "sampleCount": 7604
+          },
+          "fn_gc": {
+            "kind": "fn",
+            "min": 0.081298828125,
+            "max": 7.710693359375,
+            "p25": 0.101806640625,
+            "p50": 0.112060546875,
+            "p75": 0.1220703125,
+            "p99": 6.734130859375,
+            "p999": 6.94775390625,
+            "avg": 0.38863595665694634,
+            "ticks": 1921024,
+            "gc": {
+              "total": 637477072.9999998,
+              "min": 1079042,
+              "max": 3484667,
+              "avg": 1347731.6553911201
+            },
+            "sampleCount": 469
+          }
+        }
+      },
+      "trials": [
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-largeObject1: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 48208,
+            "max": 286125,
+            "p25": 51416.99999952316,
+            "p50": 56334,
+            "p75": 66458,
+            "p99": 103958,
+            "p999": 250833,
+            "avg": 60124.79737458835,
+            "ticks": 10665,
+            "sampleCount": 10665
+          }
+        },
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-largeObject1: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 185875,
+            "max": 568000,
+            "p25": 192583,
+            "p50": 196750,
+            "p75": 204250,
+            "p99": 489125,
+            "p999": 531917,
+            "avg": 206821.71252832632,
+            "ticks": 3089,
+            "sampleCount": 3089
+          }
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "recordedAt": "2026-09-30T08:44:16.874Z",
+      "runIndex": 1,
+      "build": {
+        "builtAt": "2026-09-30T08:37:55.441Z",
+        "gitRevision": "9184acb7760643fca890af9ccce1c10c2445c668",
+        "gitDirty": true,
+        "gitStatus": "?? perf-testing/reports/",
+        "mutativeSourceSha256": "db8bdf42f2d79b78a613ef9169fb96fd8d30ded0e768308dda04798cdb0977ad",
+        "versions": {
+          "mutative": "1.3.0",
+          "immer": "11.1.18",
+          "mitata": "1.0.34"
+        },
+        "productionInputs": {
+          "mutative": {
+            "path": "dist/mutative.cjs.production.min.js",
+            "sha256": "f339f5021704f2368ff982fdb444fb6a31faac9537d1990a47790f4106dbf02b"
+          },
+          "immer": {
+            "path": "node_modules/.pnpm/immer@11.1.18/node_modules/immer/dist/immer.production.mjs",
+            "sha256": "30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9"
+          }
+        },
+        "arrayMethodsEnabled": false
+      },
+      "environment": {
+        "node": "v24.16.0",
+        "v8": "13.6.233.17-node.49",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "25.6.0",
+        "cpu": "Apple M1 Max",
+        "logicalCpus": 10,
+        "memoryBytes": 68719476736,
+        "execArgv": ["--expose-gc", "--enable-source-maps"]
+      },
+      "config": {
+        "arraySize": 100,
+        "nestedArraySize": 10,
+        "largeObjectSize1": 1000,
+        "largeObjectSize2": 3000,
+        "multiUpdateCount": 5,
+        "reuseStateIterations": 10,
+        "rtkqCount": 100
+      },
+      "checks": 2,
+      "unit": "nanoseconds per full scenario iteration",
+      "methodology": {
+        "arrayMethodsEnabled": false,
+        "patchesEnabled": false,
+        "freezeOnInput": "deeply pre-frozen base and payloads",
+        "freezeOffInput": "unfrozen base and payloads",
+        "fixtureAndActionSetupTimed": false,
+        "stateResetPerIteration": true,
+        "gc": "Mitata once after warmup; natural GC included during timing",
+        "heapSampling": false,
+        "minCpuTimeNs": 642000000
+      },
+      "context": {
+        "now": 1790757851855,
+        "arch": "arm64-darwin",
+        "version": "24.16.0",
+        "runtime": "node",
+        "cpu": {
+          "name": "Apple M1 Max",
+          "freq": 3.119213697095373
+        },
+        "noop": {
+          "fn": {
+            "kind": "fn",
+            "min": 0.061035156235448085,
+            "max": 10.50830078125,
+            "p25": 0.081298828125,
+            "p50": 0.081298828125,
+            "p75": 0.08154296875,
+            "p99": 0.091552734375,
+            "p999": 0.42724609375,
+            "avg": 0.08202221797753992,
+            "ticks": 7825489920,
+            "sampleCount": 1910520
+          },
+          "iter": {
+            "kind": "iter",
+            "min": 19.71435546875,
+            "max": 64.208984375,
+            "p25": 19.978759765625,
+            "p50": 20.477294921875,
+            "p75": 20.670654296875,
+            "p99": 25.583740234375,
+            "p999": 59.468505859375,
+            "avg": 20.692348345588236,
+            "ticks": 30986240,
+            "sampleCount": 7565
+          },
+          "fn_gc": {
+            "kind": "fn",
+            "min": 0.081298828125,
+            "max": 10.4267578125,
+            "p25": 0.101806640625,
+            "p50": 0.11181640625,
+            "p75": 0.1220703125,
+            "p99": 6.764892578125,
+            "p999": 7.517333984375,
+            "avg": 0.39301446143691326,
+            "ticks": 1925120,
+            "gc": {
+              "total": 640917824.999999,
+              "min": 1082374.9999997616,
+              "max": 2828000,
+              "avg": 1352147.3101265803
+            },
+            "sampleCount": 470
+          }
+        }
+      },
+      "trials": [
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-largeObject1: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 185209,
+            "max": 606583,
+            "p25": 191375,
+            "p50": 195834,
+            "p75": 204500,
+            "p99": 499834,
+            "p999": 586666,
+            "avg": 206334.16214470068,
+            "ticks": 3096,
+            "sampleCount": 3096
+          }
+        },
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-largeObject1: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 195625,
+            "max": 515375,
+            "p25": 214375,
+            "p50": 227583,
+            "p75": 241333,
+            "p99": 428958,
+            "p999": 507125,
+            "avg": 233737.33856256842,
+            "ticks": 2741,
+            "sampleCount": 2741
+          }
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "recordedAt": "2026-09-30T08:44:21.981Z",
+      "runIndex": 2,
+      "build": {
+        "builtAt": "2026-09-30T08:37:55.441Z",
+        "gitRevision": "9184acb7760643fca890af9ccce1c10c2445c668",
+        "gitDirty": true,
+        "gitStatus": "?? perf-testing/reports/",
+        "mutativeSourceSha256": "db8bdf42f2d79b78a613ef9169fb96fd8d30ded0e768308dda04798cdb0977ad",
+        "versions": {
+          "mutative": "1.3.0",
+          "immer": "11.1.18",
+          "mitata": "1.0.34"
+        },
+        "productionInputs": {
+          "mutative": {
+            "path": "dist/mutative.cjs.production.min.js",
+            "sha256": "f339f5021704f2368ff982fdb444fb6a31faac9537d1990a47790f4106dbf02b"
+          },
+          "immer": {
+            "path": "node_modules/.pnpm/immer@11.1.18/node_modules/immer/dist/immer.production.mjs",
+            "sha256": "30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9"
+          }
+        },
+        "arrayMethodsEnabled": false
+      },
+      "environment": {
+        "node": "v24.16.0",
+        "v8": "13.6.233.17-node.49",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "25.6.0",
+        "cpu": "Apple M1 Max",
+        "logicalCpus": 10,
+        "memoryBytes": 68719476736,
+        "execArgv": ["--expose-gc", "--enable-source-maps"]
+      },
+      "config": {
+        "arraySize": 100,
+        "nestedArraySize": 10,
+        "largeObjectSize1": 1000,
+        "largeObjectSize2": 3000,
+        "multiUpdateCount": 5,
+        "reuseStateIterations": 10,
+        "rtkqCount": 100
+      },
+      "checks": 2,
+      "unit": "nanoseconds per full scenario iteration",
+      "methodology": {
+        "arrayMethodsEnabled": false,
+        "patchesEnabled": false,
+        "freezeOnInput": "deeply pre-frozen base and payloads",
+        "freezeOffInput": "unfrozen base and payloads",
+        "fixtureAndActionSetupTimed": false,
+        "stateResetPerIteration": true,
+        "gc": "Mitata once after warmup; natural GC included during timing",
+        "heapSampling": false,
+        "minCpuTimeNs": 642000000
+      },
+      "context": {
+        "now": 1790757856965,
+        "arch": "arm64-darwin",
+        "version": "24.16.0",
+        "runtime": "node",
+        "cpu": {
+          "name": "Apple M1 Max",
+          "freq": 3.119129969537347
+        },
+        "noop": {
+          "fn": {
+            "kind": "fn",
+            "min": 0.051025390625,
+            "max": 10.41650390625,
+            "p25": 0.081298828125,
+            "p50": 0.081298828125,
+            "p75": 0.08154296875,
+            "p99": 0.091552734375,
+            "p999": 0.4375,
+            "avg": 0.08220404289644422,
+            "ticks": 7808139264,
+            "sampleCount": 1906284
+          },
+          "iter": {
+            "kind": "iter",
+            "min": 19.633056640625,
+            "max": 62.642333984375,
+            "p25": 19.78564453125,
+            "p50": 20.283935546875,
+            "p75": 20.45703125,
+            "p99": 26.42822265625,
+            "p999": 58.766845703125,
+            "avg": 20.545061809651447,
+            "ticks": 31207424,
+            "sampleCount": 7619
+          },
+          "fn_gc": {
+            "kind": "fn",
+            "min": 0.081298828125,
+            "max": 7.55810546875,
+            "p25": 0.1015625,
+            "p50": 0.101806640625,
+            "p75": 0.1220703125,
+            "p99": 6.683349609375,
+            "p999": 7.181640625,
+            "avg": 0.3456719581123214,
+            "ticks": 1925120,
+            "gc": {
+              "total": 641156754.9999986,
+              "min": 1089750,
+              "max": 1901292,
+              "avg": 1352651.381856537
+            },
+            "sampleCount": 470
+          }
+        }
+      },
+      "trials": [
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-largeObject1: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 47750,
+            "max": 300458,
+            "p25": 50375,
+            "p50": 52292.00000047684,
+            "p75": 62125.00000047684,
+            "p99": 99000,
+            "p999": 243333.00000047684,
+            "avg": 57374.31827129295,
+            "ticks": 11176,
+            "sampleCount": 11176
+          }
+        },
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-largeObject1: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 189750,
+            "max": 599042,
+            "p25": 206875,
+            "p50": 212333,
+            "p75": 220667,
+            "p99": 520083,
+            "p999": 578041,
+            "avg": 222360.86703793943,
+            "ticks": 2873,
+            "sampleCount": 2873
+          }
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "recordedAt": "2026-09-30T08:44:27.085Z",
+      "runIndex": 3,
+      "build": {
+        "builtAt": "2026-09-30T08:37:55.441Z",
+        "gitRevision": "9184acb7760643fca890af9ccce1c10c2445c668",
+        "gitDirty": true,
+        "gitStatus": "?? perf-testing/reports/",
+        "mutativeSourceSha256": "db8bdf42f2d79b78a613ef9169fb96fd8d30ded0e768308dda04798cdb0977ad",
+        "versions": {
+          "mutative": "1.3.0",
+          "immer": "11.1.18",
+          "mitata": "1.0.34"
+        },
+        "productionInputs": {
+          "mutative": {
+            "path": "dist/mutative.cjs.production.min.js",
+            "sha256": "f339f5021704f2368ff982fdb444fb6a31faac9537d1990a47790f4106dbf02b"
+          },
+          "immer": {
+            "path": "node_modules/.pnpm/immer@11.1.18/node_modules/immer/dist/immer.production.mjs",
+            "sha256": "30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9"
+          }
+        },
+        "arrayMethodsEnabled": false
+      },
+      "environment": {
+        "node": "v24.16.0",
+        "v8": "13.6.233.17-node.49",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "25.6.0",
+        "cpu": "Apple M1 Max",
+        "logicalCpus": 10,
+        "memoryBytes": 68719476736,
+        "execArgv": ["--expose-gc", "--enable-source-maps"]
+      },
+      "config": {
+        "arraySize": 100,
+        "nestedArraySize": 10,
+        "largeObjectSize1": 1000,
+        "largeObjectSize2": 3000,
+        "multiUpdateCount": 5,
+        "reuseStateIterations": 10,
+        "rtkqCount": 100
+      },
+      "checks": 2,
+      "unit": "nanoseconds per full scenario iteration",
+      "methodology": {
+        "arrayMethodsEnabled": false,
+        "patchesEnabled": false,
+        "freezeOnInput": "deeply pre-frozen base and payloads",
+        "freezeOffInput": "unfrozen base and payloads",
+        "fixtureAndActionSetupTimed": false,
+        "stateResetPerIteration": true,
+        "gc": "Mitata once after warmup; natural GC included during timing",
+        "heapSampling": false,
+        "minCpuTimeNs": 642000000
+      },
+      "context": {
+        "now": 1790757862069,
+        "arch": "arm64-darwin",
+        "version": "24.16.0",
+        "runtime": "node",
+        "cpu": {
+          "name": "Apple M1 Max",
+          "freq": 3.117099450379721
+        },
+        "noop": {
+          "fn": {
+            "kind": "fn",
+            "min": 0.051025390625,
+            "max": 12.8681640625,
+            "p25": 0.081298828125,
+            "p50": 0.081298828125,
+            "p75": 0.08154296875,
+            "p99": 0.091552734375,
+            "p999": 0.468017578125,
+            "avg": 0.08194055581362451,
+            "ticks": 7833137152,
+            "sampleCount": 1912387
+          },
+          "iter": {
+            "kind": "iter",
+            "min": 19.795654296875,
+            "max": 63.669921875,
+            "p25": 19.96875,
+            "p50": 20.467041015625,
+            "p75": 20.609375,
+            "p99": 26.021240234375,
+            "p999": 58.888671875,
+            "avg": 20.722222742854484,
+            "ticks": 30945280,
+            "sampleCount": 7555
+          },
+          "fn_gc": {
+            "kind": "fn",
+            "min": 0.08154296875,
+            "max": 9.450439453125,
+            "p25": 0.1015625,
+            "p50": 0.11181640625,
+            "p75": 0.1220703125,
+            "p99": 6.88671875,
+            "p999": 7.6396484375,
+            "avg": 0.5336861895684861,
+            "ticks": 1916928,
+            "gc": {
+              "total": 635405669.0000017,
+              "min": 1084125,
+              "max": 2196708,
+              "avg": 1346198.45127119
+            },
+            "sampleCount": 468
+          }
+        }
+      },
+      "trials": [
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-largeObject1: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 185915.99999952316,
+            "max": 601208,
+            "p25": 193000,
+            "p50": 197333,
+            "p75": 205958,
+            "p99": 497875,
+            "p999": 564291,
+            "avg": 207439.5949367053,
+            "ticks": 3081,
+            "sampleCount": 3081
+          }
+        },
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-largeObject1: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 191167,
+            "max": 499375,
+            "p25": 212500,
+            "p50": 222334,
+            "p75": 236666,
+            "p99": 424667,
+            "p999": 471167,
+            "avg": 230531.92731198273,
+            "ticks": 2779,
+            "sampleCount": 2779
+          }
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "recordedAt": "2026-09-30T08:44:32.196Z",
+      "runIndex": 4,
+      "build": {
+        "builtAt": "2026-09-30T08:37:55.441Z",
+        "gitRevision": "9184acb7760643fca890af9ccce1c10c2445c668",
+        "gitDirty": true,
+        "gitStatus": "?? perf-testing/reports/",
+        "mutativeSourceSha256": "db8bdf42f2d79b78a613ef9169fb96fd8d30ded0e768308dda04798cdb0977ad",
+        "versions": {
+          "mutative": "1.3.0",
+          "immer": "11.1.18",
+          "mitata": "1.0.34"
+        },
+        "productionInputs": {
+          "mutative": {
+            "path": "dist/mutative.cjs.production.min.js",
+            "sha256": "f339f5021704f2368ff982fdb444fb6a31faac9537d1990a47790f4106dbf02b"
+          },
+          "immer": {
+            "path": "node_modules/.pnpm/immer@11.1.18/node_modules/immer/dist/immer.production.mjs",
+            "sha256": "30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9"
+          }
+        },
+        "arrayMethodsEnabled": false
+      },
+      "environment": {
+        "node": "v24.16.0",
+        "v8": "13.6.233.17-node.49",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "25.6.0",
+        "cpu": "Apple M1 Max",
+        "logicalCpus": 10,
+        "memoryBytes": 68719476736,
+        "execArgv": ["--expose-gc", "--enable-source-maps"]
+      },
+      "config": {
+        "arraySize": 100,
+        "nestedArraySize": 10,
+        "largeObjectSize1": 1000,
+        "largeObjectSize2": 3000,
+        "multiUpdateCount": 5,
+        "reuseStateIterations": 10,
+        "rtkqCount": 100
+      },
+      "checks": 2,
+      "unit": "nanoseconds per full scenario iteration",
+      "methodology": {
+        "arrayMethodsEnabled": false,
+        "patchesEnabled": false,
+        "freezeOnInput": "deeply pre-frozen base and payloads",
+        "freezeOffInput": "unfrozen base and payloads",
+        "fixtureAndActionSetupTimed": false,
+        "stateResetPerIteration": true,
+        "gc": "Mitata once after warmup; natural GC included during timing",
+        "heapSampling": false,
+        "minCpuTimeNs": 642000000
+      },
+      "context": {
+        "now": 1790757867176,
+        "arch": "arm64-darwin",
+        "version": "24.16.0",
+        "runtime": "node",
+        "cpu": {
+          "name": "Apple M1 Max",
+          "freq": 3.123080940280947
+        },
+        "noop": {
+          "fn": {
+            "kind": "fn",
+            "min": 0.050781250014551915,
+            "max": 10.25390625,
+            "p25": 0.081298828125,
+            "p50": 0.081298828125,
+            "p75": 0.08154296875,
+            "p99": 0.091552734375,
+            "p999": 0.42724609375,
+            "avg": 0.08182952609885165,
+            "ticks": 7843745792,
+            "sampleCount": 1914977
+          },
+          "iter": {
+            "kind": "iter",
+            "min": 19.6533203125,
+            "max": 64.727783203125,
+            "p25": 19.816162109375,
+            "p50": 20.304443359375,
+            "p75": 20.487548828125,
+            "p99": 26.1025390625,
+            "p999": 58.5224609375,
+            "avg": 20.533241840374558,
+            "ticks": 31227904,
+            "sampleCount": 7624
+          },
+          "fn_gc": {
+            "kind": "fn",
+            "min": 0.081298828125,
+            "max": 7.619140625,
+            "p25": 0.1015625,
+            "p50": 0.101806640625,
+            "p75": 0.1220703125,
+            "p99": 6.72412109375,
+            "p999": 6.998779296875,
+            "avg": 0.49714257399589473,
+            "ticks": 1937408,
+            "gc": {
+              "total": 636732515.9999986,
+              "min": 1077334,
+              "max": 2091417,
+              "avg": 1334869.0062893052
+            },
+            "sampleCount": 473
+          }
+        }
+      },
+      "trials": [
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-largeObject1: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 47750,
+            "max": 283541,
+            "p25": 50917,
+            "p50": 52417,
+            "p75": 61500.000000953674,
+            "p99": 100250,
+            "p999": 234167,
+            "avg": 57832.05266955177,
+            "ticks": 11088,
+            "sampleCount": 11088
+          }
+        },
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-largeObject1: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 185667,
+            "max": 615375,
+            "p25": 191875,
+            "p50": 196583,
+            "p75": 205500,
+            "p99": 488250,
+            "p999": 567083,
+            "avg": 207202.1806095979,
+            "ticks": 3084,
+            "sampleCount": 3084
+          }
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "recordedAt": "2026-09-30T08:44:37.304Z",
+      "runIndex": 5,
+      "build": {
+        "builtAt": "2026-09-30T08:37:55.441Z",
+        "gitRevision": "9184acb7760643fca890af9ccce1c10c2445c668",
+        "gitDirty": true,
+        "gitStatus": "?? perf-testing/reports/",
+        "mutativeSourceSha256": "db8bdf42f2d79b78a613ef9169fb96fd8d30ded0e768308dda04798cdb0977ad",
+        "versions": {
+          "mutative": "1.3.0",
+          "immer": "11.1.18",
+          "mitata": "1.0.34"
+        },
+        "productionInputs": {
+          "mutative": {
+            "path": "dist/mutative.cjs.production.min.js",
+            "sha256": "f339f5021704f2368ff982fdb444fb6a31faac9537d1990a47790f4106dbf02b"
+          },
+          "immer": {
+            "path": "node_modules/.pnpm/immer@11.1.18/node_modules/immer/dist/immer.production.mjs",
+            "sha256": "30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9"
+          }
+        },
+        "arrayMethodsEnabled": false
+      },
+      "environment": {
+        "node": "v24.16.0",
+        "v8": "13.6.233.17-node.49",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "25.6.0",
+        "cpu": "Apple M1 Max",
+        "logicalCpus": 10,
+        "memoryBytes": 68719476736,
+        "execArgv": ["--expose-gc", "--enable-source-maps"]
+      },
+      "config": {
+        "arraySize": 100,
+        "nestedArraySize": 10,
+        "largeObjectSize1": 1000,
+        "largeObjectSize2": 3000,
+        "multiUpdateCount": 5,
+        "reuseStateIterations": 10,
+        "rtkqCount": 100
+      },
+      "checks": 2,
+      "unit": "nanoseconds per full scenario iteration",
+      "methodology": {
+        "arrayMethodsEnabled": false,
+        "patchesEnabled": false,
+        "freezeOnInput": "deeply pre-frozen base and payloads",
+        "freezeOffInput": "unfrozen base and payloads",
+        "fixtureAndActionSetupTimed": false,
+        "stateResetPerIteration": true,
+        "gc": "Mitata once after warmup; natural GC included during timing",
+        "heapSampling": false,
+        "minCpuTimeNs": 642000000
+      },
+      "context": {
+        "now": 1790757872287,
+        "arch": "arm64-darwin",
+        "version": "24.16.0",
+        "runtime": "node",
+        "cpu": {
+          "name": "Apple M1 Max",
+          "freq": 3.121675858484891
+        },
+        "noop": {
+          "fn": {
+            "kind": "fn",
+            "min": 0.061035156235448085,
+            "max": 10.0810546875,
+            "p25": 0.081298828125,
+            "p50": 0.081298828125,
+            "p75": 0.08154296875,
+            "p99": 0.091552734375,
+            "p999": 0.42724609375,
+            "avg": 0.0819174189330443,
+            "ticks": 7835365376,
+            "sampleCount": 1912931
+          },
+          "iter": {
+            "kind": "iter",
+            "min": 19.785400390625,
+            "max": 65.287109375,
+            "p25": 19.978759765625,
+            "p50": 20.467041015625,
+            "p75": 20.67041015625,
+            "p99": 26.397705078125,
+            "p999": 59.43798828125,
+            "avg": 20.72669032468634,
+            "ticks": 30932992,
+            "sampleCount": 7552
+          },
+          "fn_gc": {
+            "kind": "fn",
+            "min": 0.081298828125,
+            "max": 7.588623046875,
+            "p25": 0.1015625,
+            "p50": 0.101806640625,
+            "p75": 0.132080078125,
+            "p99": 6.754638671875,
+            "p999": 6.9580078125,
+            "avg": 0.37538625233333067,
+            "ticks": 1921024,
+            "gc": {
+              "total": 638241703.0000005,
+              "min": 1080500,
+              "max": 1888583,
+              "avg": 1349348.2093023267
+            },
+            "sampleCount": 469
+          }
+        }
+      },
+      "trials": [
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-largeObject1: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 183625,
+            "max": 573208,
+            "p25": 191334,
+            "p50": 195791,
+            "p75": 205000,
+            "p99": 488791.0000009537,
+            "p999": 553334,
+            "avg": 206532.23432449764,
+            "ticks": 3094,
+            "sampleCount": 3094
+          }
+        },
+        {
+          "scenario": "update-largeObject1",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-largeObject1: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 199792,
+            "max": 531792,
+            "p25": 215375,
+            "p50": 227458,
+            "p75": 243208,
+            "p99": 428708,
+            "p999": 485250,
+            "avg": 235363.6866274798,
+            "ticks": 2722,
+            "sampleCount": 2722
+          }
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "scenario": "update-largeObject1",
+      "autoFreeze": false,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 6,
+          "medianMeanNs": 145328.36234328552,
+          "minMeanNs": 57374.31827129295,
+          "maxMeanNs": 235363.6866274798,
+          "medianP50Ns": 139334,
+          "medianP99Ns": 264312.5
+        },
+        "immer": {
+          "runs": 6,
+          "medianMeanNs": 207011.94656896213,
+          "minMeanNs": 206334.16214470068,
+          "maxMeanNs": 222360.86703793943,
+          "medianP50Ns": 196666.5,
+          "medianP99Ns": 493500
+        }
+      },
+      "immerOverMutative": 1.4244428494967247
+    }
+  ]
+}
