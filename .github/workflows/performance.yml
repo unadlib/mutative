@@ -1,0 +1,45 @@
+name: Performance budgets
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    name: Paired performance budgets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.before }}
+          path: benchmark-base
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: pnpm
+      - name: Install and build the PR base
+        run: |
+          pnpm --dir benchmark-base install --frozen-lockfile
+          pnpm --dir benchmark-base build
+      - name: Install candidate dependencies and validate budget tooling
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm test:benchmarks
+      - name: Compare base and candidate sequentially on this runner
+        run: pnpm benchmark:ci --base-dir benchmark-base
+      - name: Upload every measurement and budget decision
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: performance-budget-results
+          path: perf-testing/results/ci/
+          if-no-files-found: warn

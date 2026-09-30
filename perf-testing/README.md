@@ -166,8 +166,50 @@ means, p50, p99, min/max, sample counts, and ticks. Mitata can batch samples, so
 sample p99 is not single-request tail latency. No cross-scenario overall score
 is generated because equal weighting of unrelated workloads is arbitrary.
 
-The suite is opt-in and has no noisy wall-clock threshold in normal unit tests.
-It does not change the existing benchmarks or the published package contents.
+Full comparison suites remain opt-in. Performance budgets run in a separate CI
+job; ordinary unit tests have no wall-clock thresholds. Existing benchmarks and
+published package contents are unchanged.
+
+## CI regression budgets
+
+`Performance budgets` checks each PR and pushes to main on Node 24.16.0 /
+Ubuntu 24.04. It builds the actual base and head checkouts and uses this same
+harness for both artifacts. Measurements run sequentially on the same runner,
+alternating base/candidate order and freeze/patch order across pairs. The fixed
+v1/Immer controls belong to comparison reports; this gate measures candidate
+against its immediate Git baseline so regression allowance does not accumulate
+relative to an old release.
+
+[budgets.json](./budgets.json) is the versioned policy: eight representative
+small/read/mutation/array scenarios at 1,000 rows, both freeze and patch modes,
+five latency pairs, and three independent memory pairs for two heavy cases.
+A timing regression exceeds **1.30x** and **500 ns**; sampled allocation exceeds
+**1.35x** and **8 KiB/output**; retained heap exceeds **1.35x** and **1 KiB/output**.
+Both limits must be exceeded, using median paired ratios and median paired
+deltas. These conservative initial tolerances accommodate noisy shared runners;
+review observed control ranges before tightening them. RSS is recorded but has
+no budget because snapshot deltas depend strongly on allocator/GC history.
+
+Missing/duplicate cases, insufficient samples, differing environments/fixtures,
+unstable artifact identities, mismatched patch counts, unpinned dependencies,
+or enabling the array-method plugin fail the gate. Reports retain every pair
+and decision, and CI uploads them even on failure. Unit tests exercise failure
+paths, including the CLI's nonzero exit. The Node 22/24 build workflow also runs
+all scenario/mode correctness checks using bounded fixtures (10/30 wide-object
+properties and ten RTKQ requests), plus tool formatting and benchmark-tool tests.
+
+```sh
+# PR base checkout must already have its production build
+pnpm benchmark:ci --base-dir /absolute/path/to/base-checkout
+# Calibrate noise by comparing the same current build with itself
+pnpm benchmark:ci --self-control
+# Re-evaluate saved measurements without re-running workloads
+node perf-testing/check-budgets.mjs perf-testing/results/ci/report.json
+```
+
+The gate is a workload-specific regression guard, not a universal performance
+ranking. Enforcing it as a required merge check additionally depends on the
+repository's GitHub branch-protection settings.
 
 ## Memory measurement
 
