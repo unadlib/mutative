@@ -15,6 +15,9 @@ See the existing [array-method reproductions](../test/immer-array-methods.md).
 
 The [2026-09-30 local measurement archive](./reports/README.md) contains complete
 tables, JSON, scale comparisons, result limitations, and suggested next workloads.
+The [expanded baseline](./reports/2026-09-30-m1-max-node24-expanded-summary.md)
+records all 67 scenarios, three libraries, separate freeze/patch modes, allocation
+and retained-output heap measurements, and passing local/GitHub budget controls.
 
 ## Run
 
@@ -55,7 +58,7 @@ pnpm benchmark:immer --library mutative-v1
 # Reports read its real package version and Git revision; no v2 code is invented.
 MUTATIVE_PERF_CANDIDATE_DIR=/absolute/path/to/v2-checkout pnpm benchmark:immer
 
-# Refresh the explicitly pinned comparison version, then rerun and commit its lockfile
+# Refresh the pinned comparison, review budgets.json's version policy, and rerun
 pnpm add -D -E immer@latest
 ```
 
@@ -63,6 +66,9 @@ The runner never upgrades dependencies implicitly. Reports record the actual
 installed versions, local Git revision and dirty state, production artifact
 SHA-256 hashes, source hash, Node/V8 versions, CPU, RAM, configuration, and all
 individual process results. The version check rejects stale installed Immer.
+An intentional dependency upgrade must update the matching version in
+`perf-testing/budgets.json` and commit the manifest, lockfile, policy, and refreshed
+measurements together.
 
 `--patches off|on|both` defaults to `off`, preserving the original plain-update
 benchmark. `benchmark:immer:check` checks both patch modes and both freeze modes
@@ -87,6 +93,8 @@ reads the original version 1 archives as patches off.
 | Pure draft reads              | read-index, read-forEach, read-iterator, read-missing, read-length                                                         |                                1 |
 | No-op producers               | noop-empty, noop-same-value                                                                                                |                                1 |
 | Small state                   | small-object-update, small-array-1-update, small-array-10-update                                                           |                                1 |
+| Common array operations       | 11 operations × primitive, shallow-object, and nested-object elements                                                      |                                1 |
+| Mutation density              | mutation-density-1pct, mutation-density-10pct, mutation-density-100pct                                                     |                                1 |
 
 Defaults retain upstream's 100-row array, 10 nested items per row, 1,000/3,000
 property objects, five updates in `update-multiple`, and ten state-reuse calls.

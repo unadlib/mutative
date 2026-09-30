@@ -1,4 +1,15 @@
-# Local measurements: 2026-09-30
+# Local performance archives: 2026-09-30 UTC
+
+The [expanded versioned baseline](./2026-09-30-m1-max-node24-expanded-summary.md)
+compares the current candidate, pinned npm Mutative v1.3.0, and Immer 11.1.18.
+It covers all 67 scenarios with both freeze and patch modes: **3,060 timing
+trials in nine independent processes**, plus **504 isolated memory workers**.
+Separate local same-build and GitHub base/head controls verify all 48 CI budget
+decisions. Follow that report for the current matrix, full data, and reproduction
+commands. The candidate is still version 1.3.0; the harness can accept a future
+built v2 checkout without inventing v2 measurements.
+
+## Original Immer workload measurements
 
 These are measurements of the current checkout's Mutative 1.3.0 production
 artifact against the npm latest stable Immer 11.1.18 artifact, with
@@ -92,11 +103,13 @@ choice conclusion from this object case, use separate-library process controls
 (`--library mutative` and `--library immer`) and investigate JIT/fixture-shape
 effects. The framework already supports these controls.
 
-## Dimensions to add next
+## Follow-ups identified by the original suite
 
-Patch generation under both freeze modes is now covered. Separate patch
-application, serialization, bytes, memory, and element-shape coverage remain
-useful additions, especially after observing deep-cloning costs in array moves.
+The following table records gaps identified after the original suite. The
+expanded baseline now covers pure reads/no-ops, truly small states, common array
+operations with three element shapes, mutation density, and memory. Patch
+application/serialization/bytes, cold and incoming-data freezing, and the other
+unimplemented dimensions remain useful additions.
 
 | Priority | Dimension                         | Concrete cases and reason                                                                                                                                                                                                                            |
 | -------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -113,8 +126,9 @@ useful additions, especially after observing deep-cloning costs in array moves.
 
 ## Reproduce
 
-From the repository root, rebuild with `pnpm benchmark:immer:build` after
-`pnpm build`, then run:
+These commands target the original 21-scenario, two-library harness at
+`3e206b0`. Use a clean checkout of that revision, install its frozen lockfile,
+and build with `pnpm build` and `pnpm benchmark:immer:build`, then run:
 
 ```sh
 node perf-testing/run-benchmarks.mjs --output perf-testing/results/default.json
