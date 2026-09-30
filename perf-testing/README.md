@@ -193,7 +193,10 @@ no budget because snapshot deltas depend strongly on allocator/GC history.
 Missing/duplicate cases, insufficient samples, differing environments/fixtures,
 unstable artifact identities, mismatched patch counts, unpinned dependencies,
 or enabling the array-method plugin fail the gate. Reports retain every pair
-and decision, and CI uploads them even on failure. Unit tests exercise failure
+and decision. Mitata 1.0.34 collects at least 12 raw samples and can trim four
+outliers, leaving a minimum of nine retained samples; the gate checks that
+retained count instead of incorrectly rejecting valid slow-operation trials.
+CI uploads artifacts even on failure. Unit tests exercise failure
 paths, including the CLI's nonzero exit. The Node 22/24 build workflow also runs
 all scenario/mode correctness checks using bounded fixtures (10/30 wide-object
 properties and ten RTKQ requests), plus tool formatting and benchmark-tool tests.

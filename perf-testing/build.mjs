@@ -30,6 +30,11 @@ const mitataManifest = JSON.parse(
   readFileSync(require.resolve('mitata/package.json'), 'utf8')
 );
 assert.equal(
+  mitataManifest.version,
+  manifest.devDependencies.mitata,
+  'Install the pinned Mitata version'
+);
+assert.equal(
   immerManifest.version,
   manifest.devDependencies.immer,
   'Install the pinned Immer version'

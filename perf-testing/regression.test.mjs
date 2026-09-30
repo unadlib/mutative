@@ -11,6 +11,8 @@ function fixture() {
     schemaVersion: 1,
     immerVersion: '11.1.18',
     v1Version: '1.3.0',
+    mitataVersion: '1.0.34',
+    minimumRetainedSamples: 9,
     arraySize: 1000,
     latencyRuns: 5,
     memoryRuns: 3,
@@ -25,7 +27,7 @@ function fixture() {
     retainedHeap: { maxRatio: 1.35, minimumDeltaBytes: 1024 },
   };
   const build = {
-    versions: { immer: '11.1.18', 'mutative-v1': '1.3.0' },
+    versions: { immer: '11.1.18', 'mutative-v1': '1.3.0', mitata: '1.0.34' },
     arrayMethodsEnabled: false,
     mutativeSourceSha256: 'a'.repeat(64),
     productionInputs: Object.fromEntries(
@@ -130,6 +132,16 @@ test('allocation and retained-heap regressions independently fail', () => {
       pair.candidate[0].trial.memory[metric] *= 2;
     assert.equal(evaluateBudgets(report).status, 'failed');
   }
+});
+
+test('Mitata outlier trimming leaves nine valid retained samples', () => {
+  const report = fixture();
+  for (const pair of report.latencyPairs)
+    for (const role of ['base', 'candidate'])
+      for (const trial of pair[role].trials) trial.stats.sampleCount = 9;
+  assert.equal(evaluateBudgets(report).status, 'passed');
+  report.latencyPairs[0].candidate.trials[0].stats.sampleCount = 8;
+  assert.throws(() => evaluateBudgets(report));
 });
 
 for (const [name, corrupt] of [

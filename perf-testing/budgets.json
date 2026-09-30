@@ -2,6 +2,8 @@
   "schemaVersion": 1,
   "immerVersion": "11.1.18",
   "v1Version": "1.3.0",
+  "mitataVersion": "1.0.34",
+  "minimumRetainedSamples": 9,
   "arraySize": 1000,
   "latencyRuns": 5,
   "memoryRuns": 3,

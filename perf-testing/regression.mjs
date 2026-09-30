@@ -18,6 +18,11 @@ function validateBuild(report, policy) {
     'v1 must remain pinned'
   );
   assert.equal(report.build.arrayMethodsEnabled, false);
+  assert.equal(
+    report.build.versions.mitata,
+    policy.mitataVersion,
+    'Mitata sampling rules must remain pinned'
+  );
   for (const library of ['mutative', 'mutative-v1', 'immer'])
     assert.match(
       report.build.productionInputs[library].sha256,
@@ -78,7 +83,14 @@ function trialMap(reports, kind, policy) {
       }
       if (kind === 'latency') {
         finite(trial.stats.avg, 'mean time', Number.MIN_VALUE);
-        finite(trial.stats.sampleCount, 'sample count', 12);
+        // Mitata 1.0.34 collects >=12 raw samples, then trims two at each end
+        // when there are >12: the smallest valid retained count is 13 - 4 = 9.
+        finite(
+          trial.stats.sampleCount,
+          'retained sample count',
+          policy.minimumRetainedSamples
+        );
+        assert.ok(Number.isSafeInteger(trial.stats.sampleCount));
       } else {
         assert.equal(trial.memory.iterations, policy.memoryIterations);
         assert.equal(trial.memory.samplingInterval, policy.samplingInterval);
@@ -142,6 +154,10 @@ export function evaluateBudgets(report) {
   for (const field of ['latencyScenarios', 'memoryScenarios'])
     assert.equal(new Set(policy[field]).size, policy[field].length);
   assert.deepEqual(policy.freezes, [false, true]);
+  assert.ok(
+    Number.isSafeInteger(policy.minimumRetainedSamples) &&
+      policy.minimumRetainedSamples >= 9
+  );
   assert.deepEqual(policy.patches, [false, true]);
   for (const field of ['latency', 'allocation', 'retainedHeap'])
     finite(policy[field].maxRatio, 'budget ratio', 1);
