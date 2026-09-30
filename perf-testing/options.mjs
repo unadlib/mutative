@@ -35,6 +35,8 @@ export function readOptions(defaults = {}) {
       },
       output: { type: 'string' },
       iterations: { type: 'string', default: '1000' },
+      'memory-iterations': { type: 'string', default: '32' },
+      'sampling-interval': { type: 'string', default: '1024' },
       check: { type: 'boolean', default: false },
       list: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
@@ -58,6 +60,8 @@ export function readOptions(defaults = {}) {
   --check                  Validate workloads without timing
   --list                   List scenario names and reducer-call counts
   --iterations N           Profiling only (default: 1000)
+  --memory-iterations N    Results retained per memory pass (default: 32)
+  --sampling-interval N    Allocation sampling interval in bytes (default: 1024)
 
 Auto-freeze on uses pre-frozen inputs and payloads. Patches use array paths
 and index removals in both libraries; application and serialization are not
@@ -95,6 +99,8 @@ timed. Array-method plugins are never enabled. Setup is excluded from timing.`);
   return {
     runs: integer('runs'),
     iterations: integer('iterations'),
+    memoryIterations: integer('memory-iterations'),
+    samplingInterval: integer('sampling-interval', 128),
     filter: values.filter,
     freezes:
       values.freeze === 'both' ? [false, true] : [values.freeze === 'on'],

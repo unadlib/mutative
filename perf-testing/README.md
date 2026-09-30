@@ -169,6 +169,35 @@ is generated because equal weighting of unrelated workloads is arbitrary.
 The suite is opt-in and has no noisy wall-clock threshold in normal unit tests.
 It does not change the existing benchmarks or the published package contents.
 
+## Memory measurement
+
+```sh
+# Independent workers; compare memory separately from producer latency
+pnpm benchmark:memory --patches both --filter '^(small-object-update|read-index|array-reverse-nested)$'
+node perf-testing/run-memory.mjs --array-size 1000 --patches both --filter '^array-reverse-(primitive|nested)$' --output perf-testing/results/memory-array-1000.json
+pnpm test:benchmarks
+```
+
+Every scenario/library/freeze/patch trial gets its own worker process, repeated
+three times by default with alternating library/mode order. Each worker validates
+its scenario and performs five warmup calls before two separate memory passes.
+`--memory-iterations` controls outputs retained per pass (default 32);
+`--sampling-interval` controls the allocation sampling interval (default 1024
+bytes, minimum 128). Large patch-heavy cases may need fewer iterations to avoid
+retaining an impractically large batch.
+
+The first pass uses V8's [HeapProfiler allocation sampler](https://github.com/ChromeDevTools/devtools-protocol/blob/master/pdl/js_protocol.pdl)
+and includes temporary objects collected by major/minor GC. Reported allocated
+bytes are sampling estimates including profiler/loop overhead, not exact counts.
+The second pass records batch-end heap/RSS, post-GC retained heap, explicit GC
+duration, and a snapshot after releasing outputs. The preallocated holder retains
+one output per iteration; patch-enabled cases retain the last producer tuple
+including its state. Earlier tuples in a sequence are not retained. Retained heap
+is a signed per-output delta; small or negative values can be noise. RSS is a
+batch-end snapshot delta, not peak RSS or allocation per operation. Memory runs
+never supply latency comparisons. JSON retains worker-level snapshots, ranges,
+iteration/sample counts, patch counts, and build hashes.
+
 ## CPU profiling
 
 The upstream profiling and source-map analysis workflow is also ported. Profiling

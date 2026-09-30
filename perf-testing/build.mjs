@@ -90,6 +90,7 @@ await build({
   entryPoints: [
     join(directory, 'immutability-benchmarks.mjs'),
     join(directory, 'immutability-profiling.mjs'),
+    join(directory, 'immutability-memory.mjs'),
   ],
   outdir: resolve(
     process.env.MUTATIVE_PERF_BUILD_DIR ?? join(directory, 'dist')

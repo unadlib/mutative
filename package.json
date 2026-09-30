@@ -42,6 +42,8 @@
     "benchmark:immer": "pnpm build && pnpm benchmark:immer:build && node perf-testing/run-benchmarks.mjs",
     "benchmark:immer:build": "node perf-testing/build.mjs",
     "benchmark:immer:check": "pnpm build && pnpm benchmark:immer:build && node --expose-gc --enable-source-maps perf-testing/dist/immutability-benchmarks.mjs --check --patches both",
+    "benchmark:memory": "pnpm build && pnpm benchmark:immer:build && node perf-testing/run-memory.mjs",
+    "test:benchmarks": "node --expose-gc --test perf-testing/*.test.mjs",
     "profile:immer": "pnpm build && pnpm benchmark:immer:build && node --expose-gc --enable-source-maps perf-testing/dist/immutability-profiling.mjs",
     "profile:immer:analyze": "node perf-testing/read-cpuprofile.mjs",
     "benchmark:base": "NODE_ENV='production' ts-node test/performance/benchmark.ts",
