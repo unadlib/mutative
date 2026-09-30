@@ -7,6 +7,7 @@ export function readOptions(defaults = {}) {
       runs: { type: 'string', default: '3' },
       filter: { type: 'string', default: '.*' },
       freeze: { type: 'string', default: defaults.freeze ?? 'both' },
+      patches: { type: 'string', default: defaults.patches ?? 'off' },
       library: { type: 'string', default: defaults.library ?? 'both' },
       'array-size': {
         type: 'string',
@@ -44,6 +45,7 @@ export function readOptions(defaults = {}) {
   --runs N                 Independent processes (default: 3)
   --filter REGEX           Scenario names (default: all 21 scenarios)
   --freeze both|off|on     Matched auto-freeze modes (default: ${defaults.freeze ?? 'both'})
+  --patches both|off|on    Generate forward and inverse patches (default: ${defaults.patches ?? 'off'})
   --library both|mutative|immer (default: ${defaults.library ?? 'both'})
   --array-size N           Default: 100; minimum: 10
   --nested-array-size N    Default: 10
@@ -56,8 +58,9 @@ export function readOptions(defaults = {}) {
   --list                   List scenario names and reducer-call counts
   --iterations N           Profiling only (default: 1000)
 
-Auto-freeze on uses pre-frozen inputs and payloads. Array-method plugins
-are never enabled. Fixture/action construction is excluded from timing.`);
+Auto-freeze on uses pre-frozen inputs and payloads. Patches use array paths
+and index removals in both libraries; application and serialization are not
+timed. Array-method plugins are never enabled. Setup is excluded from timing.`);
     process.exit(0);
   }
 
@@ -70,6 +73,9 @@ are never enabled. Fixture/action construction is excluded from timing.`);
   };
   if (!['both', 'off', 'on'].includes(values.freeze)) {
     throw new Error('--freeze must be both, off, or on');
+  }
+  if (!['both', 'off', 'on'].includes(values.patches)) {
+    throw new Error('--patches must be both, off, or on');
   }
   if (!['both', 'mutative', 'immer'].includes(values.library)) {
     throw new Error('--library must be both, mutative, or immer');
@@ -85,6 +91,8 @@ are never enabled. Fixture/action construction is excluded from timing.`);
     filter: values.filter,
     freezes:
       values.freeze === 'both' ? [false, true] : [values.freeze === 'on'],
+    patches:
+      values.patches === 'both' ? [false, true] : [values.patches === 'on'],
     libraries:
       values.library === 'both' ? ['mutative', 'immer'] : [values.library],
     config: {

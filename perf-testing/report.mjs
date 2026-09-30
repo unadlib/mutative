@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+
 export function compactStats(measured) {
   const { samples, ...stats } = measured;
   delete stats.debug;
@@ -16,32 +18,50 @@ export function summarize(reports) {
   const groups = new Map();
   for (const report of reports) {
     for (const trial of report.trials) {
-      const key = JSON.stringify([trial.scenario, trial.autoFreeze]);
+      const patches =
+        trial.enablePatches ?? report.methodology.patchesEnabled ?? false;
+      const key = JSON.stringify([trial.scenario, trial.autoFreeze, patches]);
       if (!groups.has(key)) {
         groups.set(key, {
           scenario: trial.scenario,
           autoFreeze: trial.autoFreeze,
+          ...(Object.hasOwn(trial, 'enablePatches') && {
+            enablePatches: patches,
+          }),
           operations: trial.operations,
           libraries: {},
         });
       }
       const group = groups.get(key);
-      (group.libraries[trial.library] ??= []).push(trial.stats);
+      if (Object.hasOwn(trial, 'enablePatches')) group.enablePatches = patches;
+      (group.libraries[trial.library] ??= []).push(trial);
     }
   }
   return [...groups.values()].map((group) => {
     const libraries = Object.fromEntries(
-      Object.entries(group.libraries).map(([name, samples]) => [
-        name,
-        {
-          runs: samples.length,
-          medianMeanNs: median(samples.map((stats) => stats.avg)),
-          minMeanNs: Math.min(...samples.map((stats) => stats.avg)),
-          maxMeanNs: Math.max(...samples.map((stats) => stats.avg)),
-          medianP50Ns: median(samples.map((stats) => stats.p50)),
-          medianP99Ns: median(samples.map((stats) => stats.p99)),
-        },
-      ])
+      Object.entries(group.libraries).map(([name, trials]) => {
+        const samples = trials.map((trial) => trial.stats);
+        for (const trial of trials)
+          assert.deepEqual(
+            trial.patchCounts,
+            trials[0].patchCounts,
+            'Patch counts must match across processes'
+          );
+        return [
+          name,
+          {
+            runs: samples.length,
+            medianMeanNs: median(samples.map((stats) => stats.avg)),
+            minMeanNs: Math.min(...samples.map((stats) => stats.avg)),
+            maxMeanNs: Math.max(...samples.map((stats) => stats.avg)),
+            medianP50Ns: median(samples.map((stats) => stats.p50)),
+            medianP99Ns: median(samples.map((stats) => stats.p99)),
+            ...(trials[0].patchCounts && {
+              patchCounts: trials[0].patchCounts,
+            }),
+          },
+        ];
+      })
     );
     return {
       ...group,
@@ -67,7 +87,9 @@ export function formatReport(report) {
     '',
     `Fixture: array ${first.config.arraySize}, ${first.config.nestedArraySize} nested items/row, objects with ${first.config.largeObjectSize1}/${first.config.largeObjectSize2} properties; reuse ${first.config.reuseStateIterations} calls; RTKQ ${first.config.rtkqCount} pending + ${first.config.rtkqCount} resolved calls.`,
     '',
-    'Both libraries use production artifacts. Array-method plugins and patches are disabled. Freeze off uses unfrozen inputs; freeze on uses pre-frozen inputs and payloads. Construction, configuration, and correctness checks are outside timing. Each iteration resets to its immutable base and evolves it only within that scenario.',
+    'Both libraries use production artifacts. Array-method plugins are disabled. Freeze off uses unfrozen inputs; freeze on uses pre-frozen inputs and payloads. Construction, configuration, and correctness checks are outside timing. Each iteration resets to its immutable base and evolves it only within that scenario.',
+    '',
+    'Enabled patch trials generate forward and inverse operations at every reducer call. Both libraries use array paths and index-based array removals (Mutative: arrayLengthAssignment false). Every producer tuple escapes; patch application, serialization, and accumulation are excluded from timing. Operation counts sum across all calls in the scenario.',
     '',
     'Times are **microseconds per full scenario**, including natural GC. Ratio = Immer time / Mutative time; above 1 favors Mutative, below 1 favors Immer. These are scenario measurements, not a universal speedup. P99 describes Mitata samples, which can be batches of operations; it is not per-request tail latency.',
     '',
@@ -78,37 +100,66 @@ export function formatReport(report) {
     report.summary.some((entry) => entry.autoFreeze === autoFreeze)
   );
   for (const autoFreeze of freezeModes) {
-    const rows = report.summary.filter(
-      (entry) => entry.autoFreeze === autoFreeze
+    const patchModes = [false, true].filter((enabled) =>
+      report.summary.some(
+        (entry) =>
+          entry.autoFreeze === autoFreeze &&
+          (entry.enablePatches ?? false) === enabled
+      )
     );
-    lines.push(
-      `## Auto-freeze ${autoFreeze ? 'on (pre-frozen input)' : 'off (unfrozen input)'}`,
-      '',
-      '| Scenario | Calls | Mutative µs | Immer µs | I/M | Mutative sample p99 µs | Immer sample p99 µs |',
-      '| --- | ---: | ---: | ---: | ---: | ---: | ---: |'
-    );
-    for (const entry of rows) {
-      lines.push(
-        `| ${entry.scenario} | ${entry.operations} | ${time(entry.libraries.mutative)} | ${time(entry.libraries.immer)} | ${entry.immerOverMutative?.toFixed(2) ?? '—'} | ${time(entry.libraries.mutative, 'medianP99Ns')} | ${time(entry.libraries.immer, 'medianP99Ns')} |`
+    for (const enabled of patchModes) {
+      const rows = report.summary.filter(
+        (entry) =>
+          entry.autoFreeze === autoFreeze &&
+          (entry.enablePatches ?? false) === enabled
       );
-    }
-    lines.push(
-      '',
-      'Independent-process mean ranges (µs):',
-      '',
-      '| Scenario | Mutative min–max | Immer min–max |',
-      '| --- | ---: | ---: |'
-    );
-    for (const entry of rows) {
-      const range = (library) =>
-        library
-          ? `${time(library, 'minMeanNs')}–${time(library, 'maxMeanNs')}`
-          : '—';
       lines.push(
-        `| ${entry.scenario} | ${range(entry.libraries.mutative)} | ${range(entry.libraries.immer)} |`
+        `## Auto-freeze ${autoFreeze ? 'on (pre-frozen input)' : 'off (unfrozen input)'}; patches ${enabled ? 'on' : 'off'}`,
+        '',
+        '| Scenario | Calls | Mutative µs | Immer µs | I/M | Mutative sample p99 µs | Immer sample p99 µs |',
+        '| --- | ---: | ---: | ---: | ---: | ---: | ---: |'
       );
+      for (const entry of rows) {
+        lines.push(
+          `| ${entry.scenario} | ${entry.operations} | ${time(entry.libraries.mutative)} | ${time(entry.libraries.immer)} | ${entry.immerOverMutative?.toFixed(2) ?? '—'} | ${time(entry.libraries.mutative, 'medianP99Ns')} | ${time(entry.libraries.immer, 'medianP99Ns')} |`
+        );
+      }
+      if (enabled) {
+        lines.push(
+          '',
+          'Patch operations per full scenario:',
+          '',
+          '| Scenario | Mutative forward / inverse | Immer forward / inverse |',
+          '| --- | ---: | ---: |'
+        );
+        for (const entry of rows) {
+          const counts = (library) =>
+            library?.patchCounts
+              ? `${library.patchCounts.forward} / ${library.patchCounts.inverse}`
+              : '—';
+          lines.push(
+            `| ${entry.scenario} | ${counts(entry.libraries.mutative)} | ${counts(entry.libraries.immer)} |`
+          );
+        }
+      }
+      lines.push(
+        '',
+        'Independent-process mean ranges (µs):',
+        '',
+        '| Scenario | Mutative min–max | Immer min–max |',
+        '| --- | ---: | ---: |'
+      );
+      for (const entry of rows) {
+        const range = (library) =>
+          library
+            ? `${time(library, 'minMeanNs')}–${time(library, 'maxMeanNs')}`
+            : '—';
+        lines.push(
+          `| ${entry.scenario} | ${range(entry.libraries.mutative)} | ${range(entry.libraries.immer)} |`
+        );
+      }
+      lines.push('');
     }
-    lines.push('');
   }
   lines.push(
     'The accompanying JSON retains every process result, sample count, timing percentiles, measurement order, artifact SHA-256 hashes, configuration, and environment metadata.',

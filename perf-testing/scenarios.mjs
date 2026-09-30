@@ -19,6 +19,15 @@ export function createScenarios(config, filter = '.*') {
       for (const action of steps) state = reducer(state, action);
       return state;
     },
+    executeWithPatches(reducer, base, consume) {
+      let state = base;
+      for (const action of steps) {
+        const result = reducer(state, action);
+        consume(result);
+        state = result[0];
+      }
+      return state;
+    },
   });
   const scenarios = Object.entries(actions).map(([name, action]) =>
     // The upstream filter(0) discarded everything. Exercise 50% retention.

@@ -25,8 +25,8 @@ pnpm benchmark:immer
 ```
 
 `benchmark:immer` rebuilds Mutative and the benchmark bundle, then runs three
-independent Node processes sequentially. It alternates library and freeze order
-between processes. No other benchmark or test should run concurrently. Timing
+independent Node processes sequentially. It alternates library, freeze, and
+patch order between processes. No other benchmark or test should run concurrently. Timing
 results are generated under the ignored `perf-testing/results/` directory, as
 JSON and Markdown. Report generation fails if any trial errors or the selected
 matrix is incomplete; benchmark errors do not produce a successful exit.
@@ -36,6 +36,9 @@ matrix is incomplete; benchmark errors do not produce a successful exit.
 pnpm benchmark:immer --runs 1
 pnpm benchmark:immer --filter '^(update|update-high|mapNested)$' --array-size 10000
 pnpm benchmark:immer --freeze off --output perf-testing/results/unfrozen.json
+pnpm benchmark:immer --patches on --output perf-testing/results/patches.json
+# Both freeze modes and patch modes, including a contemporaneous plain baseline
+pnpm benchmark:immer --patches both --output perf-testing/results/patch-matrix.json
 pnpm benchmark:immer --list
 pnpm benchmark:immer --help
 
@@ -50,6 +53,14 @@ The runner never upgrades dependencies implicitly. Reports record the actual
 installed versions, local Git revision and dirty state, production artifact
 SHA-256 hashes, source hash, Node/V8 versions, CPU, RAM, configuration, and all
 individual process results. The version check rejects stale installed Immer.
+
+`--patches off|on|both` defaults to `off`, preserving the original plain-update
+benchmark. `benchmark:immer:check` checks both patch modes and both freeze modes
+(168 combinations at the default configuration). `--patches on` measures patch
+generation with automatic freezing off and on; `--patches both` additionally
+measures the plain-update baseline in the same processes. The JSON schema is
+version 2, with `enablePatches` on each trial and summary; the summarizer still
+reads the original version 1 archives as patches off.
 
 ## Workloads and units
 
@@ -77,8 +88,18 @@ removed. Fixtures are deterministic instead of using `Math.random()`.
 
 ## Fairness and interpretation
 
-- Both libraries run production artifacts with patches disabled. Each gets the
-  same recipe, action values, and fixture structure.
+- Both libraries run production artifacts with the selected patch mode. Each
+  gets the same recipe, action values, and fixture structure.
+- With patches enabled, Mutative uses `enablePatches: { arrayLengthAssignment: false }`.
+  Immer uses `produceWithPatches` after one-time `enablePatches` setup.
+  Both return forward and inverse patches using array paths and index
+  removals. This intentionally disables Mutative's default array-length patch
+  shortcut to match Immer's removal format. The array-method plugin stays off.
+- Patch generation is timed at **every reducer call**, including all calls in
+  reuse, mixed, and RTKQ scenarios. Each `[state, patches, inversePatches]` tuple
+  escapes via `do_not_optimize`; tuples are not accumulated. Replay, JSON
+  serialization, and patch-consuming application work are outside timing.
+  Reports include forward/inverse operation counts per full scenario.
 - Auto-freeze **off** means unfrozen inputs and payloads for both libraries.
 - Auto-freeze **on** means deeply pre-frozen inputs and payloads, and actual
   output freezing enabled for both libraries. This measures ongoing immutable
@@ -94,6 +115,11 @@ removed. Fixtures are deterministic instead of using `Math.random()`.
   independent manual immutable reducer checks values, input/action immutability,
   untouched-branch structural sharing, output freeze mode, absence of leaked
   drafts, and repeatability for every library/freeze/scenario combination.
+- Patch-enabled checks additionally verify every intermediate result, forward
+  replay, inverse replay, and native `apply`/`applyPatches` replay without
+  mutating inputs or patch values. An independent plain-JavaScript path consumer
+  preserves the RTKQ fixture's own `undefined` fields, which JSON serialization
+  would drop; generated patch values are checked for leaked drafts too.
 
 These choices repair upstream's no-op Mutative freeze setter, configuration
 changes in the timed loop, freeze contamination of reused single-op fixtures,
@@ -117,18 +143,21 @@ shares the benchmark's fixtures, recipes, validation, production inputs, and
 freeze rules; it does not maintain a separate copy of the workloads.
 
 ```sh
-# One library and freeze mode per process; default: Mutative with freeze off
+# One library, freeze, and patch mode per process; default: Mutative, both off
 pnpm profile:immer --library mutative --freeze off --filter '^rtkq-sequence$' --iterations 1000
 pnpm profile:immer --library immer --freeze off --filter '^rtkq-sequence$' --iterations 1000
 pnpm profile:immer --library mutative --freeze on --filter '^update-largeObject2$'
+pnpm profile:immer --library immer --freeze on --patches on --filter '^update-multiple$'
 
 # Analyze an explicit file, or the newest profile in perf-testing/results
 pnpm profile:immer:analyze perf-testing/results/example.cpuprofile
 pnpm profile:immer:analyze
 ```
 
-The profiler starts after correctness checks, fixture setup, warmup, and an
-explicit GC. It samples at a requested 1 ms interval and writes a standard
+The profiler accepts one patch mode (`--patches off|on`, default `off`) per
+process and records it in the filename and metadata. The profiler starts after
+correctness checks, fixture setup, warmup, and an explicit GC. It samples at a
+requested 1 ms interval and writes a standard
 `.cpuprofile` plus metadata and a source-map snapshot under the ignored results
 directory. Keep these three files together when moving profiles; the analyzer
 uses the saved map so rebuilding the bundle does not change historical source

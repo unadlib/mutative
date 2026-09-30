@@ -14,21 +14,34 @@ const options = readOptions({
   library: 'mutative',
   freeze: 'off',
 });
-if (options.libraries.length !== 1 || options.freezes.length !== 1) {
+if (
+  options.libraries.length !== 1 ||
+  options.freezes.length !== 1 ||
+  options.patches.length !== 1
+) {
   throw new Error(
-    'Profile one library and freeze mode at a time; use --library mutative|immer --freeze off|on'
+    'Profile one library, freeze, and patch mode at a time; use --library mutative|immer --freeze off|on --patches off|on'
   );
 }
 const scenarios = createScenarios(options.config, options.filter);
-const checks = validateScenarios(options, scenarios);
+const { checks } = validateScenarios(options, scenarios);
 const [library] = options.libraries;
 const [autoFreeze] = options.freezes;
-const runtime = createRuntime(library, autoFreeze);
+const [enablePatches] = options.patches;
+const runtime = createRuntime(library, autoFreeze, enablePatches);
+const execute = enablePatches
+  ? (prepared) =>
+      prepared.executeWithPatches(
+        runtime.reducer,
+        prepared.base,
+        do_not_optimize
+      )
+  : (prepared) => prepared.execute(runtime.reducer, prepared.base);
 const preparedScenarios = scenarios.map((scenario) =>
   prepareScenario(options.config, scenario.name, autoFreeze)
 );
 console.log(
-  `Validated ${checks} profiling scenarios for ${library}, freeze=${autoFreeze}.`
+  `Validated ${checks} profiling scenarios for ${library}, freeze=${autoFreeze}, patches=${enablePatches}.`
 );
 
 if (!options.check && !options.list) {
@@ -42,7 +55,7 @@ if (!options.check && !options.list) {
   // The profile deliberately excludes startup, validation, setup, and warmup.
   for (const prepared of preparedScenarios) {
     for (let i = 0; i < Math.min(100, options.iterations); i++) {
-      do_not_optimize(prepared.execute(runtime.reducer, prepared.base));
+      do_not_optimize(execute(prepared));
     }
   }
   globalThis.gc();
@@ -61,7 +74,7 @@ if (!options.check && !options.list) {
     await post('Profiler.start');
     for (const prepared of preparedScenarios) {
       for (let i = 0; i < options.iterations; i++) {
-        do_not_optimize(prepared.execute(runtime.reducer, prepared.base));
+        do_not_optimize(execute(prepared));
       }
     }
     const { profile } = await post('Profiler.stop');
@@ -72,7 +85,7 @@ if (!options.check && !options.list) {
         join(
           directory,
           'results',
-          `${library}-freeze-${autoFreeze}-${stamp}.cpuprofile`
+          `${library}-freeze-${autoFreeze}-patches-${enablePatches}-${stamp}.cpuprofile`
         )
     );
     mkdirSync(dirname(output), { recursive: true });
@@ -87,6 +100,11 @@ if (!options.check && !options.list) {
           v8: process.versions.v8,
           library,
           autoFreeze,
+          enablePatches,
+          patchPaths: 'arrays',
+          mutativeArrayLengthAssignment: false,
+          patchApplicationProfiled: false,
+          patchSerializationProfiled: false,
           config: options.config,
           scenarios: scenarios.map(({ name, operations }) => ({
             name,

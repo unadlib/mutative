@@ -17,9 +17,9 @@ if (options.list) {
       `${scenario.name}: ${scenario.operations} reducer calls/iteration`
     );
 } else {
-  const checks = validateScenarios(options, scenarios);
+  const { checks, patchCounts } = validateScenarios(options, scenarios);
   console.log(
-    `Validated ${checks} scenario/library/freeze combinations against immutable reference results.`
+    `Validated ${checks} scenario/library/freeze/patch combinations against immutable reference results and patch replay.`
   );
   if (!options.check) {
     if (typeof globalThis.gc !== 'function')
@@ -27,38 +27,51 @@ if (options.list) {
     const definitions = new Map();
     let libraries = options.libraries;
     let freezes = options.freezes;
-    // Alternate library and freeze order between independent process runs.
+    let patches = options.patches;
+    // Alternate library, freeze, and patch order between independent runs.
     if ((options.runIndex ?? 0) % 2) {
       libraries = [...libraries].reverse();
       freezes = [...freezes].reverse();
+      patches = [...patches].reverse();
     }
     for (const scenario of scenarios) {
       for (const autoFreeze of freezes) {
-        for (const library of libraries) {
-          const name = `${scenario.name}: ${library} (freeze: ${autoFreeze})`;
-          definitions.set(name, {
-            scenario: scenario.name,
-            operations: scenario.operations,
-            library,
-            autoFreeze,
-          });
-          bench(name, function* () {
-            const prepared = prepareScenario(
-              options.config,
-              scenario.name,
-              autoFreeze
-            );
-            const runtime = createRuntime(library, autoFreeze);
-            yield {
-              // Heap sampling changes the measurement budget; measure latency here.
-              heap: false,
-              bench() {
-                do_not_optimize(
-                  prepared.execute(runtime.reducer, prepared.base)
-                );
-              },
-            };
-          });
+        for (const enablePatches of patches) {
+          for (const library of libraries) {
+            const name = `${scenario.name}: ${library} (freeze: ${autoFreeze}, patches: ${enablePatches})`;
+            const label = `${scenario.name}/${library}/freeze=${autoFreeze}/patches=${enablePatches}`;
+            definitions.set(name, {
+              scenario: scenario.name,
+              operations: scenario.operations,
+              library,
+              autoFreeze,
+              enablePatches,
+              ...(enablePatches && { patchCounts: patchCounts.get(label) }),
+            });
+            bench(name, function* () {
+              const prepared = prepareScenario(
+                options.config,
+                scenario.name,
+                autoFreeze
+              );
+              const runtime = createRuntime(library, autoFreeze, enablePatches);
+              const execute = enablePatches
+                ? () =>
+                    prepared.executeWithPatches(
+                      runtime.reducer,
+                      prepared.base,
+                      do_not_optimize
+                    )
+                : () => prepared.execute(runtime.reducer, prepared.base);
+              yield {
+                // Heap sampling changes the measurement budget; measure latency here.
+                heap: false,
+                bench() {
+                  do_not_optimize(execute());
+                },
+              };
+            });
+          }
         }
       }
     }
@@ -88,7 +101,7 @@ if (options.list) {
     if (trials.length !== definitions.size)
       throw new Error('Incomplete benchmark matrix');
     const report = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       recordedAt: new Date().toISOString(),
       runIndex: options.runIndex ?? 0,
       build: buildInfo,
@@ -108,7 +121,15 @@ if (options.list) {
       unit: 'nanoseconds per full scenario iteration',
       methodology: {
         arrayMethodsEnabled: false,
-        patchesEnabled: false,
+        patchesEnabled:
+          options.patches.length === 1 ? options.patches[0] : null,
+        patchModes: options.patches,
+        patchPaths: 'arrays',
+        mutativeArrayLengthAssignment: false,
+        patchApplicationTimed: false,
+        patchSerializationTimed: false,
+        patchOutputEscape:
+          'each producer tuple escapes; no accumulation across calls',
         freezeOnInput: 'deeply pre-frozen base and payloads',
         freezeOffInput: 'unfrozen base and payloads',
         fixtureAndActionSetupTimed: false,

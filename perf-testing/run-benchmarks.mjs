@@ -45,7 +45,7 @@ for (
 }
 if (reports.length) {
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     recordedAt: new Date().toISOString(),
     aggregation:
       'median of independent-process mean times; ratios use those medians',
@@ -65,7 +65,7 @@ if (reports.length) {
   for (const entry of report.summary) {
     const { mutative, immer } = entry.libraries;
     console.log(
-      `${entry.scenario} freeze=${entry.autoFreeze}: Mutative ${mutative ? (mutative.medianMeanNs / 1000).toFixed(3) : '—'} us; Immer ${immer ? (immer.medianMeanNs / 1000).toFixed(3) : '—'} us; I/M ${entry.immerOverMutative?.toFixed(2) ?? '—'}`
+      `${entry.scenario} freeze=${entry.autoFreeze} patches=${entry.enablePatches}: Mutative ${mutative ? (mutative.medianMeanNs / 1000).toFixed(3) : '—'} us; Immer ${immer ? (immer.medianMeanNs / 1000).toFixed(3) : '—'} us; I/M ${entry.immerOverMutative?.toFixed(2) ?? '—'}`
     );
   }
 }
