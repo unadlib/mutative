@@ -720,6 +720,10 @@ Development Workflow:
 See [Building and validating Mutative](./BUILDING.md) for the build pipeline,
 package checks, and bundle-size regression policy.
 
+See [versioned Mutative and Immer benchmarks](./perf-testing/README.md) for
+the candidate/v1/Immer comparison, matched freeze and patch modes, memory
+measurements, and CI regression budgets.
+
 - Clone Mutative repo.
 - Run `pnpm install` to install all the dependencies.
 - Run `pnpm format` to format the code.

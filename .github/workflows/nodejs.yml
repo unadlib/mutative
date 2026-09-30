@@ -25,6 +25,10 @@ jobs:
         pnpm lint
         pnpm format --check
         pnpm build
+        pnpm exec oxfmt --check 'perf-testing/*.mjs' perf-testing/README.md perf-testing/budgets.json
+        pnpm benchmark:immer:build
+        node --expose-gc --enable-source-maps perf-testing/dist/immutability-benchmarks.mjs --check --patches both --object-size-1 10 --object-size-2 30 --rtkq-count 10
+        pnpm test:benchmarks
         pnpm size
         pnpm test:package
         pnpm test:build-watch

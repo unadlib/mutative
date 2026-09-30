@@ -1,0 +1,2097 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-30T08:42:40.109Z",
+  "aggregation": "median of independent-process mean times; ratios use those medians",
+  "runs": [
+    {
+      "schemaVersion": 1,
+      "recordedAt": "2026-09-30T08:41:52.662Z",
+      "runIndex": 0,
+      "build": {
+        "builtAt": "2026-09-30T08:37:55.441Z",
+        "gitRevision": "9184acb7760643fca890af9ccce1c10c2445c668",
+        "gitDirty": true,
+        "gitStatus": "?? perf-testing/reports/",
+        "mutativeSourceSha256": "db8bdf42f2d79b78a613ef9169fb96fd8d30ded0e768308dda04798cdb0977ad",
+        "versions": {
+          "mutative": "1.3.0",
+          "immer": "11.1.18",
+          "mitata": "1.0.34"
+        },
+        "productionInputs": {
+          "mutative": {
+            "path": "dist/mutative.cjs.production.min.js",
+            "sha256": "f339f5021704f2368ff982fdb444fb6a31faac9537d1990a47790f4106dbf02b"
+          },
+          "immer": {
+            "path": "node_modules/.pnpm/immer@11.1.18/node_modules/immer/dist/immer.production.mjs",
+            "sha256": "30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9"
+          }
+        },
+        "arrayMethodsEnabled": false
+      },
+      "environment": {
+        "node": "v24.16.0",
+        "v8": "13.6.233.17-node.49",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "25.6.0",
+        "cpu": "Apple M1 Max",
+        "logicalCpus": 10,
+        "memoryBytes": 68719476736,
+        "execArgv": ["--expose-gc", "--enable-source-maps"]
+      },
+      "config": {
+        "arraySize": 10000,
+        "nestedArraySize": 10,
+        "largeObjectSize1": 1000,
+        "largeObjectSize2": 3000,
+        "multiUpdateCount": 5,
+        "reuseStateIterations": 10,
+        "rtkqCount": 100
+      },
+      "checks": 24,
+      "unit": "nanoseconds per full scenario iteration",
+      "methodology": {
+        "arrayMethodsEnabled": false,
+        "patchesEnabled": false,
+        "freezeOnInput": "deeply pre-frozen base and payloads",
+        "freezeOffInput": "unfrozen base and payloads",
+        "fixtureAndActionSetupTimed": false,
+        "stateResetPerIteration": true,
+        "gc": "Mitata once after warmup; natural GC included during timing",
+        "heapSampling": false,
+        "minCpuTimeNs": 642000000
+      },
+      "context": {
+        "now": 1790757692586,
+        "arch": "arm64-darwin",
+        "version": "24.16.0",
+        "runtime": "node",
+        "cpu": {
+          "name": "Apple M1 Max",
+          "freq": 3.1068528606420225
+        },
+        "noop": {
+          "fn": {
+            "kind": "fn",
+            "min": 0.061035156017169356,
+            "max": 10.48779296875,
+            "p25": 0.081298828125,
+            "p50": 0.081298828125,
+            "p75": 0.08154296875,
+            "p99": 0.09155273449141532,
+            "p999": 0.508544921875,
+            "avg": 0.08207284028412952,
+            "ticks": 7820288000,
+            "sampleCount": 1909250
+          },
+          "iter": {
+            "kind": "iter",
+            "min": 19.816162109375,
+            "max": 64.02587890625,
+            "p25": 20.20263671875,
+            "p50": 20.56884765625,
+            "p75": 21.00634765625,
+            "p99": 26.682373046875,
+            "p999": 59.316162109375,
+            "avg": 20.871932845052083,
+            "ticks": 30720000,
+            "sampleCount": 7500
+          },
+          "fn_gc": {
+            "kind": "fn",
+            "min": 0.091552734375,
+            "max": 7.64990234375,
+            "p25": 0.101806640625,
+            "p50": 0.112060546875,
+            "p75": 0.142333984375,
+            "p99": 6.96826171875,
+            "p999": 7.232666015625,
+            "avg": 0.42713230875282804,
+            "ticks": 1810432,
+            "gc": {
+              "total": 643665673,
+              "min": 1146917,
+              "max": 2013792,
+              "avg": 1443196.576233184
+            },
+            "sampleCount": 442
+          }
+        }
+      },
+      "trials": [
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "add: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 10459.47265625,
+            "max": 11345.489501953125,
+            "p25": 10612.080810546875,
+            "p50": 10836.883544921875,
+            "p75": 10940.480712890625,
+            "p99": 11174.021484375,
+            "p999": 11174.021484375,
+            "avg": 10850.563787286932,
+            "ticks": 45056,
+            "sampleCount": 11
+          }
+        },
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "add: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 10490.53955078125,
+            "max": 11428.558349609142,
+            "p25": 10589.599609375,
+            "p50": 10665.812255859375,
+            "p75": 10692.657470702892,
+            "p99": 10805.155273437733,
+            "p999": 10805.155273437733,
+            "avg": 10726.852894176136,
+            "ticks": 45056,
+            "sampleCount": 11
+          }
+        },
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "add: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 243834,
+            "max": 824542,
+            "p25": 249500,
+            "p50": 257875,
+            "p75": 264083,
+            "p99": 447458,
+            "p999": 698750,
+            "avg": 262822.03082614054,
+            "ticks": 2433,
+            "sampleCount": 2433
+          }
+        },
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "add: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 699667,
+            "max": 1054708,
+            "p25": 717208,
+            "p50": 723667,
+            "p75": 734333,
+            "p99": 910917,
+            "p999": 1050458,
+            "avg": 732846.6681974742,
+            "ticks": 871,
+            "sampleCount": 871
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "remove: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 9109167,
+            "max": 12508500,
+            "p25": 9247250,
+            "p50": 9382709,
+            "p75": 10190458,
+            "p99": 12384833,
+            "p999": 12384833,
+            "avg": 9905178.327868853,
+            "ticks": 61,
+            "sampleCount": 61
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "remove: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 7601458,
+            "max": 10863917,
+            "p25": 7792458,
+            "p50": 8029833,
+            "p75": 8773875,
+            "p99": 10796125,
+            "p999": 10796125,
+            "avg": 8437991.888888888,
+            "ticks": 72,
+            "sampleCount": 72
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "remove: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 8970500,
+            "max": 12209791,
+            "p25": 9273166,
+            "p50": 9604916,
+            "p75": 10347875,
+            "p99": 12047709,
+            "p999": 12047709,
+            "avg": 9971496.55,
+            "ticks": 60,
+            "sampleCount": 60
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "remove: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 8601000,
+            "max": 13887083,
+            "p25": 9157834,
+            "p50": 9544209,
+            "p75": 10552959,
+            "p99": 11769708,
+            "p999": 11769708,
+            "avg": 9915194,
+            "ticks": 61,
+            "sampleCount": 61
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "mapNested: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 10248000,
+            "max": 13392917,
+            "p25": 10662917,
+            "p50": 11284458,
+            "p75": 12836666,
+            "p99": 13384042,
+            "p999": 13384042,
+            "avg": 11664343.921568627,
+            "ticks": 51,
+            "sampleCount": 51
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "mapNested: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 6863125,
+            "max": 8914875,
+            "p25": 7055416,
+            "p50": 7336166,
+            "p75": 7666208,
+            "p99": 8830292,
+            "p999": 8830292,
+            "avg": 7464623.439024391,
+            "ticks": 82,
+            "sampleCount": 82
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "mapNested: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 10599667,
+            "max": 13784500,
+            "p25": 10974958,
+            "p50": 11597250,
+            "p75": 12473958,
+            "p99": 13710291,
+            "p999": 13710291,
+            "avg": 11796569.450980391,
+            "ticks": 51,
+            "sampleCount": 51
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "mapNested: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 7643250,
+            "max": 10149459,
+            "p25": 7909250,
+            "p50": 8350416,
+            "p75": 9194917,
+            "p99": 9992583,
+            "p999": 9992583,
+            "avg": 8542424.85915493,
+            "ticks": 71,
+            "sampleCount": 71
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-high: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 2964959,
+            "max": 4330334,
+            "p25": 3063750,
+            "p50": 3127000,
+            "p75": 3237917,
+            "p99": 4104542,
+            "p999": 4236917,
+            "avg": 3204383.6683673467,
+            "ticks": 196,
+            "sampleCount": 196
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-high: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 2169165.9999980927,
+            "max": 2989000.0000019073,
+            "p25": 2218833.9999980927,
+            "p50": 2268541.9999980927,
+            "p75": 2347291.9999980927,
+            "p99": 2893459.0000038147,
+            "p999": 2979625,
+            "avg": 2316016.4761904483,
+            "ticks": 273,
+            "sampleCount": 273
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "update-high: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 3194416,
+            "max": 4858583.000001907,
+            "p25": 3221625,
+            "p50": 3274667,
+            "p75": 3436459,
+            "p99": 4667500,
+            "p999": 4746042,
+            "avg": 3410146.114130383,
+            "ticks": 184,
+            "sampleCount": 184
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "update-high: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 2975042,
+            "max": 4453792,
+            "p25": 3025750,
+            "p50": 3088500,
+            "p75": 3255875,
+            "p99": 3862875,
+            "p999": 4034917,
+            "avg": 3180004.4494949495,
+            "ticks": 198,
+            "sampleCount": 198
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-multiple: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 13163.9404296875,
+            "max": 15469.3603515625,
+            "p25": 13573.038818359375,
+            "p50": 13750.529052734375,
+            "p75": 13891.52001953125,
+            "p99": 14108.439208984375,
+            "p999": 14108.439208984375,
+            "avg": 13858.835001627604,
+            "ticks": 49152,
+            "sampleCount": 12
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-multiple: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 11493.408203125,
+            "max": 11755.350830078125,
+            "p25": 11586.466552734375,
+            "p50": 11649.05810546875,
+            "p75": 11685.099365234375,
+            "p99": 11735.209228515625,
+            "p999": 11735.209228515625,
+            "avg": 11642.848754882812,
+            "ticks": 40960,
+            "sampleCount": 10
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "update-multiple: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 258417,
+            "max": 680917,
+            "p25": 262250,
+            "p50": 269500,
+            "p75": 280000,
+            "p99": 465292,
+            "p999": 559583,
+            "avg": 277178.213512343,
+            "ticks": 2309,
+            "sampleCount": 2309
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "update-multiple: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 711875,
+            "max": 1166375,
+            "p25": 718208,
+            "p50": 725167,
+            "p75": 729833,
+            "p99": 880167,
+            "p999": 1107667,
+            "avg": 730204.1281464531,
+            "ticks": 874,
+            "sampleCount": 874
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "reverse-array: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 8986416,
+            "max": 11811209,
+            "p25": 9486291,
+            "p50": 9722583,
+            "p75": 10536083,
+            "p99": 11475666,
+            "p999": 11475666,
+            "avg": 9996938.85,
+            "ticks": 60,
+            "sampleCount": 60
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "reverse-array: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 8137083,
+            "max": 11198125,
+            "p25": 8559458,
+            "p50": 9140375,
+            "p75": 9808958,
+            "p99": 11062458,
+            "p999": 11062458,
+            "avg": 9241265.787878787,
+            "ticks": 66,
+            "sampleCount": 66
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "reverse-array: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 9773417,
+            "max": 12668541,
+            "p25": 10090375,
+            "p50": 10469375,
+            "p75": 11361416,
+            "p99": 12645750,
+            "p999": 12645750,
+            "avg": 10785084.089285715,
+            "ticks": 56,
+            "sampleCount": 56
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "reverse-array: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 8983292,
+            "max": 11779958,
+            "p25": 9477875,
+            "p50": 10203583,
+            "p75": 10819583,
+            "p99": 11585125,
+            "p999": 11585125,
+            "avg": 10213023.305084746,
+            "ticks": 59,
+            "sampleCount": 59
+          }
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "recordedAt": "2026-09-30T08:42:16.410Z",
+      "runIndex": 1,
+      "build": {
+        "builtAt": "2026-09-30T08:37:55.441Z",
+        "gitRevision": "9184acb7760643fca890af9ccce1c10c2445c668",
+        "gitDirty": true,
+        "gitStatus": "?? perf-testing/reports/",
+        "mutativeSourceSha256": "db8bdf42f2d79b78a613ef9169fb96fd8d30ded0e768308dda04798cdb0977ad",
+        "versions": {
+          "mutative": "1.3.0",
+          "immer": "11.1.18",
+          "mitata": "1.0.34"
+        },
+        "productionInputs": {
+          "mutative": {
+            "path": "dist/mutative.cjs.production.min.js",
+            "sha256": "f339f5021704f2368ff982fdb444fb6a31faac9537d1990a47790f4106dbf02b"
+          },
+          "immer": {
+            "path": "node_modules/.pnpm/immer@11.1.18/node_modules/immer/dist/immer.production.mjs",
+            "sha256": "30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9"
+          }
+        },
+        "arrayMethodsEnabled": false
+      },
+      "environment": {
+        "node": "v24.16.0",
+        "v8": "13.6.233.17-node.49",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "25.6.0",
+        "cpu": "Apple M1 Max",
+        "logicalCpus": 10,
+        "memoryBytes": 68719476736,
+        "execArgv": ["--expose-gc", "--enable-source-maps"]
+      },
+      "config": {
+        "arraySize": 10000,
+        "nestedArraySize": 10,
+        "largeObjectSize1": 1000,
+        "largeObjectSize2": 3000,
+        "multiUpdateCount": 5,
+        "reuseStateIterations": 10,
+        "rtkqCount": 100
+      },
+      "checks": 24,
+      "unit": "nanoseconds per full scenario iteration",
+      "methodology": {
+        "arrayMethodsEnabled": false,
+        "patchesEnabled": false,
+        "freezeOnInput": "deeply pre-frozen base and payloads",
+        "freezeOffInput": "unfrozen base and payloads",
+        "fixtureAndActionSetupTimed": false,
+        "stateResetPerIteration": true,
+        "gc": "Mitata once after warmup; natural GC included during timing",
+        "heapSampling": false,
+        "minCpuTimeNs": 642000000
+      },
+      "context": {
+        "now": 1790757716341,
+        "arch": "arm64-darwin",
+        "version": "24.16.0",
+        "runtime": "node",
+        "cpu": {
+          "name": "Apple M1 Max",
+          "freq": 3.1093145523056562
+        },
+        "noop": {
+          "fn": {
+            "kind": "fn",
+            "min": 0.061035156017169356,
+            "max": 13.24462890625,
+            "p25": 0.081298828125,
+            "p50": 0.081298828125,
+            "p75": 0.08154296875,
+            "p99": 0.09155273449141532,
+            "p999": 0.508544921875,
+            "avg": 0.0822839412030345,
+            "ticks": 7800291328,
+            "sampleCount": 1904368
+          },
+          "iter": {
+            "kind": "iter",
+            "min": 19.683837890625,
+            "max": 70.02783203125,
+            "p25": 20.15185546875,
+            "p50": 20.3857421875,
+            "p75": 20.782470703125,
+            "p99": 26.906494140625,
+            "p999": 59.4990234375,
+            "avg": 20.726000995959264,
+            "ticks": 30932992,
+            "sampleCount": 7552
+          },
+          "fn_gc": {
+            "kind": "fn",
+            "min": 0.091552734375,
+            "max": 7.7109375,
+            "p25": 0.101806640625,
+            "p50": 0.1220703125,
+            "p75": 0.142333984375,
+            "p99": 7.070068359375,
+            "p999": 7.344482421875,
+            "avg": 0.7539395667295862,
+            "ticks": 1830912,
+            "gc": {
+              "total": 638536625,
+              "min": 1132625,
+              "max": 3194459,
+              "avg": 1415824.0022172949
+            },
+            "sampleCount": 447
+          }
+        }
+      },
+      "trials": [
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "add: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 699917,
+            "max": 1666500,
+            "p25": 722917,
+            "p50": 734041,
+            "p75": 757667,
+            "p99": 1426709,
+            "p999": 1643875,
+            "avg": 767856.9843373494,
+            "ticks": 830,
+            "sampleCount": 830
+          }
+        },
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "add: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 246083,
+            "max": 831625,
+            "p25": 257499.99999904633,
+            "p50": 266625,
+            "p75": 274542.0000009537,
+            "p99": 497083,
+            "p999": 772292,
+            "avg": 274249.87398201134,
+            "ticks": 2333,
+            "sampleCount": 2333
+          }
+        },
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "add: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 10499.3896484375,
+            "max": 11346.598388671875,
+            "p25": 10569.7529296875,
+            "p50": 10583.099365234375,
+            "p75": 10632.9345703125,
+            "p99": 10857.035400390625,
+            "p999": 10857.035400390625,
+            "avg": 10677.014914772728,
+            "ticks": 45056,
+            "sampleCount": 11
+          }
+        },
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "add: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 10495.54443359375,
+            "max": 10998.484375,
+            "p25": 10701.751708984375,
+            "p50": 10783.945556640625,
+            "p75": 10852.3154296875,
+            "p99": 10957.438232421875,
+            "p999": 10957.438232421875,
+            "avg": 10773.402388139204,
+            "ticks": 45056,
+            "sampleCount": 11
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "remove: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 8408209,
+            "max": 11250875,
+            "p25": 8922083,
+            "p50": 9495500,
+            "p75": 9843875,
+            "p99": 11183167,
+            "p999": 11183167,
+            "avg": 9498336.6875,
+            "ticks": 64,
+            "sampleCount": 64
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "remove: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 8988792,
+            "max": 12385375,
+            "p25": 9305000,
+            "p50": 9733708,
+            "p75": 10550666,
+            "p99": 12002541,
+            "p999": 12002541,
+            "avg": 10061464.516666668,
+            "ticks": 60,
+            "sampleCount": 60
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "remove: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 7650666,
+            "max": 10940250,
+            "p25": 7992250,
+            "p50": 8446542,
+            "p75": 8906542,
+            "p99": 10634125,
+            "p999": 10634125,
+            "avg": 8621895.885714285,
+            "ticks": 70,
+            "sampleCount": 70
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "remove: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 8853459,
+            "max": 12350333,
+            "p25": 9268833,
+            "p50": 9545375,
+            "p75": 10370334,
+            "p99": 12123958,
+            "p999": 12123958,
+            "avg": 9991252.183333334,
+            "ticks": 60,
+            "sampleCount": 60
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "mapNested: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 7999041,
+            "max": 10625666,
+            "p25": 8364125,
+            "p50": 8672417,
+            "p75": 9095625,
+            "p99": 10329583,
+            "p999": 10329583,
+            "avg": 8800641.927536232,
+            "ticks": 69,
+            "sampleCount": 69
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "mapNested: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 10483000,
+            "max": 13266791,
+            "p25": 10776875,
+            "p50": 11042750,
+            "p75": 12322833,
+            "p99": 13214083,
+            "p999": 13214083,
+            "avg": 11546176.211538462,
+            "ticks": 52,
+            "sampleCount": 52
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "mapNested: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 6646250,
+            "max": 8770583,
+            "p25": 7016375,
+            "p50": 7409458,
+            "p75": 7871125,
+            "p99": 8770459,
+            "p999": 8770459,
+            "avg": 7515548.3292682925,
+            "ticks": 82,
+            "sampleCount": 82
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "mapNested: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 10268083,
+            "max": 14018459,
+            "p25": 10644250,
+            "p50": 11475250,
+            "p75": 12435625,
+            "p99": 13985042,
+            "p999": 13985042,
+            "avg": 11660872.588235294,
+            "ticks": 51,
+            "sampleCount": 51
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "update-high: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 2897917,
+            "max": 4014625,
+            "p25": 2990459,
+            "p50": 3067291,
+            "p75": 3248666,
+            "p99": 3853667,
+            "p999": 3994833,
+            "avg": 3151291.040201005,
+            "ticks": 199,
+            "sampleCount": 199
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "update-high: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 3259707.9999980927,
+            "max": 4877208.000001907,
+            "p25": 3342541.0000019073,
+            "p50": 3413042,
+            "p75": 3563542,
+            "p99": 4368792,
+            "p999": 4848667,
+            "avg": 3502616.201117542,
+            "ticks": 179,
+            "sampleCount": 179
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-high: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 2188291,
+            "max": 3444292,
+            "p25": 2223167,
+            "p50": 2255208,
+            "p75": 2330917,
+            "p99": 2692584,
+            "p999": 2864916.9999980927,
+            "avg": 2295204.7127271616,
+            "ticks": 275,
+            "sampleCount": 275
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-high: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 2977458,
+            "max": 4145667,
+            "p25": 3091750,
+            "p50": 3147083,
+            "p75": 3252459,
+            "p99": 4104000,
+            "p999": 4126000,
+            "avg": 3211484.846153846,
+            "ticks": 195,
+            "sampleCount": 195
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "update-multiple: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 702958,
+            "max": 1398291,
+            "p25": 726375,
+            "p50": 734167,
+            "p75": 748667,
+            "p99": 1075625,
+            "p999": 1222750,
+            "avg": 751071.6068476978,
+            "ticks": 847,
+            "sampleCount": 847
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "update-multiple: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 250459,
+            "max": 756084,
+            "p25": 264917,
+            "p50": 270917,
+            "p75": 277625,
+            "p99": 481959,
+            "p999": 651208,
+            "avg": 277847.32335069444,
+            "ticks": 2304,
+            "sampleCount": 2304
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-multiple: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 11412.506103515625,
+            "max": 11808.746337890625,
+            "p25": 11517.7509765625,
+            "p50": 11571.746826171875,
+            "p75": 11742.828369140625,
+            "p99": 11791.208984375,
+            "p999": 11791.208984375,
+            "avg": 11639.732885742187,
+            "ticks": 40960,
+            "sampleCount": 10
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-multiple: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 13608.87646484375,
+            "max": 15571.59423828125,
+            "p25": 13703.776123046875,
+            "p50": 13812.825439453125,
+            "p75": 13967.22412109375,
+            "p99": 14102.264404296875,
+            "p999": 14102.264404296875,
+            "avg": 13971.868713378906,
+            "ticks": 49152,
+            "sampleCount": 12
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "reverse-array: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 8698125,
+            "max": 11505583,
+            "p25": 9049708,
+            "p50": 9545458,
+            "p75": 10114000,
+            "p99": 11411792,
+            "p999": 11411792,
+            "avg": 9692439.5,
+            "ticks": 62,
+            "sampleCount": 62
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "reverse-array: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 9404083,
+            "max": 12698667,
+            "p25": 9775500,
+            "p50": 10159542,
+            "p75": 10501125,
+            "p99": 12413458,
+            "p999": 12413458,
+            "avg": 10376326.931034483,
+            "ticks": 58,
+            "sampleCount": 58
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "reverse-array: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 7922958,
+            "max": 10973583,
+            "p25": 8281125,
+            "p50": 8584042,
+            "p75": 9317084,
+            "p99": 10174667,
+            "p999": 10174667,
+            "avg": 8787284.985507246,
+            "ticks": 69,
+            "sampleCount": 69
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "reverse-array: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 9027042,
+            "max": 11845583,
+            "p25": 9232041,
+            "p50": 9515334,
+            "p75": 10195333,
+            "p99": 11565250,
+            "p999": 11565250,
+            "avg": 9805913.295081967,
+            "ticks": 61,
+            "sampleCount": 61
+          }
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "recordedAt": "2026-09-30T08:42:40.095Z",
+      "runIndex": 2,
+      "build": {
+        "builtAt": "2026-09-30T08:37:55.441Z",
+        "gitRevision": "9184acb7760643fca890af9ccce1c10c2445c668",
+        "gitDirty": true,
+        "gitStatus": "?? perf-testing/reports/",
+        "mutativeSourceSha256": "db8bdf42f2d79b78a613ef9169fb96fd8d30ded0e768308dda04798cdb0977ad",
+        "versions": {
+          "mutative": "1.3.0",
+          "immer": "11.1.18",
+          "mitata": "1.0.34"
+        },
+        "productionInputs": {
+          "mutative": {
+            "path": "dist/mutative.cjs.production.min.js",
+            "sha256": "f339f5021704f2368ff982fdb444fb6a31faac9537d1990a47790f4106dbf02b"
+          },
+          "immer": {
+            "path": "node_modules/.pnpm/immer@11.1.18/node_modules/immer/dist/immer.production.mjs",
+            "sha256": "30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9"
+          }
+        },
+        "arrayMethodsEnabled": false
+      },
+      "environment": {
+        "node": "v24.16.0",
+        "v8": "13.6.233.17-node.49",
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "25.6.0",
+        "cpu": "Apple M1 Max",
+        "logicalCpus": 10,
+        "memoryBytes": 68719476736,
+        "execArgv": ["--expose-gc", "--enable-source-maps"]
+      },
+      "config": {
+        "arraySize": 10000,
+        "nestedArraySize": 10,
+        "largeObjectSize1": 1000,
+        "largeObjectSize2": 3000,
+        "multiUpdateCount": 5,
+        "reuseStateIterations": 10,
+        "rtkqCount": 100
+      },
+      "checks": 24,
+      "unit": "nanoseconds per full scenario iteration",
+      "methodology": {
+        "arrayMethodsEnabled": false,
+        "patchesEnabled": false,
+        "freezeOnInput": "deeply pre-frozen base and payloads",
+        "freezeOffInput": "unfrozen base and payloads",
+        "fixtureAndActionSetupTimed": false,
+        "stateResetPerIteration": true,
+        "gc": "Mitata once after warmup; natural GC included during timing",
+        "heapSampling": false,
+        "minCpuTimeNs": 642000000
+      },
+      "context": {
+        "now": 1790757740052,
+        "arch": "arm64-darwin",
+        "version": "24.16.0",
+        "runtime": "node",
+        "cpu": {
+          "name": "Apple M1 Max",
+          "freq": 3.113943552586717
+        },
+        "noop": {
+          "fn": {
+            "kind": "fn",
+            "min": 0.061035156017169356,
+            "max": 10.335205078125,
+            "p25": 0.081298828125,
+            "p50": 0.081298828125,
+            "p75": 0.08154296875,
+            "p99": 0.09155273449141532,
+            "p999": 0.52880859375,
+            "avg": 0.081874759385542,
+            "ticks": 7839428608,
+            "sampleCount": 1913923
+          },
+          "iter": {
+            "kind": "iter",
+            "min": 19.76513671875,
+            "max": 62.61181640625,
+            "p25": 20.212890625,
+            "p50": 20.416259765625,
+            "p75": 20.81298828125,
+            "p99": 25.7060546875,
+            "p999": 58.11572265625,
+            "avg": 20.723206649105606,
+            "ticks": 30941184,
+            "sampleCount": 7554
+          },
+          "fn_gc": {
+            "kind": "fn",
+            "min": 0.08154296875,
+            "max": 7.517578125,
+            "p25": 0.101806640625,
+            "p50": 0.101806640625,
+            "p75": 0.1220703125,
+            "p99": 6.856201171875,
+            "p999": 7.049560546875,
+            "avg": 0.3800145623967511,
+            "ticks": 1859584,
+            "gc": {
+              "total": 640491692,
+              "min": 1103584,
+              "max": 2088500,
+              "avg": 1398453.4759825328
+            },
+            "sampleCount": 454
+          }
+        }
+      },
+      "trials": [
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "add: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 10575.480224609375,
+            "max": 11151.0009765625,
+            "p25": 10668.88427734375,
+            "p50": 10716.7763671875,
+            "p75": 10783.14208984375,
+            "p99": 10844.90966796875,
+            "p999": 10844.90966796875,
+            "avg": 10752.710515802557,
+            "ticks": 45056,
+            "sampleCount": 11
+          }
+        },
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "add: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 10402.801513671875,
+            "max": 11040.995361328125,
+            "p25": 10440.572021484375,
+            "p50": 10487.9150390625,
+            "p75": 10520.914794921875,
+            "p99": 10676.9814453125,
+            "p999": 10676.9814453125,
+            "avg": 10548.725497159112,
+            "ticks": 45056,
+            "sampleCount": 11
+          }
+        },
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "add: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 243625,
+            "max": 605542,
+            "p25": 253917,
+            "p50": 255667,
+            "p75": 261375,
+            "p99": 435750,
+            "p999": 549834,
+            "avg": 262592.4454022989,
+            "ticks": 2436,
+            "sampleCount": 2436
+          }
+        },
+        {
+          "scenario": "add",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "add: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 709792,
+            "max": 1057125,
+            "p25": 721208,
+            "p50": 725458,
+            "p75": 735084,
+            "p99": 869792,
+            "p999": 1052125,
+            "avg": 735886.9769585254,
+            "ticks": 868,
+            "sampleCount": 868
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "remove: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 8916875,
+            "max": 11747667,
+            "p25": 9040541,
+            "p50": 9243167,
+            "p75": 9776833,
+            "p99": 11721416,
+            "p999": 11721416,
+            "avg": 9669745.322580645,
+            "ticks": 62,
+            "sampleCount": 62
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "remove: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 7652791,
+            "max": 10476292,
+            "p25": 7849875,
+            "p50": 8071333,
+            "p75": 8436208,
+            "p99": 10013792,
+            "p999": 10013792,
+            "avg": 8291300.849315069,
+            "ticks": 73,
+            "sampleCount": 73
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "remove: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 9138000,
+            "max": 11614625,
+            "p25": 9354709,
+            "p50": 9647125,
+            "p75": 10198917,
+            "p99": 11500708,
+            "p999": 11500708,
+            "avg": 9836121.50819672,
+            "ticks": 61,
+            "sampleCount": 61
+          }
+        },
+        {
+          "scenario": "remove",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "remove: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 8465666,
+            "max": 11902583,
+            "p25": 8785125,
+            "p50": 9084042,
+            "p75": 9513958,
+            "p99": 10945083,
+            "p999": 10945083,
+            "avg": 9228895.507692307,
+            "ticks": 65,
+            "sampleCount": 65
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "mapNested: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 10748917,
+            "max": 12309541,
+            "p25": 11045000,
+            "p50": 11275917,
+            "p75": 11839083,
+            "p99": 12287041,
+            "p999": 12287041,
+            "avg": 11404672.132075472,
+            "ticks": 53,
+            "sampleCount": 53
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "mapNested: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 6922708,
+            "max": 8271083,
+            "p25": 7136375,
+            "p50": 7424666,
+            "p75": 7678250,
+            "p99": 8229083,
+            "p999": 8229083,
+            "avg": 7438071.337349397,
+            "ticks": 83,
+            "sampleCount": 83
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "mapNested: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 11116250,
+            "max": 13318292,
+            "p25": 11388792,
+            "p50": 11680541,
+            "p75": 12166125,
+            "p99": 13218708,
+            "p999": 13218708,
+            "avg": 11846674.823529411,
+            "ticks": 51,
+            "sampleCount": 51
+          }
+        },
+        {
+          "scenario": "mapNested",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "mapNested: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 7678833,
+            "max": 9943750,
+            "p25": 7895292,
+            "p50": 8251250,
+            "p75": 8862792,
+            "p99": 9878417,
+            "p999": 9878417,
+            "avg": 8423738.472222222,
+            "ticks": 72,
+            "sampleCount": 72
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-high: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 3111417,
+            "max": 4324875,
+            "p25": 3199833,
+            "p50": 3260209,
+            "p75": 3381125,
+            "p99": 4214916,
+            "p999": 4223875,
+            "avg": 3337551.234042553,
+            "ticks": 188,
+            "sampleCount": 188
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-high: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 2129375.0000019073,
+            "max": 2889708.9999980927,
+            "p25": 2203917.0000038147,
+            "p50": 2252625.0000019073,
+            "p75": 2338541,
+            "p99": 2808583,
+            "p999": 2859000,
+            "avg": 2295462.8768115803,
+            "ticks": 276,
+            "sampleCount": 276
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "update-high: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 3358709,
+            "max": 5053125,
+            "p25": 3490041.0000019073,
+            "p50": 3572375.0000038147,
+            "p75": 3743625,
+            "p99": 4920583.999998093,
+            "p999": 4929500,
+            "avg": 3681802.2529410757,
+            "ticks": 170,
+            "sampleCount": 170
+          }
+        },
+        {
+          "scenario": "update-high",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "update-high: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 2908542,
+            "max": 4034542,
+            "p25": 3011167,
+            "p50": 3083417,
+            "p75": 3233375,
+            "p99": 3809334,
+            "p999": 3883500,
+            "avg": 3151707.48,
+            "ticks": 200,
+            "sampleCount": 200
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "update-multiple: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 13978.06787109375,
+            "max": 15881.123779296875,
+            "p25": 14038.2587890625,
+            "p50": 14149.119140625,
+            "p75": 14487.080810546875,
+            "p99": 14533.09130859375,
+            "p999": 14533.09130859375,
+            "avg": 14362.08935546875,
+            "ticks": 49152,
+            "sampleCount": 12
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "update-multiple: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 11408.447265625,
+            "max": 11814.39208984375,
+            "p25": 11423.8994140625,
+            "p50": 11492.80810546875,
+            "p75": 11661.763427734375,
+            "p99": 11792.327880859375,
+            "p999": 11792.327880859375,
+            "avg": 11577.87275390625,
+            "ticks": 40960,
+            "sampleCount": 10
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "update-multiple: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 250875,
+            "max": 684875,
+            "p25": 259791,
+            "p50": 266042,
+            "p75": 275959,
+            "p99": 488416,
+            "p999": 639583,
+            "avg": 274655.5169455169,
+            "ticks": 2331,
+            "sampleCount": 2331
+          }
+        },
+        {
+          "scenario": "update-multiple",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "update-multiple: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 701500,
+            "max": 1085333,
+            "p25": 724625,
+            "p50": 733250,
+            "p75": 744292,
+            "p99": 911292,
+            "p999": 1083708,
+            "avg": 743102.4516880093,
+            "ticks": 859,
+            "sampleCount": 859
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": false,
+          "name": "reverse-array: mutative (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 9327458,
+            "max": 12288542,
+            "p25": 9495000,
+            "p50": 9793709,
+            "p75": 10327750,
+            "p99": 12265916,
+            "p999": 12265916,
+            "avg": 10166137.745762711,
+            "ticks": 59,
+            "sampleCount": 59
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": false,
+          "name": "reverse-array: immer (freeze: false)",
+          "stats": {
+            "kind": "yield",
+            "min": 7725958,
+            "max": 10778750,
+            "p25": 8053334,
+            "p50": 8586958,
+            "p75": 9197334,
+            "p99": 10004250,
+            "p999": 10004250,
+            "avg": 8700042.857142856,
+            "ticks": 70,
+            "sampleCount": 70
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "mutative",
+          "autoFreeze": true,
+          "name": "reverse-array: mutative (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 9490917,
+            "max": 12418208,
+            "p25": 9771791,
+            "p50": 10174209,
+            "p75": 10944667,
+            "p99": 12069042,
+            "p999": 12069042,
+            "avg": 10381314.672413792,
+            "ticks": 58,
+            "sampleCount": 58
+          }
+        },
+        {
+          "scenario": "reverse-array",
+          "operations": 1,
+          "library": "immer",
+          "autoFreeze": true,
+          "name": "reverse-array: immer (freeze: true)",
+          "stats": {
+            "kind": "yield",
+            "min": 8715042,
+            "max": 12131291,
+            "p25": 9066834,
+            "p50": 9429041,
+            "p75": 9951250,
+            "p99": 11620792,
+            "p999": 11620792,
+            "avg": 9652755.338709677,
+            "ticks": 62,
+            "sampleCount": 62
+          }
+        }
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "scenario": "add",
+      "autoFreeze": false,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 10773.402388139204,
+          "minMeanNs": 10752.710515802557,
+          "maxMeanNs": 10850.563787286932,
+          "medianP50Ns": 10783.945556640625,
+          "medianP99Ns": 10957.438232421875
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 10677.014914772728,
+          "minMeanNs": 10548.725497159112,
+          "maxMeanNs": 10726.852894176136,
+          "medianP50Ns": 10583.099365234375,
+          "medianP99Ns": 10805.155273437733
+        }
+      },
+      "immerOverMutative": 0.9910532002895769
+    },
+    {
+      "scenario": "add",
+      "autoFreeze": true,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 262822.03082614054,
+          "minMeanNs": 262592.4454022989,
+          "maxMeanNs": 274249.87398201134,
+          "medianP50Ns": 257875,
+          "medianP99Ns": 447458
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 735886.9769585254,
+          "minMeanNs": 732846.6681974742,
+          "maxMeanNs": 767856.9843373494,
+          "medianP50Ns": 725458,
+          "medianP99Ns": 910917
+        }
+      },
+      "immerOverMutative": 2.799944033022567
+    },
+    {
+      "scenario": "remove",
+      "autoFreeze": false,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 9905178.327868853,
+          "minMeanNs": 9669745.322580645,
+          "maxMeanNs": 9991252.183333334,
+          "medianP50Ns": 9382709,
+          "medianP99Ns": 12123958
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 8437991.888888888,
+          "minMeanNs": 8291300.849315069,
+          "maxMeanNs": 8621895.885714285,
+          "medianP50Ns": 8071333,
+          "medianP99Ns": 10634125
+        }
+      },
+      "immerOverMutative": 0.8518768274113812
+    },
+    {
+      "scenario": "remove",
+      "autoFreeze": true,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 9971496.55,
+          "minMeanNs": 9836121.50819672,
+          "maxMeanNs": 10061464.516666668,
+          "medianP50Ns": 9647125,
+          "medianP99Ns": 12002541
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 9498336.6875,
+          "minMeanNs": 9228895.507692307,
+          "maxMeanNs": 9915194,
+          "medianP50Ns": 9495500,
+          "medianP99Ns": 11183167
+        }
+      },
+      "immerOverMutative": 0.9525487613491678
+    },
+    {
+      "scenario": "mapNested",
+      "autoFreeze": false,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 11660872.588235294,
+          "minMeanNs": 11404672.132075472,
+          "maxMeanNs": 11664343.921568627,
+          "medianP50Ns": 11284458,
+          "medianP99Ns": 13384042
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 7464623.439024391,
+          "minMeanNs": 7438071.337349397,
+          "maxMeanNs": 7515548.3292682925,
+          "medianP50Ns": 7409458,
+          "medianP99Ns": 8770459
+        }
+      },
+      "immerOverMutative": 0.6401427837017516
+    },
+    {
+      "scenario": "mapNested",
+      "autoFreeze": true,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 11796569.450980391,
+          "minMeanNs": 11546176.211538462,
+          "maxMeanNs": 11846674.823529411,
+          "medianP50Ns": 11597250,
+          "medianP99Ns": 13218708
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 8542424.85915493,
+          "minMeanNs": 8423738.472222222,
+          "maxMeanNs": 8800641.927536232,
+          "medianP50Ns": 8350416,
+          "medianP99Ns": 9992583
+        }
+      },
+      "immerOverMutative": 0.7241448367385304
+    },
+    {
+      "scenario": "update-high",
+      "autoFreeze": false,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 3211484.846153846,
+          "minMeanNs": 3204383.6683673467,
+          "maxMeanNs": 3337551.234042553,
+          "medianP50Ns": 3147083,
+          "medianP99Ns": 4104542
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 2295462.8768115803,
+          "minMeanNs": 2295204.7127271616,
+          "maxMeanNs": 2316016.4761904483,
+          "medianP50Ns": 2255208,
+          "medianP99Ns": 2808583
+        }
+      },
+      "immerOverMutative": 0.7147668405039131
+    },
+    {
+      "scenario": "update-high",
+      "autoFreeze": true,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 3502616.201117542,
+          "minMeanNs": 3410146.114130383,
+          "maxMeanNs": 3681802.2529410757,
+          "medianP50Ns": 3413042,
+          "medianP99Ns": 4667500
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 3151707.48,
+          "minMeanNs": 3151291.040201005,
+          "maxMeanNs": 3180004.4494949495,
+          "medianP50Ns": 3083417,
+          "medianP99Ns": 3853667
+        }
+      },
+      "immerOverMutative": 0.8998152520948252
+    },
+    {
+      "scenario": "update-multiple",
+      "autoFreeze": false,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 13971.868713378906,
+          "minMeanNs": 13858.835001627604,
+          "maxMeanNs": 14362.08935546875,
+          "medianP50Ns": 13812.825439453125,
+          "medianP99Ns": 14108.439208984375
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 11639.732885742187,
+          "minMeanNs": 11577.87275390625,
+          "maxMeanNs": 11642.848754882812,
+          "medianP50Ns": 11571.746826171875,
+          "medianP99Ns": 11791.208984375
+        }
+      },
+      "immerOverMutative": 0.8330834711176781
+    },
+    {
+      "scenario": "update-multiple",
+      "autoFreeze": true,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 277178.213512343,
+          "minMeanNs": 274655.5169455169,
+          "maxMeanNs": 277847.32335069444,
+          "medianP50Ns": 269500,
+          "medianP99Ns": 481959
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 743102.4516880093,
+          "minMeanNs": 730204.1281464531,
+          "maxMeanNs": 751071.6068476978,
+          "medianP50Ns": 733250,
+          "medianP99Ns": 911292
+        }
+      },
+      "immerOverMutative": 2.680955484457361
+    },
+    {
+      "scenario": "reverse-array",
+      "autoFreeze": false,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 9996938.85,
+          "minMeanNs": 9805913.295081967,
+          "maxMeanNs": 10166137.745762711,
+          "medianP50Ns": 9722583,
+          "medianP99Ns": 11565250
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 8787284.985507246,
+          "minMeanNs": 8700042.857142856,
+          "maxMeanNs": 9241265.787878787,
+          "medianP50Ns": 8586958,
+          "medianP99Ns": 10174667
+        }
+      },
+      "immerOverMutative": 0.8789975728927507
+    },
+    {
+      "scenario": "reverse-array",
+      "autoFreeze": true,
+      "operations": 1,
+      "libraries": {
+        "mutative": {
+          "runs": 3,
+          "medianMeanNs": 10381314.672413792,
+          "minMeanNs": 10376326.931034483,
+          "maxMeanNs": 10785084.089285715,
+          "medianP50Ns": 10174209,
+          "medianP99Ns": 12413458
+        },
+        "immer": {
+          "runs": 3,
+          "medianMeanNs": 9692439.5,
+          "minMeanNs": 9652755.338709677,
+          "maxMeanNs": 10213023.305084746,
+          "medianP50Ns": 9545458,
+          "medianP99Ns": 11585125
+        }
+      },
+      "immerOverMutative": 0.9336427808855138
+    }
+  ]
+}

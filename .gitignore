@@ -107,3 +107,6 @@ benchmark.csv
 
 # Analyzer output
 stats.html
+
+# Separate checkout used only for paired performance CI
+/benchmark-base/
