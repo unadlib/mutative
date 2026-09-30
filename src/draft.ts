@@ -200,7 +200,7 @@ function setTrap(
     target.assignedMap!.set(key, true);
   }
   target.copy![key] = value;
-  markFinalization(target, key, value, generatePatches);
+  markFinalization(target, key, value);
   return true;
 }
 

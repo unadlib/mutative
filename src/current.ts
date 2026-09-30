@@ -68,6 +68,7 @@ function getCurrent(target: any) {
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   let currentValue: any;
+  let changed = false;
   function ensureShallowCopy() {
     currentValue =
       type === DraftType.Map
@@ -75,7 +76,9 @@ function getCurrent(target: any) {
           ? new (Object.getPrototypeOf(target).constructor)(target)
           : new Map(target)
         : type === DraftType.Set
-          ? Array.from(proxyDraft!.setMap!.values()!)
+          ? proxyDraft
+            ? Array.from(proxyDraft.setMap!.values()!)
+            : Array.from(target as Set<any>)
           : shallowCopy(target, proxyDraft?.options);
   }
 
@@ -87,6 +90,10 @@ function getCurrent(target: any) {
     } finally {
       proxyDraft.finalized = false;
     }
+  } else if (type === DraftType.Set) {
+    // A plain Set is walked as an indexed snapshot so nested drafts can be
+    // replaced by position; the Set itself is rebuilt only if that happens.
+    ensureShallowCopy();
   } else {
     // It's not a proxy draft, let's use the target directly and let's see
     // lazily if we need to create a shallow copy
@@ -97,12 +104,14 @@ function getCurrent(target: any) {
     if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
     const newValue = getCurrent(value);
     if (newValue !== value) {
+      changed = true;
       if (currentValue === target) ensureShallowCopy();
       set(currentValue, key, newValue);
     }
   });
   if (type === DraftType.Set) {
-    const value = proxyDraft?.original ?? currentValue;
+    if (!proxyDraft && !changed) return target;
+    const value = proxyDraft?.original ?? target;
     return !isBaseSetInstance(value)
       ? new (Object.getPrototypeOf(value).constructor)(currentValue)
       : new Set(currentValue);

@@ -1,6 +1,6 @@
 import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
-import { getValue, isDraft, isDraftable } from './draft';
+import { getValue, isDraftable } from './draft';
 import { isBaseMapInstance, isBaseSetInstance } from './proto';
 import { die, ErrorCode } from '../error';
 
@@ -154,10 +154,6 @@ function deepClone(target: any) {
   const copy = Object.create(Object.getPrototypeOf(target));
   for (const key in target) copy[key] = deepClone(target[key]);
   return copy;
-}
-
-export function cloneIfNeeded<T>(target: T): T {
-  return isDraft(target) ? deepClone(target) : target;
 }
 
 export { deepClone };

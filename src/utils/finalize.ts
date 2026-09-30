@@ -163,27 +163,22 @@ export function finalizeNode(
   }
 }
 
-export function markFinalization(
-  target: ProxyDraft,
-  key: any,
-  value: any,
-  generatePatches: GeneratePatches
-) {
+export function markFinalization(target: ProxyDraft, key: any, value: any) {
   const proxyDraft = getProxyDraft(value);
   if (proxyDraft) {
     // !case: assign the draft value
     if (!proxyDraft.callbacks) {
       proxyDraft.callbacks = [];
     }
-    proxyDraft.callbacks.push((patches, inversePatches) => {
+    proxyDraft.callbacks.push(() => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
       if (isEqual(get(copy, key), value)) {
-        let updatedValue = proxyDraft.original;
-        if (proxyDraft.copy) {
-          updatedValue = proxyDraft.copy;
-        }
+        // The target generates its own patches once all drafts it holds have
+        // been finalized, so its patch values never need deep cloning.
+        const updatedValue = proxyDraft.operated
+          ? proxyDraft.copy
+          : proxyDraft.original;
         finalizeSetValue(target);
-        finalizePatches(target, generatePatches, patches, inversePatches);
         if (__DEV__ && target.options.enableAutoFreeze) {
           target.options.updatedValues =
             target.options.updatedValues ?? new WeakMap();

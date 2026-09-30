@@ -9,7 +9,6 @@ import {
   markFinalization,
 } from './utils';
 import { checkReadable } from './unsafe';
-import { generatePatches } from './patch';
 
 const getNextIterator =
   (
@@ -78,7 +77,7 @@ export const setHandler = {
       markChanged(target);
       target.assignedMap!.set(value, true);
       target.setMap!.set(value, value);
-      markFinalization(target, value, value, generatePatches);
+      markFinalization(target, value, value);
     }
     return this;
   },

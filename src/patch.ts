@@ -1,5 +1,17 @@
 import { DraftType, Operation, Patches, ProxyDraft } from './interface';
-import { cloneIfNeeded, escapePath, get, has, isEqual } from './utils';
+import { escapePath, get, getProxyDraft, has, isEqual } from './utils';
+import { current } from './current';
+
+/**
+ * Patch values must not contain drafts. A draft that is still present when its
+ * container generates patches is represented by its original object when it
+ * was not modified, or by a snapshot of its current state otherwise.
+ */
+function cloneIfNeeded<T>(target: T): T {
+  const proxyDraft = getProxyDraft(target);
+  if (!proxyDraft) return target;
+  return proxyDraft.operated ? current(target as any) : proxyDraft.original;
+}
 
 function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,

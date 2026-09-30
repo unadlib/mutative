@@ -14300,6 +14300,14 @@ exports[`array 6`] = `
 exports[`array length with ref 1`] = `
 [
   {
+    "op": "replace",
+    "path": [
+      "foobar",
+      "length",
+    ],
+    "value": 0,
+  },
+  {
     "op": "add",
     "path": [
       "f",
@@ -14307,14 +14315,6 @@ exports[`array length with ref 1`] = `
     "value": {
       "baz": "new str0",
     },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "foobar",
-      "length",
-    ],
-    "value": 0,
   },
 ]
 `;
@@ -14322,12 +14322,6 @@ exports[`array length with ref 1`] = `
 exports[`array length with ref 2`] = `
 [
   {
-    "op": "remove",
-    "path": [
-      "f",
-    ],
-  },
-  {
     "op": "add",
     "path": [
       "foobar",
@@ -14337,11 +14331,25 @@ exports[`array length with ref 2`] = `
       "baz": "str",
     },
   },
+  {
+    "op": "remove",
+    "path": [
+      "f",
+    ],
+  },
 ]
 `;
 
 exports[`array pop with ref 1`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "foobar",
+      "length",
+    ],
+    "value": 0,
+  },
   {
     "op": "add",
     "path": [
@@ -14351,25 +14359,11 @@ exports[`array pop with ref 1`] = `
       "baz": "new str0",
     },
   },
-  {
-    "op": "replace",
-    "path": [
-      "foobar",
-      "length",
-    ],
-    "value": 0,
-  },
 ]
 `;
 
 exports[`array pop with ref 2`] = `
 [
-  {
-    "op": "remove",
-    "path": [
-      "f",
-    ],
-  },
   {
     "op": "add",
     "path": [
@@ -14379,6 +14373,12 @@ exports[`array pop with ref 2`] = `
     "value": {
       "baz": "str",
     },
+  },
+  {
+    "op": "remove",
+    "path": [
+      "f",
+    ],
   },
 ]
 `;
@@ -14431,6 +14431,14 @@ exports[`array setter with ref 2`] = `
 exports[`array shift with ref 1`] = `
 [
   {
+    "op": "replace",
+    "path": [
+      "foobar",
+      "length",
+    ],
+    "value": 0,
+  },
+  {
     "op": "add",
     "path": [
       "f",
@@ -14438,14 +14446,6 @@ exports[`array shift with ref 1`] = `
     "value": {
       "baz": "new str0",
     },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "foobar",
-      "length",
-    ],
-    "value": 0,
   },
 ]
 `;
@@ -14453,12 +14453,6 @@ exports[`array shift with ref 1`] = `
 exports[`array shift with ref 2`] = `
 [
   {
-    "op": "remove",
-    "path": [
-      "f",
-    ],
-  },
-  {
     "op": "add",
     "path": [
       "foobar",
@@ -14468,11 +14462,25 @@ exports[`array shift with ref 2`] = `
       "baz": "str",
     },
   },
+  {
+    "op": "remove",
+    "path": [
+      "f",
+    ],
+  },
 ]
 `;
 
 exports[`array splice with ref 1`] = `
 [
+  {
+    "op": "replace",
+    "path": [
+      "foobar",
+      "length",
+    ],
+    "value": 0,
+  },
   {
     "op": "add",
     "path": [
@@ -14482,25 +14490,11 @@ exports[`array splice with ref 1`] = `
       "baz": "new str0",
     },
   },
-  {
-    "op": "replace",
-    "path": [
-      "foobar",
-      "length",
-    ],
-    "value": 0,
-  },
 ]
 `;
 
 exports[`array splice with ref 2`] = `
 [
-  {
-    "op": "remove",
-    "path": [
-      "f",
-    ],
-  },
   {
     "op": "add",
     "path": [
@@ -14510,6 +14504,12 @@ exports[`array splice with ref 2`] = `
     "value": {
       "baz": "str",
     },
+  },
+  {
+    "op": "remove",
+    "path": [
+      "f",
+    ],
   },
 ]
 `;
@@ -14525,6 +14525,14 @@ exports[`array with ref 1`] = `
     "value": "new str3",
   },
   {
+    "op": "replace",
+    "path": [
+      "foobar",
+      "length",
+    ],
+    "value": 0,
+  },
+  {
     "op": "add",
     "path": [
       "foobar1",
@@ -14532,14 +14540,6 @@ exports[`array with ref 1`] = `
     "value": {
       "baz": "new str2",
     },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "foobar",
-      "length",
-    ],
-    "value": 0,
   },
 ]
 `;
@@ -14555,12 +14555,6 @@ exports[`array with ref 2`] = `
     "value": "str",
   },
   {
-    "op": "remove",
-    "path": [
-      "foobar1",
-    ],
-  },
-  {
     "op": "add",
     "path": [
       "foobar",
@@ -14569,6 +14563,12 @@ exports[`array with ref 2`] = `
     "value": {
       "baz": "str",
     },
+  },
+  {
+    "op": "remove",
+    "path": [
+      "foobar1",
+    ],
   },
 ]
 `;
@@ -15634,6 +15634,13 @@ exports[`enablePatches and assign with ref array 1`] = `
     "value": 444,
   },
   {
+    "op": "remove",
+    "path": [
+      "a",
+      "b",
+    ],
+  },
+  {
     "op": "add",
     "path": [
       "arr0",
@@ -15656,13 +15663,6 @@ exports[`enablePatches and assign with ref array 1`] = `
       },
     ],
   },
-  {
-    "op": "remove",
-    "path": [
-      "a",
-      "b",
-    ],
-  },
 ]
 `;
 
@@ -15678,14 +15678,6 @@ exports[`enablePatches and assign with ref array 2`] = `
     "value": 1,
   },
   {
-    "op": "replace",
-    "path": [
-      "arr0",
-      "length",
-    ],
-    "value": 1,
-  },
-  {
     "op": "add",
     "path": [
       "a",
@@ -15694,6 +15686,14 @@ exports[`enablePatches and assign with ref array 2`] = `
     "value": {
       "c": 1,
     },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "arr0",
+      "length",
+    ],
+    "value": 1,
   },
 ]
 `;
@@ -15804,6 +15804,16 @@ exports[`enablePatches and assign/delete with ref object 1`] = `
     "value": 2,
   },
   {
+    "op": "replace",
+    "path": [
+      "a",
+      "b",
+    ],
+    "value": {
+      "f": 1,
+    },
+  },
+  {
     "op": "add",
     "path": [
       "x",
@@ -15819,16 +15829,6 @@ exports[`enablePatches and assign/delete with ref object 1`] = `
     ],
     "value": {
       "c": 444,
-    },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      "b",
-    ],
-    "value": {
-      "f": 1,
     },
   },
 ]
@@ -15846,6 +15846,16 @@ exports[`enablePatches and assign/delete with ref object 2`] = `
     "value": 0,
   },
   {
+    "op": "replace",
+    "path": [
+      "a",
+      "b",
+    ],
+    "value": {
+      "c": 1,
+    },
+  },
+  {
     "op": "remove",
     "path": [
       "x",
@@ -15857,21 +15867,18 @@ exports[`enablePatches and assign/delete with ref object 2`] = `
       "x1",
     ],
   },
-  {
-    "op": "replace",
-    "path": [
-      "a",
-      "b",
-    ],
-    "value": {
-      "c": 1,
-    },
-  },
 ]
 `;
 
 exports[`map 1`] = `
 [
+  {
+    "op": "remove",
+    "path": [
+      "map2",
+      "c",
+    ],
+  },
   {
     "op": "replace",
     "path": [
@@ -15881,13 +15888,6 @@ exports[`map 1`] = `
     "value": {
       "bar": "new str",
     },
-  },
-  {
-    "op": "remove",
-    "path": [
-      "map2",
-      "c",
-    ],
   },
   {
     "op": "remove",
@@ -15928,20 +15928,20 @@ exports[`map 1`] = `
 exports[`map 2`] = `
 [
   {
-    "op": "replace",
+    "op": "add",
     "path": [
-      "map3",
-      "a",
+      "map2",
+      "c",
     ],
     "value": {
       "bar": "str",
     },
   },
   {
-    "op": "add",
+    "op": "replace",
     "path": [
-      "map2",
-      "c",
+      "map3",
+      "a",
     ],
     "value": {
       "bar": "str",
@@ -15989,6 +15989,13 @@ exports[`map 2`] = `
 exports[`map with ref 1`] = `
 [
   {
+    "op": "remove",
+    "path": [
+      "foobar",
+      "a",
+    ],
+  },
+  {
     "op": "add",
     "path": [
       "f",
@@ -15997,24 +16004,11 @@ exports[`map with ref 1`] = `
       "baz": "new str0",
     },
   },
-  {
-    "op": "remove",
-    "path": [
-      "foobar",
-      "a",
-    ],
-  },
 ]
 `;
 
 exports[`map with ref 2`] = `
 [
-  {
-    "op": "remove",
-    "path": [
-      "f",
-    ],
-  },
   {
     "op": "add",
     "path": [
@@ -16024,6 +16018,12 @@ exports[`map with ref 2`] = `
     "value": {
       "baz": "str0",
     },
+  },
+  {
+    "op": "remove",
+    "path": [
+      "f",
+    ],
   },
 ]
 `;
@@ -16367,19 +16367,19 @@ exports[`nested object (with changes) 2`] = `
 exports[`object - assign ref 1`] = `
 [
   {
-    "op": "replace",
+    "op": "add",
     "path": [
-      "foobar",
+      "foo",
+      "bar1",
     ],
     "value": {
       "baz": "str",
     },
   },
   {
-    "op": "add",
+    "op": "replace",
     "path": [
-      "foo",
-      "bar1",
+      "foobar",
     ],
     "value": {
       "baz": "str",
@@ -16391,6 +16391,13 @@ exports[`object - assign ref 1`] = `
 exports[`object - assign ref 2`] = `
 [
   {
+    "op": "remove",
+    "path": [
+      "foo",
+      "bar1",
+    ],
+  },
+  {
     "op": "replace",
     "path": [
       "foobar",
@@ -16398,13 +16405,6 @@ exports[`object - assign ref 2`] = `
     "value": {
       "baz": "str",
     },
-  },
-  {
-    "op": "remove",
-    "path": [
-      "foo",
-      "bar1",
-    ],
   },
 ]
 `;
@@ -16951,15 +16951,6 @@ exports[`set value and pop the value (array) - 2 2`] = `
 exports[`set with ref 1`] = `
 [
   {
-    "op": "add",
-    "path": [
-      "f",
-    ],
-    "value": {
-      "baz": "new str0",
-    },
-  },
-  {
     "op": "remove",
     "path": [
       "foobar",
@@ -16967,6 +16958,15 @@ exports[`set with ref 1`] = `
     ],
     "value": {
       "baz": "str0",
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "f",
+    ],
+    "value": {
+      "baz": "new str0",
     },
   },
 ]
