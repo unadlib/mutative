@@ -102,6 +102,15 @@ Their fixtures contain only the array and an untouched small branch. Small-state
 fixtures contain a tiny object or exactly 1/10 array rows with one nested child;
 they do not include the upstream 1,000/3,000-property objects.
 
+Additional `array-{operation}-{shape}` cases cover push, pop, shift, unshift,
+middle splice insertion/removal/replacement, fill, copyWithin, sort, and reverse.
+Each runs with primitive values, shallow objects, and nested objects. Splice and
+three-item fill/copy operations target the middle. Sorting starts from a
+deterministic shuffled permutation. `mutation-density-{1,10,100}pct` cases update
+nested values in 1%, 10%, or 100% of rows in one producer call. These fixtures
+also omit wide objects. Use `--array-size` to measure scaling while keeping the
+element shape and other configuration fixed.
+
 `update` uses `find` at index 0; `update-high` searches around 80% of the array.
 `remove` uses `splice(0, 1)`; `remove-high` searches by ID before splicing.
 The wide-object scenarios **insert properties**, rather than edit existing ones.
