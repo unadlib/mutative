@@ -110,3 +110,5 @@ stats.html
 
 # Separate checkout used only for paired performance CI
 /benchmark-base/
+
+perf-testing/results/
