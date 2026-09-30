@@ -64,6 +64,8 @@ function isArrayIndexKey(key: string | number | symbol) {
   );
 }
 
+const hasOwn = Object.prototype.hasOwnProperty;
+
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
     const copy = target.copy?.[key];
@@ -163,13 +165,18 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     ) {
       die(ErrorCode.InvalidArrayIndex);
     }
-    const desc = getDescriptor(latest(target), key);
-    if (desc?.set) {
-      // !case: cover the case of setter
-      desc.set.call(target.proxy, value);
-      return true;
+    const source = latest(target);
+    // An own data property shadows any prototype setter, so the prototype
+    // chain only needs to be searched for keys the source does not own.
+    if (!hasOwn.call(source, key)) {
+      const desc = getDescriptor(source, key);
+      if (desc?.set) {
+        // !case: cover the case of setter
+        desc.set.call(target.proxy, value);
+        return true;
+      }
     }
-    const current = peek(latest(target), key);
+    const current = source[key];
     const currentProxyDraft = getProxyDraft(current);
     if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
       // !case: ignore the case of assigning the original draftable value to a draft
@@ -178,15 +185,16 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
       target.assignedMap.set(key, false);
       return true;
     }
+    const original = target.original;
     // !case: handle new props with value 'undefined'
     if (
       isEqual(value, current) &&
-      (value !== undefined || has(target.original, key))
+      (value !== undefined || hasOwn.call(original, key))
     )
       return true;
     ensureShallowCopy(target);
     markChanged(target);
-    if (has(target.original, key) && isEqual(value, target.original[key])) {
+    if (hasOwn.call(original, key) && isEqual(value, original[key])) {
       // !case: handle the case of assigning the original non-draftable value to a draft
       target.assignedMap!.delete(key);
     } else {
