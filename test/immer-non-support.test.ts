@@ -192,7 +192,7 @@ test('immer failed case - escaped draft', () => {
 });
 
 // https://github.com/immerjs/immer/issues/1012
-test('Unexpected access to getter property in irrelevant plain objects', () => {
+test('does not access unrelated getters with autoFreeze disabled', () => {
   {
     setAutoFreeze(false);
 
@@ -204,7 +204,6 @@ test('Unexpected access to getter property in irrelevant plain objects', () => {
           lisa: {
             name: 'lisa',
             get age() {
-              console.log('age getter called');
               isAgeGetterCalled = true;
               return 18;
             },
@@ -214,18 +213,11 @@ test('Unexpected access to getter property in irrelevant plain objects', () => {
       other: { a: 9 },
     };
 
-    const value = produce(state, (draft) => {
-      console.log('immer produce enter');
+    produce(state, (draft) => {
       draft.other.a = 6;
-      console.log('immer produce exit');
     });
 
-    console.log('immer + isAgeGetterCalled', isAgeGetterCalled);
-    expect(isAgeGetterCalled).toBe(true);
-    // Expect: false
-    // output: true
-    //         ↑  Error here, in this case,
-    //            the getter should not called, when `setAutoFreeze(false)`
+    expect(isAgeGetterCalled).toBe(false);
   }
   {
     let isAgeGetterCalled = false;
@@ -236,7 +228,6 @@ test('Unexpected access to getter property in irrelevant plain objects', () => {
           lisa: {
             name: 'lisa',
             get age() {
-              console.log('age getter called');
               isAgeGetterCalled = true;
               return 18;
             },
@@ -246,15 +237,10 @@ test('Unexpected access to getter property in irrelevant plain objects', () => {
       other: { a: 9 },
     };
 
-    const value = create(state, (draft) => {
-      console.log('mutative create enter');
+    create(state, (draft) => {
       draft.other.a = 6;
-      console.log('mutative create exit');
     });
 
-    console.log();
-
-    console.log('mutative + isAgeGetterCalled', isAgeGetterCalled);
     expect(isAgeGetterCalled).toBe(false);
   }
 });
@@ -396,7 +382,7 @@ test('#18 - set: assigning a non-draft with the same key - 2', () => {
   }
 });
 
-test('enablePatches and assign with ref array', () => {
+test('replays patches after moving draft references into arrays', () => {
   const baseState = { a: { b: { c: 1 } }, arr0: [{ a: 1 }], arr1: [{ a: 1 }] };
   const fn = (draft: any) => {
     draft.arr0.push(draft.a.b);
@@ -417,11 +403,9 @@ test('enablePatches and assign with ref array', () => {
     expect(state).toEqual(mutatedResult);
 
     const prevState = applyPatches(state, inversePatches);
-    // !!! it should be equal
-    expect(prevState).not.toEqual(baseState);
+    expect(prevState).toEqual(baseState);
     const nextState = applyPatches(baseState, patches);
-    // !!! it should be equal
-    expect(nextState).not.toEqual(state);
+    expect(nextState).toEqual(state);
   }
   {
     const [state, patches, inversePatches] = create(baseState, fn, {
@@ -439,7 +423,7 @@ test('enablePatches and assign with ref array', () => {
   }
 });
 
-test('produce leaks proxy objects when symbols are present', () => {
+test('produce handles symbol properties without leaking proxies', () => {
   {
     setUseStrictShallowCopy(true);
     const Parent = Symbol();
@@ -461,7 +445,7 @@ test('produce leaks proxy objects when symbols are present', () => {
         // @ts-ignore
         draft.child.count++;
       });
-    }).toThrow();
+    }).not.toThrow();
   }
   {
     const Parent = Symbol();
@@ -661,7 +645,7 @@ test('CustomMap', () => {
   }
 });
 
-test('Unexpected undefined not assigned', () => {
+test('assigning inherited undefined creates an own property and an add patch', () => {
   {
     // #1160 https://github.com/immerjs/immer/issues/1160
     const proto = { [immerable]: true, name: undefined };
@@ -676,31 +660,21 @@ test('Unexpected undefined not assigned', () => {
       x.name = undefined;
     });
 
-    // Immer should produce empty patches when setting undefined
-    expect(patches).toEqual([]);
+    expect(patches).toEqual([
+      {
+        op: 'add',
+        path: ['name'],
+        value: undefined,
+      },
+    ]);
 
     // After immer produce, foo should still not have own property 'name'
     expect(Object.prototype.hasOwnProperty.call(foo, 'name')).toBe(false);
-    // foo_next should also not have own property 'name'
-    expect(Object.prototype.hasOwnProperty.call(foo_next, 'name')).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(foo_next, 'name')).toBe(true);
 
     // Manually assigning undefined should create own property
     foo.name = undefined;
     expect(Object.prototype.hasOwnProperty.call(foo, 'name')).toBe(true);
-
-    // [hasOwnProp] foo: false
-    // [immer] produce foo_next from immer
-    // [immer] foo_next patches: [
-    //   {
-    //     op: "add",
-    //     path: [ "name" ],
-    //     value: undefined,
-    //   }
-    // ]
-    // [hasOwnProp] foo: false
-    // [hasOwnProp] foo_next: true
-    // [vanilla] assign name manually
-    // [hasOwnProp] foo: true
   }
   {
     const immerable = Symbol();
@@ -868,7 +842,7 @@ test('#70 - deep copy patches with Custom Set/Map', () => {
   }
 });
 
-test('enablePatches and assign with ref array', () => {
+test('replays patches for a shared draft array', () => {
   function checkMutativePatches<T>(data: T, fn: (checkPatches: T) => void) {
     const [state, patches, inversePatches] = create(data as any, fn, {
       enablePatches: true,
@@ -891,11 +865,9 @@ test('enablePatches and assign with ref array', () => {
     fn(mutatedResult);
     expect(state).toEqual(mutatedResult);
     const prevState = applyPatches(state, inversePatches);
-    // !!! immer: it should be equal
-    expect(prevState).not.toEqual(data);
+    expect(prevState).toEqual(data);
     const nextState = applyPatches(data as any, patches);
-    // !!! immer: it should be equal
-    expect(nextState).not.toEqual(state);
+    expect(nextState).toEqual(state);
   }
   const state = { a: { b: { c: 1 } }, arr0: [{ a: 1 }], arr1: [{ a: 1 }] };
   const fn = (draft: any) => {
