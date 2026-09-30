@@ -35,6 +35,35 @@ import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
 import { die, ErrorCode } from './error';
 
+/**
+ * Accepts the keys the array set trap has always accepted: canonical
+ * non-negative integer strings via an allocation-free scan, and other
+ * spellings such as '-0' via the original numeric round trip.
+ */
+function isArrayIndexKey(key: string | number | symbol) {
+  if (typeof key === 'string' && key.length < 16) {
+    let index = 0;
+    while (index < key.length) {
+      const code = key.charCodeAt(index);
+      if (code < 48 || code > 57) break;
+      index += 1;
+    }
+    if (
+      index > 0 &&
+      index === key.length &&
+      (index === 1 || key.charCodeAt(0) !== 48)
+    ) {
+      return true;
+    }
+  }
+  let _key: number;
+  return (
+    Number.isInteger((_key = Number(key))) &&
+    _key >= 0 &&
+    (key === 0 || _key === 0 || String(_key) === String(key))
+  );
+}
+
 const proxyHandler: ProxyHandler<ProxyDraft> = {
   get(target: ProxyDraft, key: string | number | symbol, receiver: any) {
     const copy = target.copy?.[key];
@@ -127,15 +156,10 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (target.type === DraftType.Set || target.type === DraftType.Map) {
       die(ErrorCode.CannotAssignToMapOrSet);
     }
-    let _key: number;
     if (
       target.type === DraftType.Array &&
       key !== 'length' &&
-      !(
-        Number.isInteger((_key = Number(key))) &&
-        _key >= 0 &&
-        (key === 0 || _key === 0 || String(_key) === String(key))
-      )
+      !isArrayIndexKey(key)
     ) {
       die(ErrorCode.InvalidArrayIndex);
     }
