@@ -31,6 +31,53 @@ function strictCopy(target: any) {
 
 const propIsEnum = Object.prototype.propertyIsEnumerable;
 
+/**
+ * Plain objects with at most this many own enumerable string keys are copied
+ * with object spread, which V8 clones in one step. Wider objects are copied
+ * key by key into a dictionary-mode object: a map transition per key is far
+ * slower there, and whether V8 stays in fast mode depends on transitions that
+ * other code may have created for the same key sequence.
+ */
+const SPREAD_KEY_LIMIT = 128;
+
+function copyPlainObject(original: any) {
+  const keys = Object.keys(original);
+  if (keys.length <= SPREAD_KEY_LIMIT) {
+    // Own enumerable string and symbol keys, like the loop below.
+    return { ...original };
+  }
+  const copy: Record<string | symbol, any> = {};
+  // Deleting a property that is not the last one switches the object to
+  // dictionary mode, so the wide copy inserts in constant time per key.
+  copy.a = 1;
+  copy.b = 1;
+  delete copy.a;
+  delete copy.b;
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    if (key === '__proto__') {
+      // An own `__proto__` key (e.g. from JSON.parse) must stay a data
+      // property instead of changing the copy's prototype.
+      Object.defineProperty(copy, key, {
+        value: original[key],
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+    } else {
+      copy[key] = original[key];
+    }
+  }
+  const symbols = Object.getOwnPropertySymbols(original);
+  for (let index = 0; index < symbols.length; index += 1) {
+    const key = symbols[index];
+    if (propIsEnum.call(original, key)) {
+      copy[key] = original[key];
+    }
+  }
+  return copy;
+}
+
 export function shallowCopy(original: any, options?: Options<any, any>) {
   let markResult: any;
   if (Array.isArray(original)) {
@@ -70,18 +117,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
     typeof original === 'object' &&
     Object.getPrototypeOf(original) === Object.prototype
   ) {
-    // For best performance with shallow copies,
-    // don't use `Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj));` by default.
-    const copy: Record<string | symbol, any> = {};
-    Object.keys(original).forEach((key) => {
-      copy[key] = original[key];
-    });
-    Object.getOwnPropertySymbols(original).forEach((key) => {
-      if (propIsEnum.call(original, key)) {
-        copy[key] = original[key];
-      }
-    });
-    return copy;
+    return copyPlainObject(original);
   } else {
     die(ErrorCode.InvalidMark);
   }
