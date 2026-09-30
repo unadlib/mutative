@@ -131,13 +131,13 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
     if (target.copy !== null && value !== target.original[key]) return value;
     if (!isDraftable(value, options)) return value;
     ensureShallowCopy(target);
-    const draft = createDraft({
-      original: value,
-      parentDraft: target,
-      key: type === DraftType.Array ? Number(key) : key,
-      finalities: target.finalities,
-      options,
-    });
+    const draft = createDraft(
+      value,
+      target,
+      type === DraftType.Array ? Number(key) : key,
+      target.finalities,
+      options
+    );
     target.copy![key] = draft;
     // !case: support for custom shallow copy function
     if (typeof markResult === 'function') {
@@ -244,20 +244,21 @@ const proxyHandler: ProxyHandler<ProxyDraft> = {
   },
 };
 
-export function createDraft<T extends object>(createDraftOptions: {
-  original: T;
-  parentDraft?: ProxyDraft | null;
-  key?: string | number | symbol;
-  finalities: Finalities;
-  options: Options<any, any>;
-}): T {
-  const { original, parentDraft, key, finalities, options } =
-    createDraftOptions;
+export function createDraft<T extends object>(
+  original: T,
+  parentDraft: ProxyDraft | null,
+  key: string | number | symbol | undefined,
+  finalities: Finalities,
+  options: Options<any, any>
+): T {
   const type = getType(original);
+  // Every field is initialized here so all draft states share one shape.
   const proxyDraft: ProxyDraft = {
     type,
     finalized: false,
+    operated: false,
     parent: parentDraft,
+    key,
     original,
     copy: null,
     proxy: null,
@@ -268,11 +269,9 @@ export function createDraft<T extends object>(createDraftOptions: {
       type === DraftType.Set
         ? new Map((original as Set<any>).entries())
         : undefined,
+    assignedMap: undefined,
+    callbacks: undefined,
   };
-  // !case: undefined as a draft map key
-  if (key || 'key' in createDraftOptions) {
-    proxyDraft.key = key;
-  }
   const { proxy, revoke } = Proxy.revocable<any>(
     type === DraftType.Array ? Object.assign([], proxyDraft) : proxyDraft,
     proxyHandler

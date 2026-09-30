@@ -33,12 +33,7 @@ export function draftify<
     !isDraftable(baseState, options);
   const draft = isMutable
     ? baseState
-    : createDraft({
-        original: baseState,
-        parentDraft: null,
-        finalities,
-        options,
-      });
+    : createDraft(baseState, null, undefined, finalities, options);
   return [
     draft,
     (returnedValue: [T] | [] = []) => {

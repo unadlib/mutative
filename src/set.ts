@@ -36,13 +36,13 @@ const getNextIterator =
       target.original!.has(key)
     ) {
       // draft a draftable original set item
-      const proxy = internal.createDraft({
-        original: key,
-        parentDraft: target,
+      const proxy = internal.createDraft(
         key,
-        finalities: target.finalities,
-        options: target.options,
-      });
+        target,
+        key,
+        target.finalities,
+        target.options
+      );
       target.setMap!.set(key, proxy);
       value = proxy;
     } else if (currentDraft) {

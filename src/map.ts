@@ -82,13 +82,13 @@ export const mapHandler = {
     if (value !== target.original.get(key)) {
       return value;
     }
-    const draft = internal.createDraft({
-      original: value,
-      parentDraft: target,
+    const draft = internal.createDraft(
+      value,
+      target,
       key,
-      finalities: target.finalities,
-      options: target.options,
-    });
+      target.finalities,
+      target.options
+    );
     ensureShallowCopy(target);
     target.copy.set(key, draft);
     return draft;

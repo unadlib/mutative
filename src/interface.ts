@@ -36,18 +36,20 @@ export interface Finalities {
 
 export interface ProxyDraft<T = any> {
   type: DraftType;
-  operated?: boolean;
+  operated: boolean;
   finalized: boolean;
   original: T;
   copy: T | null;
   proxy: T | null;
   finalities: Finalities;
   options: Options<any, any> & { updatedValues?: WeakMap<any, any> };
-  parent?: ProxyDraft | null;
-  key?: string | number | symbol;
-  setMap?: Map<any, ProxyDraft>;
-  assignedMap?: Map<any, boolean>;
-  callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
+  parent: ProxyDraft | null;
+  key: string | number | symbol | undefined;
+  setMap: Map<any, ProxyDraft> | undefined;
+  assignedMap: Map<any, boolean> | undefined;
+  callbacks:
+    | ((patches?: Patches, inversePatches?: Patches) => void)[]
+    | undefined;
 }
 
 export interface IPatch {

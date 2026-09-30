@@ -45,16 +45,17 @@ export function getPath(
   target: ProxyDraft,
   path: any[] = []
 ): (string | number | object)[] | null {
-  if (Object.hasOwnProperty.call(target, 'key')) {
+  const parent = target.parent;
+  if (parent) {
     // check if the parent is a draft and the original value is not equal to the current value
-    const parentCopy = target.parent!.copy;
+    const parentCopy = parent.copy;
     const proxyDraft = getProxyDraft(get(parentCopy, target.key!));
     if (proxyDraft !== null && proxyDraft?.original !== target.original) {
       return null;
     }
-    const isSet = target.parent!.type === DraftType.Set;
+    const isSet = parent.type === DraftType.Set;
     const key = isSet
-      ? Array.from(target.parent!.setMap!.keys()).indexOf(target.key)
+      ? Array.from(parent.setMap!.keys()).indexOf(target.key)
       : target.key;
     // check if the key is still in the next state parent
     if (
@@ -62,9 +63,7 @@ export function getPath(
     )
       return null;
     path.push(key);
-  }
-  if (target.parent) {
-    return getPath(target.parent, path);
+    return getPath(parent, path);
   }
   // `target` is root draft.
   path.reverse();
