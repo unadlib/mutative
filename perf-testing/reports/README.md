@@ -1,7 +1,17 @@
-# Local performance archives: 2026-09-30 UTC
+# Local performance archives: 2026-09-30 and 2026-10-01 UTC
+
+The [2026-10-01 expanded archive](./2026-10-01-m1-max-node24-expanded-summary.md)
+measures the draft fast paths candidate (this branch, package version still
+1.3.0) against pinned npm Mutative 1.3.0 and Immer 11.1.18 on the same
+67-scenario harness and machine as the 2026-09-30 baseline: 3,060 timing trials
+in nine processes, 504 memory workers, a six-process object-order control, and a
+local run of the CI budget gate against `main`. The candidate is faster than
+Immer in 338 of 340 timing cells and within ±5% in the other two (geometric mean
+I/C 1.68), and faster than pinned v1 in 334 of 340; nested array movement with
+patches enabled improves by roughly 40x. The 2026-09-30 archive below remains the unoptimized reference.
 
 The [expanded versioned baseline](./2026-09-30-m1-max-node24-expanded-summary.md)
-compares the current candidate, pinned npm Mutative v1.3.0, and Immer 11.1.18.
+compares the unoptimized 2026-09-30 candidate, pinned npm Mutative v1.3.0, and Immer 11.1.18.
 It covers all 67 scenarios with both freeze and patch modes: **3,060 timing
 trials in nine independent processes**, plus **504 isolated memory workers**.
 Separate local same-build and GitHub base/head controls verify all 48 CI budget

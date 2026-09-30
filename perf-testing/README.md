@@ -13,11 +13,15 @@ still 1.3.0 and must not be described as v2. Neither the benchmark
 nor its runtime imports or calls `enableArrayMethods`; the plugin stays disabled.
 See the existing [array-method reproductions](../test/immer-array-methods.md).
 
-The [2026-09-30 local measurement archive](./reports/README.md) contains complete
-tables, JSON, scale comparisons, result limitations, and suggested next workloads.
-The [expanded baseline](./reports/2026-09-30-m1-max-node24-expanded-summary.md)
+The [local measurement archives](./reports/README.md) contain complete tables,
+JSON, scale comparisons, result limitations, and suggested next workloads.
+The [2026-09-30 expanded baseline](./reports/2026-09-30-m1-max-node24-expanded-summary.md)
 records all 67 scenarios, three libraries, separate freeze/patch modes, allocation
-and retained-output heap measurements, and passing local/GitHub budget controls.
+and retained-output heap measurements, and passing local/GitHub budget controls
+for the unoptimized source. The
+[2026-10-01 expanded archive](./reports/2026-10-01-m1-max-node24-expanded-summary.md)
+records the same matrix for the draft fast paths candidate, plus a local run of
+the CI budget gate against `main`.
 
 ## Run
 
