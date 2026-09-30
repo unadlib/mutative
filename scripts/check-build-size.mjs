@@ -68,7 +68,7 @@ async function measure(directory) {
         write: false,
         minify: true,
         treeShaking: true,
-        target: 'es2015',
+        target: 'es2018',
         platform: 'browser',
         format: 'esm',
         legalComments: 'none',

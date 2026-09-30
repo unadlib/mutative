@@ -23,7 +23,7 @@ export default defineConfig(
     dts: false,
     exports: false,
     platform: format === 'cjs' ? 'node' : 'browser',
-    target: 'es2015',
+    target: 'es2018',
     sourcemap: true,
     minify: false,
     define: { __DEV__: String(development) },

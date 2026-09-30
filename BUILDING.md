@@ -23,7 +23,8 @@ pipeline deliberately retains two parts of the previous build:
 
 - `scripts/build-plugins.mjs` compiles TypeScript as one program, once for all
   six bundles. This retains cross-module const-enum inlining and TypeScript's
-  ES2015 transformations. Emitted JavaScript and source maps stay in memory.
+  ES2018 transformations, so object spread stays native and V8 can clone
+  objects in one step. Emitted JavaScript and source maps stay in memory.
 - Production CJS and UMD bundles use Terser, with top-level optimization for CJS
   and three compression passes. tsdown's built-in minification is disabled.
 
@@ -54,7 +55,7 @@ The baseline comparison measures:
 - ESM import and production CJS require consumers using the declared package
   entry points. Each mode covers `create`, patch generation/application and the
   complete API. The imports are used so bundlers cannot discard the application.
-- Consumer bundles produced by a pinned esbuild version, with identical ES2015
+- Consumer bundles produced by a pinned esbuild version, with identical ES2018
   targets, minification and production environment definitions.
 
 Every measurement must stay within **both 1% and 64 bytes** of its baseline;
