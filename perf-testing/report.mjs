@@ -1,3 +1,9 @@
+export function compactStats(measured) {
+  const { samples, ...stats } = measured;
+  delete stats.debug;
+  return { ...stats, sampleCount: samples?.length ?? measured.sampleCount };
+}
+
 export function median(values) {
   const sorted = [...values].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);

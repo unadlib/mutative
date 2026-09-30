@@ -2,6 +2,7 @@ import { writeFileSync } from 'node:fs';
 import os from 'node:os';
 import { bench, do_not_optimize, run } from 'mitata';
 import { readOptions } from './options.mjs';
+import { compactStats } from './report.mjs';
 import { buildInfo, createRuntime } from './runtime.mjs';
 import { createScenarios, prepareScenario } from './scenarios.mjs';
 import { validateScenarios } from './validate.mjs';
@@ -78,15 +79,11 @@ if (options.list) {
       },
     });
     const trials = measured.benchmarks.flatMap((trial) =>
-      trial.runs.map((entry) => {
-        const { samples, ...stats } = entry.stats;
-        delete stats.debug;
-        return {
-          ...definitions.get(entry.name),
-          name: entry.name,
-          stats: { ...stats, sampleCount: samples.length },
-        };
-      })
+      trial.runs.map((entry) => ({
+        ...definitions.get(entry.name),
+        name: entry.name,
+        stats: compactStats(entry.stats),
+      }))
     );
     if (trials.length !== definitions.size)
       throw new Error('Incomplete benchmark matrix');
@@ -120,7 +117,17 @@ if (options.list) {
         heapSampling: false,
         minCpuTimeNs: 642000000,
       },
-      context: measured.context,
+      context: {
+        ...measured.context,
+        // Calibration contains millions of raw no-op samples. Retain its
+        // statistics and counts, as for trials, instead of 50+ MB of arrays.
+        noop: Object.fromEntries(
+          Object.entries(measured.context.noop).map(([name, stats]) => [
+            name,
+            compactStats(stats),
+          ])
+        ),
+      },
       trials,
     };
     if (options.output)

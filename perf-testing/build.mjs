@@ -37,10 +37,12 @@ for (const sourcePath of sourcePaths) {
     .update(readFileSync(join(root, sourcePath)))
     .update('\0');
 }
+const gitStatus = git('status', '--porcelain');
 const buildInfo = {
   builtAt: new Date().toISOString(),
   gitRevision: git('rev-parse', 'HEAD'),
-  gitDirty: Boolean(git('status', '--porcelain')),
+  gitDirty: Boolean(gitStatus),
+  gitStatus,
   mutativeSourceSha256: sourceHash.digest('hex'),
   versions: {
     mutative: manifest.version,
