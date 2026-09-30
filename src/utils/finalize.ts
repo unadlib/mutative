@@ -194,8 +194,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         target.options.enableAutoFreeze = false;
       }
     }
-  }
-  if (isDraftable(value, target.options)) {
+  } else if (isDraftable(value, target.options)) {
     // !case: assign the non-draft value
     target.finalities.draft.push(() => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
