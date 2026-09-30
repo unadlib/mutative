@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createRuntime } from './runtime.mjs';
 import { prepareScenario } from './scenarios.mjs';
 import { vanillaReducer } from './workloads.mjs';
+import { expectedReads } from './additional-workloads.mjs';
 
 function checkGraph(value, runtime, autoFreeze, seen = new Set()) {
   if (!value || typeof value !== 'object' || seen.has(value)) return;
@@ -80,6 +81,14 @@ function validatePatchedSteps(prepared, runtime, autoFreeze, label) {
     checkGraph(inverse, runtime);
     const patchSnapshot = structuredClone([forward, inverse]);
     assert.deepEqual(next, expectedSteps[index], `${label}: step ${index}`);
+    if (
+      expectedSteps[index] ===
+      (index ? expectedSteps[index - 1] : prepared.base)
+    ) {
+      assert.equal(next, before, `${label}: unchanged state identity`);
+      assert.equal(forward.length, 0, `${label}: no forward patches for no-op`);
+      assert.equal(inverse.length, 0, `${label}: no inverse patches for no-op`);
+    }
     assert.deepEqual(before, beforeSnapshot, `${label}: step input unchanged`);
     assert.deepEqual(
       replayPatches(before, forward),
@@ -115,7 +124,8 @@ function validatePatchedSteps(prepared, runtime, autoFreeze, label) {
     patchCounts.inverse += inverse.length;
     state = next;
   }
-  assert.ok(patchCounts.forward > 0 && patchCounts.inverse > 0, label);
+  if (state !== prepared.base)
+    assert.ok(patchCounts.forward > 0 && patchCounts.inverse > 0, label);
   return { result: state, patchCounts };
 }
 
@@ -134,12 +144,25 @@ export function validateScenarios(options, scenarios) {
           const baseSnapshot = structuredClone(prepared.base);
           const actionSnapshot = structuredClone(prepared.steps);
           const expected = prepared.execute(vanillaReducer, prepared.base);
-          const runtime = createRuntime(library, autoFreeze, enablePatches);
+          const reads = [];
+          let reference = prepared.base;
+          const expectedReadValues = prepared.steps.flatMap((action) => {
+            const values = expectedReads(reference, action);
+            reference = vanillaReducer(reference, action);
+            return values;
+          });
+          const runtime = createRuntime(
+            library,
+            autoFreeze,
+            enablePatches,
+            (value) => reads.push(value)
+          );
           const label = `${scenario.name}/${library}/freeze=${autoFreeze}/patches=${enablePatches}`;
           const validated = enablePatches
             ? validatePatchedSteps(prepared, runtime, autoFreeze, label)
             : { result: prepared.execute(runtime.reducer, prepared.base) };
           const { result } = validated;
+          assert.deepEqual(reads, expectedReadValues, `${label}: read results`);
           if (enablePatches) patchCounts.set(label, validated.patchCounts);
           assert.deepEqual(
             result,
@@ -156,11 +179,14 @@ export function validateScenarios(options, scenarios) {
             actionSnapshot,
             `${label}: actions unchanged`
           );
-          assert.notEqual(
-            result,
-            prepared.base,
-            `${label}: scenario must update state`
-          );
+          if (expected === prepared.base)
+            assert.equal(result, prepared.base, `${label}: unchanged identity`);
+          else
+            assert.notEqual(
+              result,
+              prepared.base,
+              `${label}: scenario must update state`
+            );
           // Unchanged root branches must remain shared, not be deep-cloned.
           for (const key of Object.keys(prepared.base)) {
             if (expected[key] === prepared.base[key]) {
@@ -175,6 +201,7 @@ export function validateScenarios(options, scenarios) {
           checkGraph(prepared.base, runtime, autoFreeze);
           checkGraph(prepared.steps, runtime, autoFreeze);
           // Resetting a sample to the same immutable base must be repeatable.
+          reads.length = 0;
           const repeated = enablePatches
             ? prepared.executeWithPatches(
                 runtime.reducer,
@@ -183,6 +210,11 @@ export function validateScenarios(options, scenarios) {
               )
             : prepared.execute(runtime.reducer, prepared.base);
           assert.deepEqual(repeated, result, label);
+          assert.deepEqual(
+            reads,
+            expectedReadValues,
+            `${label}: repeatable reads`
+          );
           checks++;
         }
       }

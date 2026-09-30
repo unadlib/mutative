@@ -43,7 +43,7 @@ export function readOptions(defaults = {}) {
   if (values.help) {
     console.log(`Usage: pnpm ${defaults.command ?? 'benchmark:immer'} [options]
   --runs N                 Independent processes (default: 3)
-  --filter REGEX           Scenario names (default: all 21 scenarios)
+  --filter REGEX           Scenario names (default: all scenarios)
   --freeze both|off|on     Matched auto-freeze modes (default: ${defaults.freeze ?? 'both'})
   --patches both|off|on    Generate forward and inverse patches (default: ${defaults.patches ?? 'off'})
   --library all|both|mutative|mutative-v1|immer (default: ${defaults.library ?? 'all'})

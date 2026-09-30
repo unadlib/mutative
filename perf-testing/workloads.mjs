@@ -1,5 +1,9 @@
 // Adapted from immerjs/immer perf-testing at 061c2425e1c9dff89e4e4189d42af1b7839dfe0a.
 // Copyright (c) 2017 Michel Weststrate. See LICENSE in this directory.
+import {
+  applyAdditionalRecipe,
+  reduceAdditional,
+} from './additional-workloads.mjs';
 
 export function createInitialState(config = DEFAULT_CONFIG) {
   const arraySize = config.arraySize;
@@ -378,13 +382,17 @@ export const vanillaReducer = (state, action) => {
       };
     }
     default:
-      return state;
+      return reduceAdditional(state, action);
   }
 };
 
-export const createDraftReducer = (produce) => {
+export const createDraftReducer = (produce, consumeRead) => {
   const draftReducer = (state, action) =>
     produce(state, (draft) => {
+      if (action.type.startsWith('bench/')) {
+        applyAdditionalRecipe(draft, action, consumeRead);
+        return;
+      }
       switch (action.type) {
         case 'test/addItem':
           draft.largeArray.push(action.payload);

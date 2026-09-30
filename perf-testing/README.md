@@ -66,7 +66,7 @@ individual process results. The version check rejects stale installed Immer.
 
 `--patches off|on|both` defaults to `off`, preserving the original plain-update
 benchmark. `benchmark:immer:check` checks both patch modes and both freeze modes
-(252 combinations at the original 21-scenario configuration with three libraries).
+(all selected scenarios with three libraries).
 `--library all` (the default) measures candidate, pinned v1, and Immer;
 `--library both` retains the original candidate/Immer comparison.
 `--patches on` measures patch
@@ -84,12 +84,23 @@ reads the original version 1 archives as patches off.
 | State reuse                   | update-reuse, update-high-reuse, remove-reuse, remove-high-reuse, update-largeObject1-reuse, update-largeObject2-reuse     |                               10 |
 | Mixed workflow                | mixed-sequence                                                                                                             |                                5 |
 | Simulated RTK Query workflow  | rtkq-sequence                                                                                                              | 200 (100 pending + 100 resolved) |
+| Pure draft reads              | read-index, read-forEach, read-iterator, read-missing, read-length                                                         |                                1 |
+| No-op producers               | noop-empty, noop-same-value                                                                                                |                                1 |
+| Small state                   | small-object-update, small-array-1-update, small-array-10-update                                                           |                                1 |
 
 Defaults retain upstream's 100-row array, 10 nested items per row, 1,000/3,000
 property objects, five updates in `update-multiple`, and ten state-reuse calls.
 The RTKQ scenario is a simulated reducer pattern, not Redux Toolkit execution.
 `--reuse-iterations` must not exceed `--array-size` so reused updates always
 target existing items.
+
+Pure-read scenarios traverse nested values by index, `forEach`, and iterator,
+search for a missing value, or read only array length. Their scalar observations
+escape during timing and are checked against independent native-array results.
+Reads and no-ops must retain the original state identity and produce zero patches.
+Their fixtures contain only the array and an untouched small branch. Small-state
+fixtures contain a tiny object or exactly 1/10 array rows with one nested child;
+they do not include the upstream 1,000/3,000-property objects.
 
 `update` uses `find` at index 0; `update-high` searches around 80% of the array.
 `remove` uses `splice(0, 1)`; `remove-high` searches by ID before splicing.

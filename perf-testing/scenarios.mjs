@@ -6,13 +6,15 @@ import {
   rtkqPending,
   rtkqResolved,
 } from './workloads.mjs';
+import { createAdditionalScenarios } from './additional-workloads.mjs';
 
 // Shared by benchmarks, correctness validation, and CPU profiling.
 export function createScenarios(config, filter = '.*') {
   const actions = createActions(config);
-  const scenario = (name, steps) => ({
+  const scenario = (name, steps, createBase = createInitialState) => ({
     name,
     steps,
+    createBase,
     operations: steps.length,
     execute(reducer, base) {
       let state = base;
@@ -32,6 +34,11 @@ export function createScenarios(config, filter = '.*') {
   const scenarios = Object.entries(actions).map(([name, action]) =>
     // The upstream filter(0) discarded everything. Exercise 50% retention.
     scenario(name, [action(name === 'filter' ? 0.5 : 0)])
+  );
+  scenarios.push(
+    ...createAdditionalScenarios(config).map((entry) =>
+      scenario(entry.name, entry.steps, entry.createBase)
+    )
   );
   for (const name of [
     'update',
@@ -81,7 +88,7 @@ export function prepareScenario(config, name, autoFreeze) {
   // Each trial gets its own graph and payloads; freezing never leaks to another.
   const scenario = createScenarios(config).find((entry) => entry.name === name);
   if (!scenario) throw new Error(`Unknown scenario: ${name}`);
-  const base = createInitialState(config);
+  const base = scenario.createBase(config);
   if (autoFreeze) {
     deepFreeze(base);
     deepFreeze(scenario.steps);
