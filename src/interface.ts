@@ -28,8 +28,14 @@ export type PatchesOptions =
       arrayLengthAssignment?: boolean;
     };
 
+export type FinalizeCallback = (
+  patches?: Patches,
+  inversePatches?: Patches
+) => void;
+
 export interface Finalities {
-  draft: ((patches?: Patches, inversePatches?: Patches) => void)[];
+  // Draft nodes and deferred callbacks, finalized in reverse order.
+  draft: (ProxyDraft | FinalizeCallback)[];
   revoke: (() => void)[];
   handledSet: WeakSet<any>;
 }
@@ -47,9 +53,7 @@ export interface ProxyDraft<T = any> {
   key: string | number | symbol | undefined;
   setMap: Map<any, ProxyDraft> | undefined;
   assignedMap: Map<any, boolean> | undefined;
-  callbacks:
-    | ((patches?: Patches, inversePatches?: Patches) => void)[]
-    | undefined;
+  callbacks: FinalizeCallback[] | undefined;
 }
 
 export interface IPatch {

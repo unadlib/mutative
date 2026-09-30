@@ -16,17 +16,13 @@ import {
   getDescriptor,
   getProxyDraft,
   getType,
-  getValue,
   isEqual,
   isDraftable,
   latest,
   markChanged,
-  get,
-  set,
   revokeProxy,
-  finalizeSetValue,
   markFinalization,
-  finalizePatches,
+  finalizeNode,
 } from './utils';
 import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
@@ -318,42 +314,7 @@ export function createDraft<T extends object>(
       : Proxy.revocable<any>(proxyDraft, objectHandler);
   finalities.revoke.push(revoke);
   proxyDraft.proxy = proxy;
-  if (parentDraft) {
-    const target = parentDraft;
-    target.finalities.draft.push((patches, inversePatches) => {
-      // if target is a Set draft, `setMap` is the real Set copies proxy mapping.
-      let copy = target.type === DraftType.Set ? target.setMap : target.copy;
-      const draft = get(copy, key!);
-      // Another draft may have been moved to this key, e.g. by `reverse()`.
-      const draftState = getProxyDraft(draft);
-      if (draftState) {
-        // assign the updated value to the copy object
-        let updatedValue = draftState.original;
-        if (draftState.operated) {
-          updatedValue = getValue(draft);
-        }
-        finalizeSetValue(draftState);
-        finalizePatches(draftState, generatePatches, patches, inversePatches);
-        if (__DEV__ && target.options.enableAutoFreeze) {
-          target.options.updatedValues =
-            target.options.updatedValues ?? new WeakMap();
-          target.options.updatedValues.set(updatedValue, draftState.original);
-        }
-        // final update value
-        set(copy, key!, updatedValue);
-      }
-      // !case: handle the deleted key
-      proxyDraft.callbacks?.forEach((callback) => {
-        callback(patches, inversePatches);
-      });
-    });
-  } else {
-    // !case: handle the root draft
-    finalities.draft.push((patches, inversePatches) => {
-      finalizeSetValue(proxyDraft);
-      finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
-    });
-  }
+  finalities.draft.push(proxyDraft);
   return proxy;
 }
 
@@ -370,9 +331,14 @@ export function finalizeDraft<T>(
   const original = proxyDraft?.original ?? result;
   const hasReturnedValue = !!returnedValue.length;
   if (proxyDraft?.operated) {
-    while (proxyDraft.finalities.draft.length > 0) {
-      const finalize = proxyDraft.finalities.draft.pop()!;
-      finalize(patches, inversePatches);
+    const list = proxyDraft.finalities.draft;
+    while (list.length > 0) {
+      const entry = list.pop()!;
+      if (typeof entry === 'function') {
+        entry(patches, inversePatches);
+      } else {
+        finalizeNode(entry, generatePatches, patches, inversePatches);
+      }
     }
   }
   const state = hasReturnedValue
