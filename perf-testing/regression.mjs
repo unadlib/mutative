@@ -57,6 +57,10 @@ function trialMap(reports, kind, policy) {
       assert.equal(report.kind, 'memory');
       assert.equal(report.methodology.latencyMeasured, false);
       assert.equal(report.methodology.allocationIncludesCollectedObjects, true);
+      assert.equal(
+        report.methodology.retainedHeapBaseline,
+        'post-GC heap after releasing the output holder'
+      );
     }
     for (const trial of kind === 'latency' ? report.trials : [report.trial]) {
       assert.equal(

@@ -235,7 +235,12 @@ The second pass records batch-end heap/RSS, post-GC retained heap, explicit GC
 duration, and a snapshot after releasing outputs. The preallocated holder retains
 one output per iteration; patch-enabled cases retain the last producer tuple
 including its state. Earlier tuples in a sequence are not retained. Retained heap
-is a signed per-output delta; small or negative values can be noise. RSS is a
+is a signed per-output difference between the post-GC live-output snapshot and
+the snapshot after releasing outputs. This cancels persistent JIT/runtime-cache
+growth during the pass; the original before delta and released-heap delta are
+also recorded. A same-build control exposed a false regression with the original
+before-only baseline, so only the output-attributable delta is gated. Small or
+negative values can be noise. RSS is a
 batch-end snapshot delta, not peak RSS or allocation per operation. Memory runs
 never supply latency comparisons. JSON retains worker-level snapshots, ranges,
 iteration/sample counts, patch counts, and build hashes.

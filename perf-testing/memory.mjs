@@ -64,9 +64,13 @@ export async function measureMemory(
   globalThis.gc();
   const gcAfterRetainMs = performance.now() - gcStart;
   const retained = process.memoryUsage();
-  // Keep output references live until after memoryUsage; the array itself was
-  // allocated before the baseline. Patches retain the last tuple per iteration.
-  assert.equal(outputs.length, iterations);
+  // Observe the contents after measurement, keeping every output live through GC.
+  // Patches retain the last tuple per iteration. Avoid storing an output in a
+  // separate local, which would keep it alive after clearing the holder.
+  let observedOutputs = 0;
+  for (let i = 0; i < outputs.length; i++)
+    if (outputs[i] !== undefined) observedOutputs++;
+  assert.equal(observedOutputs, iterations);
   outputs.fill(null);
   globalThis.gc();
   const released = process.memoryUsage();
@@ -76,9 +80,12 @@ export async function measureMemory(
     allocationSamples,
     sampledAllocatedBytes,
     sampledAllocatedBytesPerIteration: sampledAllocatedBytes / iterations,
-    retainedHeapDeltaBytes: retained.heapUsed - before.heapUsed,
+    // Compare live outputs to their released state, cancelling persistent JIT
+    // and runtime-cache growth during the pass. Preserve the raw before delta.
+    postGcHeapDeltaBytes: retained.heapUsed - before.heapUsed,
+    retainedHeapDeltaBytes: retained.heapUsed - released.heapUsed,
     retainedHeapBytesPerIteration:
-      (retained.heapUsed - before.heapUsed) / iterations,
+      (retained.heapUsed - released.heapUsed) / iterations,
     batchEndHeapDeltaBytes: batchEnd.heapUsed - before.heapUsed,
     rssDeltaBytes: batchEnd.rss - before.rss,
     gcAfterRetainMs,

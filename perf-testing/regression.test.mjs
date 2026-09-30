@@ -81,6 +81,7 @@ function fixture() {
       arrayMethodsEnabled: false,
       latencyMeasured: false,
       allocationIncludesCollectedObjects: true,
+      retainedHeapBaseline: 'post-GC heap after releasing the output holder',
     },
     trial,
   }));
@@ -199,6 +200,13 @@ for (const [name, corrupt] of [
     (report) => {
       delete report.memoryPairs[0].candidate[0].trial.memory
         .sampledAllocatedBytesPerIteration;
+    },
+  ],
+  [
+    'ambiguous retained heap baseline',
+    (report) => {
+      delete report.memoryPairs[0].candidate[0].methodology
+        .retainedHeapBaseline;
     },
   ],
   [

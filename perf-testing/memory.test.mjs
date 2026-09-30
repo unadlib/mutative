@@ -34,3 +34,19 @@ test('allocation sampling includes temporary objects collected by major GC', asy
   assert.equal(checksum, 8 * 2 * 17); // separate allocation and retention passes
   assert.ok(metrics.sampledAllocatedBytesPerIteration > 32 * 1024);
 });
+
+test('retained-output heap excludes persistent cache growth during the pass', async () => {
+  const shared = { value: 1 };
+  let calls = 0;
+  let cache;
+  const metrics = await measureMemory(
+    () => {
+      if (++calls === 22) cache = new Array(65536).fill(17); // after warmup + allocation pass
+      return shared;
+    },
+    { iterations: 16, samplingInterval: 256, warmup: 5 }
+  );
+  assert.equal(cache.length, 65536);
+  assert.ok(metrics.postGcHeapDeltaBytes > 400 * 1024);
+  assert.ok(Math.abs(metrics.retainedHeapDeltaBytes) < 32 * 1024);
+});

@@ -65,6 +65,7 @@ const report = {
     allocationIncludesHarnessOverhead: true,
     retention:
       'one output per iteration; patches retain the last producer tuple, including its state',
+    retainedHeapBaseline: 'post-GC heap after releasing the output holder',
     inputs: autoFreeze
       ? 'pre-frozen state and payloads'
       : 'unfrozen state and payloads',
