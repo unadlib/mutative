@@ -8,7 +8,7 @@ export function readOptions(defaults = {}) {
       filter: { type: 'string', default: '.*' },
       freeze: { type: 'string', default: defaults.freeze ?? 'both' },
       patches: { type: 'string', default: defaults.patches ?? 'off' },
-      library: { type: 'string', default: defaults.library ?? 'both' },
+      library: { type: 'string', default: defaults.library ?? 'all' },
       'array-size': {
         type: 'string',
         default: String(DEFAULT_CONFIG.arraySize),
@@ -46,7 +46,8 @@ export function readOptions(defaults = {}) {
   --filter REGEX           Scenario names (default: all 21 scenarios)
   --freeze both|off|on     Matched auto-freeze modes (default: ${defaults.freeze ?? 'both'})
   --patches both|off|on    Generate forward and inverse patches (default: ${defaults.patches ?? 'off'})
-  --library both|mutative|immer (default: ${defaults.library ?? 'both'})
+  --library all|both|mutative|mutative-v1|immer (default: ${defaults.library ?? 'all'})
+                           all = candidate + pinned v1 + Immer; both = candidate + Immer
   --array-size N           Default: 100; minimum: 10
   --nested-array-size N    Default: 10
   --object-size-1 N        Default: 1000
@@ -77,8 +78,14 @@ timed. Array-method plugins are never enabled. Setup is excluded from timing.`);
   if (!['both', 'off', 'on'].includes(values.patches)) {
     throw new Error('--patches must be both, off, or on');
   }
-  if (!['both', 'mutative', 'immer'].includes(values.library)) {
-    throw new Error('--library must be both, mutative, or immer');
+  if (
+    !['all', 'both', 'mutative', 'mutative-v1', 'immer'].includes(
+      values.library
+    )
+  ) {
+    throw new Error(
+      '--library must be all, both, mutative, mutative-v1, or immer'
+    );
   }
   // Validate now so an invalid regular expression fails before spawning workers.
   RegExp(values.filter);
@@ -94,7 +101,11 @@ timed. Array-method plugins are never enabled. Setup is excluded from timing.`);
     patches:
       values.patches === 'both' ? [false, true] : [values.patches === 'on'],
     libraries:
-      values.library === 'both' ? ['mutative', 'immer'] : [values.library],
+      values.library === 'all'
+        ? ['mutative', 'mutative-v1', 'immer']
+        : values.library === 'both'
+          ? ['mutative', 'immer']
+          : [values.library],
     config: {
       arraySize: integer('array-size', 10),
       nestedArraySize: integer('nested-array-size'),

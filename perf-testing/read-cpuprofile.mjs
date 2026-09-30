@@ -82,7 +82,16 @@ function describe(node) {
   let category = 'runtime / unmapped';
   if (source?.includes('/node_modules/') && /\/immer(?:@|\/)/.test(source))
     category = 'immer';
-  else if (source?.startsWith(`${join(profiledRoot, 'src')}/`))
+  else if (
+    source?.includes('/node_modules/') &&
+    /\/mutative(?:@|\/)/.test(source)
+  )
+    category = 'mutative-v1';
+  else if (
+    source?.startsWith(
+      `${join(metadata?.build?.candidate?.root ?? profiledRoot, 'src')}/`
+    )
+  )
     category = 'mutative';
   else if (source?.startsWith(`${join(profiledRoot, 'perf-testing')}/`))
     category = 'workload / harness';

@@ -1,4 +1,9 @@
 import { apply, create, isDraft as isMutativeDraft } from 'mutative';
+import {
+  apply as applyV1,
+  create as createV1,
+  isDraft as isV1Draft,
+} from 'mutative-v1';
 import { enablePatches, Immer, isDraft as isImmerDraft } from 'immer';
 import { createDraftReducer } from './workloads.mjs';
 
@@ -8,7 +13,11 @@ export const buildInfo = __BENCHMARK_BUILD__;
 let immerPatchesEnabled = false;
 
 export function createRuntime(library, autoFreeze, patches = false) {
-  if (library === 'mutative') {
+  if (library === 'mutative' || library === 'mutative-v1') {
+    const implementation =
+      library === 'mutative-v1'
+        ? { create: createV1, apply: applyV1, isDraft: isV1Draft }
+        : { create, apply, isDraft: isMutativeDraft };
     const options = {
       enableAutoFreeze: autoFreeze,
       // Match Immer's index removals instead of Mutative's length assignment.
@@ -16,11 +25,13 @@ export function createRuntime(library, autoFreeze, patches = false) {
     };
     return {
       reducer: createDraftReducer((base, recipe) =>
-        create(base, recipe, options)
+        implementation.create(base, recipe, options)
       ),
-      isDraft: isMutativeDraft,
+      isDraft: implementation.isDraft,
       applyPatches: (base, operations) =>
-        apply(base, operations, { enableAutoFreeze: autoFreeze }),
+        implementation.apply(base, operations, {
+          enableAutoFreeze: autoFreeze,
+        }),
     };
   }
   if (library === 'immer') {

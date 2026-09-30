@@ -23,7 +23,8 @@ for (
     [
       '--expose-gc',
       '--enable-source-maps',
-      join(directory, 'dist/immutability-benchmarks.mjs'),
+      process.env.MUTATIVE_PERF_BUNDLE ??
+        join(directory, 'dist/immutability-benchmarks.mjs'),
     ],
     {
       cwd: dirname(directory),

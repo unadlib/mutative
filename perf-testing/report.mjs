@@ -70,11 +70,20 @@ export function summarize(reports) {
         libraries.immer && libraries.mutative
           ? libraries.immer.medianMeanNs / libraries.mutative.medianMeanNs
           : null,
+      ...(libraries['mutative-v1'] && {
+        v1OverCandidate: libraries.mutative
+          ? libraries['mutative-v1'].medianMeanNs /
+            libraries.mutative.medianMeanNs
+          : null,
+      }),
     };
   });
 }
 
 export function formatReport(report) {
+  if (report.summary.some((entry) => entry.libraries['mutative-v1'])) {
+    return formatVersionedReport(report);
+  }
   const first = report.runs[0];
   const lines = [
     '# Mutative vs Immer workload benchmarks',
@@ -163,6 +172,38 @@ export function formatReport(report) {
   }
   lines.push(
     'The accompanying JSON retains every process result, sample count, timing percentiles, measurement order, artifact SHA-256 hashes, configuration, and environment metadata.',
+    ''
+  );
+  return lines.join('\n');
+}
+
+function formatVersionedReport(report) {
+  const first = report.runs[0];
+  const lines = [
+    '# Candidate Mutative vs pinned v1 and Immer',
+    '',
+    `Recorded: ${report.recordedAt}; ${report.runs.length} independent processes. Times are median process means in µs per complete scenario.`,
+    '',
+    `Candidate Mutative ${first.build.versions.mutative} at \`${first.build.candidate?.gitRevision ?? first.build.gitRevision}\`; pinned Mutative v1 ${first.build.versions['mutative-v1']}; pinned Immer ${first.build.versions.immer}. The candidate is only v2 when its actual package version is 2.x.`,
+    '',
+    `Environment: ${first.environment.cpu}; Node ${first.environment.node}, V8 ${first.environment.v8}, ${first.environment.platform}/${first.environment.arch}.`,
+    '',
+    'Production artifacts and their hashes are recorded in JSON. Array-method plugins are disabled. Setup and validation are excluded. Freeze-on inputs are pre-frozen; patch timing includes forward/inverse generation, excluding replay and serialization.',
+    '',
+    'V1/C and I/C are time ratios to the candidate; values above 1 favor the candidate. Small differences do not establish a winner.',
+    '',
+    '| Scenario | Freeze | Patches | Calls | Candidate µs | V1 µs | Immer µs | V1/C | I/C |',
+    '| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+  ];
+  const time = (library) =>
+    library ? (library.medianMeanNs / 1000).toFixed(3) : '—';
+  for (const row of report.summary)
+    lines.push(
+      `| ${row.scenario} | ${row.autoFreeze ? 'on' : 'off'} | ${row.enablePatches ? 'on' : 'off'} | ${row.operations} | ${time(row.libraries.mutative)} | ${time(row.libraries['mutative-v1'])} | ${time(row.libraries.immer)} | ${row.v1OverCandidate?.toFixed(2) ?? '—'} | ${row.immerOverMutative?.toFixed(2) ?? '—'} |`
+    );
+  lines.push(
+    '',
+    'JSON retains per-process mean ranges, sample p50/p99 and counts, patch counts, fixture sizes, environment, and production/source hashes. Sample p99 can represent batches, not individual-request tail latency.',
     ''
   );
   return lines.join('\n');

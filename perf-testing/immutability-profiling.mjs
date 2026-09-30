@@ -20,7 +20,7 @@ if (
   options.patches.length !== 1
 ) {
   throw new Error(
-    'Profile one library, freeze, and patch mode at a time; use --library mutative|immer --freeze off|on --patches off|on'
+    'Profile one library, freeze, and patch mode at a time; use --library mutative|mutative-v1|immer --freeze off|on --patches off|on'
   );
 }
 const scenarios = createScenarios(options.config, options.filter);

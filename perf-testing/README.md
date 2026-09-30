@@ -1,13 +1,15 @@
-# Mutative vs latest stable Immer
+# Candidate Mutative vs pinned Mutative v1 and Immer
 
 This suite ports the workloads from `immerjs/immer/perf-testing` at
 [`061c2425e1c9dff89e4e4189d42af1b7839dfe0a`](https://github.com/immerjs/immer/tree/061c2425e1c9dff89e4e4189d42af1b7839dfe0a/perf-testing).
 The upstream MIT license is retained in [LICENSE](./LICENSE).
 
-It compares the **current checkout's production Mutative build** with the
-**installed, exactly pinned Immer release** in the root `package.json` and
-`pnpm-lock.yaml`. Immer 11.1.18 was npm's `latest` on 2026-09-30. Historical Immer
-versions and unrelated immutable libraries are omitted. Neither the benchmark
+It compares a **candidate production Mutative build**, the **exactly pinned
+Mutative v1.3.0 npm baseline** (`mutative-v1` alias), and **Immer 11.1.18** in the
+root `package.json` and `pnpm-lock.yaml`. Immer 11.1.18 was npm's `latest` on
+2026-09-30. The candidate defaults to the current checkout. Its actual version,
+source revision, and production hash are reported; the current candidate is
+still 1.3.0 and must not be described as v2. Neither the benchmark
 nor its runtime imports or calls `enableArrayMethods`; the plugin stays disabled.
 See the existing [array-method reproductions](../test/immer-array-methods.md).
 
@@ -45,6 +47,14 @@ pnpm benchmark:immer --help
 # Reuse an already built bundle without rebuilding
 node perf-testing/run-benchmarks.mjs --runs 3
 
+# Exactly the original two-library comparison, or the fixed v1 baseline alone
+pnpm benchmark:immer --library both
+pnpm benchmark:immer --library mutative-v1
+
+# Build a v2 checkout first, then reuse this harness with that production artifact
+# Reports read its real package version and Git revision; no v2 code is invented.
+MUTATIVE_PERF_CANDIDATE_DIR=/absolute/path/to/v2-checkout pnpm benchmark:immer
+
 # Refresh the explicitly pinned comparison version, then rerun and commit its lockfile
 pnpm add -D -E immer@latest
 ```
@@ -56,7 +66,10 @@ individual process results. The version check rejects stale installed Immer.
 
 `--patches off|on|both` defaults to `off`, preserving the original plain-update
 benchmark. `benchmark:immer:check` checks both patch modes and both freeze modes
-(168 combinations at the default configuration). `--patches on` measures patch
+(252 combinations at the original 21-scenario configuration with three libraries).
+`--library all` (the default) measures candidate, pinned v1, and Immer;
+`--library both` retains the original candidate/Immer comparison.
+`--patches on` measures patch
 generation with automatic freezing off and on; `--patches both` additionally
 measures the plain-update baseline in the same processes. The JSON schema is
 version 2, with `enablePatches` on each trial and summary; the summarizer still
