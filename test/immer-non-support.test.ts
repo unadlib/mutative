@@ -6,6 +6,7 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-lone-blocks */
+/* eslint-disable no-extend-native */
 import {
   produce,
   enableMapSet,
@@ -20,7 +21,7 @@ import {
   finishDraft,
   immerable,
 } from 'immer';
-import { create, apply, current } from '../src';
+import { create, apply, current, isDraft } from '../src';
 import { deepClone } from '../src/utils';
 
 enableMapSet();
@@ -876,4 +877,188 @@ test('replays patches for a shared draft array', () => {
   };
   checkImmerPatches(state, fn);
   checkMutativePatches(state, fn);
+});
+
+// Immer's current() copies a plain Set and then iterates the copy while
+// set() appends the current value of every element to that same copy, so a
+// Set holding drafts or unfrozen draftable objects grows forever. The guard
+// below turns that runaway growth into an error instead of a hang.
+function withSetAddLimit<T>(limit: number, fn: () => T): T {
+  const originalAdd = Set.prototype.add;
+  let calls = 0;
+  Set.prototype.add = function add(this: Set<unknown>, value: unknown) {
+    calls += 1;
+    if (calls > limit) {
+      throw new Error(`Set.prototype.add was called more than ${limit} times`);
+    }
+    return originalAdd.call(this, value);
+  } as typeof Set.prototype.add;
+  try {
+    return fn();
+  } finally {
+    Set.prototype.add = originalAdd;
+  }
+}
+
+test('current() on a plain Set that holds drafts', () => {
+  const makeBase = (): any => ({ a: { child: { x: 1 } } });
+  {
+    // ! it should return a snapshot; instead current() never finishes
+    expect(() =>
+      withSetAddLimit(1000, () =>
+        produce(makeBase(), (draft: any) => {
+          draft.a.child.x = 2;
+          draft.a.s = new Set([draft.a.child]);
+          immerCurrent(draft.a);
+        })
+      )
+    ).toThrow('Set.prototype.add was called more than 1000 times');
+  }
+  {
+    let snapshot: any;
+    create(makeBase(), (draft: any) => {
+      draft.a.child.x = 2;
+      draft.a.s = new Set([draft.a.child]);
+      snapshot = current(draft.a);
+    });
+    expect(snapshot.s.size).toBe(1);
+    const [item] = [...snapshot.s];
+    expect(isDraft(item)).toBe(false);
+    expect(item).toEqual({ x: 2 });
+  }
+});
+
+test('current() on a plain Set of unfrozen objects', () => {
+  {
+    // ! it should return a snapshot; instead current() never finishes
+    expect(() =>
+      withSetAddLimit(1000, () =>
+        produce({ a: { t: 0 } } as any, (draft: any) => {
+          draft.a.s = new Set([{ q: 1 }]);
+          draft.a.t = 1;
+          immerCurrent(draft.a);
+        })
+      )
+    ).toThrow('Set.prototype.add was called more than 1000 times');
+  }
+  {
+    const inner = new Set([{ q: 1 }]);
+    let snapshot: any;
+    create({ a: { t: 0 } } as any, (draft: any) => {
+      draft.a.s = inner;
+      draft.a.t = 1;
+      snapshot = current(draft.a);
+    });
+    expect(snapshot.s).toBe(inner);
+    expect(snapshot.s.size).toBe(1);
+  }
+});
+
+const isRevokedProxy = (value: unknown) => {
+  try {
+    Object.getPrototypeOf(value);
+    return false;
+  } catch {
+    return true;
+  }
+};
+
+test('a plain Set that holds a draft is finalized', () => {
+  type State = { a: { child: { x: number }; s?: Set<unknown> } };
+  const makeBase = (): State => ({ a: { child: { x: 1 } } });
+  const recipe = (draft: State) => {
+    draft.a.child.x = 2;
+    draft.a.s = new Set([draft.a.child]);
+  };
+  {
+    enablePatches();
+    // Immer adds the finalized child to the Set but leaves the revoked draft
+    // proxy in it, and the add patch carries that Set.
+    // ! the Set should hold only the finalized child and the patches should replay
+    const base = makeBase();
+    const [state, patches] = produceWithPatches(base, recipe);
+    expect(state.a.s!.size).toBe(2);
+    expect(Array.from(state.a.s!).filter(isRevokedProxy)).toHaveLength(1);
+    expect(state.a.s!.has(state.a.child)).toBe(true);
+    expect(() => applyPatches(base, patches)).toThrow(/revoked/);
+  }
+  {
+    const base = makeBase();
+    const [state, patches, inversePatches] = create(base, recipe, {
+      enablePatches: true,
+    });
+    expect(state.a.s!.size).toBe(1);
+    expect(state.a.s!.has(state.a.child)).toBe(true);
+    expect(state.a.child).toEqual({ x: 2 });
+    expect(apply(base, patches)).toEqual(state);
+    expect(apply(state, inversePatches)).toEqual(base);
+  }
+});
+
+test('assigning a draft from an inner scope to an outer draft', () => {
+  const makeBases = () => ({
+    outerBase: { slot: null as any, k: 0 },
+    innerBase: { item: { v: 1 } },
+  });
+  {
+    // The inner produce revokes its proxies when it returns, so the outer
+    // draft keeps a revoked proxy in `slot`, with or without patches.
+    // ! it should finalize the inner draft into the outer state
+    const plain = makeBases();
+    expect(() =>
+      produce(plain.outerBase, (outer: any) => {
+        produce(plain.innerBase, (inner: any) => {
+          inner.item.v = 2;
+          outer.slot = inner.item;
+          outer.k = 1;
+        });
+      })
+    ).toThrow(/revoked/);
+    enablePatches();
+    const withPatches = makeBases();
+    expect(() =>
+      produceWithPatches(withPatches.outerBase, (outer: any) => {
+        produceWithPatches(withPatches.innerBase, (inner: any) => {
+          inner.item.v = 2;
+          outer.slot = inner.item;
+          outer.k = 1;
+        });
+      })
+    ).toThrow(/revoked/);
+  }
+  {
+    const { outerBase, innerBase } = makeBases();
+    let innerResult: any;
+    const [outer, outerPatches, outerInversePatches] = create(
+      outerBase,
+      (o: any) => {
+        innerResult = create(
+          innerBase,
+          (i: any) => {
+            i.item.v = 2;
+            o.slot = i.item;
+            o.k = 1;
+          },
+          { enablePatches: true }
+        );
+      },
+      { enablePatches: true }
+    );
+    const [inner, innerPatches, innerInversePatches] = innerResult;
+    expect(outer).toEqual({ slot: { v: 2 }, k: 1 });
+    expect(inner).toEqual({ item: { v: 2 } });
+    expect(isDraft(outer.slot)).toBe(false);
+    // Each scope records only its own changes.
+    expect(outerPatches.map((patch: any) => patch.path)).toEqual([
+      ['slot'],
+      ['k'],
+    ]);
+    expect(innerPatches.map((patch: any) => patch.path)).toEqual([
+      ['item', 'v'],
+    ]);
+    expect(apply(outerBase, outerPatches)).toEqual(outer);
+    expect(apply(outer, outerInversePatches)).toEqual(outerBase);
+    expect(apply(innerBase, innerPatches)).toEqual(inner);
+    expect(apply(inner, innerInversePatches)).toEqual(innerBase);
+  }
 });
