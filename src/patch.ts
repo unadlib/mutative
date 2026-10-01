@@ -27,12 +27,18 @@ function generateArrayPatches(
     [patches, inversePatches] = [inversePatches, patches];
   }
   // Only assigned indices can differ, so visit those in ascending order
-  // instead of scanning every element of a possibly very large array.
+  // instead of scanning every element of a possibly very large array. After a
+  // native array operation any index may differ, so compare them all.
   const indices: number[] = [];
-  assignedMap!.forEach((assigned, key) => {
-    if (assigned && key !== 'length') indices.push(Number(key));
-  });
-  indices.sort((a, b) => a - b);
+  if (proxyState.relocated) {
+    for (let index = 0; index < original.length; index += 1)
+      indices.push(index);
+  } else {
+    assignedMap!.forEach((assigned, key) => {
+      if (assigned && key !== 'length') indices.push(Number(key));
+    });
+    indices.sort((a, b) => a - b);
+  }
   for (let position = 0; position < indices.length; position += 1) {
     const index = indices[position];
     if (index < original.length && copy[index] !== original[index]) {

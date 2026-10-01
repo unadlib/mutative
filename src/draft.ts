@@ -9,6 +9,7 @@ import {
 import { dataTypes, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
+import { arrayMethods, baseIndices } from './array';
 import { internal } from './internal';
 import {
   deepFreeze,
@@ -112,6 +113,11 @@ function getTrap(
       ? !(source as Map<any, any>).has(key)
       : !hasOwn.call(source, key)
   ) {
+    if (type === DraftType.Array) {
+      // Methods that can run natively on the copy; see `arrayMethods`.
+      const method = arrayMethods[key as any];
+      if (method !== undefined) return method;
+    }
     const desc = getDescriptor(source, key);
     return desc
       ? `value` in desc
@@ -143,17 +149,28 @@ function getTrap(
   // accessor that returns a Date or similar is not re-invoked for a copy.
   if (!isDraftable(value, options)) return value;
   // Reassigned values, and fresh objects produced by an accessor on the
-  // original, differ from the original at this key and are not drafted.
-  if (value !== target.original[key]) return value;
+  // original, differ from the original at this key and are not drafted. After
+  // a native array operation moved elements, an original element may sit at
+  // any index, so membership in the original array decides instead.
+  let draftKey: any = key;
+  if (value !== target.original[key]) {
+    if (!target.relocated) return value;
+    const index = baseIndices(target).get(value);
+    if (index === undefined) return value;
+    draftKey = index;
+  }
   ensureShallowCopy(target);
   const draft = createDraft(
     value,
     target,
-    type === DraftType.Array ? Number(key) : key,
+    type === DraftType.Array ? Number(draftKey) : draftKey,
     target.finalities,
     options
   );
   target.copy![key] = draft;
+  // A moved element keeps its original index as key for patch paths and is
+  // finalized into its current index through a callback.
+  if (draftKey !== key) markFinalization(target, key, draft);
   if (target.child === null || target.childKey === key) {
     target.child = draft;
     target.childKey = key;
@@ -337,6 +354,8 @@ export function createDraft<T extends object>(
     children: undefined,
     child: null,
     childKey: null,
+    relocated: false,
+    baseRefs: null,
   };
   const { proxy, revoke } =
     type === DraftType.Array

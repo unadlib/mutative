@@ -58,6 +58,10 @@ export interface ProxyDraft<T = any> {
   children: any;
   child: any;
   childKey: any;
+  // Set once array elements were moved natively; see `relocated` reads.
+  relocated: boolean;
+  // Original index by element of the original array, built lazily after relocation.
+  baseRefs: Map<any, number> | null;
 }
 
 export interface IPatch {
