@@ -1,169 +1,88 @@
-# Local performance archives: 2026-09-30 and 2026-10-01 UTC
+# Performance evidence and archives
 
-The [2026-10-01 expanded archive](./2026-10-01-m1-max-node24-expanded-summary.md)
-measures the draft fast paths candidate (this branch, package version still
-1.3.0) against pinned npm Mutative 1.3.0 and Immer 11.1.18 on the same
-67-scenario harness and machine as the 2026-09-30 baseline: 3,060 timing trials
-in nine processes, 504 memory workers, a six-process object-order control, and a
-local run of the CI budget gate against `main`. The candidate is faster than
-Immer in 338 of 340 timing cells and within ±5% in the other two (geometric mean
-I/C 1.68), and faster than pinned v1 in 334 of 340; nested array movement with
-patches enabled improves by roughly 40x. The 2026-09-30 archive below remains the unoptimized reference.
+This directory contains two maintained documents: this archive index and the
+[current performance summary](./SUMMARY.md). Benchmark source, tests, pinned
+versions, [`budgets.json`](../budgets.json), and the
+[build-size baseline](../../scripts/build-size-baseline.json) remain versioned.
+Historical measurements are not inputs to CI: the performance job measures its
+actual base/head checkouts and uploads its own results.
 
-The [expanded versioned baseline](./2026-09-30-m1-max-node24-expanded-summary.md)
-compares the unoptimized 2026-09-30 candidate, pinned npm Mutative v1.3.0, and Immer 11.1.18.
-It covers all 67 scenarios with both freeze and patch modes: **3,060 timing
-trials in nine independent processes**, plus **504 isolated memory workers**.
-Separate local same-build and GitHub base/head controls verify all 48 CI budget
-decisions. Follow that report for the current matrix, full data, and reproduction
-commands. The candidate is still version 1.3.0; the harness can accept a future
-built v2 checkout without inventing v2 measurements.
+## Retention policy
 
-## Original Immer workload measurements
+- Write routine generated JSON, Markdown, and profiles to the ignored
+  `perf-testing/results/` directory. Other files under `reports/` are ignored.
+- For an important optimization or release, preserve the complete measurement
+  batch in a compressed archive with the relevant baseline and candidate data,
+  original metadata, a file manifest, and SHA-256 checksums.
+- Store durable evidence as downloadable release assets and add an entry here.
+  Use a new archive tag for each batch and preserve existing assets and tags.
+  CI artifacts remain useful for individual runs; summaries intended for long-term
+  reference need their own durable archive.
+- Download the published archive and verify its checksum and every source file
+  before removing local reports. Update the summary and affected documentation
+  and PR links together. Refresh the summary for material performance changes;
+  do not append every benchmark run to Git.
 
-These are measurements of the current checkout's Mutative 1.3.0 production
-artifact against the npm latest stable Immer 11.1.18 artifact, with
-`enableArrayMethods` disabled throughout.
+Archive releases use `perf-reports-*` tags, are marked as prereleases, and are
+not marked latest. The current [npm workflow](../../.github/workflows/npm-publish.yml)
+listens for `release.created`: create an archive release as a draft, upload and
+verify the assets, then publish that existing draft. GitHub documents the
+[draft release event behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#release).
+Recheck the repository's release triggers before publishing future archives.
 
-| Dataset              | Scope                                                             | Independent processes | Measured trials | Results                                                                                                                  |
-| -------------------- | ----------------------------------------------------------------- | --------------------: | --------------: | ------------------------------------------------------------------------------------------------------------------------ |
-| Default              | All 21 scenarios, 100 array rows, both freeze modes and libraries |                     3 |             252 | [Tables](./2026-09-30-m1-max-node24-default.md), [JSON](./2026-09-30-m1-max-node24-default.json)                         |
-| Array 1,000          | Six array scenarios, both freeze modes and libraries              |                     3 |              72 | [Tables](./2026-09-30-m1-max-node24-array-1000.md), [JSON](./2026-09-30-m1-max-node24-array-1000.json)                   |
-| Array 10,000         | Same six scenarios at 10,000 rows                                 |                     3 |              72 | [Tables](./2026-09-30-m1-max-node24-array-10000.md), [JSON](./2026-09-30-m1-max-node24-array-10000.json)                 |
-| Object order         | 1,000-property insertion, freeze off, balanced library order      |                     6 |              12 | [Tables](./2026-09-30-m1-max-node24-object-order.md), [JSON](./2026-09-30-m1-max-node24-object-order.json)               |
-| Patch matrix default | All 21 scenarios, 100 rows, both freeze and patch modes           |                     3 |             504 | [Tables](./2026-09-30-m1-max-node24-patches-default.md), [JSON](./2026-09-30-m1-max-node24-patches-default.json)         |
-| Patch matrix 1,000   | Six array scenarios, both freeze and patch modes                  |                     3 |             144 | [Tables](./2026-09-30-m1-max-node24-patches-array-1000.md), [JSON](./2026-09-30-m1-max-node24-patches-array-1000.json)   |
-| Patch matrix 10,000  | Same six scenarios, both freeze and patch modes                   |                     3 |             144 | [Tables](./2026-09-30-m1-max-node24-patches-array-10000.md), [JSON](./2026-09-30-m1-max-node24-patches-array-10000.json) |
+## Archive index
 
-The seven datasets contain **1,200 measured trials in 24 independent processes**:
-408 original patches-off trials plus 792 trials in the new patch matrices.
-Before timing, every selected scenario/library/freeze combination passed the
-immutable reference, structural sharing, input preservation, absence of drafts in outputs,
-freeze mode, and repeatability checks.
-Patch-enabled combinations also passed per-call reference results, independent
-forward/inverse replay, native replay, patch preservation, and absence of drafts
-in patch values. Operation counts match between libraries in every new case.
+| Measurement dates (UTC)   | Snapshot                                                                                         | Contents                                                                                                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-30 and 2026-10-01 | [`ed16bd4`](https://github.com/unadlib/mutative/commit/ed16bd466b301bc3babcaa2c87608fb53441e3ec) | All 51 original reports: 24 JSON and 27 Markdown files, including the original workloads, patch follow-up, expanded baseline/candidate, timing, memory, object-order controls, and local/GitHub budgets. |
 
-The [patch generation summary](./2026-09-30-m1-max-node24-patches-summary.md)
-compares both freeze modes side by side, includes contemporaneous patches-off
-controls, and records CPU profile evidence for the deep-cloning hotspot.
+[Release page][release] · [Full archive][archive] · [File manifest][manifest] ·
+[SHA256SUMS][checksums]
 
-Environment: Apple M1 Max, 64 GiB RAM, macOS 26.6.2, arm64, Node 24.16.0,
-V8 13.6.233.17-node.49, Mitata 1.0.34. Benchmarks were sequential, with no
-concurrent test or profiling jobs. Normal desktop background activity remained
-present, including BTLEServer; this was not an isolated benchmarking machine.
+The archive is **1,142,738 bytes**. It preserves every original report byte from
+that snapshot, plus the matching benchmark guide, upstream license, and
+array-method notes. The manifest records the snapshot SHA and each original
+file's path, byte count, and SHA-256. The original report directory occupies
+12,880,582 uncompressed bytes; it remains available in Git history as well.
 
-Each table uses the median of independent-process **mean times**, in
-microseconds per complete scenario. Each JSON retains all per-process means,
-percentiles, sample counts, and order. Ratios above 1 favor Mutative; ratios
-below 1 favor Immer. Small differences near 1 do not establish a decisive win.
-The tables also retain per-process min/max ranges; sample p99 can describe
-batched samples and is not individual-request tail latency.
+Archive SHA-256:
 
-The original default dataset was measured at `071eede`; the other three original
-datasets at `9184acb`.
-The intervening change compacted reporting metadata without changing the timed
-path. All datasets have identical Mutative source and production artifact hashes,
-and identical Immer version/artifact hashes. The default build was clean; later
-build metadata records only the newly generated, untracked `perf-testing/reports/`
-directory. Raw no-op calibration sample arrays were compacted to their existing
-statistics and sample counts; measured scenario statistics were preserved.
-
-All three patch matrices use the same bundle built from a clean `3e206b0`.
-Their Mutative source hash and both production artifact hashes match the original
-measurements. Patch generation is selected per trial and recorded explicitly in
-schema version 2. Both forward and inverse patches are timed, using array paths
-and index removals (`arrayLengthAssignment: false` for Mutative). Patch replay,
-serialization, configuration, and setup are outside timing. Use each matrix's
-own patches-off controls for overhead comparisons rather than older timings.
-
-## What the original patches-off measurements show
-
-- At the default 100-row size with freezing off, Immer has a lower median time
-  in 18 of 21 scenarios. This is a scenario count, not an overall speed score.
-- With freezing on and pre-frozen input, Mutative has a lower median in 9 of
-  21 scenarios, including push, the head update, and five-item updates. Several
-  differences are small or fluctuate across processes.
-- Scale changes the result. At 1,000 rows, freezing-on push measures
-  42.693 vs 91.679 µs (I/M 2.15). At 10,000 rows it measures
-  262.822 vs 735.887 µs (I/M 2.80).
-- At 10,000 rows, freezing-on five-item updates measure
-  277.178 vs 743.102 µs (I/M 2.68), while full-array nested mapping with
-  freezing off measures 11,660.873 vs 7,464.623 µs (I/M 0.64). Mapping here
-  includes assigning the derived array; it is not a pure-read benchmark.
-- The default 1,000-property insertion result is unstable: Mutative's off-mode
-  mean ranges from 58.424 to 238.028 µs. Its aggregate I/M of 3.57 must not be
-  treated as a stable speedup. The additional object-order dataset records
-  the alternating orders explicitly.
-
-The focused object-order run confirms the sensitivity (all times in µs):
-
-| Process | First library | Mutative |   Immer |  I/M |
-| ------- | ------------- | -------: | ------: | ---: |
-| 1       | Mutative      |   60.125 | 206.822 | 3.44 |
-| 2       | Immer         |  233.737 | 206.334 | 0.88 |
-| 3       | Mutative      |   57.374 | 222.361 | 3.88 |
-| 4       | Immer         |  230.532 | 207.440 | 0.90 |
-| 5       | Mutative      |   57.832 | 207.202 | 3.58 |
-| 6       | Immer         |  235.364 | 206.532 | 0.88 |
-
-Thus the pooled I/M 1.42 from six processes also hides two distinct modes.
-The mechanism was not established by these runs. Before drawing a library
-choice conclusion from this object case, use separate-library process controls
-(`--library mutative` and `--library immer`) and investigate JIT/fixture-shape
-effects. The framework already supports these controls.
-
-## Follow-ups identified by the original suite
-
-The following table records gaps identified after the original suite. The
-expanded baseline now covers pure reads/no-ops, truly small states, common array
-operations with three element shapes, mutation density, and memory. Patch
-application/serialization/bytes, cold and incoming-data freezing, and the other
-unimplemented dimensions remain useful additions.
-
-| Priority | Dimension                         | Concrete cases and reason                                                                                                                                                                                                                            |
-| -------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| High     | Pure reads and no-ops             | Traverse all draft objects with index access, `forEach`, and iteration; read only `length`; search for a missing ID; empty recipe and same-value assignments. Separate drafting/read overhead and unchanged-state detection from writes.             |
-| High     | Locate outside the draft          | Compare direct index updates with `find` inside the draft and searches on the original state. The current high-index update combines search, proxy creation, and writing.                                                                            |
-| High     | Cold and incoming-data freezing   | First update of an unfrozen large graph; pre-frozen state receiving fresh unfrozen payloads; ongoing pre-frozen updates. Current freeze-on results cover only the last case.                                                                         |
-| High     | Mutation density and depth        | Update 1/5/1%/10%/100% of rows, shallow vs deep paths, one recipe vs many producer calls. The five-item workload always targets low indexes.                                                                                                         |
-| High     | Patch consumption and value shape | Separate forward/inverse application and serialization costs; record patch byte sizes and allocations. Compare primitive elements, shallow objects, and nested objects when generating array-move patches. Generation now has plain-update controls. |
-| High     | Process/order controls            | Single-library worker runs and isolated scenarios. The object-order follow-up above shows that alternating orders alone does not make every pooled result stable.                                                                                    |
-| Medium   | Wider data and operation coverage | Edit existing object properties as well as insert/delete; `pop`, `shift`, `unshift`, middle `splice`, `fill`, `copyWithin`, randomized sorting; dense vs sparse arrays and primitive vs object elements.                                             |
-| Medium   | Collections and memory            | Bring the existing `performance:set-map` workloads into this versioned framework; measure Map/Set updates/reads plus allocated bytes, retained heap, GC cost, and sustained throughput in a separate memory run.                                     |
-| Medium   | Engines and initialization        | Node 22 vs 24, Chrome/Firefox/Safari, module load and first call. Current results cover one Node/V8 version.                                                                                                                                         |
-| Lower    | Handwritten immutable baseline    | Time the already ported manual reference reducer without freezing, to show absolute abstraction overhead. It currently serves correctness validation only.                                                                                           |
-
-## Reproduce
-
-These commands target the original 21-scenario, two-library harness at
-`3e206b0`. Use a clean checkout of that revision, install its frozen lockfile,
-and build with `pnpm build` and `pnpm benchmark:immer:build`, then run:
-
-```sh
-node perf-testing/run-benchmarks.mjs --output perf-testing/results/default.json
-node perf-testing/run-benchmarks.mjs --array-size 1000 --filter '^(add|remove|update-high|update-multiple|mapNested|reverse-array)$' --output perf-testing/results/array-1000.json
-node perf-testing/run-benchmarks.mjs --array-size 10000 --filter '^(add|remove|update-high|update-multiple|mapNested|reverse-array)$' --output perf-testing/results/array-10000.json
-node perf-testing/run-benchmarks.mjs --runs 6 --freeze off --filter '^update-largeObject1$' --output perf-testing/results/object-order.json
-node perf-testing/run-benchmarks.mjs --patches both --output perf-testing/results/patches-default.json
-node perf-testing/run-benchmarks.mjs --patches both --array-size 1000 --filter '^(add|remove|update-high|update-multiple|mapNested|reverse-array)$' --output perf-testing/results/patches-array-1000.json
-node perf-testing/run-benchmarks.mjs --patches both --array-size 10000 --filter '^(add|remove|update-high|update-multiple|mapNested|reverse-array)$' --output perf-testing/results/patches-array-10000.json
+```text
+a2ddaa60d87235ceb5ebf497d93c86b4da3e2b59174b20a34f9e67728985266d
 ```
 
-Suite validation also passed `pnpm lint`, source/test and new-tool formatting
-checks, `pnpm type-check`, the Mutative build, and `pnpm test:package` with packed
-consumer checks. Existing unit tests passed 40 files: 4,235 passed,
-234 expected failures, and 8 skipped. The expected failures belong to existing
-Immer array-method bug reproductions, which are not enabled by these benchmarks.
-CPU profile source mapping was also verified with the current build map
-deliberately overwritten: analysis still used the profile's saved snapshot and
-resolved Mutative frames back to source. The build map was restored afterward.
+The archive's `perf-testing/reports/README.md` is the original index.
+`2026-09-30-m1-max-node24-expanded-summary.md` documents the unoptimized
+reference; `2026-10-01-m1-max-node24-expanded-summary.md` documents the optimized
+candidate. Their neighboring JSON and table files retain their original names
+and relative links. Historical comments about measurements refer to those dates.
 
-Patch support additionally passed the 168-combination checker, `pnpm lint`,
-formatting and type checks, an eight-trial timing/report smoke, all four
-library/freeze profiling smokes with patches on, CLI failure checks, and exact
-recomputation of the original four report summaries. The nine measured workers
-passed their selected validation matrices before timing (792 combinations in
-total). Report auditing recomputed all new summaries and checked clean build
-metadata, complete mode matrices, matching production hashes, matching patch
-counts, and non-empty timing statistics. The Mutative implementation is unchanged.
+## Download and verify
+
+From the repository root, using GitHub CLI, `shasum`, and `tar`:
+
+```sh
+mkdir -p perf-testing/results/archive
+cd perf-testing/results/archive
+# Use an empty download directory; do not overwrite an earlier archive.
+gh release download perf-reports-2026-10-01 --repo unadlib/mutative --pattern '*.tar.gz' --pattern '*.manifest.json' --pattern SHA256SUMS
+shasum -a 256 -c SHA256SUMS
+tar -xzf mutative-performance-reports-2026-09-30_2026-10-01-ed16bd4.tar.gz
+cd mutative-performance-reports-2026-09-30_2026-10-01-ed16bd4
+shasum -a 256 -c FILES.sha256
+```
+
+To re-evaluate saved budget decisions without running measurements, return to
+the repository root and run:
+
+```sh
+node perf-testing/check-budgets.mjs perf-testing/results/archive/mutative-performance-reports-2026-09-30_2026-10-01-ed16bd4/perf-testing/reports/2026-10-01-m1-max-node24-expanded-budgets-local.json
+```
+
+See the [summary](./SUMMARY.md#reproduce) for the measured source identities and
+full-matrix commands, or the [benchmark guide](../README.md#run) for focused runs.
+
+[release]: https://github.com/unadlib/mutative/releases/tag/perf-reports-2026-10-01
+[archive]: https://github.com/unadlib/mutative/releases/download/perf-reports-2026-10-01/mutative-performance-reports-2026-09-30_2026-10-01-ed16bd4.tar.gz
+[manifest]: https://github.com/unadlib/mutative/releases/download/perf-reports-2026-10-01/mutative-performance-reports-2026-09-30_2026-10-01-ed16bd4.manifest.json
+[checksums]: https://github.com/unadlib/mutative/releases/download/perf-reports-2026-10-01/SHA256SUMS
