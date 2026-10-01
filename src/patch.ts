@@ -1,5 +1,17 @@
 import { DraftType, Operation, Patches, ProxyDraft } from './interface';
-import { cloneIfNeeded, escapePath, get, has, isEqual } from './utils';
+import { escapePath, get, getProxyDraft, has, isEqual } from './utils';
+import { current } from './current';
+
+/**
+ * Patch values must not contain drafts. A draft that is still present when its
+ * container generates patches is represented by its original object when it
+ * was not modified, or by a snapshot of its current state otherwise.
+ */
+function cloneIfNeeded<T>(target: T): T {
+  const proxyDraft = getProxyDraft(target);
+  if (!proxyDraft) return target;
+  return proxyDraft.operated ? current(target as any) : proxyDraft.original;
+}
 
 function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
@@ -14,20 +26,26 @@ function generateArrayPatches(
     [original, copy] = [copy, original];
     [patches, inversePatches] = [inversePatches, patches];
   }
-  for (let index = 0; index < original.length; index += 1) {
-    if (assignedMap!.get(index.toString()) && copy[index] !== original[index]) {
+  // Only assigned indices can differ, so visit those in ascending order
+  // instead of scanning every element of a possibly very large array.
+  const indices: number[] = [];
+  assignedMap!.forEach((assigned, key) => {
+    if (assigned && key !== 'length') indices.push(Number(key));
+  });
+  indices.sort((a, b) => a - b);
+  for (let position = 0; position < indices.length; position += 1) {
+    const index = indices[position];
+    if (index < original.length && copy[index] !== original[index]) {
       const _path = basePath.concat([index]);
       const path = escapePath(_path, pathAsArray);
       patches.push({
         op: Operation.Replace,
         path,
-        // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
         value: cloneIfNeeded(copy[index]),
       });
       inversePatches.push({
         op: Operation.Replace,
         path,
-        // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
         value: cloneIfNeeded(original[index]),
       });
     }

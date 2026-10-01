@@ -110,3 +110,10 @@ stats.html
 
 # Separate checkout used only for paired performance CI
 /benchmark-base/
+
+perf-testing/results/
+
+# Keep only the curated performance summary and archive index in Git.
+/perf-testing/reports/*
+!/perf-testing/reports/README.md
+!/perf-testing/reports/SUMMARY.md

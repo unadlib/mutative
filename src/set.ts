@@ -9,7 +9,6 @@ import {
   markFinalization,
 } from './utils';
 import { checkReadable } from './unsafe';
-import { generatePatches } from './patch';
 
 const getNextIterator =
   (
@@ -36,13 +35,13 @@ const getNextIterator =
       target.original!.has(key)
     ) {
       // draft a draftable original set item
-      const proxy = internal.createDraft({
-        original: key,
-        parentDraft: target,
+      const proxy = internal.createDraft(
         key,
-        finalities: target.finalities,
-        options: target.options,
-      });
+        target,
+        key,
+        target.finalities,
+        target.options
+      );
       target.setMap!.set(key, proxy);
       value = proxy;
     } else if (currentDraft) {
@@ -78,7 +77,7 @@ export const setHandler = {
       markChanged(target);
       target.assignedMap!.set(value, true);
       target.setMap!.set(value, value);
-      markFinalization(target, value, value, generatePatches);
+      markFinalization(target, value, value);
     }
     return this;
   },

@@ -13,11 +13,13 @@ still 1.3.0 and must not be described as v2. Neither the benchmark
 nor its runtime imports or calls `enableArrayMethods`; the plugin stays disabled.
 See the existing [array-method reproductions](../test/immer-array-methods.md).
 
-The [2026-09-30 local measurement archive](./reports/README.md) contains complete
-tables, JSON, scale comparisons, result limitations, and suggested next workloads.
-The [expanded baseline](./reports/2026-09-30-m1-max-node24-expanded-summary.md)
-records all 67 scenarios, three libraries, separate freeze/patch modes, allocation
-and retained-output heap measurements, and passing local/GitHub budget controls.
+The [performance summary](./reports/SUMMARY.md) records the draft fast paths
+candidate's results, limitations, source and artifact identities, and reproduction
+commands. The [archive index](./reports/README.md) links the complete original
+JSON and Markdown reports for the 2026-09-30 baseline and 2026-10-01 candidate,
+including timing, memory, object-order controls, and CI budgets. Generated reports
+stay in the ignored `perf-testing/results/` directory; only the summary and
+archive index are committed under `reports/`.
 
 ## Run
 
@@ -67,8 +69,8 @@ installed versions, local Git revision and dirty state, production artifact
 SHA-256 hashes, source hash, Node/V8 versions, CPU, RAM, configuration, and all
 individual process results. The version check rejects stale installed Immer.
 An intentional dependency upgrade must update the matching version in
-`perf-testing/budgets.json` and commit the manifest, lockfile, policy, and refreshed
-measurements together.
+`perf-testing/budgets.json`. Commit the manifest, lockfile, policy, and refreshed
+summary together, with complete measurements linked from the archive index.
 
 `--patches off|on|both` defaults to `off`, preserving the original plain-update
 benchmark. `benchmark:immer:check` checks both patch modes and both freeze modes

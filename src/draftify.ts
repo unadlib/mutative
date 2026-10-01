@@ -21,7 +21,6 @@ export function draftify<
     draft: [],
     revoke: [],
     handledSet: new WeakSet<any>(),
-    draftsCache: new WeakSet<object>(),
   };
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
@@ -34,12 +33,7 @@ export function draftify<
     !isDraftable(baseState, options);
   const draft = isMutable
     ? baseState
-    : createDraft({
-        original: baseState,
-        parentDraft: null,
-        finalities,
-        options,
-      });
+    : createDraft(baseState, null, undefined, finalities, options);
   return [
     draft,
     (returnedValue: [T] | [] = []) => {

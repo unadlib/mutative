@@ -1,5 +1,4 @@
 import { DraftType, Patches, ProxyDraft } from '../interface';
-import { ensureShallowCopy } from './copy';
 import {
   get,
   getPath,
@@ -30,7 +29,6 @@ export function handleValue(
   forEach(target, (key, value) => {
     if (isDraft(value)) {
       const proxyDraft = getProxyDraft(value)!;
-      ensureShallowCopy(proxyDraft);
       // A draft where a child node has been changed, or assigned a value
       const updatedValue =
         proxyDraft.assignedMap?.size || proxyDraft.operated
@@ -107,27 +105,78 @@ export function finalizePatches(
   }
 }
 
-export function markFinalization(
-  target: ProxyDraft,
-  key: any,
-  value: any,
-  generatePatches: GeneratePatches
+/**
+ * Finalize one draft node: write the final value back into the parent's copy,
+ * generate its patches and run callbacks registered for it, for example
+ * because it was assigned to another location.
+ */
+export function finalizeNode(
+  node: ProxyDraft,
+  generatePatches: GeneratePatches,
+  patches?: Patches,
+  inversePatches?: Patches
 ) {
+  const parent = node.parent;
+  if (parent) {
+    const parentType = parent.type;
+    // if the parent is a Set draft, `setMap` is the real Set copies proxy mapping.
+    const copy = parentType === DraftType.Set ? parent.setMap : parent.copy;
+    const key = node.key!;
+    const isMapLike =
+      parentType === DraftType.Set || parentType === DraftType.Map;
+    const draft = isMapLike ? copy.get(key) : copy[key];
+    // Fast path: the node is still at its own key. Otherwise another draft
+    // may have been moved here, e.g. by `reverse()`, and is finalized instead.
+    const proxyDraft = draft === node.proxy ? node : getProxyDraft(draft);
+    if (proxyDraft) {
+      // assign the updated value to the copy object
+      const updatedValue = proxyDraft.operated
+        ? proxyDraft.copy
+        : proxyDraft.original;
+      finalizeSetValue(proxyDraft);
+      finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
+      if (__DEV__ && parent.options.enableAutoFreeze) {
+        parent.options.updatedValues =
+          parent.options.updatedValues ?? new WeakMap();
+        parent.options.updatedValues.set(updatedValue, proxyDraft.original);
+      }
+      // final update value
+      if (isMapLike) {
+        copy.set(key, updatedValue);
+      } else {
+        copy[key] = updatedValue;
+      }
+    }
+  } else {
+    // !case: handle the root draft
+    finalizeSetValue(node);
+    finalizePatches(node, generatePatches, patches, inversePatches);
+  }
+  // !case: handle the deleted key
+  const callbacks = node.callbacks;
+  if (callbacks) {
+    for (let index = 0; index < callbacks.length; index += 1) {
+      callbacks[index](patches, inversePatches);
+    }
+  }
+}
+
+export function markFinalization(target: ProxyDraft, key: any, value: any) {
   const proxyDraft = getProxyDraft(value);
   if (proxyDraft) {
     // !case: assign the draft value
     if (!proxyDraft.callbacks) {
       proxyDraft.callbacks = [];
     }
-    proxyDraft.callbacks.push((patches, inversePatches) => {
+    proxyDraft.callbacks.push(() => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
       if (isEqual(get(copy, key), value)) {
-        let updatedValue = proxyDraft.original;
-        if (proxyDraft.copy) {
-          updatedValue = proxyDraft.copy;
-        }
+        // The target generates its own patches once all drafts it holds have
+        // been finalized, so its patch values never need deep cloning.
+        const updatedValue = proxyDraft.operated
+          ? proxyDraft.copy
+          : proxyDraft.original;
         finalizeSetValue(target);
-        finalizePatches(target, generatePatches, patches, inversePatches);
         if (__DEV__ && target.options.enableAutoFreeze) {
           target.options.updatedValues =
             target.options.updatedValues ?? new WeakMap();
@@ -143,8 +192,7 @@ export function markFinalization(
         target.options.enableAutoFreeze = false;
       }
     }
-  }
-  if (isDraftable(value, target.options)) {
+  } else if (isDraftable(value, target.options)) {
     // !case: assign the non-draft value
     target.finalities.draft.push(() => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;

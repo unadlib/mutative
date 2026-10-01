@@ -28,27 +28,36 @@ export type PatchesOptions =
       arrayLengthAssignment?: boolean;
     };
 
+export type FinalizeCallback = (
+  patches?: Patches,
+  inversePatches?: Patches
+) => void;
+
 export interface Finalities {
-  draft: ((patches?: Patches, inversePatches?: Patches) => void)[];
+  // Draft nodes and deferred callbacks, finalized in reverse order.
+  draft: (ProxyDraft | FinalizeCallback)[];
   revoke: (() => void)[];
   handledSet: WeakSet<any>;
-  draftsCache: WeakSet<object>;
 }
 
 export interface ProxyDraft<T = any> {
   type: DraftType;
-  operated?: boolean;
+  operated: boolean;
   finalized: boolean;
   original: T;
   copy: T | null;
   proxy: T | null;
   finalities: Finalities;
   options: Options<any, any> & { updatedValues?: WeakMap<any, any> };
-  parent?: ProxyDraft | null;
-  key?: string | number | symbol;
-  setMap?: Map<any, ProxyDraft>;
-  assignedMap?: Map<any, boolean>;
-  callbacks?: ((patches?: Patches, inversePatches?: Patches) => void)[];
+  parent: ProxyDraft | null;
+  key: string | number | symbol | undefined;
+  setMap: Map<any, ProxyDraft> | undefined;
+  assignedMap: Map<any, boolean> | undefined;
+  callbacks: FinalizeCallback[] | undefined;
+  // Child drafts created by this draft, by key.
+  children: any;
+  child: any;
+  childKey: any;
 }
 
 export interface IPatch {
