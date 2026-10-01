@@ -423,6 +423,15 @@ const state = create(baseState, (draft) => {
 });
 ```
 
+`original()` is also the cheap way to search a large array of objects. Every element read through a draft becomes a draft of its own, so `draft.list.find()` pays for a draft per visited element. Scanning the original and drafting only the hit keeps the recipe fast. Do this before the recipe changes the list, because `original()` reflects the state before any change.
+
+```ts
+const state = create(baseState, (draft) => {
+  const index = original(draft.list).findIndex((item) => item.text === 'todo');
+  draft.list[index].done = true;
+});
+```
+
 ### `unsafe()`
 
 When strict mode is enabled, mutable data can only be accessed using `unsafe()`.
@@ -609,6 +618,10 @@ Yes. Unless you have to be compatible with Internet Explorer, Mutative supports 
 - Can Mutative be integrated with Redux?
 
 Yes. Mutative supports return values for reducer, and `redux-toolkit` is considering support for [configurable `produce()`](https://github.com/reduxjs/redux-toolkit/pull/3074).
+
+- Which array methods run natively on drafts?
+
+Methods that cannot hand a callback a value that must stay a draft run directly on the draft's copy instead of moving every element through the proxy: `shift`, `unshift`, `splice`, `reverse`, `fill`, `copyWithin`, `indexOf`, `lastIndexOf` and `includes` always; `sort`, with the comparator receiving drafts; and every method, including `forEach`, `map`, `filter` and `find`, on arrays whose elements cannot be drafted (numbers, strings, dates). Elements removed or moved by these methods are drafted before they are exposed, so the original array is never modified. On arrays of objects, `forEach`, `map`, `filter` and `find` keep going through the draft so that their callbacks can modify elements; use [`original()`](#original) for read-only scans of large arrays.
 
 - Does Mutative support shared references?
 
