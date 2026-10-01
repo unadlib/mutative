@@ -237,6 +237,7 @@ function setTrap(
     return true;
   ensureShallowCopy(target);
   markChanged(target);
+  if (typeof value === 'object' && value !== null) target.inert = null;
   if (hasOwn.call(original, key) && isEqual(value, original[key])) {
     // !case: handle the case of assigning the original non-draftable value to a draft
     target.assignedMap!.delete(key);
@@ -356,6 +357,7 @@ export function createDraft<T extends object>(
     childKey: null,
     relocated: false,
     baseRefs: null,
+    inert: null,
   };
   const { proxy, revoke } =
     type === DraftType.Array

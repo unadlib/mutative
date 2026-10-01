@@ -87,8 +87,62 @@ function registerAssigned(target: ProxyDraft, index: number, value: any) {
   const key = String(index);
   target.assignedMap!.set(key, true);
   if (typeof value === 'object' && value !== null) {
+    target.inert = null;
     markFinalization(target, key, value);
   }
+}
+
+// Whether no element of the array can be drafted, so that callbacks cannot
+// receive anything that must stay a draft. Cached until an object is added.
+function isInert(target: ProxyDraft) {
+  let inert = target.inert;
+  if (inert === null) {
+    const source = latest(target);
+    inert = true;
+    for (let index = 0; index < source.length; index += 1) {
+      const value = source[index];
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        isDraftable(value, target.options)
+      ) {
+        inert = false;
+        break;
+      }
+    }
+    target.inert = inert;
+  }
+  return inert;
+}
+
+// Read-only methods run natively when no element can be drafted. Callbacks
+// still receive the draft as their array argument: `callbackArity` is 0 for
+// methods without a callback, 3 for `(value, index, array)` callbacks and 4
+// for the reducers.
+function readOnly(method: keyof typeof arrayProto, callbackArity: number) {
+  return function (this: any, ...args: any[]) {
+    const target = nativeState(this);
+    if (
+      target === null ||
+      !isInert(target) ||
+      (callbackArity !== 0 && typeof args[0] !== 'function')
+    ) {
+      return (arrayProto[method] as any).apply(this, args);
+    }
+    if (callbackArity !== 0) {
+      const callback = args[0];
+      const proxy = target.proxy;
+      args[0] =
+        callbackArity === 3
+          ? function (this: any, value: any, index: number) {
+              return callback.call(this, value, index, proxy);
+            }
+          : function (this: any, previous: any, value: any, index: number) {
+              return callback.call(this, previous, value, index, proxy);
+            };
+    }
+    return (arrayProto[method] as any).apply(latest(target), args);
+  };
 }
 
 /**
@@ -232,6 +286,20 @@ export const arrayMethods: Record<PropertyKey, (...args: any[]) => any> =
     indexOf: search('indexOf'),
     lastIndexOf: search('lastIndexOf'),
     includes: search('includes'),
+    forEach: readOnly('forEach', 3),
+    map: readOnly('map', 3),
+    filter: readOnly('filter', 3),
+    find: readOnly('find', 3),
+    findIndex: readOnly('findIndex', 3),
+    findLast: readOnly('findLast', 3),
+    findLastIndex: readOnly('findLastIndex', 3),
+    some: readOnly('some', 3),
+    every: readOnly('every', 3),
+    reduce: readOnly('reduce', 4),
+    reduceRight: readOnly('reduceRight', 4),
+    join: readOnly('join', 0),
+    slice: readOnly('slice', 0),
+    at: readOnly('at', 0),
     shift(this: any) {
       const target = nativeState(this);
       if (target === null) return arrayProto.shift.call(this);
