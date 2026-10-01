@@ -29,10 +29,7 @@ function nativeState(self: any): ProxyDraft | null {
     : null;
 }
 
-function toInteger(value: any) {
-  const integer = Math.trunc(Number(value));
-  return integer === integer ? integer : 0;
-}
+const toInteger = (value: any) => Math.trunc(Number(value)) || 0;
 
 // A relative index argument resolved against `length`, as the array methods do.
 function relativeIndex(value: any, length: number, fallback: number) {
@@ -120,17 +117,15 @@ function isInert(target: ProxyDraft) {
 // methods without a callback, 3 for `(value, index, array)` callbacks and 4
 // for the reducers.
 function readOnly(method: keyof typeof arrayProto, callbackArity: number) {
-  return function (this: any, ...args: any[]) {
-    const target = nativeState(this);
+  return native(method, (target, self, args) => {
+    const callback = args[0];
     if (
-      target === null ||
       !isInert(target) ||
-      (callbackArity !== 0 && typeof args[0] !== 'function')
+      (callbackArity !== 0 && typeof callback !== 'function')
     ) {
-      return (arrayProto[method] as any).apply(this, args);
+      return (arrayProto[method] as any).apply(self, args);
     }
     if (callbackArity !== 0) {
-      const callback = args[0];
       const proxy = target.proxy;
       args[0] =
         callbackArity === 3
@@ -142,7 +137,7 @@ function readOnly(method: keyof typeof arrayProto, callbackArity: number) {
             };
     }
     return (arrayProto[method] as any).apply(latest(target), args);
-  };
+  });
 }
 
 /**
@@ -260,12 +255,27 @@ function prepare(target: ProxyDraft) {
   return target.copy! as any[];
 }
 
+type Native = (...args: any[]) => any;
+
+// A method that runs `impl` on the array draft behind `this`, or the
+// original method when `this` is not an eligible draft.
+function native(
+  method: keyof typeof arrayProto,
+  impl: (target: ProxyDraft, self: any, args: any[]) => any
+): Native {
+  const original: Native = arrayProto[method] as any;
+  return function (this: any, ...args: any[]) {
+    const target = nativeState(this);
+    return target === null
+      ? original.apply(this, args)
+      : impl(target, this, args);
+  };
+}
+
 // Identity searches run on the copy; a draft also matches the original it
 // stands for, as a read through the proxy would return the draft for it.
 function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
-  return function (this: any, ...args: any[]) {
-    const target = nativeState(this);
-    if (target === null) return (arrayProto[method] as any).apply(this, args);
+  return native(method, (target, _self, args) => {
     const source = latest(target);
     const found = (arrayProto[method] as any).apply(source, args);
     const original = getProxyDraft(args[0])?.original;
@@ -274,7 +284,7 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
     }
     args[0] = original;
     return (arrayProto[method] as any).apply(source, args);
-  };
+  });
 }
 
 // The default sort order: undefined last, otherwise by string value.
@@ -290,8 +300,9 @@ function defaultCompare(a: any, b: any) {
  * Array methods without callbacks run natively on the draft's copy instead
  * of moving every element through the proxy traps.
  */
-export const arrayMethods: Record<PropertyKey, (...args: any[]) => any> =
-  Object.assign(Object.create(null), {
+export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
+  Object.create(null),
+  {
     indexOf: search('indexOf'),
     lastIndexOf: search('lastIndexOf'),
     includes: search('includes'),
@@ -309,19 +320,15 @@ export const arrayMethods: Record<PropertyKey, (...args: any[]) => any> =
     join: readOnly('join', 0),
     slice: readOnly('slice', 0),
     at: readOnly('at', 0),
-    shift(this: any) {
-      const target = nativeState(this);
-      if (target === null) return arrayProto.shift.call(this);
+    shift: native('shift', (target) => {
       if (latest(target).length === 0) return undefined;
       const copy = prepare(target);
       const key = removalKey(target, 0);
       const value = arrayProto.shift.call(copy);
       relocate(target, (index) => index - 1);
       return removed(target, value, key);
-    },
-    unshift(this: any, ...items: any[]) {
-      const target = nativeState(this);
-      if (target === null) return arrayProto.unshift.apply(this, items);
+    }),
+    unshift: native('unshift', (target, _self, items) => {
       const count = items.length;
       if (count === 0) return latest(target).length;
       const copy = prepare(target);
@@ -331,10 +338,8 @@ export const arrayMethods: Record<PropertyKey, (...args: any[]) => any> =
         registerAssigned(target, index, items[index]);
       }
       return copy.length;
-    },
-    splice(this: any, ...args: any[]) {
-      const target = nativeState(this);
-      if (target === null) return (arrayProto.splice as any).apply(this, args);
+    }),
+    splice: native('splice', (target, _self, args) => {
       const length = latest(target).length;
       const start = relativeIndex(args[0], length, 0);
       const deleteCount =
@@ -365,27 +370,23 @@ export const arrayMethods: Record<PropertyKey, (...args: any[]) => any> =
         values[index] = removed(target, values[index], keys[index]);
       }
       return values;
-    },
-    sort(this: any, compare?: any) {
-      const target = nativeState(this);
-      if (
-        target === null ||
-        (compare !== undefined && typeof compare !== 'function')
-      ) {
-        return arrayProto.sort.call(this, compare);
+    }),
+    sort: native('sort', (target, self, [compare]) => {
+      if (compare !== undefined && typeof compare !== 'function') {
+        return arrayProto.sort.call(self, compare);
       }
       const length = latest(target).length;
-      if (length <= 1) return this;
+      if (length <= 1) return self;
       const copy = prepare(target);
       if (isInert(target)) {
         arrayProto.sort.call(copy, compare);
         target.relocated = true;
-        return this;
+        return self;
       }
       // Undefined elements and holes are sorted without the comparator; the
       // proxy path keeps that rule for the rare arrays that have them.
       if (arrayProto.includes.call(copy, undefined)) {
-        return arrayProto.sort.call(this, compare);
+        return arrayProto.sort.call(self, compare);
       }
       // The comparator receives drafts, as it would through the proxy.
       for (let index = 0; index < length; index += 1) draftAt(target, index);
@@ -400,21 +401,17 @@ export const arrayMethods: Record<PropertyKey, (...args: any[]) => any> =
         positions[order[index]] = index;
       }
       relocate(target, (index) => positions[index]);
-      return this;
-    },
-    reverse(this: any) {
-      const target = nativeState(this);
-      if (target === null) return arrayProto.reverse.call(this);
+      return self;
+    }),
+    reverse: native('reverse', (target, self) => {
       const length = latest(target).length;
       if (length > 1) {
         arrayProto.reverse.call(prepare(target));
         relocate(target, (index) => length - 1 - index);
       }
-      return this;
-    },
-    fill(this: any, value: any, start?: any, end?: any) {
-      const target = nativeState(this);
-      if (target === null) return arrayProto.fill.call(this, value, start, end);
+      return self;
+    }),
+    fill: native('fill', (target, self, [value, start, end]) => {
       const length = latest(target).length;
       const from = relativeIndex(start, length, 0);
       const to = relativeIndex(end, length, length);
@@ -428,43 +425,43 @@ export const arrayMethods: Record<PropertyKey, (...args: any[]) => any> =
           registerAssigned(target, index, value);
         }
       }
-      return this;
-    },
-    copyWithin(this: any, targetIndex: any, start: any, end?: any) {
-      const target = nativeState(this);
-      if (target === null) {
-        return arrayProto.copyWithin.call(this, targetIndex, start, end);
-      }
-      const length = latest(target).length;
-      const to = relativeIndex(targetIndex, length, 0);
-      const from = relativeIndex(start, length, 0);
-      const count = Math.min(
-        relativeIndex(end, length, length) - from,
-        length - to
-      );
-      if (count > 0 && to !== from) {
-        const copy = prepare(target);
-        // Copied original elements are drafted first so that both indices
-        // share one draft, as they share one object.
-        for (let index = from; index < from + count; index += 1) {
-          draftAt(target, index);
-        }
-        arrayProto.copyWithin.call(copy, to, from, from + count);
-        relocate(target, (index) =>
-          index >= to && index < to + count ? -1 : index
+      return self;
+    }),
+    copyWithin: native(
+      'copyWithin',
+      (target, self, [targetIndex, start, end]) => {
+        const length = latest(target).length;
+        const to = relativeIndex(targetIndex, length, 0);
+        const from = relativeIndex(start, length, 0);
+        const count = Math.min(
+          relativeIndex(end, length, length) - from,
+          length - to
         );
-        // The copied values are additional references to elements that keep
-        // their own place.
-        for (let index = to; index < to + count; index += 1) {
-          const value = copy[index];
-          if (typeof value === 'object' && value !== null) {
-            if (getProxyDraft(value)?.parent === target) {
-              registerChild(target, index, value);
+        if (count > 0 && to !== from) {
+          const copy = prepare(target);
+          // Copied original elements are drafted first so that both indices
+          // share one draft, as they share one object.
+          for (let index = from; index < from + count; index += 1) {
+            draftAt(target, index);
+          }
+          arrayProto.copyWithin.call(copy, to, from, from + count);
+          relocate(target, (index) =>
+            index >= to && index < to + count ? -1 : index
+          );
+          // The copied values are additional references to elements that keep
+          // their own place.
+          for (let index = to; index < to + count; index += 1) {
+            const value = copy[index];
+            if (typeof value === 'object' && value !== null) {
+              if (getProxyDraft(value)?.parent === target) {
+                registerChild(target, index, value);
+              }
+              registerAssigned(target, index, value);
             }
-            registerAssigned(target, index, value);
           }
         }
+        return self;
       }
-      return this;
-    },
-  });
+    ),
+  }
+);
