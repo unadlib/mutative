@@ -353,6 +353,8 @@ export function createDraft<T extends object>(
     child: null,
     childKey: null,
     relocated: false,
+    diffStart: 0,
+    diffEnd: 0,
     baseRefs: null,
     inert: null,
   };

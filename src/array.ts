@@ -140,13 +140,32 @@ function readOnly(method: keyof typeof arrayProto, callbackArity: number) {
   });
 }
 
+// Records that a native operation may have changed the indices in
+// [from, to) and that elements may have moved away from their original index.
+function markRange(target: ProxyDraft, from: number, to: number) {
+  if (target.diffEnd > target.diffStart) {
+    target.diffStart = Math.min(target.diffStart, from);
+    target.diffEnd = Math.max(target.diffEnd, to);
+  } else {
+    target.diffStart = from;
+    target.diffEnd = to;
+  }
+  target.relocated = true;
+}
+
 /**
  * After a native operation moved elements: drafts created here take their
  * new keys, assigned values are registered again at their new indices, and
  * the array remembers that identity against the original index can no longer
  * tell a moved base element from an assigned value.
  */
-function relocate(target: ProxyDraft, map: (index: number) => number) {
+function relocate(
+  target: ProxyDraft,
+  map: (index: number) => number,
+  from: number,
+  to: number
+) {
+  markRange(target, from, to);
   const copy = target.copy!;
   const entries: [number, any][] = [];
   if (target.child !== null)
@@ -188,7 +207,6 @@ function relocate(target: ProxyDraft, map: (index: number) => number) {
       }
     }
   }
-  target.relocated = true;
 }
 
 // Before removing the element at `index`: its draft, or the original index
@@ -325,7 +343,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       const copy = prepare(target);
       const key = removalKey(target, 0);
       const value = arrayProto.shift.call(copy);
-      relocate(target, (index) => index - 1);
+      relocate(target, (index) => index - 1, 0, copy.length + 1);
       return removed(target, value, key);
     }),
     unshift: native('unshift', (target, _self, items) => {
@@ -333,7 +351,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       if (count === 0) return latest(target).length;
       const copy = prepare(target);
       arrayProto.unshift.apply(copy, items);
-      relocate(target, (index) => index + count);
+      relocate(target, (index) => index + count, 0, copy.length);
       for (let index = 0; index < count; index += 1) {
         registerAssigned(target, index, items[index]);
       }
@@ -356,12 +374,19 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         keys.push(removalKey(target, start + index));
       }
       const values: any[] = (arrayProto.splice as any).apply(copy, args);
-      relocate(target, (index) =>
-        index < start
-          ? index
-          : index < start + deleteCount
-            ? -1
-            : index - deleteCount + insertCount
+      relocate(
+        target,
+        (index) =>
+          index < start
+            ? index
+            : index < start + deleteCount
+              ? -1
+              : index - deleteCount + insertCount,
+        start,
+        // Later indices keep their place when as many are inserted as deleted.
+        deleteCount === insertCount
+          ? start + deleteCount
+          : Math.max(length, copy.length)
       );
       for (let index = 0; index < insertCount; index += 1) {
         registerAssigned(target, start + index, args[index + 2]);
@@ -380,7 +405,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       const copy = prepare(target);
       if (isInert(target)) {
         arrayProto.sort.call(copy, compare);
-        target.relocated = true;
+        markRange(target, 0, length);
         return self;
       }
       // Undefined elements and holes are sorted without the comparator; the
@@ -400,14 +425,14 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         copy[index] = sorted[index];
         positions[order[index]] = index;
       }
-      relocate(target, (index) => positions[index]);
+      relocate(target, (index) => positions[index], 0, length);
       return self;
     }),
     reverse: native('reverse', (target, self) => {
       const length = latest(target).length;
       if (length > 1) {
         arrayProto.reverse.call(prepare(target));
-        relocate(target, (index) => length - 1 - index);
+        relocate(target, (index) => length - 1 - index, 0, length);
       }
       return self;
     }),
@@ -417,7 +442,12 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       const to = relativeIndex(end, length, length);
       if (from < to) {
         arrayProto.fill.call(prepare(target), value, from, to);
-        relocate(target, (index) => (index >= from && index < to ? -1 : index));
+        relocate(
+          target,
+          (index) => (index >= from && index < to ? -1 : index),
+          from,
+          to
+        );
         // One shared object needs one registration; a draft must be
         // finalized into every index that holds it.
         const last = getProxyDraft(value) ? to : from + 1;
@@ -445,8 +475,11 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
             draftAt(target, index);
           }
           arrayProto.copyWithin.call(copy, to, from, from + count);
-          relocate(target, (index) =>
-            index >= to && index < to + count ? -1 : index
+          relocate(
+            target,
+            (index) => (index >= to && index < to + count ? -1 : index),
+            to,
+            to + count
           );
           // The copied values are additional references to elements that keep
           // their own place.
