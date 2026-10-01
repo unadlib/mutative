@@ -91,8 +91,8 @@ export function finalizePatches(
 ) {
   const shouldFinalize =
     target.operated &&
-    target.assignedMap &&
-    target.assignedMap.size > 0 &&
+    (target.relocated ||
+      (target.assignedMap !== undefined && target.assignedMap.size > 0)) &&
     !target.finalized;
   if (shouldFinalize) {
     if (patches && inversePatches) {
