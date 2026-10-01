@@ -206,12 +206,32 @@ function prepare(target: ProxyDraft) {
   return target.copy! as any[];
 }
 
+// Identity searches run on the copy; a draft also matches the original it
+// stands for, as a read through the proxy would return the draft for it.
+function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
+  return function (this: any, ...args: any[]) {
+    const target = nativeState(this);
+    if (target === null) return (arrayProto[method] as any).apply(this, args);
+    const source = latest(target);
+    const found = (arrayProto[method] as any).apply(source, args);
+    const original = getProxyDraft(args[0])?.original;
+    if (original === undefined || (found !== -1 && found !== false)) {
+      return found;
+    }
+    args[0] = original;
+    return (arrayProto[method] as any).apply(source, args);
+  };
+}
+
 /**
  * Array methods without callbacks run natively on the draft's copy instead
  * of moving every element through the proxy traps.
  */
 export const arrayMethods: Record<PropertyKey, (...args: any[]) => any> =
   Object.assign(Object.create(null), {
+    indexOf: search('indexOf'),
+    lastIndexOf: search('lastIndexOf'),
+    includes: search('includes'),
     shift(this: any) {
       const target = nativeState(this);
       if (target === null) return arrayProto.shift.call(this);
