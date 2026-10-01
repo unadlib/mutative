@@ -60,6 +60,10 @@ export interface ProxyDraft<T = any> {
   childKey: any;
   // Set once array elements were moved natively; see `relocated` reads.
   relocated: boolean;
+  // Index range whose contents native operations may have changed; patch
+  // generation compares it in full.
+  diffStart: number;
+  diffEnd: number;
   // Original index by element of the original array, built lazily after relocation.
   baseRefs: Map<any, number> | null;
   // Whether no array element can be drafted; null until checked.

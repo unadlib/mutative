@@ -26,19 +26,31 @@ function generateArrayPatches(
     [original, copy] = [copy, original];
     [patches, inversePatches] = [inversePatches, patches];
   }
-  // Only assigned indices can differ, so visit those in ascending order
-  // instead of scanning every element of a possibly very large array. After a
-  // native array operation any index may differ, so compare them all.
+  // Only assigned indices and the range touched by native array operations
+  // can differ, so visit those in ascending order instead of scanning every
+  // element of a possibly very large array.
+  const { diffStart, diffEnd } = proxyState;
+  const assigned: number[] = [];
+  assignedMap!.forEach((flag, key) => {
+    if (flag && key !== 'length') {
+      const index = Number(key);
+      if (index < diffStart || index >= diffEnd) assigned.push(index);
+    }
+  });
+  assigned.sort((a, b) => a - b);
+  // Assigned indices below the range, the range itself, then the rest.
   const indices: number[] = [];
-  if (proxyState.relocated) {
-    for (let index = 0; index < original.length; index += 1)
-      indices.push(index);
-  } else {
-    assignedMap!.forEach((assigned, key) => {
-      if (assigned && key !== 'length') indices.push(Number(key));
-    });
-    indices.sort((a, b) => a - b);
+  let position = 0;
+  for (
+    ;
+    position < assigned.length && assigned[position] < diffStart;
+    position += 1
+  ) {
+    indices.push(assigned[position]);
   }
+  for (let index = diffStart; index < diffEnd; index += 1) indices.push(index);
+  for (; position < assigned.length; position += 1)
+    indices.push(assigned[position]);
   for (let position = 0; position < indices.length; position += 1) {
     const index = indices[position];
     if (index < original.length && copy[index] !== original[index]) {
