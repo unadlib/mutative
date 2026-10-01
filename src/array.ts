@@ -277,6 +277,15 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
   };
 }
 
+// The default sort order: undefined last, otherwise by string value.
+function defaultCompare(a: any, b: any) {
+  if (a === undefined) return b === undefined ? 0 : 1;
+  if (b === undefined) return -1;
+  const x = String(a);
+  const y = String(b);
+  return x < y ? -1 : x > y ? 1 : 0;
+}
+
 /**
  * Array methods without callbacks run natively on the draft's copy instead
  * of moving every element through the proxy traps.
@@ -356,6 +365,42 @@ export const arrayMethods: Record<PropertyKey, (...args: any[]) => any> =
         values[index] = removed(target, values[index], keys[index]);
       }
       return values;
+    },
+    sort(this: any, compare?: any) {
+      const target = nativeState(this);
+      if (
+        target === null ||
+        (compare !== undefined && typeof compare !== 'function')
+      ) {
+        return arrayProto.sort.call(this, compare);
+      }
+      const length = latest(target).length;
+      if (length <= 1) return this;
+      const copy = prepare(target);
+      if (isInert(target)) {
+        arrayProto.sort.call(copy, compare);
+        target.relocated = true;
+        return this;
+      }
+      // Undefined elements and holes are sorted without the comparator; the
+      // proxy path keeps that rule for the rare arrays that have them.
+      if (arrayProto.includes.call(copy, undefined)) {
+        return arrayProto.sort.call(this, compare);
+      }
+      // The comparator receives drafts, as it would through the proxy.
+      for (let index = 0; index < length; index += 1) draftAt(target, index);
+      const order: number[] = [];
+      for (let index = 0; index < length; index += 1) order.push(index);
+      const compareElements = compare ?? defaultCompare;
+      order.sort((a, b) => compareElements(copy[a], copy[b]));
+      const sorted = order.map((index) => copy[index]);
+      const positions: number[] = [];
+      for (let index = 0; index < length; index += 1) {
+        copy[index] = sorted[index];
+        positions[order[index]] = index;
+      }
+      relocate(target, (index) => positions[index]);
+      return this;
     },
     reverse(this: any) {
       const target = nativeState(this);
