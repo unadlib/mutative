@@ -54,6 +54,10 @@ export interface ProxyDraft<T = any> {
   setMap: Map<any, ProxyDraft> | undefined;
   assignedMap: Map<any, boolean> | undefined;
   callbacks: FinalizeCallback[] | undefined;
+  // Child drafts created by this draft, by key.
+  children: any;
+  child: any;
+  childKey: any;
 }
 
 export interface IPatch {

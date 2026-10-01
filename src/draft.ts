@@ -124,11 +124,27 @@ function getTrap(
   if (options.strict) {
     checkReadable(value, options);
   }
-  if (target.finalized) return value;
-  // A value that differs from the original at this key is either an
-  // existing child draft or an assigned value; neither is drafted again.
-  if (target.copy !== null && value !== target.original[key]) return value;
+  if (target.finalized || typeof value !== 'object' || value === null) {
+    return value;
+  }
+  // This draft's own child at this key is returned without a proxy round
+  // trip and without reading the original object. The first child is kept
+  // inline; further children are registered per draft.
+  if (value === target.child && key === target.childKey) return value;
+  const children = target.children;
+  if (
+    children !== undefined &&
+    (type === DraftType.Array ? children[key as number] : children.get(key)) ===
+      value
+  ) {
+    return value;
+  }
+  // Non-draftable values never reach the original object either, so an
+  // accessor that returns a Date or similar is not re-invoked for a copy.
   if (!isDraftable(value, options)) return value;
+  // Reassigned values, and fresh objects produced by an accessor on the
+  // original, differ from the original at this key and are not drafted.
+  if (value !== target.original[key]) return value;
   ensureShallowCopy(target);
   const draft = createDraft(
     value,
@@ -138,6 +154,14 @@ function getTrap(
     options
   );
   target.copy![key] = draft;
+  if (target.child === null || target.childKey === key) {
+    target.child = draft;
+    target.childKey = key;
+  } else if (type === DraftType.Array) {
+    (target.children ??= [])[key as any] = draft;
+  } else {
+    (target.children ??= new Map()).set(key, draft);
+  }
   // !case: support for custom shallow copy function
   if (typeof markResult === 'function') {
     const subProxyDraft = getProxyDraft(draft)!;
@@ -307,6 +331,9 @@ export function createDraft<T extends object>(
         : undefined,
     assignedMap: undefined,
     callbacks: undefined,
+    children: undefined,
+    child: null,
+    childKey: null,
   };
   const { proxy, revoke } =
     type === DraftType.Array
