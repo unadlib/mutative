@@ -62,6 +62,8 @@ export interface ProxyDraft<T = any> {
   relocated: boolean;
   // Original index by element of the original array, built lazily after relocation.
   baseRefs: Map<any, number> | null;
+  // Whether no array element can be drafted; null until checked.
+  inert: boolean | null;
 }
 
 export interface IPatch {
