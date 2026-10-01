@@ -206,6 +206,21 @@ describe('draft fast paths keep the original semantics', () => {
     expect(apply(next, inversePatches)).toEqual(base);
   });
 
+  test('a Set of array drafts can be iterated twice', () => {
+    const base = { s: new Set([[1, 2], [3]]) };
+    const next = create(base, (draft) => {
+      for (const arr of draft.s) arr.push(0);
+      let total = 0;
+      for (const arr of draft.s) total += arr.length;
+      expect(total).toBe(5);
+    });
+    expect([...next.s]).toEqual([
+      [1, 2, 0],
+      [3, 0],
+    ]);
+    expect([...base.s]).toEqual([[1, 2], [3]]);
+  });
+
   test('wide object copies keep an own __proto__ key as a data property', () => {
     const base = JSON.parse('{"__proto__":{"polluted":1},"k":1}');
     for (let index = 0; index < 200; index += 1) base[`p${index}`] = index;
