@@ -9,7 +9,7 @@ import {
 import { dataTypes, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
-import { arrayMethods, baseIndices } from './array';
+import { arrayMethods, arrayProxies, baseIndices } from './array';
 import { internal } from './internal';
 import {
   deepFreeze,
@@ -120,7 +120,10 @@ function getTrap(
       // Methods of plain arrays that can run natively on the copy; see
       // `arrayMethods`. Subclasses resolve their own methods below.
       const method = arrayMethods[key as any];
-      if (method !== undefined) return method;
+      if (method !== undefined) {
+        arrayProxies.add(target.proxy);
+        return method;
+      }
     }
     const desc = getDescriptor(source, key);
     return desc

@@ -636,6 +636,8 @@ Yes. Mutative supports return values for reducer, and `redux-toolkit` is conside
 
 `shift`, `unshift`, `splice` and `reverse` can move elements directly on the copy of a plain dense array with defined data properties. Accessors, sparse arrays, custom constructors/species, array subclasses and custom marks keep the proxy path. `splice` and searches also use the proxy when converting their index arguments can execute user code. `indexOf`, `lastIndexOf` and `includes` inspect only the indices visited by the search, and can search a previously validated copy natively. `sort` and `join` optimize arrays of primitives; objects and functions retain their conversion behavior through the proxy.
 
+Optimized searches compare values by reference first. On a miss, a draft from the same producer can also match its original object. Drafts from other producers and external proxies are compared by reference without reading their properties, including when those proxies have been revoked.
+
 Draftable base elements removed or moved by these methods are drafted before they are exposed. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, go through the draft so that their callbacks see every change and can modify elements; use [`original()`](#original) for read-only scans of large arrays.
 
 - Does Mutative support shared references?
