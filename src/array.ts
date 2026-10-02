@@ -5,6 +5,7 @@ import {
   ensureShallowCopy,
   getProxyDraft,
   isDraftable,
+  isEqual,
   latest,
   markChanged,
   markFinalization,
@@ -235,6 +236,13 @@ function prepare(target: ProxyDraft) {
   return target.copy! as any[];
 }
 
+// The default sort order of primitives: by string value.
+function defaultCompare(a: any, b: any) {
+  const x = String(a);
+  const y = String(b);
+  return x < y ? -1 : x > y ? 1 : 0;
+}
+
 type Native = (...args: any[]) => any;
 
 // A method that runs `impl` on the array draft behind `this`, or the
@@ -313,6 +321,19 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
             : Math.min(Math.max(toInteger(args[1]), 0), length - start);
       const insertCount = Math.max(args.length - 2, 0);
       if (deleteCount === 0 && insertCount === 0) return [];
+      if (deleteCount === insertCount) {
+        // Replacing elements with equal values changes nothing, as through
+        // the proxy; the removed elements are the values passed in.
+        const source = latest(target);
+        let same = true;
+        for (let index = 0; index < insertCount; index += 1) {
+          if (!isEqual(args[index + 2], source[start + index])) {
+            same = false;
+            break;
+          }
+        }
+        if (same) return args.slice(2);
+      }
       const copy = prepare(target);
       const keys: any[] = [];
       for (let index = 0; index < deleteCount; index += 1) {
@@ -356,16 +377,35 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       ) {
         return arrayProto.sort.call(self, compare);
       }
-      const length = latest(target).length;
-      if (length > 1) {
+      const source = latest(target);
+      const length = source.length;
+      const compareElements = compare ?? defaultCompare;
+      // An array that is already in order stays untouched, as through the proxy.
+      let sorted = true;
+      for (let index = 1; index < length; index += 1) {
+        if (compareElements(source[index - 1], source[index]) > 0) {
+          sorted = false;
+          break;
+        }
+      }
+      if (!sorted) {
         arrayProto.sort.call(prepare(target), compare);
         markRange(target, 0, length);
       }
       return self;
     }),
     reverse: native('reverse', (target, self) => {
-      const length = latest(target).length;
-      if (length > 1) {
+      const source = latest(target);
+      const length = source.length;
+      // A palindrome by identity stays untouched, as through the proxy.
+      let changed = false;
+      for (let low = 0, high = length - 1; low < high; low += 1, high -= 1) {
+        if (source[low] !== source[high]) {
+          changed = true;
+          break;
+        }
+      }
+      if (changed) {
         arrayProto.reverse.call(prepare(target));
         relocate(target, (index) => length - 1 - index, 0, length);
       }
