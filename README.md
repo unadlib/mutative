@@ -151,16 +151,16 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 
 ### Bundle size
 
-Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins, so the comparable Immer bundle is the one with those plugins enabled. Brotli size of a minified consumer bundle built with esbuild from each library's production build (Immer 11.1.18):
+Mutative ships patches, `Map`/`Set` support and optimized array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from the production builds at Mutative source `cf7763e` and Immer 11.1.18. Each browser ESM consumer references the listed exports; the bundle is minified with target `es2018`.
 
 | Bundle | brotli |
 | --- | ---: |
-| Immer core (`produce`, `current`, `original`) | 3.3 kB |
-| Immer with `enablePatches` and `enableMapSet` | 5.1 kB |
-| Immer with `enablePatches`, `enableMapSet` and `enableArrayMethods` | 5.9 kB |
-| Mutative (`create`, `apply`, `current`, `original`) | 7.8 kB |
+| Immer core (`produce`, `current`, `original`) | 3.4 kB |
+| Immer with `enablePatches` and `enableMapSet` | 5.2 kB |
+| Immer with `enablePatches`, `enableMapSet` and `enableArrayMethods` | 6.0 kB |
+| Mutative (`create`, `apply`, `current`, `original`) | 8.3 kB |
 
-The difference to the last Immer row buys the array operations that Mutative runs natively on the draft copy with full draft semantics: on 10,000-row arrays, `shift`, `unshift`, `splice` and `reverse` take 2–17 µs against Immer's 4–9 ms without patches and 0.7–1.5 ms against 10–11 ms with patches, `indexOf` followed by `splice` takes 9 µs against 6.7 ms, and `sort` and `join` run natively on arrays of primitives. Immer's `enableArrayMethods` reaches 370–500 µs on the same operations, but it hands raw base objects to callbacks and returns removed elements as raw objects, so writes through them modify the original state; Mutative keeps every exposed element a draft (see the [array methods FAQ](#faqs)).
+Array fast paths preserve draftable elements and patch replay while using the proxy path when accessors or argument conversion can execute user code. These eligibility checks have a cost; the [performance summary](./perf-testing/reports/SUMMARY.md) separates measurements of the corrected implementation from earlier timings. See the [array methods FAQ](#faqs) for the supported fast paths and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
 
 ## Features and Benefits
 
@@ -634,7 +634,9 @@ Yes. Mutative supports return values for reducer, and `redux-toolkit` is conside
 
 - Which array methods run natively on drafts?
 
-Methods that cannot hand a callback a value that must stay a draft run directly on the draft's copy instead of moving every element through the proxy: `shift`, `unshift`, `splice`, `reverse`, `indexOf`, `lastIndexOf` and `includes` always, and `sort` and `join` on arrays whose elements are all primitives. Elements removed or moved by these methods are drafted before they are exposed, so the original array is never modified. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, always go through the draft so that their callbacks see every change and can modify elements; use [`original()`](#original) for read-only scans of large arrays.
+`shift`, `unshift`, `splice` and `reverse` can move elements directly on the copy of a plain dense array with defined data properties. Accessors, sparse arrays, custom constructors/species, array subclasses and custom marks keep the proxy path. `splice` and searches also use the proxy when converting their index arguments can execute user code. `indexOf`, `lastIndexOf` and `includes` inspect only the indices visited by the search, and can search a previously validated copy natively. `sort` and `join` optimize arrays of primitives; objects and functions retain their conversion behavior through the proxy.
+
+Draftable base elements removed or moved by these methods are drafted before they are exposed. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, go through the draft so that their callbacks see every change and can modify elements; use [`original()`](#original) for read-only scans of large arrays.
 
 - Does Mutative support shared references?
 

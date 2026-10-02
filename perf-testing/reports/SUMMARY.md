@@ -1,6 +1,30 @@
 # Native array methods: performance summary
 
-Measurements from 2026-10-02 UTC for [PR #75](https://github.com/unadlib/mutative/pull/75).
+## Correctness follow-up
+
+Source `cf7763e` fixes observable argument conversion, accessor reads, unchanged
+splice identity, and patch paths for moved shared elements. Fast-path eligibility
+now inspects property descriptors without invoking getters. This adds linear
+work to the first moving operation on an array; the earlier microsecond timings
+below do not describe the corrected implementation. Searches inspect only their
+visited indices, preserving early-hit behavior.
+
+Local validation passed 4,320 tests (plus 234 expected Immer failures and eight
+skips), 804 benchmark correctness cells, 50,653 ordinary operation sequences,
+3,240 coercion cases, and 39,366 shared-reference sequences. The latter compares
+state and patch replay against the PR base, with freezing both on and off.
+Type checking, lint, production builds, packed consumers, and build-size checks
+also passed. These are local results; the commits have not been pushed or checked
+by remote CI.
+
+The production CJS artifact is 25,756 bytes raw and 7,939 bytes Brotli, up 860 and
+203 bytes respectively from the previous accepted array-method baseline.
+The CJS `size-limit` consumer measures 6.57 kB; its cap is now 6.6 kB. The ESM
+cap remains 6.5 kB. The per-artifact and consumer growth policy is unchanged.
+
+## Earlier measurements
+
+The following measurements are from 2026-10-02 UTC for [PR #75](https://github.com/unadlib/mutative/pull/75), before the correctness follow-up above.
 The candidate and pinned npm baseline both report Mutative 1.3.0; the candidate
 contains unreleased source changes, including the draft fast paths from
 [PR #174](https://github.com/unadlib/mutative/pull/174). Immer is pinned to
