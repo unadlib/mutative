@@ -378,12 +378,12 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
     includes: search('includes'),
     // Keep conversion on the proxy whenever it can run user code. Native
     // join handles its length snapshot, conversion order, and recursive calls.
-    join: native('join', (target, self, args) => {
-      return arrayProto.join.call(
+    join: native('join', (target, self, args) =>
+      arrayProto.join.call(
         canExecute(args[0]) || !isInert(target) ? self : latest(target),
         args[0]
-      );
-    }),
+      )
+    ),
     shift: native(
       'shift',
       (target) => {
@@ -429,26 +429,28 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       if ((deleteCount === 0 && insertCount === 0) || !isDense(target)) {
         return (arrayProto.splice as any).apply(self, args);
       }
-      const keys: any[] = [];
-      for (let index = 0; index < deleteCount; index += 1) {
-        keys.push(removalKey(target, start + index));
-      }
       const source = latest(target);
       if (deleteCount === insertCount) {
         // Replacing elements with equal values changes nothing, as through
         // the proxy; the removed elements are still exposed as drafts.
         let same = true;
         for (let index = 0; index < insertCount; index += 1) {
-          if (!isEqual(args[index + 2], source[start + index])) {
+          const value = source[start + index];
+          if (
+            !isEqual(args[index + 2], value) &&
+            !isEqual(args[index + 2], getProxyDraft(value)?.original)
+          ) {
             same = false;
             break;
           }
         }
         if (same) {
-          return keys.map((key, index) =>
-            removed(target, source[start + index], key)
-          );
+          return (arrayProto.splice as any).apply(self, args);
         }
+      }
+      const keys: any[] = [];
+      for (let index = 0; index < deleteCount; index += 1) {
+        keys.push(removalKey(target, start + index));
       }
       const copy = prepare(target);
       // Primitive arguments have no conversion side effects. Use the

@@ -2,6 +2,15 @@
 import { apply, create } from '../src';
 
 describe('native array method boundaries', () => {
+  test('replacing an existing draft with its original is an unchanged splice', () => {
+    const base = [{ id: 1 }, { id: 2 }];
+    const state = create(base, (draft) => {
+      const first = draft[0];
+      expect(draft.splice(0, 1, base[0])[0]).toBe(first);
+    });
+    expect(state).toBe(base);
+  });
+
   test('custom species keep the proxy splice behavior', () => {
     class Removed extends Array<number> {}
     const base = [1, 2];
