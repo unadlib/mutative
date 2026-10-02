@@ -2,6 +2,32 @@
 import { apply, create } from '../src';
 
 describe('native array method boundaries', () => {
+  test.each([false, true])(
+    'moved shared objects generate patches only for their current path (freeze=%s)',
+    (enableAutoFreeze) => {
+      const shared = { value: 1 };
+      const base = [shared, shared, { value: 2 }];
+      const [state, patches, inverse] = create(
+        base,
+        (draft) => {
+          draft.unshift({ value: 5 });
+          draft.forEach((item) => item.value);
+          draft[2].value = 30;
+        },
+        { enablePatches: true, enableAutoFreeze }
+      );
+      expect(state).toStrictEqual([
+        { value: 5 },
+        { value: 1 },
+        { value: 30 },
+        { value: 2 },
+      ]);
+      expect(base).toStrictEqual([{ value: 1 }, { value: 1 }, { value: 2 }]);
+      expect(apply(base, patches)).toStrictEqual(state);
+      expect(apply(state, inverse)).toStrictEqual(base);
+    }
+  );
+
   test('replacing an existing draft with its original is an unchanged splice', () => {
     const base = [{ id: 1 }, { id: 2 }];
     const state = create(base, (draft) => {
