@@ -274,18 +274,38 @@ function native(
   };
 }
 
-// Identity searches run on the copy; a draft also matches the original it
-// stands for, as a read through the proxy would return the draft for it.
+// Identity searches read the array directly. The index argument is converted
+// after the length is read and before the elements, as the native methods
+// do, so a conversion that changes the array is observed the same way. A
+// draft also matches the original it stands for, as a read through the proxy
+// would return the draft for it.
 function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
+  const last = method === 'lastIndexOf';
+  const includes = method === 'includes';
   return native(method, (target, _self, args) => {
+    const length = latest(target).length;
+    let from = args.length > 1 ? toInteger(args[1]) : last ? length - 1 : 0;
+    if (last) from = from >= 0 ? Math.min(from, length - 1) : length + from;
+    else if (from < 0) from = Math.max(length + from, 0);
     const source = latest(target);
-    const found = (arrayProto[method] as any).apply(source, args);
-    const original = getProxyDraft(args[0])?.original;
-    if (original === undefined || (found !== -1 && found !== false)) {
-      return found;
+    const value = args[0];
+    const original = getProxyDraft(value)?.original;
+    const matches = (element: any) =>
+      element === value ||
+      (original !== undefined && element === original) ||
+      (includes && value !== value && element !== element);
+    if (last) {
+      for (let index = from; index >= 0; index -= 1) {
+        if (index in source && matches(source[index])) return index;
+      }
+      return -1;
     }
-    args[0] = original;
-    return (arrayProto[method] as any).apply(source, args);
+    for (let index = from; index < length; index += 1) {
+      if ((includes || index in source) && matches(source[index])) {
+        return includes ? true : index;
+      }
+    }
+    return includes ? false : -1;
   });
 }
 
@@ -299,12 +319,21 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
     indexOf: search('indexOf'),
     lastIndexOf: search('lastIndexOf'),
     includes: search('includes'),
-    join: native('join', (target, self, args) =>
-      (arrayProto.join as any).apply(
-        isInert(target) ? latest(target) : self,
-        args
-      )
-    ),
+    // The separator is converted after the length is read and before the
+    // elements, as the native method does. Arrays of primitives are read
+    // directly; others read through the draft like the native method.
+    join: native('join', (target, self, args) => {
+      const length = latest(target).length;
+      const separator = args[0] === undefined ? ',' : `${args[0]}`;
+      const source = isInert(target) ? latest(target) : self;
+      let result = '';
+      for (let index = 0; index < length; index += 1) {
+        if (index > 0) result += separator;
+        const element = source[index];
+        if (element !== undefined && element !== null) result += `${element}`;
+      }
+      return result;
+    }),
     shift: native(
       'shift',
       (target) => {
