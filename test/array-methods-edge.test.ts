@@ -2,6 +2,92 @@
 import { apply, create } from '../src';
 
 describe('native array method boundaries', () => {
+  test('custom species keep the proxy splice behavior', () => {
+    class Removed extends Array<number> {}
+    const base = [1, 2];
+    Object.defineProperty(base, 'constructor', {
+      value: { [Symbol.species]: Removed },
+    });
+    expect(
+      create(base, (draft) => {
+        const removed = draft.splice(0, 1, 1);
+        expect(removed).toBeInstanceOf(Removed);
+        expect([...removed]).toStrictEqual([1]);
+      })
+    ).toBe(base);
+  });
+
+  test.each(['shift', 'unshift', 'splice', 'reverse', 'sort', 'join'] as const)(
+    '%s preserves accessor read order',
+    (method) => {
+      const run = (throughProxy: boolean) => {
+        let calls = 0;
+        let result: any;
+        const base = [3, 2, 1];
+        Object.defineProperty(base, '0', {
+          configurable: true,
+          enumerable: true,
+          get: () => ++calls,
+        });
+        const state = create(base, (draft) => {
+          const fn = throughProxy ? Array.prototype[method] : draft[method];
+          result = (fn as Function).apply(
+            draft,
+            method === 'splice' ? [1, 1] : method === 'unshift' ? [0] : []
+          );
+          if (result === draft) result = 'self';
+        });
+        return { calls, result, values: state === base ? 'base' : [...state] };
+      };
+      expect(run(false)).toStrictEqual(run(true));
+    }
+  );
+
+  test.each(['indexOf', 'includes', 'lastIndexOf'] as const)(
+    '%s sees writes made by element getters',
+    (method) => {
+      let active: number[];
+      let reading = false;
+      const base = [1, 2, 3];
+      Object.defineProperty(base, method === 'lastIndexOf' ? '2' : '0', {
+        configurable: true,
+        enumerable: true,
+        get() {
+          if (!reading) {
+            reading = true;
+            active[1] = 20;
+            reading = false;
+          }
+          return 1;
+        },
+      });
+      const state = create(base, (draft) => {
+        active = draft;
+        expect(draft[method](20)).toBe(method === 'includes' ? true : 1);
+      });
+      expect(state[1]).toBe(20);
+      expect(base[1]).toBe(2);
+    }
+  );
+
+  test.each(['unshift', 'reverse', 'splice'] as const)(
+    'unchanged %s does not read unrelated getters',
+    (method) => {
+      const base = method === 'reverse' ? [1] : [1, 2];
+      Object.defineProperty(base, '0', {
+        get() {
+          throw new Error('unexpected element read');
+        },
+      });
+      expect(
+        create(base, (draft) => {
+          if (method === 'splice') draft.splice(1, 1, 2);
+          else draft[method]();
+        })
+      ).toBe(base);
+    }
+  );
+
   test('an unchanged sort does not consult the array constructor', () => {
     const base = [1, 2];
     Object.defineProperty(base, 'constructor', {

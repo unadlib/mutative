@@ -31,6 +31,11 @@ function nativeState(self: any): ProxyDraft | null {
     target.type === DraftType.Array &&
     !target.finalized &&
     !target.options.mark &&
+    !Object.prototype.hasOwnProperty.call(target.original, 'constructor') &&
+    !Object.prototype.hasOwnProperty.call(
+      target.original,
+      Symbol.isConcatSpreadable
+    ) &&
     Object.getPrototypeOf(target.original) === arrayProto
     ? target
     : null;
@@ -61,15 +66,33 @@ function arrayState(target: ProxyDraft) {
   });
 }
 
-// Whether the array has no holes and no undefined elements, so that a native
-// operation and the replay of its patches agree on every index. Sparse
-// arrays keep the proxy path. Cached until an undefined value is assigned or
-// the length changes.
+// Native moves need own data properties: inspecting an accessor by reading
+// its value would run user code before the array method does. The original
+// must also be safe to inspect later when looking up moved base elements.
+// Holes and undefined elements keep the proxy path for patch replay.
 function isDense(target: ProxyDraft) {
   const state = arrayState(target);
   let dense = state.dense;
   if (dense === null) {
-    dense = state.dense = !arrayProto.includes.call(latest(target), undefined);
+    const source = latest(target);
+    dense = true;
+    for (const array of source === target.original
+      ? [source]
+      : [target.original, source]) {
+      for (let index = 0; index < array.length; index += 1) {
+        const descriptor = Object.getOwnPropertyDescriptor(array, index);
+        if (
+          !descriptor ||
+          !('value' in descriptor) ||
+          descriptor.value === undefined
+        ) {
+          dense = false;
+          break;
+        }
+      }
+      if (!dense) break;
+    }
+    state.dense = dense;
   }
   return dense;
 }
@@ -140,8 +163,12 @@ function isInert(target: ProxyDraft) {
     const source = latest(target);
     inert = true;
     for (let index = 0; index < source.length; index += 1) {
-      const value = source[index];
-      if (canExecute(value)) {
+      const descriptor = Object.getOwnPropertyDescriptor(source, index);
+      if (
+        !descriptor ||
+        !('value' in descriptor) ||
+        canExecute(descriptor.value)
+      ) {
         inert = false;
         break;
       }
@@ -298,7 +325,39 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
           : 0;
     const source = latest(target);
     const value = args[0];
-    const found = nativeSearch.call(source, value, from);
+    let found: number | boolean = method === 'includes' ? false : -1;
+    if (target.arrayState?.dense === true) {
+      found = nativeSearch.call(source, value, from);
+    } else {
+      const backwards = method === 'lastIndexOf';
+      const start = backwards
+        ? Math.min(from < 0 ? length + from : from, length - 1)
+        : from < 0
+          ? Math.max(length + from, 0)
+          : from;
+      // Inspect only indices the search would visit, preserving early hits.
+      // Before any getter can run, delegate to the proxy so later reads see
+      // changes that the getter makes to the draft.
+      for (
+        let index = start;
+        index >= 0 && index < length;
+        index += backwards ? -1 : 1
+      ) {
+        const descriptor = Object.getOwnPropertyDescriptor(source, index);
+        if (!descriptor || !('value' in descriptor)) {
+          return nativeSearch.apply(self, args);
+        }
+        if (
+          descriptor.value === value ||
+          (method === 'includes' &&
+            descriptor.value !== descriptor.value &&
+            value !== value)
+        ) {
+          found = method === 'includes' ? true : index;
+          break;
+        }
+      }
+    }
     const original = getProxyDraft(value)?.original;
     if (original === undefined || (found !== -1 && found !== false)) {
       return found;
@@ -317,20 +376,13 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
     indexOf: search('indexOf'),
     lastIndexOf: search('lastIndexOf'),
     includes: search('includes'),
-    // The separator is converted after the length is read and before the
-    // elements, as the native method does. Arrays of primitives are read
-    // directly; others read through the draft like the native method.
+    // Keep conversion on the proxy whenever it can run user code. Native
+    // join handles its length snapshot, conversion order, and recursive calls.
     join: native('join', (target, self, args) => {
-      const length = latest(target).length;
-      const separator = args[0] === undefined ? ',' : `${args[0]}`;
-      const source = isInert(target) ? latest(target) : self;
-      let result = '';
-      for (let index = 0; index < length; index += 1) {
-        if (index > 0) result += separator;
-        const element = source[index];
-        if (element !== undefined && element !== null) result += `${element}`;
-      }
-      return result;
+      return arrayProto.join.call(
+        canExecute(args[0]) || !isInert(target) ? self : latest(target),
+        args[0]
+      );
     }),
     shift: native(
       'shift',
