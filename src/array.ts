@@ -30,7 +30,9 @@ function nativeState(self: any): ProxyDraft | null {
     : null;
 }
 
-const toInteger = (value: any) => Math.trunc(Number(value)) || 0;
+// ToIntegerOrInfinity: the unary plus applies ToNumber, which rejects BigInt
+// and Symbol values like the array methods do.
+const toInteger = (value: any) => Math.trunc(+value) || 0;
 
 // A relative index argument resolved against `length`, as the array methods do.
 function relativeIndex(value: any, length: number, fallback: number) {
@@ -253,10 +255,11 @@ function prepare(target: ProxyDraft) {
   return target.copy! as any[];
 }
 
-// The default sort order of primitives: by string value.
+// The default sort order of primitives: by string value. The template
+// applies ToString, which rejects Symbol values like the native sort does.
 function defaultCompare(a: any, b: any) {
-  const x = String(a);
-  const y = String(b);
+  const x = `${a}`;
+  const y = `${b}`;
   return x < y ? -1 : x > y ? 1 : 0;
 }
 
