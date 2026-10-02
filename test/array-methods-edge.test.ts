@@ -2,6 +2,145 @@
 import { apply, create } from '../src';
 
 describe('native array method boundaries', () => {
+  describe.each(['indexOf', 'lastIndexOf', 'includes'] as const)(
+    '%s with opaque search values',
+    (method) => {
+      test.each([false, true])(
+        'does not inspect an external Proxy (validated=%s)',
+        (validated) => {
+          let reads = 0;
+          const needle = new Proxy(
+            {},
+            {
+              get() {
+                reads += 1;
+                throw new Error('search must not inspect its argument');
+              },
+            }
+          );
+          for (const base of [[], [1, 1], [needle, needle]] as any[][]) {
+            const state = create(base, (draft) => {
+              if (validated) draft.reverse();
+              const expected = (Array.prototype[method] as Function).call(
+                base,
+                needle
+              );
+              expect(draft[method](needle)).toBe(expected);
+              expect(draft[method](needle, Infinity)).toBe(
+                (Array.prototype[method] as Function).call(
+                  base,
+                  needle,
+                  Infinity
+                )
+              );
+            });
+            expect(state).toBe(base);
+          }
+          expect(reads).toBe(0);
+        }
+      );
+
+      test('does not run search-value side effects', () => {
+        const base = [1, 2];
+        let reads = 0;
+        const state = create(base, (draft) => {
+          const needle = new Proxy(
+            {},
+            {
+              get() {
+                reads += 1;
+                draft[0] = 99;
+              },
+            }
+          );
+          expect(draft[method](needle as any)).toBe(
+            method === 'includes' ? false : -1
+          );
+        });
+        expect(reads).toBe(0);
+        expect(state).toBe(base);
+      });
+
+      test('compares revoked external and library proxies by identity', () => {
+        const { proxy, revoke } = Proxy.revocable({}, {});
+        revoke();
+        const [draft, finish] = create({ id: 1 });
+        finish();
+        for (const needle of [proxy, draft]) {
+          create([1, 2] as any[], (array) => {
+            expect(array[method](needle)).toBe(
+              method === 'includes' ? false : -1
+            );
+          });
+          create([needle], (array) => {
+            expect(array[method](needle)).toBe(
+              method === 'includes' ? true : 0
+            );
+          });
+        }
+      });
+
+      test('matches the original of a draft owned by this producer', () => {
+        const shared = { id: 1 };
+        create({ shared, list: [shared] }, (draft) => {
+          expect(draft.list[method](draft.shared)).toBe(
+            method === 'includes' ? true : 0
+          );
+        });
+      });
+
+      test("compares another producer's draft by its reference", () => {
+        const shared = { id: 1 };
+        const [needle, finish] = create(shared);
+        try {
+          create([shared], (array) => {
+            expect(array[method](needle)).toBe(
+              method === 'includes' ? false : -1
+            );
+          });
+          create([needle], (array) => {
+            expect(array[method](needle)).toBe(
+              method === 'includes' ? true : 0
+            );
+          });
+        } finally {
+          finish();
+        }
+      });
+    }
+  );
+
+  test.each([
+    { method: 'shift', args: [] },
+    { method: 'unshift', args: [0] },
+    { method: 'splice', args: [0, 1] },
+    { method: 'reverse', args: [] },
+    { method: 'sort', args: [] },
+    { method: 'join', args: ['-'] },
+    { method: 'indexOf', args: [2] },
+    { method: 'lastIndexOf', args: [2] },
+    { method: 'includes', args: [2] },
+  ])('borrowed $method has native receiver reads', ({ method, args }) => {
+    const run = (native: boolean) => {
+      const reads: PropertyKey[] = [];
+      const base = [3, 2, 1];
+      const receiver = new Proxy(base, {
+        get(target, key, self) {
+          reads.push(key);
+          return Reflect.get(target, key, self);
+        },
+      });
+      let result: any;
+      create([], (draft: any) => {
+        const fn = native ? (Array.prototype as any)[method] : draft[method];
+        result = fn.apply(receiver, args);
+        if (result === receiver) result = 'self';
+      });
+      return { result, base, reads };
+    };
+    expect(run(false)).toStrictEqual(run(true));
+  });
+
   test.each([false, true])(
     'moved shared objects generate patches only for their current path (freeze=%s)',
     (enableAutoFreeze) => {

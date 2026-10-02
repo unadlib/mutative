@@ -1,4 +1,4 @@
-import { DraftType, type ProxyDraft } from './interface';
+import type { ProxyDraft } from './interface';
 import { PROXY_DRAFT } from './constant';
 import { internal } from './internal';
 import {
@@ -14,6 +14,10 @@ import { checkReadable } from './unsafe';
 
 const arrayProto = Array.prototype;
 
+// Registered only when an optimized method is read. Membership does not run
+// Proxy traps, and retaining a revoked proxy does not retain its draft state.
+export const arrayProxies = new WeakSet<object>();
+
 function canExecute(value: any) {
   return (
     (typeof value === 'object' && value !== null) || typeof value === 'function'
@@ -25,11 +29,9 @@ function canExecute(value: any) {
  * plain arrays only, outside `current()` and without a custom mark.
  */
 function nativeState(self: any): ProxyDraft | null {
-  const target: ProxyDraft | undefined =
-    typeof self === 'object' && self !== null ? self[PROXY_DRAFT] : undefined;
-  return target &&
-    target.type === DraftType.Array &&
-    !target.finalized &&
+  if (!arrayProxies.has(self)) return null;
+  const target: ProxyDraft = self[PROXY_DRAFT];
+  return !target.finalized &&
     !target.options.mark &&
     !Object.prototype.hasOwnProperty.call(target.original, 'constructor') &&
     !Object.prototype.hasOwnProperty.call(
@@ -294,8 +296,8 @@ function native(
 // Identity searches read the array directly. The index argument is converted
 // after the length is read and before the elements, as the native methods
 // do, so a conversion that changes the array is observed the same way. A
-// draft also matches the original it stands for, as a read through the proxy
-// would return the draft for it.
+// draft from this producer also matches the original it stands for. Other
+// producers' drafts and external proxies are opaque identity values.
 function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
   const nativeSearch: Native = arrayProto[method] as any;
   return native(method, (target, self, args) => {
@@ -343,11 +345,20 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
         }
       }
     }
-    const original = getProxyDraft(value)?.original;
-    if (original === undefined || (found !== -1 && found !== false)) {
-      return found;
+    if (
+      (found === -1 || found === false) &&
+      typeof value === 'object' &&
+      value !== null
+    ) {
+      // Use trusted state already owned by this producer. Asking the needle
+      // for its draft symbol would invoke arbitrary getters or Proxy traps.
+      for (const draft of target.finalities.draft) {
+        if (typeof draft !== 'function' && draft.proxy === value) {
+          return nativeSearch.call(source, draft.original, from);
+        }
+      }
     }
-    return nativeSearch.call(source, original, from);
+    return found;
   });
 }
 
