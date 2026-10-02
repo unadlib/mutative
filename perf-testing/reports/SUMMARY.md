@@ -2,59 +2,75 @@
 
 ## Correctness follow-up
 
-Source `cf7763e` fixes observable argument conversion, accessor reads, unchanged
-splice identity, and patch paths for moved shared elements. Fast-path eligibility
-now inspects property descriptors without invoking getters. This adds linear
-work to the first moving operation on an array; the earlier microsecond timings
-below do not describe the corrected implementation. Searches inspect only their
-visited indices, preserving early-hit behavior.
+Source `415b91c` fixes identity searches that read private draft metadata from
+external Proxy arguments, including revoked proxies. Optimized searches compare
+references first, then match a draft owned by the same producer to its original
+on a miss. Other producers' drafts remain opaque reference values. Borrowed
+array methods also preserve native property reads on external receivers.
 
-Local validation passed 4,320 tests (plus 234 expected Immer failures and eight
-skips), 804 benchmark correctness cells, 50,653 ordinary operation sequences,
-3,240 coercion cases, and 39,366 shared-reference sequences. The latter compares
-state and patch replay against the PR base, with freezing both on and off.
-Type checking, lint, production builds, packed consumers, and build-size checks
-also passed. These are local results; the commits have not been pushed or checked
-by remote CI.
+The previous correction at `cf7763e` fixed observable argument conversion,
+accessor reads, unchanged splice identity, and patch paths for moved shared
+elements. Fast-path eligibility inspects property descriptors without invoking
+getters. This adds linear work to the first moving operation on an array; the
+earlier microsecond timings below do not describe the corrected implementation.
+Searches inspect only their visited indices, preserving early-hit behavior.
 
-The production CJS artifact is 25,756 bytes raw and 7,939 bytes Brotli, up 860 and
-203 bytes respectively from the previous accepted array-method baseline.
-The CJS `size-limit` consumer measures 6.57 kB; its cap is now 6.6 kB. The ESM
-cap remains 6.5 kB. The per-artifact and consumer growth policy is unchanged.
+Local validation passed 4,347 tests (plus 234 expected Immer failures and eight
+skips), 21 benchmark-tool tests, 804 benchmark correctness cells, 50,653 ordinary
+operation sequences, 3,240 coercion cases, and 39,366 shared-reference sequences.
+The shared-reference matrix compares state and patch replay against the PR base,
+with freezing both on and off. Another 936 sorting-side-effect cases match the
+PR base. Each development and production build passes 1,152 opaque-search cases;
+the pre-fix build failed 672 of these in each mode. Type checking, lint,
+production builds, packed consumers, and build-size checks also passed.
+No additional blocking regression was found in the covered scenarios.
+These are local results; the latest commits have not been pushed or checked by
+remote CI.
+
+The production CJS artifact is 25,816 bytes raw and 7,950 bytes Brotli, up 60 and
+11 bytes respectively from source `cf7763e`. Development artifacts grew by
+101–107 raw bytes. The accepted artifact and consumer baseline was refreshed to
+record this fix; its 1% and 64-byte growth policy is unchanged. The CJS
+`size-limit` consumer measures 6.59 kB, within its existing 6.6 kB cap; the ESM
+consumer measures 5.41 kB, within its existing 6.5 kB cap. Both size checks also
+pass under Node 22.23.1.
 
 ### Paired performance budget
 
-The local run at `03dd1f2` compared the corrected source with PR base `1004d65`
+The local run at `17b7fca` compared the corrected source with PR base `1004d65`
 at 1,000 rows, on the Apple M1 Max and Node 24.16.0 environment described below.
-All 48 decisions passed: five latency pairs and three memory pairs, with both
-freeze and patch modes. Paired candidate/base median ratios range from
-0.100–1.011 for latency, 0.132–1.013 for sampled allocation, and 1.000–1.048 for
-retained heap. General indexed reads remain effectively unchanged; array moves
-retain a substantial gain over the PR base after the correctness checks.
+Both checkouts were clean when the benchmark inputs were built. All 48 decisions
+passed: five latency pairs and three memory pairs, with both freeze and patch
+modes. Paired candidate/base median ratios range from 0.100–1.006 for latency,
+0.132–1.022 for sampled allocation, and 0.9998–1.0003 for retained heap.
+General indexed reads remain effectively unchanged; array moves retain a
+substantial gain over the PR base after the correctness checks.
 
 Selected medians in microseconds, with freeze off:
 
 | Scenario | Patches | PR base | Corrected candidate |
 | --- | --- | ---: | ---: |
-| read-index | off | 515.943 | 517.901 |
-| array-shift-nested | off | 468.609 | 47.164 |
-| array-splice-insert-nested | off | 240.031 | 52.212 |
-| array-reverse-nested | off | 477.367 | 47.932 |
-| array-reverse-nested | on | 669.683 | 170.204 |
+| read-index | off | 520.025 | 520.743 |
+| array-shift-nested | off | 470.732 | 47.467 |
+| array-splice-insert-nested | off | 240.126 | 51.939 |
+| array-reverse-nested | off | 478.291 | 48.148 |
+| array-reverse-nested | on | 671.820 | 170.941 |
 
 Candidate source SHA-256:
-`b669acfe401172dcf4d372c8bcac353e9a84a28fa7678acba1f61fd49522f645`.
+`dec5613d3f67e4b6b72ac8dff8aa3b4d5196cebbe971a5d8f8e1215c3bb53534`.
 Production CJS SHA-256:
-`a7736e90ed7f2511e307fa5df658e6fec7b5b47b3d9a19cf3bb995a591c5f59e`.
+`9434836860e1bf319a8b4c1695d6a4d23093498d341405c377cf5ee6a687639b`.
 The base production hash is
 `ed3c321d17f8c629116bc955613c635f54c113267116bd63be1e0aec2714b270`.
-Complete local results are retained in
-`perf-testing/results/array-review-correctness/`; this focused batch is not a
+Local budget results and independent correctness probes are retained in
+`perf-testing/results/proxy-search-review/`; this focused batch is not a
 published archive, and the complete earlier 10,000-row matrix was not repeated.
+The previous corrected-source budget run remains available locally in
+`perf-testing/results/array-review-correctness/`.
 Reproduce with a built checkout of `1004d65`:
 
 ```sh
-pnpm benchmark:ci --base-dir /path/to/pr-base --output perf-testing/results/array-review-correctness
+pnpm benchmark:ci --base-dir /path/to/pr-base --output perf-testing/results/proxy-search-review
 ```
 
 ## Earlier measurements
