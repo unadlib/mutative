@@ -14,6 +14,12 @@ import { checkReadable } from './unsafe';
 
 const arrayProto = Array.prototype;
 
+function canExecute(value: any) {
+  return (
+    (typeof value === 'object' && value !== null) || typeof value === 'function'
+  );
+}
+
 /**
  * The array draft behind `this` when a method may run natively on its copy:
  * plain arrays only, outside `current()` and without a custom mark.
@@ -358,79 +364,75 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       },
       true
     ),
-    splice: native(
-      'splice',
-      (target, _self, args) => {
-        const length = latest(target).length;
-        const start = relativeIndex(args[0], length, 0);
-        const deleteCount =
-          args.length === 0
-            ? 0
-            : args.length === 1
-              ? length - start
-              : Math.min(Math.max(toInteger(args[1]), 0), length - start);
-        const insertCount = Math.max(args.length - 2, 0);
-        if (deleteCount === 0 && insertCount === 0) return [];
-        const keys: any[] = [];
-        for (let index = 0; index < deleteCount; index += 1) {
-          keys.push(removalKey(target, start + index));
-        }
-        const source = latest(target);
-        if (deleteCount === insertCount) {
-          // Replacing elements with equal values changes nothing, as through
-          // the proxy; the removed elements are still exposed as drafts.
-          let same = true;
-          for (let index = 0; index < insertCount; index += 1) {
-            if (!isEqual(args[index + 2], source[start + index])) {
-              same = false;
-              break;
-            }
-          }
-          if (same) {
-            return keys.map((key, index) =>
-              removed(target, source[start + index], key)
-            );
-          }
-        }
-        const copy = prepare(target);
-        // A conversion may have changed the array. Padding to the length read
-        // before it and truncating afterwards makes the native call follow
-        // the specification for that length; the arguments are already
-        // converted, so no user value is coerced a second time.
-        if (copy.length < length) copy.length = length;
-        const spliceArgs: any[] = [start, deleteCount];
-        for (let index = 2; index < args.length; index += 1) {
-          spliceArgs.push(args[index]);
-        }
-        const values: any[] = (arrayProto.splice as any).apply(
-          copy,
-          spliceArgs
-        );
-        copy.length = length - deleteCount + insertCount;
-        relocate(
-          target,
-          (index) =>
-            index < start
-              ? index
-              : index < start + deleteCount
-                ? -1
-                : index - deleteCount + insertCount,
-          start,
-          // Later indices keep their place when as many are inserted as deleted.
-          deleteCount === insertCount
-            ? start + deleteCount
-            : Math.max(length, copy.length)
-        );
+    splice: native('splice', (target, self, args) => {
+      // Let the native algorithm retain its length and read order when
+      // converting an argument can execute user code or change the draft.
+      if (canExecute(args[0]) || canExecute(args[1])) {
+        return (arrayProto.splice as any).apply(self, args);
+      }
+      const length = latest(target).length;
+      const start = relativeIndex(args[0], length, 0);
+      const deleteCount =
+        args.length === 0
+          ? 0
+          : args.length === 1
+            ? length - start
+            : Math.min(Math.max(toInteger(args[1]), 0), length - start);
+      const insertCount = Math.max(args.length - 2, 0);
+      if ((deleteCount === 0 && insertCount === 0) || !isDense(target)) {
+        return (arrayProto.splice as any).apply(self, args);
+      }
+      const keys: any[] = [];
+      for (let index = 0; index < deleteCount; index += 1) {
+        keys.push(removalKey(target, start + index));
+      }
+      const source = latest(target);
+      if (deleteCount === insertCount) {
+        // Replacing elements with equal values changes nothing, as through
+        // the proxy; the removed elements are still exposed as drafts.
+        let same = true;
         for (let index = 0; index < insertCount; index += 1) {
-          registerAssigned(target, start + index, args[index + 2]);
+          if (!isEqual(args[index + 2], source[start + index])) {
+            same = false;
+            break;
+          }
         }
-        for (let index = 0; index < values.length; index += 1) {
-          values[index] = removed(target, values[index], keys[index]);
+        if (same) {
+          return keys.map((key, index) =>
+            removed(target, source[start + index], key)
+          );
         }
-        return values;
-      },
-      true
-    ),
+      }
+      const copy = prepare(target);
+      // Primitive arguments have no conversion side effects. Use the
+      // normalized indices for both the native call and draft bookkeeping.
+      const spliceArgs: any[] = [start, deleteCount];
+      for (let index = 2; index < args.length; index += 1) {
+        spliceArgs.push(args[index]);
+      }
+      const values: any[] = (arrayProto.splice as any).apply(copy, spliceArgs);
+      relocate(
+        target,
+        (index) =>
+          index < start
+            ? index
+            : index < start + deleteCount
+              ? -1
+              : index - deleteCount + insertCount,
+        start,
+        // Later indices keep their place when as many are inserted as deleted.
+        deleteCount === insertCount
+          ? start + deleteCount
+          : Math.max(length, copy.length)
+      );
+      for (let index = 0; index < insertCount; index += 1) {
+        registerAssigned(target, start + index, args[index + 2]);
+      }
+      for (let index = 0; index < values.length; index += 1) {
+        values[index] = removed(target, values[index], keys[index]);
+      }
+      return values;
+    }),
     // Sorting hands every element to the comparator, so only arrays of
     // primitives are sorted natively; the rest sort through the proxy.
     sort: native(
