@@ -40,12 +40,24 @@ function relativeIndex(value: any, length: number, fallback: number) {
     : Math.min(integer, length);
 }
 
+// The native-method bookkeeping of an array draft, created on first use.
+function arrayState(target: ProxyDraft) {
+  return (target.arrayState ??= {
+    relocated: false,
+    diffStart: 0,
+    diffEnd: 0,
+    baseRefs: null,
+    inert: null,
+  });
+}
+
 // Original index of each element of the original array, built once elements
 // have been moved natively and identity against the index no longer works.
 export function baseIndices(target: ProxyDraft) {
-  let indices = target.baseRefs;
+  const state = arrayState(target);
+  let indices = state.baseRefs;
   if (indices === null) {
-    indices = target.baseRefs = new Map();
+    indices = state.baseRefs = new Map();
     const original = target.original;
     for (let index = 0; index < original.length; index += 1) {
       indices.set(original[index], index);
@@ -57,7 +69,10 @@ export function baseIndices(target: ProxyDraft) {
 // The original index of `value`, found at `index` before an operation, or -1
 // when it did not come from the original array.
 function baseIndex(target: ProxyDraft, value: any, index: number) {
-  if (!target.relocated) return target.original[index] === value ? index : -1;
+  const state = target.arrayState;
+  if (state === null || !state.relocated) {
+    return target.original[index] === value ? index : -1;
+  }
   const found = baseIndices(target).get(value);
   return found === undefined ? -1 : found;
 }
@@ -84,7 +99,8 @@ function registerAssigned(target: ProxyDraft, index: number, value: any) {
   const key = String(index);
   target.assignedMap!.set(key, true);
   if (typeof value === 'object' && value !== null) {
-    target.inert = null;
+    const state = target.arrayState;
+    if (state !== null) state.inert = null;
     markFinalization(target, key, value);
   }
 }
@@ -92,7 +108,8 @@ function registerAssigned(target: ProxyDraft, index: number, value: any) {
 // Whether no element of the array can be drafted, so that callbacks cannot
 // receive anything that must stay a draft. Cached until an object is added.
 function isInert(target: ProxyDraft) {
-  let inert = target.inert;
+  const state = arrayState(target);
+  let inert = state.inert;
   if (inert === null) {
     const source = latest(target);
     inert = true;
@@ -107,7 +124,7 @@ function isInert(target: ProxyDraft) {
         break;
       }
     }
-    target.inert = inert;
+    state.inert = inert;
   }
   return inert;
 }
@@ -143,14 +160,15 @@ function readOnly(method: keyof typeof arrayProto, callbackArity: number) {
 // Records that a native operation may have changed the indices in
 // [from, to) and that elements may have moved away from their original index.
 function markRange(target: ProxyDraft, from: number, to: number) {
-  if (target.diffEnd > target.diffStart) {
-    target.diffStart = Math.min(target.diffStart, from);
-    target.diffEnd = Math.max(target.diffEnd, to);
+  const state = arrayState(target);
+  if (state.diffEnd > state.diffStart) {
+    state.diffStart = Math.min(state.diffStart, from);
+    state.diffEnd = Math.max(state.diffEnd, to);
   } else {
-    target.diffStart = from;
-    target.diffEnd = to;
+    state.diffStart = from;
+    state.diffEnd = to;
   }
-  target.relocated = true;
+  state.relocated = true;
 }
 
 /**

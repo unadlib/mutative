@@ -58,15 +58,20 @@ export interface ProxyDraft<T = any> {
   children: any;
   child: any;
   childKey: any;
-  // Set once array elements were moved natively; see `relocated` reads.
+  // Bookkeeping of array methods that ran natively, created on demand.
+  arrayState: ArrayState | null;
+}
+
+export interface ArrayState {
+  // Elements may have moved away from their original index.
   relocated: boolean;
-  // Index range whose contents native operations may have changed; patch
-  // generation compares it in full.
+  // Index range whose contents may have changed; patch generation compares
+  // it in full.
   diffStart: number;
   diffEnd: number;
-  // Original index by element of the original array, built lazily after relocation.
+  // Original index by element of the original array, built lazily.
   baseRefs: Map<any, number> | null;
-  // Whether no array element can be drafted; null until checked.
+  // Whether no element can be drafted; null until checked.
   inert: boolean | null;
 }
 
