@@ -2,6 +2,39 @@
 import { apply, create } from '../src';
 
 describe('native array method boundaries', () => {
+  test('an unchanged sort does not consult the array constructor', () => {
+    const base = [1, 2];
+    Object.defineProperty(base, 'constructor', {
+      configurable: true,
+      get() {
+        throw new Error('sort must not read constructor');
+      },
+    });
+    expect(
+      create(base, (draft) => {
+        draft.sort();
+      })
+    ).toBe(base);
+  });
+
+  test.each([{ args: [] }, { args: [0, 0] }, { args: [1, 0] }])(
+    'an empty splice does not visit unrelated array elements: $args',
+    ({ args }) => {
+      const base = [1, 2];
+      Object.defineProperty(base, '1', {
+        configurable: true,
+        enumerable: true,
+        get() {
+          throw new Error('splice must not visit this element');
+        },
+      });
+      const state = create(base, (draft) => {
+        expect((draft.splice as any)(...args)).toStrictEqual([]);
+      });
+      expect(state).toBe(base);
+    }
+  );
+
   test.each(['initial', 'assign', 'splice', 'unshift'] as const)(
     'join observes conversion hooks on function elements: %s',
     (mode) => {

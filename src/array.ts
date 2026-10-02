@@ -444,7 +444,12 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         // Like the native method, collect the elements before the comparator
         // runs, then write them back over anything the comparator changed
         // through the draft.
-        const sorted = arrayProto.slice.call(source);
+        // sort does not consult constructor or Symbol.species. Collect into
+        // an ordinary array rather than invoking slice's species creation.
+        const sorted = new Array(length);
+        for (let index = 0; index < length; index += 1) {
+          sorted[index] = source[index];
+        }
         arrayProto.sort.call(sorted, compare);
         let changed = false;
         for (let index = 0; index < length; index += 1) {
