@@ -122,18 +122,17 @@ function registerAssigned(target: ProxyDraft, index: number, value: any) {
   const key = String(index);
   target.assignedMap!.set(key, true);
   const state = target.arrayState;
+  if (state !== null && canExecute(value)) state.inert = null;
   if (typeof value === 'object' && value !== null) {
-    if (state !== null) state.inert = null;
     markFinalization(target, key, value);
   } else if (value === undefined && state !== null) {
     state.dense = null;
   }
 }
 
-// Whether no element of the array is an object, so that no element can be a
-// draft or needs the strict-mode access check. Cached until an object is
-// assigned. Methods with callbacks never take this path: a callback can
-// change the array while a native method iterates a snapshot of it.
+// Only primitives have no conversion hooks. Functions can implement their
+// own toString or Symbol.toPrimitive, just like objects. Cached until either
+// kind of reference is assigned.
 function isInert(target: ProxyDraft) {
   const state = arrayState(target);
   let inert = state.inert;
@@ -142,7 +141,7 @@ function isInert(target: ProxyDraft) {
     inert = true;
     for (let index = 0; index < source.length; index += 1) {
       const value = source[index];
-      if (typeof value === 'object' && value !== null) {
+      if (canExecute(value)) {
         inert = false;
         break;
       }
