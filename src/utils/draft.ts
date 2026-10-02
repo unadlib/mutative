@@ -52,6 +52,16 @@ export function getPath(
   if (parent) {
     // check if the parent is a draft and the original value is not equal to the current value
     const parentCopy = parent.copy;
+    // Native moves keep a child's original key. Another draft of the same
+    // shared object can now occupy that key, so original identity is not
+    // enough: the array will emit the moved child's value at its new index.
+    if (
+      parent.type === DraftType.Array &&
+      parent.arrayState?.relocated &&
+      parentCopy[target.key!] !== target.proxy
+    ) {
+      return null;
+    }
     const proxyDraft = getProxyDraft(get(parentCopy, target.key!));
     if (proxyDraft !== null && proxyDraft?.original !== target.original) {
       return null;
