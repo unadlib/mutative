@@ -105,8 +105,10 @@ function registerAssigned(target: ProxyDraft, index: number, value: any) {
   }
 }
 
-// Whether no element of the array can be drafted, so that callbacks cannot
-// receive anything that must stay a draft. Cached until an object is added.
+// Whether no element of the array is an object, so that no element can be a
+// draft or needs the strict-mode access check. Cached until an object is
+// assigned. Methods with callbacks never take this path: a callback can
+// change the array while a native method iterates a snapshot of it.
 function isInert(target: ProxyDraft) {
   const state = arrayState(target);
   let inert = state.inert;
@@ -115,11 +117,7 @@ function isInert(target: ProxyDraft) {
     inert = true;
     for (let index = 0; index < source.length; index += 1) {
       const value = source[index];
-      if (
-        typeof value === 'object' &&
-        value !== null &&
-        isDraftable(value, target.options)
-      ) {
+      if (typeof value === 'object' && value !== null) {
         inert = false;
         break;
       }
@@ -127,34 +125,6 @@ function isInert(target: ProxyDraft) {
     state.inert = inert;
   }
   return inert;
-}
-
-// Read-only methods run natively when no element can be drafted. Callbacks
-// still receive the draft as their array argument: `callbackArity` is 0 for
-// methods without a callback, 3 for `(value, index, array)` callbacks and 4
-// for the reducers.
-function readOnly(method: keyof typeof arrayProto, callbackArity: number) {
-  return native(method, (target, self, args) => {
-    const callback = args[0];
-    if (
-      !isInert(target) ||
-      (callbackArity !== 0 && typeof callback !== 'function')
-    ) {
-      return (arrayProto[method] as any).apply(self, args);
-    }
-    if (callbackArity !== 0) {
-      const proxy = target.proxy;
-      args[0] =
-        callbackArity === 3
-          ? function (this: any, value: any, index: number) {
-              return callback.call(this, value, index, proxy);
-            }
-          : function (this: any, previous: any, value: any, index: number) {
-              return callback.call(this, previous, value, index, proxy);
-            };
-    }
-    return (arrayProto[method] as any).apply(latest(target), args);
-  });
 }
 
 // Records that a native operation may have changed the indices in
@@ -307,20 +277,12 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
     indexOf: search('indexOf'),
     lastIndexOf: search('lastIndexOf'),
     includes: search('includes'),
-    forEach: readOnly('forEach', 3),
-    map: readOnly('map', 3),
-    filter: readOnly('filter', 3),
-    find: readOnly('find', 3),
-    findIndex: readOnly('findIndex', 3),
-    findLast: readOnly('findLast', 3),
-    findLastIndex: readOnly('findLastIndex', 3),
-    some: readOnly('some', 3),
-    every: readOnly('every', 3),
-    reduce: readOnly('reduce', 4),
-    reduceRight: readOnly('reduceRight', 4),
-    join: readOnly('join', 0),
-    slice: readOnly('slice', 0),
-    at: readOnly('at', 0),
+    join: native('join', (target, self, args) =>
+      (arrayProto.join as any).apply(
+        isInert(target) ? latest(target) : self,
+        args
+      )
+    ),
     shift: native('shift', (target) => {
       if (latest(target).length === 0) return undefined;
       const copy = prepare(target);
@@ -379,8 +341,8 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       }
       return values;
     }),
-    // Sorting hands every element to the comparator, so only arrays without
-    // draftable elements are sorted natively; the rest sort through the proxy.
+    // Sorting hands every element to the comparator, so only arrays of
+    // primitives are sorted natively; the rest sort through the proxy.
     sort: native('sort', (target, self, [compare]) => {
       if (
         (compare !== undefined && typeof compare !== 'function') ||
