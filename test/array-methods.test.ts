@@ -441,3 +441,161 @@ describe('array method review findings', () => {
     expect(state.mixed).toEqual([3, undefined, 1]);
   });
 });
+
+describe('array method review findings, second round', () => {
+  test('a no-op splice hands back drafts and keeps strict mode', () => {
+    const base = { list: [{ id: 1 }, { id: 2 }] };
+    const [state, patches] = create(
+      base,
+      (draft) => {
+        const [removed] = draft.list.splice(0, 1, base.list[0]);
+        expect(isDraft(removed)).toBe(true);
+        removed.id = 42;
+      },
+      { enablePatches: true }
+    );
+    expect(base.list[0].id).toBe(1);
+    expect(patches).toEqual([]);
+    expect(state).toEqual(base);
+    const dates = { list: [new Date(0)] };
+    expect(() =>
+      create(
+        dates,
+        (draft) => {
+          draft.list.splice(0, 1, dates.list[0])[0].setTime(42);
+        },
+        { strict: true }
+      )
+    ).toThrow();
+    expect(dates.list[0].getTime()).toBe(0);
+  });
+
+  test('a comparator that writes to the array sees the native order of effects', () => {
+    const writeFirst = (draft: any) => {
+      draft.nums.sort((a: number, b: number) => {
+        draft.nums[0] = 99;
+        return a - b;
+      });
+    };
+    expect(create({ nums: [2, 1, 3] }, writeFirst).nums).toEqual([1, 2, 3]);
+    expect(create({ nums: [1, 2, 3] }, writeFirst).nums).toEqual([1, 2, 3]);
+  });
+
+  test('an index assigned past the end makes the array sparse for later operations', () => {
+    const base = { nums: [1, 2] };
+    const [state, patches] = create(
+      base,
+      (draft) => {
+        draft.nums.reverse();
+        draft.nums[3] = 3;
+        draft.nums.reverse();
+      },
+      { enablePatches: true }
+    );
+    const replay = apply(base, patches);
+    expect(replay).toEqual(state);
+    expect(1 in state.nums).toBe(1 in replay.nums);
+  });
+
+  test('reverse compares elements like the set trap', () => {
+    const zeros = { nums: [0, -0] };
+    const state = create(zeros, (draft) => {
+      draft.nums.reverse();
+    });
+    expect(Object.is(state.nums[0], -0)).toBe(true);
+    const nans = { nums: [NaN, NaN] };
+    expect(
+      create(nans, (draft) => {
+        draft.nums.reverse();
+      })
+    ).toBe(nans);
+  });
+
+  test('join and searches convert their arguments before reading the array', () => {
+    const base = { nums: [1, 2, 3] };
+    create(base, (draft) => {
+      const separator = {
+        toString: () => {
+          draft.nums[1] = 20;
+          return ',';
+        },
+      };
+      expect(draft.nums.join(separator as any)).toBe('1,20,3');
+    });
+    create(base, (draft) => {
+      const from = {
+        valueOf: () => {
+          draft.nums[1] = 20;
+          return 0;
+        },
+      };
+      expect(draft.nums.includes(20, from as any)).toBe(true);
+    });
+    create({ nums: [1, 2, 1] }, (draft) => {
+      expect(draft.nums.lastIndexOf(1)).toBe(2);
+      expect(draft.nums.lastIndexOf(1, undefined)).toBe(0);
+      expect(draft.nums.lastIndexOf(1, -2)).toBe(0);
+      expect(draft.nums.indexOf(1, -1)).toBe(2);
+      expect(draft.nums.includes(NaN)).toBe(false);
+      expect(draft.nums.join()).toBe('1,2,1');
+      expect(draft.nums.join('')).toBe('121');
+    });
+  });
+
+  test('splice uses the length read before its arguments are converted', () => {
+    const base = { nums: [0, 1, 2] };
+    const state = create(base, (draft) => {
+      const start = {
+        valueOf: () => {
+          draft.nums.push(3);
+          return 1;
+        },
+      };
+      draft.nums.splice(start as any, 1);
+    });
+    expect(state.nums).toEqual([0, 2]);
+    const grow = roundTrip({ list: [0, 1, 2, 3, 4] as any[] }, (draft) => {
+      draft.list.splice(1, 2, 'x', 'y', 'z');
+    });
+    expect(grow.list).toEqual([0, 'x', 'y', 'z', 3, 4]);
+    const shrink = roundTrip({ nums: [1, 2, 3, 4, 5] }, (draft) => {
+      draft.nums.splice(1, 3, 6);
+    });
+    expect(shrink.nums).toEqual([1, 6, 5]);
+  });
+
+  test('strict mode rejects a removal before the array changes', () => {
+    const base = { list: [new Date(0), 1] as any[] };
+    const state = create(
+      base,
+      (draft) => {
+        try {
+          draft.list.shift();
+        } catch {
+          // The rejected read must not have changed the array.
+        }
+      },
+      { strict: true }
+    );
+    expect(state).toBe(base);
+  });
+
+  test('arguments are coerced with native semantics', () => {
+    const big = BigInt(1) as any;
+    expect(() =>
+      create({ nums: [1, 2] }, (draft) => {
+        draft.nums.splice(big, 1);
+      })
+    ).toThrow(TypeError);
+    expect(() =>
+      create({ nums: [1, 2] }, (draft) => {
+        draft.nums.includes(1, big);
+      })
+    ).toThrow(TypeError);
+    expect(() =>
+      create({ list: [Symbol('a'), Symbol('b')] }, (draft) => {
+        draft.list.sort();
+      })
+    ).toThrow(TypeError);
+  });
+});
