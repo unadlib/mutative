@@ -396,16 +396,30 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
           }
         }
         const copy = prepare(target);
-        // The converted indices are passed on so that arguments are coerced
-        // exactly once, as a direct call would.
-        const spliceArgs: any[] = [start, deleteCount];
-        for (let index = 2; index < args.length; index += 1) {
-          spliceArgs.push(args[index]);
+        const values: any[] = [];
+        for (let index = 0; index < deleteCount; index += 1) {
+          values.push(copy[start + index]);
         }
-        const values: any[] = (arrayProto.splice as any).apply(
-          copy,
-          spliceArgs
-        );
+        // Move the tail with the length read before the arguments were
+        // converted, as the specification does; the final length also drops
+        // anything a conversion appended beyond it.
+        if (insertCount < deleteCount) {
+          for (let index = start; index < length - deleteCount; index += 1) {
+            copy[index + insertCount] = copy[index + deleteCount];
+          }
+        } else if (insertCount > deleteCount) {
+          for (
+            let index = length - deleteCount - 1;
+            index >= start;
+            index -= 1
+          ) {
+            copy[index + insertCount] = copy[index + deleteCount];
+          }
+        }
+        for (let index = 0; index < insertCount; index += 1) {
+          copy[start + index] = args[index + 2];
+        }
+        copy.length = length - deleteCount + insertCount;
         relocate(
           target,
           (index) =>
