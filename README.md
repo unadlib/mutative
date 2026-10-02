@@ -160,7 +160,7 @@ Mutative ships patches, `Map`/`Set` support and native array methods built in; I
 | Immer with `enablePatches`, `enableMapSet` and `enableArrayMethods` | 5.9 kB |
 | Mutative (`create`, `apply`, `current`, `original`) | 7.8 kB |
 
-The difference to the last Immer row buys the array operations that Mutative runs natively on the draft copy with full draft semantics: on 10,000-row arrays, `shift`, `unshift`, `splice` and `reverse` take 2–17 µs against Immer's 4–9 ms without patches and 0.7–1.5 ms against 10–11 ms with patches, `indexOf` followed by `splice` takes 9 µs against 6.7 ms, and `sort`, `forEach`, `map`, `filter` and `find` run natively on arrays without draftable elements. Immer's `enableArrayMethods` reaches 370–500 µs on the same operations, but it hands raw base objects to callbacks and returns removed elements as raw objects, so writes through them modify the original state; Mutative keeps every exposed element a draft (see the [array methods FAQ](#faqs)).
+The difference to the last Immer row buys the array operations that Mutative runs natively on the draft copy with full draft semantics: on 10,000-row arrays, `shift`, `unshift`, `splice` and `reverse` take 2–17 µs against Immer's 4–9 ms without patches and 0.7–1.5 ms against 10–11 ms with patches, `indexOf` followed by `splice` takes 9 µs against 6.7 ms, and `sort` and `join` run natively on arrays of primitives. Immer's `enableArrayMethods` reaches 370–500 µs on the same operations, but it hands raw base objects to callbacks and returns removed elements as raw objects, so writes through them modify the original state; Mutative keeps every exposed element a draft (see the [array methods FAQ](#faqs)).
 
 ## Features and Benefits
 
@@ -634,7 +634,7 @@ Yes. Mutative supports return values for reducer, and `redux-toolkit` is conside
 
 - Which array methods run natively on drafts?
 
-Methods that cannot hand a callback a value that must stay a draft run directly on the draft's copy instead of moving every element through the proxy: `shift`, `unshift`, `splice`, `reverse`, `indexOf`, `lastIndexOf` and `includes` always, and every method, including `sort`, `forEach`, `map`, `filter` and `find`, on arrays whose elements cannot be drafted (numbers, strings, dates). Elements removed or moved by these methods are drafted before they are exposed, so the original array is never modified. On arrays of objects, `forEach`, `map`, `filter` and `find` keep going through the draft so that their callbacks can modify elements; use [`original()`](#original) for read-only scans of large arrays.
+Methods that cannot hand a callback a value that must stay a draft run directly on the draft's copy instead of moving every element through the proxy: `shift`, `unshift`, `splice`, `reverse`, `indexOf`, `lastIndexOf` and `includes` always, and `sort` and `join` on arrays whose elements are all primitives. Elements removed or moved by these methods are drafted before they are exposed, so the original array is never modified. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, always go through the draft so that their callbacks see every change and can modify elements; use [`original()`](#original) for read-only scans of large arrays.
 
 - Does Mutative support shared references?
 
