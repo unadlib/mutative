@@ -280,32 +280,29 @@ function native(
 // draft also matches the original it stands for, as a read through the proxy
 // would return the draft for it.
 function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
-  const last = method === 'lastIndexOf';
-  const includes = method === 'includes';
+  const nativeSearch: Native = arrayProto[method] as any;
   return native(method, (target, _self, args) => {
     const length = latest(target).length;
-    let from = args.length > 1 ? toInteger(args[1]) : last ? length - 1 : 0;
-    if (last) from = from >= 0 ? Math.min(from, length - 1) : length + from;
-    else if (from < 0) from = Math.max(length + from, 0);
-    const source = latest(target);
+    const from =
+      args.length > 1
+        ? toInteger(args[1])
+        : method === 'lastIndexOf'
+          ? length - 1
+          : 0;
+    let source = latest(target);
+    if (source.length !== length) {
+      // A conversion changed the array: search a snapshot cut or padded to
+      // the length read before it, as the native method would.
+      source = arrayProto.slice.call(source, 0, length);
+      source.length = length;
+    }
     const value = args[0];
+    const found = nativeSearch.call(source, value, from);
     const original = getProxyDraft(value)?.original;
-    const matches = (element: any) =>
-      element === value ||
-      (original !== undefined && element === original) ||
-      (includes && value !== value && element !== element);
-    if (last) {
-      for (let index = from; index >= 0; index -= 1) {
-        if (index in source && matches(source[index])) return index;
-      }
-      return -1;
+    if (original === undefined || (found !== -1 && found !== false)) {
+      return found;
     }
-    for (let index = from; index < length; index += 1) {
-      if ((includes || index in source) && matches(source[index])) {
-        return includes ? true : index;
-      }
-    }
-    return includes ? false : -1;
+    return nativeSearch.call(source, original, from);
   });
 }
 
@@ -396,29 +393,19 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
           }
         }
         const copy = prepare(target);
-        const values: any[] = [];
-        for (let index = 0; index < deleteCount; index += 1) {
-          values.push(copy[start + index]);
+        // A conversion may have changed the array. Padding to the length read
+        // before it and truncating afterwards makes the native call follow
+        // the specification for that length; the arguments are already
+        // converted, so no user value is coerced a second time.
+        if (copy.length < length) copy.length = length;
+        const spliceArgs: any[] = [start, deleteCount];
+        for (let index = 2; index < args.length; index += 1) {
+          spliceArgs.push(args[index]);
         }
-        // Move the tail with the length read before the arguments were
-        // converted, as the specification does; the final length also drops
-        // anything a conversion appended beyond it.
-        if (insertCount < deleteCount) {
-          for (let index = start; index < length - deleteCount; index += 1) {
-            copy[index + insertCount] = copy[index + deleteCount];
-          }
-        } else if (insertCount > deleteCount) {
-          for (
-            let index = length - deleteCount - 1;
-            index >= start;
-            index -= 1
-          ) {
-            copy[index + insertCount] = copy[index + deleteCount];
-          }
-        }
-        for (let index = 0; index < insertCount; index += 1) {
-          copy[start + index] = args[index + 2];
-        }
+        const values: any[] = (arrayProto.splice as any).apply(
+          copy,
+          spliceArgs
+        );
         copy.length = length - deleteCount + insertCount;
         relocate(
           target,
