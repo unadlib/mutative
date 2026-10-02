@@ -13,13 +13,14 @@ still 1.3.0 and must not be described as v2. Neither the benchmark
 nor its runtime imports or calls `enableArrayMethods`; the plugin stays disabled.
 See the existing [array-method reproductions](../test/immer-array-methods.md).
 
-The [performance summary](./reports/SUMMARY.md) records the draft fast paths
-candidate's results, limitations, source and artifact identities, and reproduction
-commands. The [archive index](./reports/README.md) links the complete original
-JSON and Markdown reports for the 2026-09-30 baseline and 2026-10-01 candidate,
-including timing, memory, object-order controls, and CI budgets. Generated reports
-stay in the ignored `perf-testing/results/` directory; only the summary and
-archive index are committed under `reports/`.
+The [performance summary](./reports/SUMMARY.md) records the native array
+methods candidate's results (built on the draft fast paths), limitations, source
+and artifact identities, and reproduction commands. The [archive index](./reports/README.md)
+links the complete original JSON and Markdown reports for the 2026-09-30 baseline
+and 2026-10-01 candidate, including timing, memory, object-order controls, and CI
+budgets; later batches follow the same retention policy. Generated reports stay in
+the ignored `perf-testing/results/` directory; only the summary and archive index
+are committed under `reports/`.
 
 ## Run
 
