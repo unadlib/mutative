@@ -6,8 +6,9 @@ contains unreleased source changes, including the draft fast paths from
 [PR #174](https://github.com/unadlib/mutative/pull/174). Immer is pinned to
 11.1.18 and Mitata to 1.0.34. Array-method plugins are disabled on both sides:
 the harness never calls Immer's `enableArrayMethods`, and Mutative's native array
-methods need no option. Complete measurements and per-process statistics belong
-to the archive batch described in the [archive index](./README.md).
+methods need no option. The raw datasets of this batch were not archived; the
+identities and commands below reproduce them, and the
+[archive index](./README.md) describes the retention policy for batches that are.
 
 ## Scope and results
 
