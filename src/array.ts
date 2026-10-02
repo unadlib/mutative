@@ -66,33 +66,31 @@ function arrayState(target: ProxyDraft) {
   });
 }
 
-// Native moves need own data properties: inspecting an accessor by reading
-// its value would run user code before the array method does. The original
-// must also be safe to inspect later when looking up moved base elements.
-// Holes and undefined elements keep the proxy path for patch replay.
+// Inspect descriptors without executing element getters. Moves need defined
+// data properties for patch replay; join and sort also exclude conversion hooks.
+function hasDataElements(array: any[], inert = false) {
+  for (let index = 0; index < array.length; index += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(array, index);
+    if (
+      !descriptor ||
+      !('value' in descriptor) ||
+      (inert ? canExecute(descriptor.value) : descriptor.value === undefined)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// The original must also be safe to inspect when finding moved base elements.
 function isDense(target: ProxyDraft) {
   const state = arrayState(target);
   let dense = state.dense;
   if (dense === null) {
     const source = latest(target);
-    dense = true;
-    for (const array of source === target.original
-      ? [source]
-      : [target.original, source]) {
-      for (let index = 0; index < array.length; index += 1) {
-        const descriptor = Object.getOwnPropertyDescriptor(array, index);
-        if (
-          !descriptor ||
-          !('value' in descriptor) ||
-          descriptor.value === undefined
-        ) {
-          dense = false;
-          break;
-        }
-      }
-      if (!dense) break;
-    }
-    state.dense = dense;
+    dense = state.dense =
+      hasDataElements(target.original) &&
+      (source === target.original || hasDataElements(source));
   }
   return dense;
 }
@@ -160,20 +158,7 @@ function isInert(target: ProxyDraft) {
   const state = arrayState(target);
   let inert = state.inert;
   if (inert === null) {
-    const source = latest(target);
-    inert = true;
-    for (let index = 0; index < source.length; index += 1) {
-      const descriptor = Object.getOwnPropertyDescriptor(source, index);
-      if (
-        !descriptor ||
-        !('value' in descriptor) ||
-        canExecute(descriptor.value)
-      ) {
-        inert = false;
-        break;
-      }
-    }
-    state.inert = inert;
+    inert = state.inert = hasDataElements(latest(target), true);
   }
   return inert;
 }
