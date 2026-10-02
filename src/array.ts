@@ -447,7 +447,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         // A palindrome by identity stays untouched, as through the proxy.
         let changed = false;
         for (let low = 0, high = length - 1; low < high; low += 1, high -= 1) {
-          if (source[low] !== source[high]) {
+          if (!isEqual(source[low], source[high])) {
             changed = true;
             break;
           }
