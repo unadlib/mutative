@@ -241,32 +241,6 @@ function removed(target: ProxyDraft, value: any, key: any) {
   return value;
 }
 
-// Drafts the original element at `index` in place, like a read would.
-function draftAt(target: ProxyDraft, index: number) {
-  const copy = target.copy!;
-  const value = copy[index];
-  if (
-    typeof value !== 'object' ||
-    value === null ||
-    childAt(target, index) !== undefined ||
-    !isDraftable(value, target.options)
-  ) {
-    return;
-  }
-  const key = baseIndex(target, value, index);
-  if (key < 0) return;
-  const draft = internal.createDraft(
-    value,
-    target,
-    key,
-    target.finalities,
-    target.options
-  );
-  copy[index] = draft;
-  registerChild(target, index, draft);
-  if (key !== index) markFinalization(target, String(index), draft);
-}
-
 function prepare(target: ProxyDraft) {
   ensureShallowCopy(target);
   markChanged(target);
@@ -411,65 +385,5 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       }
       return self;
     }),
-    fill: native('fill', (target, self, [value, start, end]) => {
-      const length = latest(target).length;
-      const from = relativeIndex(start, length, 0);
-      const to = relativeIndex(end, length, length);
-      if (from < to) {
-        arrayProto.fill.call(prepare(target), value, from, to);
-        relocate(
-          target,
-          (index) => (index >= from && index < to ? -1 : index),
-          from,
-          to
-        );
-        // One shared object needs one registration; a draft must be
-        // finalized into every index that holds it.
-        const last = getProxyDraft(value) ? to : from + 1;
-        for (let index = from; index < last; index += 1) {
-          registerAssigned(target, index, value);
-        }
-      }
-      return self;
-    }),
-    copyWithin: native(
-      'copyWithin',
-      (target, self, [targetIndex, start, end]) => {
-        const length = latest(target).length;
-        const to = relativeIndex(targetIndex, length, 0);
-        const from = relativeIndex(start, length, 0);
-        const count = Math.min(
-          relativeIndex(end, length, length) - from,
-          length - to
-        );
-        if (count > 0 && to !== from) {
-          const copy = prepare(target);
-          // Copied original elements are drafted first so that both indices
-          // share one draft, as they share one object.
-          for (let index = from; index < from + count; index += 1) {
-            draftAt(target, index);
-          }
-          arrayProto.copyWithin.call(copy, to, from, from + count);
-          relocate(
-            target,
-            (index) => (index >= to && index < to + count ? -1 : index),
-            to,
-            to + count
-          );
-          // The copied values are additional references to elements that keep
-          // their own place.
-          for (let index = to; index < to + count; index += 1) {
-            const value = copy[index];
-            if (typeof value === 'object' && value !== null) {
-              if (getProxyDraft(value)?.parent === target) {
-                registerChild(target, index, value);
-              }
-              registerAssigned(target, index, value);
-            }
-          }
-        }
-        return self;
-      }
-    ),
   }
 );
