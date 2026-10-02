@@ -247,7 +247,7 @@ function setTrap(
     if (typeof value === 'object' && value !== null) arrayState.inert = null;
     // An undefined value, a length change, or an index past the end can
     // leave holes behind.
-    else if (
+    if (
       value === undefined ||
       key === 'length' ||
       (key as number) > source.length
