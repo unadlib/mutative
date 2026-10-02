@@ -255,14 +255,6 @@ function prepare(target: ProxyDraft) {
   return target.copy! as any[];
 }
 
-// The default sort order of primitives: by string value. The template
-// applies ToString, which rejects Symbol values like the native sort does.
-function defaultCompare(a: any, b: any) {
-  const x = `${a}`;
-  const y = `${b}`;
-  return x < y ? -1 : x > y ? 1 : 0;
-}
-
 type Native = (...args: any[]) => any;
 
 // A method that runs `impl` on the array draft behind `this`, or the
@@ -422,19 +414,25 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         }
         const source = latest(target);
         const length = source.length;
-        const compareElements = compare ?? defaultCompare;
-        // An array that is already in order stays untouched, as through the proxy.
-        let sorted = true;
-        for (let index = 1; index < length; index += 1) {
-          if (compareElements(source[index - 1], source[index]) > 0) {
-            sorted = false;
+        // Like the native method, collect the elements before the comparator
+        // runs, then write them back over anything the comparator changed
+        // through the draft.
+        const sorted = arrayProto.slice.call(source);
+        arrayProto.sort.call(sorted, compare);
+        let changed = false;
+        for (let index = 0; index < length; index += 1) {
+          if (!isEqual(sorted[index], source[index])) {
+            changed = true;
             break;
           }
         }
-        if (!sorted) {
-          arrayProto.sort.call(prepare(target), compare);
-          markRange(target, 0, length);
+        const copy = changed ? prepare(target) : target.copy;
+        if (copy !== null) {
+          for (let index = 0; index < length; index += 1) {
+            copy[index] = sorted[index];
+          }
         }
+        if (changed) markRange(target, 0, length);
         return self;
       },
       true
