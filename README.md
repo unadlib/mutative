@@ -149,6 +149,19 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 
 </details>
 
+### Bundle size
+
+Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins, so the comparable Immer bundle is the one with those plugins enabled. Brotli size of a minified consumer bundle built with esbuild from each library's production build (Immer 11.1.18):
+
+| Bundle | brotli |
+| --- | ---: |
+| Immer core (`produce`, `current`, `original`) | 3.3 kB |
+| Immer with `enablePatches` and `enableMapSet` | 5.1 kB |
+| Immer with `enablePatches`, `enableMapSet` and `enableArrayMethods` | 5.9 kB |
+| Mutative (`create`, `apply`, `current`, `original`) | 7.8 kB |
+
+The difference to the last Immer row buys the array operations that Mutative runs natively on the draft copy with full draft semantics: on 10,000-row arrays, `shift`, `unshift`, `splice` and `reverse` take 2–17 µs against Immer's 4–9 ms without patches and 0.7–1.5 ms against 10–11 ms with patches, `indexOf` followed by `splice` takes 9 µs against 6.7 ms, and `sort`, `forEach`, `map`, `filter` and `find` run natively on arrays without draftable elements. Immer's `enableArrayMethods` reaches 370–500 µs on the same operations, but it hands raw base objects to callbacks and returns removed elements as raw objects, so writes through them modify the original state; Mutative keeps every exposed element a draft (see the [array methods FAQ](#faqs)).
+
 ## Features and Benefits
 
 - **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
