@@ -2,6 +2,55 @@
 import { apply, create } from '../src';
 
 describe('native array method boundaries', () => {
+  test.each(['includes', 'indexOf', 'lastIndexOf'] as const)(
+    '%s skips fromIndex conversion on empty arrays',
+    (method) => {
+      for (const index of [BigInt(0), Symbol(), null]) {
+        const base: number[] = [];
+        let result: unknown;
+        let calls = 0;
+        const state = create(base, (draft) => {
+          const from = index ?? {
+            valueOf() {
+              calls += 1;
+              draft.push(1);
+              return 0;
+            },
+          };
+          result = draft[method](1, from as any);
+        });
+        expect(state).toBe(base);
+        expect(calls).toBe(0);
+        expect(result).toBe(method === 'includes' ? false : -1);
+      }
+    }
+  );
+
+  test.each(['includes', 'indexOf', 'lastIndexOf'] as const)(
+    '%s retains native bounds across fromIndex conversion',
+    (method) => {
+      for (const length of [1, 4]) {
+        const run = (useProxyMethod: boolean) => {
+          let result: unknown;
+          let calls = 0;
+          const state = create([1, 2, 1], (draft) => {
+            const from = {
+              valueOf() {
+                calls += 1;
+                draft.length = length;
+                return -1;
+              },
+            };
+            const fn = useProxyMethod ? Array.prototype[method] : draft[method];
+            result = fn.call(draft, 1, from as any);
+          });
+          return { state, result, calls };
+        };
+        expect(run(false)).toStrictEqual(run(true));
+      }
+    }
+  );
+
   test.each(['push', 'pop', 'truncate', 'grow'] as const)(
     'splice preserves native argument-conversion effects: %s',
     (effect) => {

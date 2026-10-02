@@ -287,21 +287,17 @@ function native(
 // would return the draft for it.
 function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
   const nativeSearch: Native = arrayProto[method] as any;
-  return native(method, (target, _self, args) => {
+  return native(method, (target, self, args) => {
     const length = latest(target).length;
+    if (length === 0) return method === 'includes' ? false : -1;
+    if (canExecute(args[1])) return nativeSearch.apply(self, args);
     const from =
       args.length > 1
         ? toInteger(args[1])
         : method === 'lastIndexOf'
           ? length - 1
           : 0;
-    let source = latest(target);
-    if (source.length !== length) {
-      // A conversion changed the array: search a snapshot cut or padded to
-      // the length read before it, as the native method would.
-      source = arrayProto.slice.call(source, 0, length);
-      source.length = length;
-    }
+    const source = latest(target);
     const value = args[0];
     const found = nativeSearch.call(source, value, from);
     const original = getProxyDraft(value)?.original;
