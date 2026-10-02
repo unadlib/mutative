@@ -22,6 +22,41 @@ The production CJS artifact is 25,756 bytes raw and 7,939 bytes Brotli, up 860 a
 The CJS `size-limit` consumer measures 6.57 kB; its cap is now 6.6 kB. The ESM
 cap remains 6.5 kB. The per-artifact and consumer growth policy is unchanged.
 
+### Paired performance budget
+
+The local run at `03dd1f2` compared the corrected source with PR base `1004d65`
+at 1,000 rows, on the Apple M1 Max and Node 24.16.0 environment described below.
+All 48 decisions passed: five latency pairs and three memory pairs, with both
+freeze and patch modes. Paired candidate/base median ratios range from
+0.100–1.011 for latency, 0.132–1.013 for sampled allocation, and 1.000–1.048 for
+retained heap. General indexed reads remain effectively unchanged; array moves
+retain a substantial gain over the PR base after the correctness checks.
+
+Selected medians in microseconds, with freeze off:
+
+| Scenario | Patches | PR base | Corrected candidate |
+| --- | --- | ---: | ---: |
+| read-index | off | 515.943 | 517.901 |
+| array-shift-nested | off | 468.609 | 47.164 |
+| array-splice-insert-nested | off | 240.031 | 52.212 |
+| array-reverse-nested | off | 477.367 | 47.932 |
+| array-reverse-nested | on | 669.683 | 170.204 |
+
+Candidate source SHA-256:
+`b669acfe401172dcf4d372c8bcac353e9a84a28fa7678acba1f61fd49522f645`.
+Production CJS SHA-256:
+`a7736e90ed7f2511e307fa5df658e6fec7b5b47b3d9a19cf3bb995a591c5f59e`.
+The base production hash is
+`ed3c321d17f8c629116bc955613c635f54c113267116bd63be1e0aec2714b270`.
+Complete local results are retained in
+`perf-testing/results/array-review-correctness/`; this focused batch is not a
+published archive, and the complete earlier 10,000-row matrix was not repeated.
+Reproduce with a built checkout of `1004d65`:
+
+```sh
+pnpm benchmark:ci --base-dir /path/to/pr-base --output perf-testing/results/array-review-correctness
+```
+
 ## Earlier measurements
 
 The following measurements are from 2026-10-02 UTC for [PR #75](https://github.com/unadlib/mutative/pull/75), before the correctness follow-up above.
@@ -34,7 +69,7 @@ methods need no option. The raw datasets of this batch were not archived; the
 identities and commands below reproduce them, and the
 [archive index](./README.md) describes the retention policy for batches that are.
 
-## Scope and results
+### Scope and results
 
 Apple M1 Max, 64 GiB RAM, darwin/arm64 (kernel 25.6.0), Node 24.16.0,
 V8 13.6.233.17-node.49. Jobs ran sequentially with normal desktop activity.
@@ -83,7 +118,7 @@ decisions: candidate/base paired median ratios span 0.003–1.009 for latency,
 0.017–1.009 for allocation, and 1.000–1.000 for retained output. These are
 historical measurements; current PR checks independently measure their base/head.
 
-## Tradeoffs and limits
+### Tradeoffs and limits
 
 - Bundle size: the production bundle grows by 5.4 KB raw, 1.8 KB gzip and
   1.6 KB brotli; `size-limit` moved from 5 KB to 6.5 KB (6.38 kB measured). The
@@ -115,7 +150,7 @@ historical measurements; current PR checks independently measure their base/head
   deltas are noisy. Cold-data freezing, patch application/serialization, Map/Set,
   sparse arrays, deeper paths, and browser engines are outside this matrix.
 
-## Source and artifact identity
+### Source and artifact identity
 
 The measured source is that of [`6193657`](https://github.com/unadlib/mutative/commit/6193657a2fbb87b247c8c92a9ef30a79d5f70f61).
 The gate's raw metadata records `ffec47b`, the same source before a commit
@@ -135,7 +170,7 @@ Pinned v1 production: 15ad9df11178c64f80e66797ffe784a4eeedfb03759ca59ef61a64f414
 Immer production:     30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9
 ```
 
-## Reproduce
+### Reproduce
 
 Use Node 24.16.0 and the frozen lockfile at `6193657` for the measured candidate.
 Build a separate checkout of `1004d65` with its frozen lockfile for the gate base.
