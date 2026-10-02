@@ -228,14 +228,14 @@ function relocate(
 }
 
 // Before removing the element at `index`: its draft, or the original index
-// it needs as draft key, or -1 when it is exposed as is.
+// it needs as draft key, or -1 when it is exposed as is. The copy decides
+// what is at `index`; the child registry is only a cache, because writes
+// through the set trap and the proxy path do not maintain it.
 function removalKey(target: ProxyDraft, index: number) {
-  const draft = childAt(target, index);
-  if (draft !== undefined) return draft;
   const value = target.copy![index];
-  return typeof value === 'object' &&
-    value !== null &&
-    isDraftable(value, target.options)
+  if (typeof value !== 'object' || value === null) return -1;
+  if (childAt(target, index) === value || getProxyDraft(value)) return value;
+  return isDraftable(value, target.options)
     ? baseIndex(target, value, index)
     : -1;
 }
