@@ -310,3 +310,134 @@ describe('native array methods', () => {
     expect(ids(base.list)).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });
+
+describe('array method review findings', () => {
+  test('removal returns the element the copy holds, not a stale child', () => {
+    const base = { list: [{ id: 1 }, { id: 2 }, { id: 3 }] };
+    const state = roundTrip(base, (draft) => {
+      draft.list.sort((a: any, b: any) => b.id - a.id);
+      const removed = draft.list.shift();
+      expect(removed.id).toBe(3);
+      removed.id = 99;
+      draft.list.push(removed);
+    });
+    expect(ids(state.list)).toEqual([2, 1, 99]);
+    expect(ids(base.list)).toEqual([1, 2, 3]);
+    const other = { list: rows(2) };
+    create(other, (draft) => {
+      expect(isDraft(draft.list[0])).toBe(true);
+      draft.list[0] = { id: 9 };
+      expect(draft.list.shift()).toEqual({ id: 9 });
+      expect(ids(draft.list)).toEqual([1]);
+    });
+  });
+
+  test('callbacks observe changes made during iteration', () => {
+    const base = { nums: [1, 2, 3] };
+    const seen: number[] = [];
+    create(base, (draft) => {
+      draft.nums.forEach((value, index, array) => {
+        if (index === 0) array[1] = 20;
+        seen.push(value);
+      });
+    });
+    expect(seen).toEqual([1, 20, 3]);
+    const cut: number[] = [];
+    create(base, (draft) => {
+      draft.nums.forEach((value, index, array) => {
+        if (index === 0) array.length = 1;
+        cut.push(value);
+      });
+    });
+    expect(cut).toEqual([1]);
+  });
+
+  test('strict mode still guards non-draftable elements', () => {
+    const base = { dates: [new Date(0)] };
+    expect(() =>
+      create(
+        base,
+        (draft) => {
+          draft.dates.at(0)!.setTime(42);
+        },
+        { strict: true }
+      )
+    ).toThrow();
+    expect(() =>
+      create(
+        base,
+        (draft) => {
+          draft.dates.forEach((date) => date.setTime(42));
+        },
+        { strict: true }
+      )
+    ).toThrow();
+    expect(base.dates[0].getTime()).toBe(0);
+  });
+
+  test('array subclasses keep their own methods', () => {
+    class Stack extends Array<number> {
+      shift() {
+        return -1;
+      }
+    }
+    const base = { stack: Stack.from([1, 2]) };
+    create(base, (draft) => {
+      expect(draft.stack.shift()).toBe(-1);
+    });
+  });
+
+  test('splice coerces its arguments once', () => {
+    const base = { list: [0, 1, 2] };
+    let calls = 0;
+    const state = roundTrip(base, (draft) => {
+      draft.list.splice({ valueOf: () => calls++ } as any, 1, 9);
+    });
+    expect(state.list).toEqual([9, 1, 2]);
+    expect(calls).toBe(1);
+  });
+
+  test('operations that change nothing keep the state', () => {
+    const base = { nums: [1, 2, 3], same: [1, 2, 1] };
+    expect(
+      create(base, (draft) => {
+        draft.nums.sort((a, b) => a - b);
+      })
+    ).toBe(base);
+    expect(
+      create(base, (draft) => {
+        expect(draft.nums.splice(1, 1, 2)).toEqual([2]);
+      })
+    ).toBe(base);
+    expect(
+      create(base, (draft) => {
+        draft.same.reverse();
+      })
+    ).toBe(base);
+    expect(
+      create(base, (draft) => {
+        draft.nums.sort((a, b) => a - b);
+        return { nums: [9], same: [] };
+      })
+    ).toEqual({ nums: [9], same: [] });
+  });
+
+  test('sparse arrays and undefined elements use the proxy path', () => {
+    const list: (number | undefined)[] = new Array(2);
+    list[1] = 1;
+    const base = { list, mixed: [1, undefined, 3] };
+    const [state, patches] = create(
+      base,
+      (draft) => {
+        draft.list.reverse();
+        draft.mixed.reverse();
+      },
+      { enablePatches: true }
+    );
+    const replay = apply(base, patches);
+    expect(state.list).toEqual([1, undefined]);
+    expect(1 in state.list).toBe(1 in replay.list);
+    expect(replay).toEqual(state);
+    expect(state.mixed).toEqual([3, undefined, 1]);
+  });
+});
