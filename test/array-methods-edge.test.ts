@@ -63,7 +63,7 @@ describe('native array method boundaries', () => {
   test.each(['includes', 'indexOf', 'lastIndexOf'] as const)(
     '%s skips fromIndex conversion on empty arrays',
     (method) => {
-      for (const index of [BigInt(0), Symbol(), null]) {
+      for (const index of [BigInt(0), Symbol('index'), null]) {
         const base: number[] = [];
         let result: unknown;
         let calls = 0;
@@ -100,7 +100,7 @@ describe('native array method boundaries', () => {
               },
             };
             const fn = useProxyMethod ? Array.prototype[method] : draft[method];
-            result = fn.call(draft, 1, from as any);
+            result = (fn as Function).call(draft, 1, from);
           });
           return { state, result, calls };
         };
