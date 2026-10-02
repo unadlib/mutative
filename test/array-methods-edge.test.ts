@@ -2,6 +2,31 @@
 import { apply, create } from '../src';
 
 describe('native array method boundaries', () => {
+  test.each(['initial', 'assign', 'splice', 'unshift'] as const)(
+    'join observes conversion hooks on function elements: %s',
+    (mode) => {
+      let active: any[];
+      let result: string | undefined;
+      const fn = () => {};
+      fn.toString = () => {
+        active[1] = 20;
+        return 'f';
+      };
+      const base: any[] = mode === 'initial' ? [fn, 2] : [1, 2];
+      const state = create(base, (draft) => {
+        active = draft;
+        if (mode !== 'initial') expect(draft.join()).toBe('1,2');
+        if (mode === 'assign') draft[0] = fn;
+        if (mode === 'splice') draft.splice(0, 1, fn);
+        if (mode === 'unshift') draft.unshift(fn);
+        result = draft.join(',');
+      });
+      expect(result).toBe(mode === 'unshift' ? 'f,20,2' : 'f,20');
+      expect(state[1]).toBe(20);
+      expect(base[1]).toBe(2);
+    }
+  );
+
   test.each(['includes', 'indexOf', 'lastIndexOf'] as const)(
     '%s skips fromIndex conversion on empty arrays',
     (method) => {

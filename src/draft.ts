@@ -241,7 +241,12 @@ function setTrap(
   markChanged(target);
   const arrayState = target.arrayState;
   if (arrayState !== null) {
-    if (typeof value === 'object' && value !== null) arrayState.inert = null;
+    if (
+      (typeof value === 'object' && value !== null) ||
+      typeof value === 'function'
+    ) {
+      arrayState.inert = null;
+    }
     // An undefined value, a length change, or an index past the end can
     // leave holes behind.
     if (
