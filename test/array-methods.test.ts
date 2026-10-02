@@ -276,7 +276,7 @@ describe('native array methods', () => {
     expect(state.list).toEqual([]);
   });
 
-  test('patches replay for every native mutator', () => {
+  test('patches replay for every mutator', () => {
     const base = { list: rows(6) };
     roundTrip(base, (draft) => {
       draft.list.unshift({ id: 10 }, { id: 11 });
