@@ -113,8 +113,12 @@ function getTrap(
       ? !(source as Map<any, any>).has(key)
       : !hasOwn.call(source, key)
   ) {
-    if (type === DraftType.Array) {
-      // Methods that can run natively on the copy; see `arrayMethods`.
+    if (
+      type === DraftType.Array &&
+      Object.getPrototypeOf(target.original) === Array.prototype
+    ) {
+      // Methods of plain arrays that can run natively on the copy; see
+      // `arrayMethods`. Subclasses resolve their own methods below.
       const method = arrayMethods[key as any];
       if (method !== undefined) return method;
     }
