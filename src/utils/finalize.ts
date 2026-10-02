@@ -91,7 +91,7 @@ export function finalizePatches(
 ) {
   const shouldFinalize =
     target.operated &&
-    (target.relocated ||
+    ((target.arrayState !== null && target.arrayState.relocated) ||
       (target.assignedMap !== undefined && target.assignedMap.size > 0)) &&
     !target.finalized;
   if (shouldFinalize) {

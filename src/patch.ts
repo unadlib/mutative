@@ -29,7 +29,9 @@ function generateArrayPatches(
   // Only assigned indices and the range touched by native array operations
   // can differ, so visit those in ascending order instead of scanning every
   // element of a possibly very large array.
-  const { diffStart, diffEnd } = proxyState;
+  const arrayState = proxyState.arrayState;
+  const diffStart = arrayState === null ? 0 : arrayState.diffStart;
+  const diffEnd = arrayState === null ? 0 : arrayState.diffEnd;
   const assigned: number[] = [];
   assignedMap!.forEach((flag, key) => {
     if (flag && key !== 'length') {

@@ -154,7 +154,8 @@ function getTrap(
   // any index, so membership in the original array decides instead.
   let draftKey: any = key;
   if (value !== target.original[key]) {
-    if (!target.relocated) return value;
+    const state = target.arrayState;
+    if (state === null || !state.relocated) return value;
     const index = baseIndices(target).get(value);
     if (index === undefined) return value;
     draftKey = index;
@@ -234,7 +235,10 @@ function setTrap(
     return true;
   ensureShallowCopy(target);
   markChanged(target);
-  if (typeof value === 'object' && value !== null) target.inert = null;
+  const arrayState = target.arrayState;
+  if (arrayState !== null && typeof value === 'object' && value !== null) {
+    arrayState.inert = null;
+  }
   if (hasOwn.call(original, key) && isEqual(value, original[key])) {
     // !case: handle the case of assigning the original non-draftable value to a draft
     target.assignedMap!.delete(key);
@@ -352,11 +356,7 @@ export function createDraft<T extends object>(
     children: undefined,
     child: null,
     childKey: null,
-    relocated: false,
-    diffStart: 0,
-    diffEnd: 0,
-    baseRefs: null,
-    inert: null,
+    arrayState: null,
   };
   const { proxy, revoke } =
     type === DraftType.Array
