@@ -318,7 +318,13 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       for (let index = 0; index < deleteCount; index += 1) {
         keys.push(removalKey(target, start + index));
       }
-      const values: any[] = (arrayProto.splice as any).apply(copy, args);
+      // The converted indices are passed on so that arguments are coerced
+      // exactly once, as a direct call would.
+      const spliceArgs: any[] = [start, deleteCount];
+      for (let index = 2; index < args.length; index += 1) {
+        spliceArgs.push(args[index]);
+      }
+      const values: any[] = (arrayProto.splice as any).apply(copy, spliceArgs);
       relocate(
         target,
         (index) =>
