@@ -240,8 +240,9 @@ function setTrap(
   ensureShallowCopy(target);
   markChanged(target);
   const arrayState = target.arrayState;
-  if (arrayState !== null && typeof value === 'object' && value !== null) {
-    arrayState.inert = null;
+  if (arrayState !== null) {
+    if (typeof value === 'object' && value !== null) arrayState.inert = null;
+    else if (value === undefined || key === 'length') arrayState.dense = null;
   }
   if (hasOwn.call(original, key) && isEqual(value, original[key])) {
     // !case: handle the case of assigning the original non-draftable value to a draft
