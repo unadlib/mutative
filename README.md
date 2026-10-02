@@ -621,7 +621,7 @@ Yes. Mutative supports return values for reducer, and `redux-toolkit` is conside
 
 - Which array methods run natively on drafts?
 
-Methods that cannot hand a callback a value that must stay a draft run directly on the draft's copy instead of moving every element through the proxy: `shift`, `unshift`, `splice`, `reverse`, `fill`, `copyWithin`, `indexOf`, `lastIndexOf` and `includes` always; `sort`, with the comparator receiving drafts; and every method, including `forEach`, `map`, `filter` and `find`, on arrays whose elements cannot be drafted (numbers, strings, dates). Elements removed or moved by these methods are drafted before they are exposed, so the original array is never modified. On arrays of objects, `forEach`, `map`, `filter` and `find` keep going through the draft so that their callbacks can modify elements; use [`original()`](#original) for read-only scans of large arrays.
+Methods that cannot hand a callback a value that must stay a draft run directly on the draft's copy instead of moving every element through the proxy: `shift`, `unshift`, `splice`, `reverse`, `fill`, `copyWithin`, `indexOf`, `lastIndexOf` and `includes` always, and every method, including `sort`, `forEach`, `map`, `filter` and `find`, on arrays whose elements cannot be drafted (numbers, strings, dates). Elements removed or moved by these methods are drafted before they are exposed, so the original array is never modified. On arrays of objects, `forEach`, `map`, `filter` and `find` keep going through the draft so that their callbacks can modify elements; use [`original()`](#original) for read-only scans of large arrays.
 
 - Does Mutative support shared references?
 
