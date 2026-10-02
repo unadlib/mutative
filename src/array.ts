@@ -305,15 +305,6 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
   });
 }
 
-// The default sort order: undefined last, otherwise by string value.
-function defaultCompare(a: any, b: any) {
-  if (a === undefined) return b === undefined ? 0 : 1;
-  if (b === undefined) return -1;
-  const x = String(a);
-  const y = String(b);
-  return x < y ? -1 : x > y ? 1 : 0;
-}
-
 /**
  * Array methods without callbacks run natively on the draft's copy instead
  * of moving every element through the proxy traps.
@@ -396,36 +387,20 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       }
       return values;
     }),
+    // Sorting hands every element to the comparator, so only arrays without
+    // draftable elements are sorted natively; the rest sort through the proxy.
     sort: native('sort', (target, self, [compare]) => {
-      if (compare !== undefined && typeof compare !== 'function') {
+      if (
+        (compare !== undefined && typeof compare !== 'function') ||
+        !isInert(target)
+      ) {
         return arrayProto.sort.call(self, compare);
       }
       const length = latest(target).length;
-      if (length <= 1) return self;
-      const copy = prepare(target);
-      if (isInert(target)) {
-        arrayProto.sort.call(copy, compare);
+      if (length > 1) {
+        arrayProto.sort.call(prepare(target), compare);
         markRange(target, 0, length);
-        return self;
       }
-      // Undefined elements and holes are sorted without the comparator; the
-      // proxy path keeps that rule for the rare arrays that have them.
-      if (arrayProto.includes.call(copy, undefined)) {
-        return arrayProto.sort.call(self, compare);
-      }
-      // The comparator receives drafts, as it would through the proxy.
-      for (let index = 0; index < length; index += 1) draftAt(target, index);
-      const order: number[] = [];
-      for (let index = 0; index < length; index += 1) order.push(index);
-      const compareElements = compare ?? defaultCompare;
-      order.sort((a, b) => compareElements(copy[a], copy[b]));
-      const sorted = order.map((index) => copy[index]);
-      const positions: number[] = [];
-      for (let index = 0; index < length; index += 1) {
-        copy[index] = sorted[index];
-        positions[order[index]] = index;
-      }
-      relocate(target, (index) => positions[index], 0, length);
       return self;
     }),
     reverse: native('reverse', (target, self) => {
