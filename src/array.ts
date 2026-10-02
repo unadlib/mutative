@@ -215,35 +215,36 @@ function relocate(
 }
 
 // Before removing the element at `index`: its draft, or the original index
-// it needs as draft key, or -1 when it is exposed as is. The copy decides
-// what is at `index`; the child registry is only a cache, because writes
-// through the set trap and the proxy path do not maintain it.
+// it needs as draft key, or -1 when it is exposed as is. This runs before the
+// array changes, so a strict-mode rejection leaves the array untouched. The
+// current array decides what is at `index`; the child registry is only a
+// cache, because writes through the set trap and the proxy path do not
+// maintain it.
 function removalKey(target: ProxyDraft, index: number) {
-  const value = target.copy![index];
+  const value = latest(target)[index];
   if (typeof value !== 'object' || value === null) return -1;
   if (childAt(target, index) === value || getProxyDraft(value)) return value;
-  return isDraftable(value, target.options)
-    ? baseIndex(target, value, index)
-    : -1;
+  if (isDraftable(value, target.options)) {
+    return baseIndex(target, value, index);
+  }
+  if (target.options.strict) checkReadable(value, target.options);
+  return -1;
 }
 
 // A removed element is exposed as a draft when the user could otherwise
 // modify the original array through it.
 function removed(target: ProxyDraft, value: any, key: any) {
   if (typeof key !== 'number') return key;
-  if (key >= 0) {
-    return internal.createDraft(
-      value,
-      target,
-      key,
-      target.finalities,
-      target.options
-    );
-  }
-  if (target.options.strict && typeof value === 'object' && value !== null) {
-    checkReadable(value, target.options);
-  }
-  return value;
+  if (key < 0) return value;
+  // The draft is finalized against the parent's copy, which must exist.
+  ensureShallowCopy(target);
+  return internal.createDraft(
+    value,
+    target,
+    key,
+    target.finalities,
+    target.options
+  );
 }
 
 function prepare(target: ProxyDraft) {
@@ -313,8 +314,8 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       'shift',
       (target) => {
         if (latest(target).length === 0) return undefined;
-        const copy = prepare(target);
         const key = removalKey(target, 0);
+        const copy = prepare(target);
         const value = arrayProto.shift.call(copy);
         relocate(target, (index) => index - 1, 0, copy.length + 1);
         return removed(target, value, key);
@@ -349,10 +350,14 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
               : Math.min(Math.max(toInteger(args[1]), 0), length - start);
         const insertCount = Math.max(args.length - 2, 0);
         if (deleteCount === 0 && insertCount === 0) return [];
+        const keys: any[] = [];
+        for (let index = 0; index < deleteCount; index += 1) {
+          keys.push(removalKey(target, start + index));
+        }
+        const source = latest(target);
         if (deleteCount === insertCount) {
           // Replacing elements with equal values changes nothing, as through
-          // the proxy; the removed elements are the values passed in.
-          const source = latest(target);
+          // the proxy; the removed elements are still exposed as drafts.
           let same = true;
           for (let index = 0; index < insertCount; index += 1) {
             if (!isEqual(args[index + 2], source[start + index])) {
@@ -360,13 +365,13 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
               break;
             }
           }
-          if (same) return args.slice(2);
+          if (same) {
+            return keys.map((key, index) =>
+              removed(target, source[start + index], key)
+            );
+          }
         }
         const copy = prepare(target);
-        const keys: any[] = [];
-        for (let index = 0; index < deleteCount; index += 1) {
-          keys.push(removalKey(target, start + index));
-        }
         // The converted indices are passed on so that arguments are coerced
         // exactly once, as a direct call would.
         const spliceArgs: any[] = [start, deleteCount];
