@@ -88,7 +88,8 @@ export function createRuntime(
     };
   }
   if (library === 'immer') {
-    if (patches && !immerPatchesEnabled) {
+    // applyPatches needs the plugin as well, with patch generation off.
+    if ((patches || applyScenario) && !immerPatchesEnabled) {
       enablePatches();
       immerPatchesEnabled = true;
     }
