@@ -151,7 +151,7 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 
 ### Bundle size
 
-Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from each library's production ESM artifact (Immer 11.1.18 `dist/immer.production.mjs`; Mutative `dist/mutative.esm.mjs` at source `363b3da` with `process.env.NODE_ENV` defined as `production`), bundled for the browser with `--minify --target=es2018 --format=esm`. Each consumer references the listed exports.
+Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from each library's production ESM artifact (Immer 11.1.18 `dist/immer.production.mjs`; Mutative `dist/mutative.esm.mjs` at source `8fe0d9a` with `process.env.NODE_ENV` defined as `production`), bundled for the browser with `--minify --target=es2018 --format=esm`. Each consumer references the listed exports.
 
 | Bundle | brotli |
 | --- | ---: |
