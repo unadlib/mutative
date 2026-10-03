@@ -12,6 +12,33 @@ methods need no option. The raw datasets of this batch were not archived; the
 identities and commands below reproduce them, and the
 [archive index](./README.md) describes the retention policy for batches that are.
 
+## Follow-up: search results and strict mode
+
+Review found that a native search could find an unread object of the base
+state, which the proxy path never finds: it drafts each element it reads and
+compares the draft. The result therefore depended on the type of `fromIndex`,
+on a custom `mark`, on borrowing the method, and on whether the element had
+been read before. In strict mode, native moves and searches also skipped the
+errors that the proxy path raises when it reads a non-draftable object.
+
+Commit `f85df41` compares search hits as a read returns them: a native hit on
+an object that a read would draft is skipped, and the search continues past
+it, so searches give the proxy path's results everywhere, as on `main`. Commit
+`83dffa2` sends an array that holds a non-draftable object to the proxy path in
+strict mode, outside `unsafe()`. `test/array-methods-parity.test.ts` checks
+`indexOf`, `lastIndexOf` and `includes` against the borrowed builtin for nine
+kinds of search value, eight `fromIndex` forms, five array histories, default
+and strict mode, `unsafe()` and a no-op `mark`, and checks the strict-mode
+outcomes of every optimized method; the source before these commits fails both.
+
+A harness A/B against the previous source, two passes each with freeze and
+patches off, measured 100-row array operations within 2% and 10,000-row
+operations within 1%. In a 10,000-row micro-benchmark, searches for a
+primitive and for the array's own draft are unchanged at about 4.5 µs and
+9.7 µs; a search for an unread base object now scans to the end and returns
+-1 in 4.5 µs. The production CJS artifact grew by 166 Brotli bytes, and its
+`size-limit` cap was raised from 6.5 kB to 6.7 kB.
+
 ## Follow-up: receiver cache release
 
 Review found that the receiver cache kept a failed producer's state alive.
@@ -46,9 +73,16 @@ and unchanged calls behave as on the proxy path:
   HasProperty check of the native algorithms. The result is cached per draft
   until a length change or an assignment past the end.
 - `indexOf`, `lastIndexOf` and `includes` run natively on the current array and
-  compare by reference, as the proxy path does: an element that has been read
-  is found by its draft, one that has not by its original object. The search
-  never reads a property of the value it is given.
+  give the proxy path's results, comparing elements as a read returns them.
+  Drafts, values assigned in the recipe, non-draftable objects and primitives
+  are found. An object of the base state is drafted on read and never found,
+  whether or not it was read before; search `original(draft)` to compare
+  original objects. A native hit on such an object is skipped and the search
+  continues past it. The search never reads a property of the value it is
+  given.
+- In strict mode, an array holding a non-draftable object takes the proxy path
+  for every optimized method, so reading such an element fails exactly where it
+  always did. Inside `unsafe()` the native paths are used.
 - `sort` and `join` run natively on arrays of primitives.
 - Removed elements are returned as drafts, patches replay in both directions,
   and a call that changes nothing keeps the state. Calls that cannot change the
@@ -73,10 +107,10 @@ and unchanged calls behave as on the proxy path:
   reference for every supported input; the proxy path itself is not, because it
   turns `delete` into an `undefined` assignment.
 
-Behavior changes against the previously pushed PR head `3125fe7`: searches no
-longer match a draft's original object (`draft.list.indexOf(draft.shared)`
-returns -1, as through the proxy); arrays holding `undefined` take the native
-path; arguments that can run user code, an own `constructor` or
+Behavior changes against the previously pushed PR head `3125fe7`: searches give
+the proxy path's results, as on `main`, so neither a draft's original object nor
+an unread object of the base state is found; strict mode fails on non-draftable
+elements as on `main`; arrays holding `undefined` take the native path; arguments that can run user code, an own `constructor` or
 `Symbol.isConcatSpreadable`, and calls on foreign receivers take the proxy
 path; and a moved shared element emits patches only for its current index.
 The intermediate local commits `c598b41`–`a1e3235` also routed arrays with
@@ -189,12 +223,13 @@ freeze on, and 1.2–2.1x with patches on.
 
 ## Tradeoffs and limits
 
-- Bundle size at `8fe0d9a`: the production CJS artifact is 25,558 bytes raw
-  and 7,869 bytes Brotli. That is 81 Brotli bytes below the accepted baseline
-  before this round (`415b91c`) and 6,044 raw, 1,921 gzip and 1,776 Brotli
-  bytes above `main`. `size-limit` measures 6.47 kB against a 6.5 kB cap,
-  which is 5 kB on `main`. The measured `363b3da` was 70 Brotli bytes smaller.
-  The README compares the result with Immer plus the equivalent plugins.
+- Bundle size at `b4d7d8a`: the production CJS artifact is 26,109 bytes raw
+  and 8,035 bytes Brotli. That is 85 Brotli bytes above the accepted baseline
+  before this round (`415b91c`) and 6,595 raw, 2,116 gzip and 1,942 Brotli
+  bytes above `main`. `size-limit` measures 6.64 kB against a 6.7 kB cap,
+  which is 5 kB on `main`; the ESM consumer measures 5.44 kB against 6.5 kB.
+  The measured `363b3da` was 236 Brotli bytes smaller. The README compares the
+  result with Immer plus the equivalent plugins.
 - With patches enabled the gain narrows because one patch per moved index is
   emitted either way; without patches, moving operations on 10,000-row arrays
   take microseconds.
@@ -205,8 +240,8 @@ freeze on, and 1.2–2.1x with patches on.
   patches agree on every index.
 - Argument conversion, comparators and separators run in the native order
   relative to the length and element reads and exactly once; removed elements
-  are always exposed as drafts, and strict mode rejects a removal before the
-  array changes.
+  are always exposed as drafts, and in strict mode reading a non-draftable
+  element fails as it does on the proxy path.
 - Every timing cell but one is faster than Immer with the plugin off: `concat`
   with freeze on and patches off is within 5% (20.0 µs against 20.2 µs).
 - One cell is slower than pinned v1: the same `concat` cell, 20.0 µs against
