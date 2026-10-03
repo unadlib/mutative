@@ -365,16 +365,6 @@ function isBaseElement(target: ProxyDraft, value: object, index: number) {
   );
 }
 
-// Whether a read of `value` at `index` of an array without holes would hand
-// out a new draft instead of `value` itself, as it does for an object of the
-// base state. This array's own drafts, values assigned in the recipe and
-// non-draftable objects are handed out as they are.
-function draftsOnRead(target: ProxyDraft, value: object, index: number) {
-  return (
-    isBaseElement(target, value, index) && isDraftable(value, target.options)
-  );
-}
-
 // Identity searches run natively on the current array and return what the
 // proxy path returns, where every element is compared as a read hands it out.
 // An object of the base state is drafted on read and so never found; a native
@@ -398,15 +388,25 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
     if (typeof value !== 'object' || value === null) {
       return nativeSearch.apply(source, args);
     }
-    // A hole can expose an element inherited from the prototype, which a read
-    // hands out as it is until the proxy path's first drafting read copies it
-    // into an own element; the proxy path decides those searches.
-    if (!isDense(target)) return original.apply(self, args);
     let index: number =
       args.length > 1
         ? find.call(source, value, args[1])
         : find.call(source, value);
-    while (index !== -1 && draftsOnRead(target, value, index)) {
+    while (index !== -1) {
+      // An inherited element is handed out as it is until the proxy path's
+      // first drafting read copies it into an own element; the proxy path
+      // decides such a search.
+      if (!Object.prototype.hasOwnProperty.call(source, index)) {
+        return original.apply(self, args);
+      }
+      // This array's own drafts, values assigned in the recipe and other
+      // objects outside the base state are handed out as they are.
+      if (!isBaseElement(target, value, index)) break;
+      // A base element is drafted on read when it is draftable. Before it is
+      // inspected, rule out holes, behind which an inherited element could
+      // follow.
+      if (!isDense(target)) return original.apply(self, args);
+      if (!isDraftable(value, target.options)) break;
       index = backwards
         ? index === 0
           ? -1
