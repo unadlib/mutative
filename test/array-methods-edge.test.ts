@@ -267,6 +267,21 @@ describe('native array method boundaries', () => {
     }
   );
 
+  test('calls that cannot change a sparse array keep the base', () => {
+    const sparse: (number | undefined)[] = new Array(3);
+    sparse[1] = 1;
+    const base = { sparse, one: new Array(1), empty: [] as number[] };
+    const state = create(base, (draft) => {
+      expect(draft.sparse.unshift()).toBe(3);
+      expect(draft.sparse.splice(1, 0)).toStrictEqual([]);
+      expect(draft.one.reverse()).toBe(draft.one);
+      expect(draft.empty.shift()).toBeUndefined();
+      expect(draft.sparse.indexOf(undefined)).toBe(-1);
+      expect(draft.sparse.includes(undefined)).toBe(true);
+    });
+    expect(state).toBe(base);
+  });
+
   test('an unchanged sort does not consult the array constructor', () => {
     const base = [1, 2];
     Object.defineProperty(base, 'constructor', {

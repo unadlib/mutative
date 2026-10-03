@@ -273,19 +273,19 @@ function prepare(target: ProxyDraft) {
 type Native = (...args: any[]) => any;
 
 // A method that runs `impl` on the array draft behind `this`, or the
-// original method when `this` is not an eligible draft. Methods that move
-// elements also stay on the proxy path for sparse arrays.
+// original method when `this` is not an eligible draft. `impl` receives the
+// original method to fall back to the proxy path, which methods that move
+// elements do for sparse arrays once cheaper checks have not settled the call.
 function native(
   method: keyof typeof arrayProto,
-  impl: (target: ProxyDraft, self: any, args: any[]) => any,
-  moves = false
+  impl: (target: ProxyDraft, self: any, args: any[], original: Native) => any
 ): Native {
   const original: Native = arrayProto[method] as any;
   return function (this: any, ...args: any[]) {
     const target = nativeState(this);
-    return target === null || (moves && !isDense(target))
+    return target === null
       ? original.apply(this, args)
-      : impl(target, this, args);
+      : impl(target, this, args, original);
   };
 }
 
@@ -376,38 +376,32 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         args[0]
       )
     ),
-    shift: native(
-      'shift',
-      (target) => {
-        if (latest(target).length === 0) return undefined;
-        const key = removalKey(target, 0);
-        const copy = prepare(target);
-        const value = arrayProto.shift.call(copy);
-        relocate(target, (index) => index - 1, 0, copy.length + 1);
-        return removed(target, value, key);
-      },
-      true
-    ),
-    unshift: native(
-      'unshift',
-      (target, _self, items) => {
-        const count = items.length;
-        if (count === 0) return latest(target).length;
-        const copy = prepare(target);
-        arrayProto.unshift.apply(copy, items);
-        relocate(target, (index) => index + count, 0, copy.length);
-        for (let index = 0; index < count; index += 1) {
-          registerAssigned(target, index, items[index]);
-        }
-        return copy.length;
-      },
-      true
-    ),
-    splice: native('splice', (target, self, args) => {
+    shift: native('shift', (target, self, args, original) => {
+      if (latest(target).length === 0) return undefined;
+      if (!isDense(target)) return original.apply(self, args);
+      const key = removalKey(target, 0);
+      const copy = prepare(target);
+      const value = arrayProto.shift.call(copy);
+      relocate(target, (index) => index - 1, 0, copy.length + 1);
+      return removed(target, value, key);
+    }),
+    unshift: native('unshift', (target, self, items, original) => {
+      const count = items.length;
+      if (count === 0) return latest(target).length;
+      if (!isDense(target)) return original.apply(self, items);
+      const copy = prepare(target);
+      arrayProto.unshift.apply(copy, items);
+      relocate(target, (index) => index + count, 0, copy.length);
+      for (let index = 0; index < count; index += 1) {
+        registerAssigned(target, index, items[index]);
+      }
+      return copy.length;
+    }),
+    splice: native('splice', (target, self, args, original) => {
       // Let the native algorithm retain its length and read order when
       // converting an argument can execute user code or change the draft.
       if (canExecute(args[0]) || canExecute(args[1])) {
-        return (arrayProto.splice as any).apply(self, args);
+        return original.apply(self, args);
       }
       const length = latest(target).length;
       const start = relativeIndex(args[0], length, 0);
@@ -419,7 +413,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
             : Math.min(Math.max(toInteger(args[1]), 0), length - start);
       const insertCount = Math.max(args.length - 2, 0);
       if ((deleteCount === 0 && insertCount === 0) || !isDense(target)) {
-        return (arrayProto.splice as any).apply(self, args);
+        return original.apply(self, args);
       }
       const source = latest(target);
       if (deleteCount === insertCount) {
@@ -436,9 +430,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
             break;
           }
         }
-        if (same) {
-          return (arrayProto.splice as any).apply(self, args);
-        }
+        if (same) return original.apply(self, args);
       }
       const keys: any[] = [];
       for (let index = 0; index < deleteCount; index += 1) {
@@ -476,65 +468,60 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
     }),
     // Sorting hands every element to the comparator, so only arrays of
     // primitives are sorted natively; the rest sort through the proxy.
-    sort: native(
-      'sort',
-      (target, self, [compare]) => {
-        if (
-          (compare !== undefined && typeof compare !== 'function') ||
-          !isInert(target)
-        ) {
-          return arrayProto.sort.call(self, compare);
+    sort: native('sort', (target, self, [compare], original) => {
+      if (
+        (compare !== undefined && typeof compare !== 'function') ||
+        !isInert(target) ||
+        !isDense(target)
+      ) {
+        return original.call(self, compare);
+      }
+      const source = latest(target);
+      const length = source.length;
+      // Like the native method, collect the elements before the comparator
+      // runs, then write them back over anything the comparator changed
+      // through the draft.
+      // sort does not consult constructor or Symbol.species. Collect into
+      // an ordinary array rather than invoking slice's species creation.
+      const sorted = new Array(length);
+      for (let index = 0; index < length; index += 1) {
+        sorted[index] = source[index];
+      }
+      arrayProto.sort.call(sorted, compare);
+      let changed = false;
+      for (let index = 0; index < length; index += 1) {
+        if (!isEqual(sorted[index], source[index])) {
+          changed = true;
+          break;
         }
-        const source = latest(target);
-        const length = source.length;
-        // Like the native method, collect the elements before the comparator
-        // runs, then write them back over anything the comparator changed
-        // through the draft.
-        // sort does not consult constructor or Symbol.species. Collect into
-        // an ordinary array rather than invoking slice's species creation.
-        const sorted = new Array(length);
+      }
+      const copy = changed ? prepare(target) : target.copy;
+      if (copy !== null) {
         for (let index = 0; index < length; index += 1) {
-          sorted[index] = source[index];
+          copy[index] = sorted[index];
         }
-        arrayProto.sort.call(sorted, compare);
-        let changed = false;
-        for (let index = 0; index < length; index += 1) {
-          if (!isEqual(sorted[index], source[index])) {
-            changed = true;
-            break;
-          }
+      }
+      if (changed) markRange(target, 0, length);
+      return self;
+    }),
+    reverse: native('reverse', (target, self, args, original) => {
+      const source = latest(target);
+      const length = source.length;
+      if (length < 2) return self;
+      if (!isDense(target)) return original.apply(self, args);
+      // A palindrome by identity stays untouched, as through the proxy.
+      let changed = false;
+      for (let low = 0, high = length - 1; low < high; low += 1, high -= 1) {
+        if (!isEqual(source[low], source[high])) {
+          changed = true;
+          break;
         }
-        const copy = changed ? prepare(target) : target.copy;
-        if (copy !== null) {
-          for (let index = 0; index < length; index += 1) {
-            copy[index] = sorted[index];
-          }
-        }
-        if (changed) markRange(target, 0, length);
-        return self;
-      },
-      true
-    ),
-    reverse: native(
-      'reverse',
-      (target, self) => {
-        const source = latest(target);
-        const length = source.length;
-        // A palindrome by identity stays untouched, as through the proxy.
-        let changed = false;
-        for (let low = 0, high = length - 1; low < high; low += 1, high -= 1) {
-          if (!isEqual(source[low], source[high])) {
-            changed = true;
-            break;
-          }
-        }
-        if (changed) {
-          arrayProto.reverse.call(prepare(target));
-          relocate(target, (index) => length - 1 - index, 0, length);
-        }
-        return self;
-      },
-      true
-    ),
+      }
+      if (changed) {
+        arrayProto.reverse.call(prepare(target));
+        relocate(target, (index) => length - 1 - index, 0, length);
+      }
+      return self;
+    }),
   }
 );
