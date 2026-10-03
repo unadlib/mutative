@@ -73,7 +73,7 @@ export interface ArrayState {
   baseRefs: Map<any, number> | null;
   // Whether no element can be drafted; null until checked.
   inert: boolean | null;
-  // Whether the array has neither holes nor undefined elements; null until checked.
+  // Whether the array has no holes; null until checked.
   dense: boolean | null;
 }
 

@@ -68,32 +68,22 @@ function arrayState(target: ProxyDraft) {
   });
 }
 
-// Inspect descriptors without executing element getters. Moves need defined
-// data properties for patch replay; join and sort also exclude conversion hooks.
-function hasDataElements(array: any[], inert = false) {
+// Holes are the one thing a move cannot replay through patches, so moving
+// methods leave sparse arrays to the proxy. `in` is the HasProperty check the
+// native algorithms use; it runs no element getter. Elements that are
+// `undefined` are ordinary values and move natively.
+function hasHoles(array: any[]) {
   for (let index = 0; index < array.length; index += 1) {
-    const descriptor = Object.getOwnPropertyDescriptor(array, index);
-    if (
-      !descriptor ||
-      !('value' in descriptor) ||
-      (inert ? canExecute(descriptor.value) : descriptor.value === undefined)
-    ) {
-      return false;
-    }
+    if (!(index in array)) return true;
   }
-  return true;
+  return false;
 }
 
-// The original must also be safe to inspect when finding moved base elements.
+// Cached until an assignment past the end or a length change can leave holes.
 function isDense(target: ProxyDraft) {
   const state = arrayState(target);
   let dense = state.dense;
-  if (dense === null) {
-    const source = latest(target);
-    dense = state.dense =
-      hasDataElements(target.original) &&
-      (source === target.original || hasDataElements(source));
-  }
+  if (dense === null) dense = state.dense = !hasHoles(latest(target));
   return dense;
 }
 
@@ -148,8 +138,6 @@ function registerAssigned(target: ProxyDraft, index: number, value: any) {
   if (state !== null && canExecute(value)) state.inert = null;
   if (typeof value === 'object' && value !== null) {
     markFinalization(target, key, value);
-  } else if (value === undefined && state !== null) {
-    state.dense = null;
   }
 }
 
@@ -160,7 +148,15 @@ function isInert(target: ProxyDraft) {
   const state = arrayState(target);
   let inert = state.inert;
   if (inert === null) {
-    inert = state.inert = hasDataElements(latest(target), true);
+    const source = latest(target);
+    inert = true;
+    for (let index = 0; index < source.length; index += 1) {
+      if (canExecute(source[index])) {
+        inert = false;
+        break;
+      }
+    }
+    state.inert = inert;
   }
   return inert;
 }

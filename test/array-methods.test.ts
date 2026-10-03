@@ -422,7 +422,7 @@ describe('array method review findings', () => {
     ).toEqual({ nums: [9], same: [] });
   });
 
-  test('sparse arrays and undefined elements use the proxy path', () => {
+  test('sparse arrays use the proxy path and undefined elements move natively', () => {
     const list: (number | undefined)[] = new Array(2);
     list[1] = 1;
     const base = { list, mixed: [1, undefined, 3] };
@@ -431,6 +431,7 @@ describe('array method review findings', () => {
       (draft) => {
         draft.list.reverse();
         draft.mixed.reverse();
+        draft.mixed.unshift(undefined);
       },
       { enablePatches: true }
     );
@@ -438,7 +439,9 @@ describe('array method review findings', () => {
     expect(state.list).toEqual([1, undefined]);
     expect(1 in state.list).toBe(1 in replay.list);
     expect(replay).toEqual(state);
-    expect(state.mixed).toEqual([3, undefined, 1]);
+    expect(state.mixed).toEqual([undefined, 3, undefined, 1]);
+    expect([0, 1, 2, 3].every((index) => index in state.mixed)).toBe(true);
+    expect([0, 1, 2, 3].every((index) => index in replay.mixed)).toBe(true);
   });
 });
 

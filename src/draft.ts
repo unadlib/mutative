@@ -250,13 +250,8 @@ function setTrap(
     ) {
       arrayState.inert = null;
     }
-    // An undefined value, a length change, or an index past the end can
-    // leave holes behind.
-    if (
-      value === undefined ||
-      key === 'length' ||
-      (key as number) > source.length
-    ) {
+    // A length change or an index past the end can leave holes behind.
+    if (key === 'length' || (key as number) > source.length) {
       arrayState.dense = null;
     }
   }
