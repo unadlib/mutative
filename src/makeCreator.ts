@@ -8,6 +8,7 @@ import {
   Result,
 } from './interface';
 import { draftify } from './draftify';
+import { releaseArrayMethods } from './array';
 import {
   getProxyDraft,
   isDraft,
@@ -157,7 +158,7 @@ export const makeCreator: MakeCreator = (arg) => {
     ) {
       die(ErrorCode.InvalidBaseState);
     }
-    const [draft, finalize] = draftify(state, _options);
+    const [draft, finalize, finalities] = draftify(state, _options);
     if (typeof arg1 !== 'function') {
       if (!isDraftable(state, _options)) {
         die(ErrorCode.InvalidBaseState);
@@ -169,6 +170,7 @@ export const makeCreator: MakeCreator = (arg) => {
       result = mutate(draft);
     } catch (error) {
       revokeProxy(getProxyDraft(draft));
+      releaseArrayMethods(finalities.revoke);
       throw error;
     }
     const returnValue = (value: any) => {
@@ -212,12 +214,29 @@ export const makeCreator: MakeCreator = (arg) => {
       }
       return finalize([value]);
     };
+    // Returned values are checked and finalized after the recipe, and errors
+    // raised there leave the drafts unrevoked; every path ends by releasing
+    // the array method cache, which must not keep a failed producer alive.
     if (result instanceof Promise) {
-      return result.then(returnValue, (error) => {
-        revokeProxy(getProxyDraft(draft)!);
-        throw error;
-      });
+      return result.then(
+        (value) => {
+          try {
+            return returnValue(value);
+          } finally {
+            releaseArrayMethods(finalities.revoke);
+          }
+        },
+        (error) => {
+          revokeProxy(getProxyDraft(draft)!);
+          releaseArrayMethods(finalities.revoke);
+          throw error;
+        }
+      );
     }
-    return returnValue(result);
+    try {
+      return returnValue(result);
+    } finally {
+      releaseArrayMethods(finalities.revoke);
+    }
   };
 };

@@ -17,10 +17,9 @@ const arrayIncludes = arrayProto.includes;
 
 // Receivers are recognized by identity only, so a borrowed method never reads
 // a property of an object that is not one of these drafts. The array whose
-// optimized method was read last is kept here; a finished producer revokes
-// its proxies and empties its revoke list, so these references keep no draft
-// state alive. A draft that is never finalized stays referenced until another
-// array's method is read.
+// optimized method was read last is kept here with its producer's revoke list.
+// `create` releases both when that producer ends, also when it fails after
+// the recipe returned and its drafts were never revoked.
 let recentProxy: object | null = null;
 let recentRevoke: unknown[] | null = null;
 // Arrays of a live producer whose methods were read before another array's,
@@ -40,6 +39,18 @@ export function trackArrayMethod(target: ProxyDraft) {
     }
     recentProxy = proxy;
     recentRevoke = target.finalities.revoke;
+  }
+}
+
+/**
+ * Called by `create` whenever a producer ends, normally or by an error, so
+ * this module keeps no reference to its drafts. Another producer's entry, such
+ * as an outer producer's, is left in place.
+ */
+export function releaseArrayMethods(revoke: unknown[]) {
+  if (recentRevoke === revoke) {
+    recentProxy = null;
+    recentRevoke = null;
   }
 }
 
