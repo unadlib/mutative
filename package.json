@@ -73,7 +73,7 @@
   "size-limit": [
     {
       "path": "dist/mutative.cjs.production.min.js",
-      "limit": "6.6 KB"
+      "limit": "6.5 KB"
     },
     {
       "path": "dist/mutative.esm.js",
