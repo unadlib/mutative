@@ -273,17 +273,22 @@ function prepare(target: ProxyDraft) {
 type Native = (...args: any[]) => any;
 
 // A method that runs `impl` on the array draft behind `this`, or the
-// original method when `this` is not an eligible draft. `impl` receives the
-// original method to fall back to the proxy path, which methods that move
-// elements do for sparse arrays once cheaper checks have not settled the call.
+// original method when `this` is not an eligible draft. Methods that move
+// elements also stay on the proxy path for sparse arrays. That check reads no
+// element, so it may run before `impl` decides the calls that change nothing;
+// it stays in this wrapper because V8 then keeps the hole scan in its own
+// optimized function, while the same check inside each method ran in
+// lower-tier code and doubled the time of 10,000-row moves under sustained
+// load. `impl` receives the original method for its own proxy-path fallbacks.
 function native(
   method: keyof typeof arrayProto,
-  impl: (target: ProxyDraft, self: any, args: any[], original: Native) => any
+  impl: (target: ProxyDraft, self: any, args: any[], original: Native) => any,
+  moves = false
 ): Native {
   const original: Native = arrayProto[method] as any;
   return function (this: any, ...args: any[]) {
     const target = nativeState(this);
-    return target === null
+    return target === null || (moves && !isDense(target))
       ? original.apply(this, args)
       : impl(target, this, args, original);
   };
@@ -323,19 +328,17 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         args[0]
       )
     ),
-    shift: native('shift', (target, self, args, original) => {
+    shift: native('shift', (target) => {
       if (latest(target).length === 0) return undefined;
-      if (!isDense(target)) return original.apply(self, args);
       const key = removalKey(target, 0);
       const copy = prepare(target);
       const value = arrayProto.shift.call(copy);
       relocate(target, (index) => index - 1, 0, copy.length + 1);
       return removed(target, value, key);
-    }),
-    unshift: native('unshift', (target, self, items, original) => {
+    }, true),
+    unshift: native('unshift', (target, _self, items) => {
       const count = items.length;
       if (count === 0) return latest(target).length;
-      if (!isDense(target)) return original.apply(self, items);
       const copy = prepare(target);
       arrayProto.unshift.apply(copy, items);
       relocate(target, (index) => index + count, 0, copy.length);
@@ -343,7 +346,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         registerAssigned(target, index, items[index]);
       }
       return copy.length;
-    }),
+    }, true),
     splice: native('splice', (target, self, args, original) => {
       // Let the native algorithm retain its length and read order when
       // converting an argument can execute user code or change the draft.
@@ -359,7 +362,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
             ? length - start
             : Math.min(Math.max(toInteger(args[1]), 0), length - start);
       const insertCount = Math.max(args.length - 2, 0);
-      if ((deleteCount === 0 && insertCount === 0) || !isDense(target)) {
+      if (deleteCount === 0 && insertCount === 0) {
         return original.apply(self, args);
       }
       const source = latest(target);
@@ -412,14 +415,13 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         values[index] = removed(target, values[index], keys[index]);
       }
       return values;
-    }),
+    }, true),
     // Sorting hands every element to the comparator, so only arrays of
     // primitives are sorted natively; the rest sort through the proxy.
     sort: native('sort', (target, self, [compare], original) => {
       if (
         (compare !== undefined && typeof compare !== 'function') ||
-        !isInert(target) ||
-        !isDense(target)
+        !isInert(target)
       ) {
         return original.call(self, compare);
       }
@@ -450,12 +452,11 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       }
       if (changed) markRange(target, 0, length);
       return self;
-    }),
-    reverse: native('reverse', (target, self, args, original) => {
+    }, true),
+    reverse: native('reverse', (target, self) => {
       const source = latest(target);
       const length = source.length;
       if (length < 2) return self;
-      if (!isDense(target)) return original.apply(self, args);
       // A palindrome by identity stays untouched, as through the proxy.
       let changed = false;
       for (let low = 0, high = length - 1; low < high; low += 1, high -= 1) {
@@ -469,6 +470,6 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         relocate(target, (index) => length - 1 - index, 0, length);
       }
       return self;
-    }),
+    }, true),
   }
 );
