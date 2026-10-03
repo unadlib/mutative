@@ -10,7 +10,7 @@ import {
   markChanged,
   markFinalization,
 } from './utils';
-import { checkReadable } from './unsafe';
+import { rejectsRead } from './unsafe';
 
 const arrayProto = Array.prototype;
 const arrayIncludes = arrayProto.includes;
@@ -282,10 +282,9 @@ function relocate(
 
 // Before removing the element at `index`: its draft, or the original index
 // it needs as draft key, or -1 when it is exposed as is. This runs before the
-// array changes, so a strict-mode rejection leaves the array untouched. The
-// current array decides what is at `index`; the child registry is only a
-// cache, because writes through the set trap and the proxy path do not
-// maintain it.
+// array changes. The current array decides what is at `index`; the child
+// registry is only a cache, because writes through the set trap and the proxy
+// path do not maintain it.
 function removalKey(target: ProxyDraft, index: number) {
   const value = latest(target)[index];
   if (typeof value !== 'object' || value === null) return -1;
@@ -293,7 +292,6 @@ function removalKey(target: ProxyDraft, index: number) {
   if (isDraftable(value, target.options)) {
     return baseIndex(target, value, index);
   }
-  if (target.options.strict) checkReadable(value, target.options);
   return -1;
 }
 
@@ -321,6 +319,18 @@ function prepare(target: ProxyDraft) {
 
 type Native = (...args: any[]) => any;
 
+// Strict mode rejects reading a non-draftable object outside `unsafe()`. The
+// proxy path reads the elements an operation moves or searches, so an array
+// holding such an object takes the proxy path, which fails, or succeeds,
+// exactly where it always did.
+function rejectsReads(target: ProxyDraft) {
+  const source = latest(target);
+  for (let index = 0; index < source.length; index += 1) {
+    if (rejectsRead(source[index], target.options)) return true;
+  }
+  return false;
+}
+
 // A method that runs `impl` on the array draft behind `this`, or the
 // original method when `this` is not an eligible draft. `impl` receives the
 // original method to fall back to the proxy path, which methods that move
@@ -332,7 +342,7 @@ function native(
   const original: Native = arrayProto[method] as any;
   return function (this: any, ...args: any[]) {
     const target = nativeState(this);
-    return target === null
+    return target === null || (target.options.strict && rejectsReads(target))
       ? original.apply(this, args)
       : impl(target, this, args, original);
   };
