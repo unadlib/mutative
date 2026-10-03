@@ -9,8 +9,10 @@ Mutative v1.3.0 npm baseline** (`mutative-v1` alias), and **Immer 11.1.18** in t
 root `package.json` and `pnpm-lock.yaml`. Immer 11.1.18 was npm's `latest` on
 2026-09-30. The candidate defaults to the current checkout. Its actual version,
 source revision, and production hash are reported; the current candidate is
-still 1.3.0 and must not be described as v2. Neither the benchmark
-nor its runtime imports or calls `enableArrayMethods`; the plugin stays disabled.
+still 1.3.0 and must not be described as v2. Immer's `enableArrayMethods`
+plugin is enabled only when a run passes `--immer-array-methods`; such reports
+record `arrayMethodsEnabled: true` and the budget gate rejects them. Mutative's
+native array methods need no option.
 See the existing [array-method reproductions](../test/immer-array-methods.md).
 
 The [performance summary](./reports/SUMMARY.md) records the native array
@@ -138,7 +140,8 @@ removed. Fixtures are deterministic instead of using `Math.random()`.
   Immer uses `produceWithPatches` after one-time `enablePatches` setup.
   Both return forward and inverse patches using array paths and index
   removals. This intentionally disables Mutative's default array-length patch
-  shortcut to match Immer's removal format. The array-method plugin stays off.
+  shortcut to match Immer's removal format. Immer's array-method plugin is off
+  unless `--immer-array-methods` is passed.
 - Patch generation is timed at **every reducer call**, including all calls in
   reuse, mixed, and RTKQ scenarios. Each `[state, patches, inversePatches]` tuple
   escapes via `do_not_optimize`; tuples are not accumulated. Replay, JSON

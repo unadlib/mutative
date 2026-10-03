@@ -27,9 +27,15 @@ const [autoFreeze] = options.freezes;
 const [enablePatches] = options.patches;
 const prepared = prepareScenario(options.config, scenario.name, autoFreeze);
 let lastRead;
-const runtime = createRuntime(library, autoFreeze, enablePatches, (value) => {
-  lastRead = value;
-});
+const runtime = createRuntime(
+  library,
+  autoFreeze,
+  enablePatches,
+  (value) => {
+    lastRead = value;
+  },
+  options.immerArrayMethods === true
+);
 const execute = () => {
   let state = prepared.base;
   let output = state;
@@ -59,7 +65,7 @@ const report = {
   checks,
   recordedAt: new Date().toISOString(),
   methodology: {
-    arrayMethodsEnabled: false,
+    arrayMethodsEnabled: options.immerArrayMethods === true,
     latencyMeasured: false,
     allocationIncludesCollectedObjects: true,
     allocationIncludesHarnessOverhead: true,

@@ -80,6 +80,11 @@ export function summarize(reports) {
   });
 }
 
+const pluginNote = (report) =>
+  report.runs[0].methodology?.arrayMethodsEnabled
+    ? "Immer's array-method plugin is enabled; Mutative's native array methods need no option."
+    : 'Array-method plugins are disabled.';
+
 export function formatReport(report) {
   if (report.summary.some((entry) => entry.libraries['mutative-v1'])) {
     return formatVersionedReport(report);
@@ -96,7 +101,7 @@ export function formatReport(report) {
     '',
     `Fixture: array ${first.config.arraySize}, ${first.config.nestedArraySize} nested items/row, objects with ${first.config.largeObjectSize1}/${first.config.largeObjectSize2} properties; reuse ${first.config.reuseStateIterations} calls; RTKQ ${first.config.rtkqCount} pending + ${first.config.rtkqCount} resolved calls.`,
     '',
-    'Both libraries use production artifacts. Array-method plugins are disabled. Freeze off uses unfrozen inputs; freeze on uses pre-frozen inputs and payloads. Construction, configuration, and correctness checks are outside timing. Each iteration resets to its immutable base and evolves it only within that scenario.',
+    `Both libraries use production artifacts. ${pluginNote(report)} Freeze off uses unfrozen inputs; freeze on uses pre-frozen inputs and payloads. Construction, configuration, and correctness checks are outside timing. Each iteration resets to its immutable base and evolves it only within that scenario.`,
     '',
     'Enabled patch trials generate forward and inverse operations at every reducer call. Both libraries use array paths and index-based array removals (Mutative: arrayLengthAssignment false). Every producer tuple escapes; patch application, serialization, and accumulation are excluded from timing. Operation counts sum across all calls in the scenario.',
     '',
@@ -188,7 +193,7 @@ function formatVersionedReport(report) {
     '',
     `Environment: ${first.environment.cpu}; Node ${first.environment.node}, V8 ${first.environment.v8}, ${first.environment.platform}/${first.environment.arch}.`,
     '',
-    'Production artifacts and their hashes are recorded in JSON. Array-method plugins are disabled. Setup and validation are excluded. Freeze-on inputs are pre-frozen; patch timing includes forward/inverse generation, excluding replay and serialization.',
+    `Production artifacts and their hashes are recorded in JSON. ${pluginNote(report)} Setup and validation are excluded. Freeze-on inputs are pre-frozen; patch timing includes forward/inverse generation, excluding replay and serialization.`,
     '',
     'V1/C and I/C are time ratios to the candidate; values above 1 favor the candidate. Small differences do not establish a winner.',
     '',

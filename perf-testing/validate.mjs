@@ -155,7 +155,8 @@ export function validateScenarios(options, scenarios) {
             library,
             autoFreeze,
             enablePatches,
-            (value) => reads.push(value)
+            (value) => reads.push(value),
+            options.immerArrayMethods === true
           );
           const label = `${scenario.name}/${library}/freeze=${autoFreeze}/patches=${enablePatches}`;
           const validated = enablePatches

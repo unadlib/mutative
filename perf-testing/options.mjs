@@ -33,6 +33,7 @@ export function readOptions(defaults = {}) {
         type: 'string',
         default: String(DEFAULT_CONFIG.rtkqCount),
       },
+      'immer-array-methods': { type: 'boolean', default: false },
       output: { type: 'string' },
       iterations: { type: 'string', default: '1000' },
       'memory-iterations': { type: 'string', default: '32' },
@@ -50,6 +51,7 @@ export function readOptions(defaults = {}) {
   --patches both|off|on    Generate forward and inverse patches (default: ${defaults.patches ?? 'off'})
   --library all|both|mutative|mutative-v1|immer (default: ${defaults.library ?? 'all'})
                            all = candidate + pinned v1 + Immer; both = candidate + Immer
+  --immer-array-methods    Enable Immer's array-method plugin (default: off)
   --array-size N           Default: 100; minimum: 10
   --nested-array-size N    Default: 10
   --object-size-1 N        Default: 1000
@@ -65,7 +67,8 @@ export function readOptions(defaults = {}) {
 
 Auto-freeze on uses pre-frozen inputs and payloads. Patches use array paths
 and index removals in both libraries; application and serialization are not
-timed. Array-method plugins are never enabled. Setup is excluded from timing.`);
+timed. Immer's array-method plugin is enabled only with --immer-array-methods;
+Mutative's native array methods need no option. Setup is excluded from timing.`);
     process.exit(0);
   }
 
@@ -121,6 +124,7 @@ timed. Array-method plugins are never enabled. Setup is excluded from timing.`);
       reuseStateIterations: integer('reuse-iterations'),
       rtkqCount: integer('rtkq-count'),
     },
+    immerArrayMethods: values['immer-array-methods'],
     output: values.output,
     check: values.check,
     list: values.list,
