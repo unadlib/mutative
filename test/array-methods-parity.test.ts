@@ -239,3 +239,197 @@ describe('strict mode reads of non-draftable elements', () => {
     }
   );
 });
+
+describe('element inspections stay within the proxy path', () => {
+  const revoked = () => {
+    const { proxy, revoke } = Proxy.revocable({}, {});
+    revoke();
+    return proxy;
+  };
+
+  const call = (
+    draft: any,
+    borrowed: boolean,
+    method: string,
+    args: unknown[]
+  ) =>
+    borrowed
+      ? (Array.prototype as any)[method].apply(draft, args)
+      : draft[method](...args);
+
+  test.each([
+    ['indexOf hits before the element', [1, 'element'], 'indexOf', [1]],
+    ['indexOf starts at Infinity', [1, 'element'], 'indexOf', [1, Infinity]],
+    ['unshift without items', [1, 'element'], 'unshift', []],
+    [
+      'fromIndex conversion truncates the element away',
+      [1, 2, 'element'],
+      'indexOf',
+      ['truncate'],
+    ],
+  ] as const)('strict mode: %s', (_name, layout, method, rawArgs) => {
+    const strictModes = Object.entries(modes).filter(
+      ([modeName]) => modeName !== 'default'
+    );
+    for (const [, mode] of strictModes) {
+      const run = (borrowed: boolean) => {
+        const base = layout.map((value) =>
+          value === 'element' ? revoked() : value
+        );
+        return outcome(
+          base,
+          (draft) => {
+            const args =
+              rawArgs[0] === 'truncate'
+                ? [
+                    2,
+                    {
+                      valueOf() {
+                        draft.length = 2;
+                        return 0;
+                      },
+                    },
+                  ]
+                : rawArgs;
+            return call(draft, borrowed, method, args as unknown[]);
+          },
+          mode.options,
+          mode.wrap
+        );
+      };
+      expect(run(false)).toStrictEqual(run(true));
+    }
+  });
+
+  test.each(['indexOf', 'lastIndexOf', 'includes'] as const)(
+    '%s finds inherited elements as reads return them',
+    (method) => {
+      const item = { id: 1 };
+      // eslint-disable-next-line no-extend-native
+      Object.defineProperty(Array.prototype, '10', {
+        value: item,
+        writable: true,
+        configurable: true,
+      });
+      try {
+        for (const args of [[item], [item, 5], [item, -1], [item, 11]]) {
+          for (const makeBase of [
+            () => new Array(11),
+            () => Object.assign(new Array(11), { 2: item }),
+          ]) {
+            const run = (borrowed: boolean) =>
+              outcome(
+                makeBase(),
+                (draft) => call(draft, borrowed, method, args),
+                {}
+              );
+            expect(run(false)).toStrictEqual(run(true));
+          }
+        }
+      } finally {
+        delete (Array.prototype as any)[10];
+      }
+    }
+  );
+
+  // Proxy elements log every internal method that runs on them. The native
+  // paths may skip inspections the proxy path makes, but never run more of
+  // any kind, and both give the same results.
+  const calls: [string, unknown[], (proxy: object) => unknown[]][] = [
+    ['shift', [], () => []],
+    ['unshift', [0], () => [0]],
+    ['splice', [0, 1], () => [0, 1]],
+    ['splice', [0, 1, 5], () => [0, 1, 5]],
+    ['splice', [0, 1, 'element'], (proxy) => [0, 1, proxy]],
+    ['splice', [1, 1, 5], () => [1, 1, 5]],
+    ['reverse', [], () => []],
+    ['sort', [], () => []],
+    ['indexOf', [2], () => [2]],
+    ['indexOf', ['element'], (proxy) => [proxy]],
+    ['lastIndexOf', [1], () => [1]],
+    ['includes', ['element'], (proxy) => [proxy]],
+  ];
+
+  test.each(calls)(
+    '%s(%j) runs no more element traps than the proxy path',
+    (method, _label, makeArgs) => {
+      for (const layout of [
+        ['proxy', 1, 2],
+        [1, 'proxy', 2],
+        [1, 2, 'proxy'],
+        [1, 'assigned', 2],
+      ]) {
+        const run = (borrowed: boolean) => {
+          const traps = new Map<string, number>();
+          const handler: ProxyHandler<object> = {};
+          for (const name of [
+            'get',
+            'getPrototypeOf',
+            'has',
+            'ownKeys',
+            'getOwnPropertyDescriptor',
+            'set',
+            'defineProperty',
+            'deleteProperty',
+          ] as const) {
+            (handler as any)[name] = (...trapArgs: any[]) => {
+              traps.set(name, (traps.get(name) ?? 0) + 1);
+              return (Reflect as any)[name](...trapArgs);
+            };
+          }
+          const proxy = new Proxy({ id: 0 }, handler);
+          const base = layout.map((value) =>
+            value === 'proxy' ? proxy : value === 'assigned' ? 0 : value
+          );
+          const result = outcome(
+            base,
+            (draft) => {
+              if (layout.includes('assigned')) draft[1] = proxy;
+              return call(draft, borrowed, method, makeArgs(proxy));
+            },
+            {}
+          );
+          return { traps, result };
+        };
+        const optimized = run(false);
+        const expected = run(true);
+        expect(optimized.result).toStrictEqual(expected.result);
+        for (const [name, count] of optimized.traps) {
+          expect(
+            { layout, trap: name, count },
+            `${method} with ${layout.join(',')}`
+          ).toStrictEqual({
+            layout,
+            trap: name,
+            count: Math.min(count, expected.traps.get(name) ?? 0),
+          });
+        }
+      }
+    }
+  );
+
+  test.each(calls)(
+    '%s(%j) never throws on a revoked element where the proxy path does not',
+    (method, _label, makeArgs) => {
+      for (const position of [0, 1, 2]) {
+        const run = (borrowed: boolean) => {
+          const element = revoked();
+          const base: any[] = [1, 2, 3];
+          base[position] = element;
+          return outcome(
+            base,
+            (draft) => call(draft, borrowed, method, makeArgs(element)),
+            {}
+          );
+        };
+        const optimized = run(false);
+        const expected = run(true);
+        if (optimized.result.startsWith('throws')) {
+          expect(expected.result.startsWith('throws')).toBe(true);
+        } else if (!expected.result.startsWith('throws')) {
+          expect(optimized).toStrictEqual(expected);
+        }
+      }
+    }
+  );
+});
