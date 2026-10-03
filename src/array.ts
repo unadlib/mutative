@@ -325,7 +325,9 @@ type Native = (...args: any[]) => any;
 // elements do for sparse arrays once cheaper checks have not settled the call.
 // In strict mode, outside `unsafe()`, the proxy path checks each element it
 // reads, and calls take it as they are: predicting its reads would inspect
-// elements it never reads, and before arguments are converted.
+// elements it never reads, and before arguments are converted. Strict mode
+// only rejects objects, so an array of primitives keeps the native paths; it
+// is recognized with `typeof` alone, which runs no trap, and cached per draft.
 function native(
   method: keyof typeof arrayProto,
   impl: (target: ProxyDraft, self: any, args: any[], original: Native) => any
@@ -333,7 +335,7 @@ function native(
   const original: Native = arrayProto[method] as any;
   return function (this: any, ...args: any[]) {
     const target = nativeState(this);
-    return target === null || checksReads(target.options)
+    return target === null || (checksReads(target.options) && !isInert(target))
       ? original.apply(this, args)
       : impl(target, this, args, original);
   };
