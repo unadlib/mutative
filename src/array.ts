@@ -284,15 +284,16 @@ function relocate(
 // it needs as draft key, or -1 when it is exposed as is. This runs before the
 // array changes. The current array decides what is at `index`; the child
 // registry is only a cache, because writes through the set trap and the proxy
-// path do not maintain it.
+// path do not maintain it. As in the get trap, no property of the element is
+// read: an element of the base state is drafted, and anything else, such as a
+// draft assigned from another path, is exposed as it is.
 function removalKey(target: ProxyDraft, index: number) {
   const value = latest(target)[index];
   if (typeof value !== 'object' || value === null) return -1;
-  if (childAt(target, index) === value || getProxyDraft(value)) return value;
-  if (isDraftable(value, target.options)) {
-    return baseIndex(target, value, index);
-  }
-  return -1;
+  if (childAt(target, index) === value) return value;
+  return isDraftable(value, target.options)
+    ? baseIndex(target, value, index)
+    : -1;
 }
 
 // A removed element is exposed as a draft when the user could otherwise
@@ -341,6 +342,20 @@ function native(
   };
 }
 
+// Whether `value`, found at `index`, is an element of the base state, by
+// identity alone. A read through the proxy drafts such an element when it is
+// draftable.
+function isBaseElement(target: ProxyDraft, value: object, index: number) {
+  if (value === target.original[index]) return true;
+  const state = target.arrayState;
+  return (
+    state !== null &&
+    state.relocated &&
+    childAt(target, index) !== value &&
+    baseIndices(target).has(value)
+  );
+}
+
 // Whether a read of `value` at `index` through the proxy would hand out a new
 // draft instead of `value` itself, as it does for an object of the base state.
 // An element inherited from the prototype, this array's own drafts, values
@@ -351,15 +366,11 @@ function draftsOnRead(
   value: object,
   index: number
 ) {
-  if (!Object.prototype.hasOwnProperty.call(source, index)) return false;
-  if (value === target.original[index]) {
-    return isDraftable(value, target.options);
-  }
-  const state = target.arrayState;
-  if (state === null || !state.relocated || childAt(target, index) === value) {
-    return false;
-  }
-  return baseIndices(target).has(value) && isDraftable(value, target.options);
+  return (
+    Object.prototype.hasOwnProperty.call(source, index) &&
+    isBaseElement(target, value, index) &&
+    isDraftable(value, target.options)
+  );
 }
 
 // Identity searches run natively on the current array and return what the
@@ -460,16 +471,29 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       const source = latest(target);
       if (deleteCount === insertCount) {
         // Replacing elements with equal values changes nothing, as through
-        // the proxy; the removed elements are still exposed as drafts.
+        // the proxy; the removed elements are still exposed as drafts. This
+        // array's own draft also stands for its original. An own element of
+        // the base state only equals itself there. For any other object, the
+        // proxy path's assignment reads its draft symbol, so that path
+        // decides the call.
         let same = true;
-        for (let index = 0; index < insertCount; index += 1) {
-          const value = source[start + index];
-          if (
-            !isEqual(args[index + 2], value) &&
-            !isEqual(args[index + 2], getProxyDraft(value)?.original)
-          ) {
-            same = false;
-            break;
+        for (let index = 0; same && index < insertCount; index += 1) {
+          const at = start + index;
+          const value = source[at];
+          const item = args[index + 2];
+          if (!isEqual(item, value)) {
+            if (
+              typeof value !== 'object' ||
+              value === null ||
+              (Object.prototype.hasOwnProperty.call(source, at) &&
+                isBaseElement(target, value, at))
+            ) {
+              same = false;
+            } else if (childAt(target, at) === value) {
+              same = isEqual(item, getProxyDraft(value)!.original);
+            } else {
+              return original.apply(self, args);
+            }
           }
         }
         if (same) return original.apply(self, args);
