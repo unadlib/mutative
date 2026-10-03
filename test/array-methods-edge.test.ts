@@ -18,20 +18,22 @@ describe('native array method boundaries', () => {
               },
             }
           );
+          // The proxy path is the reference: an element of the base state is
+          // drafted on read, so it is never found.
+          const viaProxy = (base: any[], ...args: any[]) => {
+            let result: unknown;
+            create(base, (draft) => {
+              if (validated) draft.reverse();
+              result = (Array.prototype[method] as Function).apply(draft, args);
+            });
+            return result;
+          };
           for (const base of [[], [1, 1], [needle, needle]] as any[][]) {
             const state = create(base, (draft) => {
               if (validated) draft.reverse();
-              const expected = (Array.prototype[method] as Function).call(
-                base,
-                needle
-              );
-              expect(draft[method](needle)).toBe(expected);
+              expect(draft[method](needle)).toBe(viaProxy(base, needle));
               expect(draft[method](needle, Infinity)).toBe(
-                (Array.prototype[method] as Function).call(
-                  base,
-                  needle,
-                  Infinity
-                )
+                viaProxy(base, needle, Infinity)
               );
             });
             expect(state).toBe(base);
@@ -72,10 +74,13 @@ describe('native array method boundaries', () => {
               method === 'includes' ? false : -1
             );
           });
+          // Reading a revoked proxy stored in the base state throws through
+          // the proxy, and the native search fails the same way.
           create([needle], (array) => {
-            expect(array[method](needle)).toBe(
-              method === 'includes' ? true : 0
-            );
+            expect(() => array[method](needle)).toThrow(TypeError);
+            expect(() =>
+              (Array.prototype[method] as Function).call(array, needle)
+            ).toThrow(TypeError);
           });
         }
       });
@@ -88,8 +93,10 @@ describe('native array method boundaries', () => {
           expect(draft.list[method](draft.shared)).toBe(
             method === 'includes' ? false : -1
           );
+          // An element of the base state is drafted on read, so the base
+          // object is not found before or after the element was read.
           expect(draft.list[method](shared)).toBe(
-            method === 'includes' ? true : 0
+            method === 'includes' ? false : -1
           );
           expect(draft.list[method](draft.list[0])).toBe(
             method === 'includes' ? true : 0
@@ -109,10 +116,14 @@ describe('native array method boundaries', () => {
               method === 'includes' ? false : -1
             );
           });
+          // Stored in the base state, the other draft is drafted on read too.
           create([needle], (array) => {
             expect(array[method](needle)).toBe(
-              method === 'includes' ? true : 0
+              method === 'includes' ? false : -1
             );
+            expect(
+              (Array.prototype[method] as Function).call(array, needle)
+            ).toBe(method === 'includes' ? false : -1);
           });
         } finally {
           finish();
