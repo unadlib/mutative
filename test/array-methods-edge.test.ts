@@ -80,11 +80,22 @@ describe('native array method boundaries', () => {
         }
       });
 
-      test('matches the original of a draft owned by this producer', () => {
+      test('compares a draft of the same object from another path by reference', () => {
         const shared = { id: 1 };
         create({ shared, list: [shared] }, (draft) => {
+          // The list's own draft for the element differs from `draft.shared`,
+          // as it does through the proxy.
           expect(draft.list[method](draft.shared)).toBe(
+            method === 'includes' ? false : -1
+          );
+          expect(draft.list[method](shared)).toBe(
             method === 'includes' ? true : 0
+          );
+          expect(draft.list[method](draft.list[0])).toBe(
+            method === 'includes' ? true : 0
+          );
+          expect(draft.list[method](shared)).toBe(
+            method === 'includes' ? false : -1
           );
         });
       });

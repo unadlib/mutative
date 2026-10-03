@@ -292,32 +292,16 @@ function native(
 // Identity searches run natively on the current array. A primitive index
 // argument converts without side effects, so the native method may convert
 // it; an index that can run user code is converted on the proxy path, which
-// keeps the length it read first. Drafts held by the array are found by
-// reference, as through the proxy. A draft from this producer also matches
-// the original it stands for. Other producers' drafts and external proxies
-// are opaque identity values.
+// keeps the length it read first. Values are compared by reference only, as
+// through the proxy: the drafts this array created are held by its copy, and
+// the search never reads a property of the value it is given.
 function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
   const nativeSearch: Native = arrayProto[method] as any;
   return native(method, (target, self, args, original) => {
     const source = latest(target);
     if (source.length === 0) return method === 'includes' ? false : -1;
     if (canExecute(args[1])) return original.apply(self, args);
-    const found = nativeSearch.apply(source, args);
-    const value = args[0];
-    if (
-      (found === -1 || found === false) &&
-      typeof value === 'object' &&
-      value !== null
-    ) {
-      // Use trusted state already owned by this producer. Asking the needle
-      // for its draft symbol would invoke arbitrary getters or Proxy traps.
-      for (const draft of target.finalities.draft) {
-        if (typeof draft !== 'function' && draft.proxy === value) {
-          return nativeSearch.call(source, draft.original, ...args.slice(1));
-        }
-      }
-    }
-    return found;
+    return nativeSearch.apply(source, args);
   });
 }
 
