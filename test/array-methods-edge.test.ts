@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { apply, create } from '../src';
+import { apply, create, isDraft } from '../src';
 
 describe('native array method boundaries', () => {
   describe.each(['indexOf', 'lastIndexOf', 'includes'] as const)(
@@ -459,4 +459,102 @@ describe('native array method boundaries', () => {
       expect(base).toStrictEqual([{ id: 1 }, { id: 2 }]);
     }
   );
+});
+
+describe('native array method contract', () => {
+  // Native JS on a plain copy is the reference: values and own-property
+  // presence must agree at every index, and patches must replay both ways.
+  const shape = (array: any[]) => ({
+    length: array.length,
+    values: Array.from(array, (value) => value),
+    own: Array.from(array, (_value, index) => index in array),
+  });
+  const run = (base: any[], recipe: (array: any[]) => unknown) => {
+    const expected = Array.prototype.concat.call(base) as any[];
+    const expectedResult = recipe(expected);
+    let result: unknown;
+    const [state, patches, inverse] = create(
+      base,
+      (draft) => {
+        result = recipe(draft);
+      },
+      { enablePatches: true }
+    );
+    expect(shape(state)).toStrictEqual(shape(expected));
+    expect(result === undefined ? result : JSON.stringify(result)).toBe(
+      expectedResult === undefined ? expectedResult : JSON.stringify(expectedResult)
+    );
+    expect(shape(apply(base, patches))).toStrictEqual(shape(state));
+    expect(shape(apply(state, inverse))).toStrictEqual(shape(base));
+    return state;
+  };
+
+  test.each([
+    { name: 'shift', recipe: (array: any[]) => array.shift() },
+    { name: 'unshift(undefined)', recipe: (array: any[]) => array.unshift(undefined) },
+    { name: 'unshift(9, undefined)', recipe: (array: any[]) => array.unshift(9, undefined) },
+    { name: 'splice(1, 1)', recipe: (array: any[]) => array.splice(1, 1) },
+    { name: 'splice(1, 1, undefined)', recipe: (array: any[]) => array.splice(1, 1, undefined) },
+    { name: 'splice(0, 2, undefined, 7, 8)', recipe: (array: any[]) => array.splice(0, 2, undefined, 7, 8) },
+    { name: 'splice(-1)', recipe: (array: any[]) => array.splice(-1) },
+    { name: 'reverse', recipe: (array: any[]) => array.reverse() && 'self' },
+    { name: 'sort', recipe: (array: any[]) => array.sort() && 'self' },
+    { name: 'sort((a, b) => b - a)', recipe: (array: any[]) => array.sort((a, b) => b - a) && 'self' },
+    {
+      name: 'shift then unshift(2)',
+      recipe: (array: any[]) => {
+        array.shift();
+        return array.unshift(2);
+      },
+    },
+  ])('$name keeps undefined elements as own properties like native JS', ({ recipe }) => {
+    run([0, undefined, 2, undefined], recipe);
+    run([undefined, 3, 1], recipe);
+    run([undefined], recipe);
+  });
+
+  test('moved undefined elements keep the drafts around them', () => {
+    const base = [{ id: 1 }, undefined, { id: 2 }, undefined] as any[];
+    let first: any;
+    const state = run(base, (array) => {
+      if (isDraft(array)) first = array[0];
+      array.reverse();
+      if (isDraft(array)) expect(array[3]).toBe(first);
+      array.splice(1, 1);
+      if (isDraft(array)) expect(array[2]).toBe(first);
+      return array.length;
+    });
+    expect(state).toStrictEqual([undefined, undefined, { id: 1 }]);
+    expect(state[2]).toBe(base[0]);
+  });
+
+  test.each(['indexOf', 'lastIndexOf', 'includes'] as const)(
+    '%s finds undefined elements like native JS',
+    (method) => {
+      const base = [undefined, 1, undefined, NaN];
+      create(base, (draft) => {
+        for (const args of [[undefined], [undefined, 1], [undefined, -1], [NaN], [1, -2]]) {
+          expect((draft[method] as Function)(...args)).toBe(
+            (Array.prototype[method] as Function).call(base, ...args)
+          );
+        }
+      });
+    }
+  );
+
+  test('holes still take the proxy path and stay holes in the result and its replay', () => {
+    const base: any[] = [0, 1, 2];
+    const [state, patches] = create(
+      base,
+      (draft) => {
+        draft[4] = 4;
+        draft.reverse();
+        draft.shift();
+      },
+      { enablePatches: true }
+    );
+    const replay = apply(base, patches);
+    expect(shape(replay).values).toStrictEqual(shape(state).values);
+    expect(shape(replay).own).toStrictEqual(shape(state).own);
+  });
 });
