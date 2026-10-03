@@ -7,15 +7,24 @@ import { create, unsafe } from '../src';
 // borrowed method, and compares outcomes and states.
 type Outcome = { result: string; state: string };
 
+// Describes values outside a recipe. Inspecting a revoked Proxy throws, even
+// through `instanceof` or `Array.isArray`, so such a value is described as
+// unreadable instead.
 const describeValue = (value: unknown): string => {
   if (typeof value === 'number' && Object.is(value, -0)) return '-0';
   if (typeof value === 'number' && Number.isNaN(value)) return 'NaN';
-  if (value instanceof Date) return 'Date';
-  if (Array.isArray(value)) return `[${value.map(describeValue).join(',')}]`;
-  if (typeof value === 'object' && value !== null) return JSON.stringify(value);
-  return String(value);
+  if (typeof value !== 'object' || value === null) return String(value);
+  try {
+    if (value instanceof Date) return 'Date';
+    if (Array.isArray(value)) return `[${value.map(describeValue).join(',')}]`;
+    return JSON.stringify(value);
+  } catch (error: any) {
+    return `unreadable ${error.name}`;
+  }
 };
 
+// Runs `recipe` on a draft of `base`, a root array or an object holding one
+// at `list`, and describes the value it returns and the final array.
 function outcome(
   base: any,
   recipe: (draft: any) => unknown,
@@ -31,7 +40,10 @@ function outcome(
         wrap(() => {
           try {
             const value = recipe(draft);
-            result = value === draft.list ? 'self' : describeValue(value);
+            result =
+              value === draft || value === draft.list
+                ? 'self'
+                : describeValue(value);
           } catch (error: any) {
             result = `throws ${error.name}: ${error.message}`;
           }
@@ -42,8 +54,35 @@ function outcome(
   } catch (error: any) {
     return { result, state: `create throws ${error.name}` };
   }
-  return { result, state: describeValue(state.list) };
+  return {
+    result,
+    state: describeValue(Array.isArray(state) ? state : state.list),
+  };
 }
+
+test('outcomes describe root arrays and arrays held at list', () => {
+  expect(outcome([1, 2, 3], (draft) => draft.shift(), {})).toStrictEqual({
+    result: '1',
+    state: '[2,3]',
+  });
+  expect(outcome([1, 2, 3], () => 1, {})).toStrictEqual({
+    result: '1',
+    state: '[1,2,3]',
+  });
+  expect(outcome([1, 2, 3], (draft) => draft.reverse(), {})).toStrictEqual({
+    result: 'self',
+    state: '[3,2,1]',
+  });
+  expect(
+    outcome({ list: [1, 2] }, (draft) => draft.list.reverse(), {})
+  ).toStrictEqual({ result: 'self', state: '[2,1]' });
+  const { proxy, revoke } = Proxy.revocable({}, {});
+  revoke();
+  expect(outcome([proxy], () => 0, {})).toStrictEqual({
+    result: '0',
+    state: '[unreadable TypeError]',
+  });
+});
 
 const searchFixture = (withDate: boolean) => {
   const item = { id: 1 };
@@ -361,6 +400,8 @@ describe('element inspections stay within the proxy path', () => {
       ]) {
         const run = (borrowed: boolean) => {
           const traps = new Map<string, number>();
+          // Only the method call is counted, not describing its outcome.
+          const counting = { active: false };
           const handler: ProxyHandler<object> = {};
           for (const name of [
             'get',
@@ -373,7 +414,9 @@ describe('element inspections stay within the proxy path', () => {
             'deleteProperty',
           ] as const) {
             (handler as any)[name] = (...trapArgs: any[]) => {
-              traps.set(name, (traps.get(name) ?? 0) + 1);
+              if (counting.active) {
+                traps.set(name, (traps.get(name) ?? 0) + 1);
+              }
               return (Reflect as any)[name](...trapArgs);
             };
           }
@@ -385,7 +428,12 @@ describe('element inspections stay within the proxy path', () => {
             base,
             (draft) => {
               if (layout.includes('assigned')) draft[1] = proxy;
-              return call(draft, borrowed, method, makeArgs(proxy));
+              counting.active = true;
+              try {
+                return call(draft, borrowed, method, makeArgs(proxy));
+              } finally {
+                counting.active = false;
+              }
             },
             {}
           );
