@@ -163,6 +163,7 @@ export const makeCreator: MakeCreator = (arg) => {
       if (!isDraftable(state, _options)) {
         die(ErrorCode.InvalidBaseState);
       }
+      finalities.scoped = false;
       return [draft, finalize];
     }
     let result: any;

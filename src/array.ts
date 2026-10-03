@@ -19,7 +19,9 @@ const arrayIncludes = arrayProto.includes;
 // a property of an object that is not one of these drafts. The array whose
 // optimized method was read last is kept here with its producer's revoke list.
 // `create` releases both when that producer ends, also when it fails after
-// the recipe returned and its drafts were never revoked.
+// the recipe returned and its drafts were never revoked. Drafts returned by
+// `create(base)` without a recipe have no such end and are only registered
+// weakly.
 let recentProxy: object | null = null;
 let recentRevoke: unknown[] | null = null;
 // Arrays of a live producer whose methods were read before another array's,
@@ -37,8 +39,14 @@ export function trackArrayMethod(target: ProxyDraft) {
     if (recentRevoke !== null && recentRevoke.length > 0) {
       arrayProxies.add(recentProxy!);
     }
-    recentProxy = proxy;
-    recentRevoke = target.finalities.revoke;
+    if (target.finalities.scoped) {
+      recentProxy = proxy;
+      recentRevoke = target.finalities.revoke;
+    } else {
+      arrayProxies.add(proxy);
+      recentProxy = null;
+      recentRevoke = null;
+    }
   }
 }
 
