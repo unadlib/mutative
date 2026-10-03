@@ -38,6 +38,10 @@ export interface Finalities {
   draft: (ProxyDraft | FinalizeCallback)[];
   revoke: (() => void)[];
   handledSet: WeakSet<any>;
+  // Whether the producer runs a recipe inside `create`, which then sees it end
+  // and releases module-level references to its drafts. False for drafts
+  // returned by `create(base)` without a recipe.
+  scoped: boolean;
 }
 
 export interface ProxyDraft<T = any> {
