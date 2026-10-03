@@ -12,6 +12,42 @@ methods need no option. The raw datasets of this batch were not archived; the
 identities and commands below reproduce them, and the
 [archive index](./README.md) describes the retention policy for batches that are.
 
+## Follow-up: element inspections
+
+Review found that the strict-mode check of `83dffa2` inspected every element
+before each call: it ran `isDraftable` on elements that the proxy path never
+reads, before arguments were converted, and on calls that read no element at
+all. A Proxy element saw a `getPrototypeOf` the proxy path never makes, a
+revoked one threw, and every strict call paid a scan of the whole array. Search
+validation also treated an element inherited from the prototype as an own
+element of the base state. Auditing the same root cause turned up more: a
+removal and an unchanged `splice` read the draft symbol of the elements they
+replaced, and every native move registered the assigned objects that stayed
+in place again.
+
+The rule that now holds is that a native path may skip an inspection the
+proxy path makes, but never makes one the proxy path does not, nor earlier.
+`06d9d6e` sends strict calls outside `unsafe()` to the proxy path as they are,
+and `662ee8a` keeps native paths for arrays of primitives, recognized with
+`typeof`, which runs no trap. `a3eca67`, `69d0762` and `f716d25` accept
+inherited hits as reads do and let the proxy path decide object searches that
+meet an inherited element, or a base element in an array with holes, because
+its first drafting read copies inherited elements into own ones. `752a212`
+decides removals and unchanged splices by identity, and `6e74707` registers only
+the assigned objects that move. `test/array-methods-parity.test.ts` now counts
+the internal methods that run on Proxy elements for every optimized method and
+checks that the native path runs none more often, never throws on a revoked
+element where the proxy path does not, and matches it in strict mode and for
+inherited elements; the previous head fails 13 of these tests.
+
+A harness A/B against the previous head, two passes each with freeze and
+patches off, measured 100-row and 10,000-row array operations within 2%.
+Searches for primitives, the array's own drafts and absent objects are
+unchanged; a search that meets an unread base object now first checks the
+array for holes, about 9 µs at 10,000 rows. In strict mode, a 10,000-row
+`reverse` of numbers takes about 50 µs, while arrays of objects take the proxy
+path, as on `main`. The production CJS artifact grew by 6 Brotli bytes.
+
 ## Follow-up: search results and strict mode
 
 Review found that a native search could find an unread object of the base
@@ -24,8 +60,9 @@ errors that the proxy path raises when it reads a non-draftable object.
 Commit `f85df41` compares search hits as a read returns them: a native hit on
 an object that a read would draft is skipped, and the search continues past
 it, so searches give the proxy path's results everywhere, as on `main`. Commit
-`83dffa2` sends an array that holds a non-draftable object to the proxy path in
-strict mode, outside `unsafe()`. `test/array-methods-parity.test.ts` checks
+`83dffa2` sent an array that holds a non-draftable object to the proxy path in
+strict mode, outside `unsafe()`; `06d9d6e` later replaced that check, as
+described above. `test/array-methods-parity.test.ts` checks
 `indexOf`, `lastIndexOf` and `includes` against the borrowed builtin for nine
 kinds of search value, eight `fromIndex` forms, five array histories, default
 and strict mode, `unsafe()` and a no-op `mark`, and checks the strict-mode
@@ -78,11 +115,18 @@ and unchanged calls behave as on the proxy path:
   are found. An object of the base state is drafted on read and never found,
   whether or not it was read before; search `original(draft)` to compare
   original objects. A native hit on such an object is skipped and the search
-  continues past it. The search never reads a property of the value it is
-  given.
-- In strict mode, an array holding a non-draftable object takes the proxy path
-  for every optimized method, so reading such an element fails exactly where it
-  always did. Inside `unsafe()` the native paths are used.
+  continues past it. A hit on an inherited element, or on a base element of an
+  array with holes, is decided by the proxy path. The search never reads a
+  property of the value it is given.
+- In strict mode, outside `unsafe()`, optimized calls on an array that may hold
+  objects take the proxy path unchanged, so reading a non-draftable element
+  fails exactly where it always did. Arrays of primitives, recognized with
+  `typeof`, keep the native paths.
+- Elements are moved and compared without being inspected. The proxy path
+  inspects each element it reads, so an element that is itself a Proxy may see
+  fewer calls to its internal methods on the native paths, never more and never
+  at other times; for example, a revoked Proxy element that a native search
+  passes over does not throw.
 - `sort` and `join` run natively on arrays of primitives.
 - Removed elements are returned as drafts, patches replay in both directions,
   and a call that changes nothing keeps the state. Calls that cannot change the
@@ -223,12 +267,12 @@ freeze on, and 1.2–2.1x with patches on.
 
 ## Tradeoffs and limits
 
-- Bundle size at `b4d7d8a`: the production CJS artifact is 26,109 bytes raw
-  and 8,035 bytes Brotli. That is 85 Brotli bytes above the accepted baseline
-  before this round (`415b91c`) and 6,595 raw, 2,116 gzip and 1,942 Brotli
+- Bundle size at `3679e30`: the production CJS artifact is 26,164 bytes raw
+  and 8,041 bytes Brotli. That is 91 Brotli bytes above the accepted baseline
+  before this round (`415b91c`) and 6,650 raw, 2,128 gzip and 1,948 Brotli
   bytes above `main`. `size-limit` measures 6.64 kB against a 6.7 kB cap,
-  which is 5 kB on `main`; the ESM consumer measures 5.44 kB against 6.5 kB.
-  The measured `363b3da` was 236 Brotli bytes smaller. The README compares the
+  which is 5 kB on `main`; the ESM consumer measures 5.45 kB against 6.5 kB.
+  The measured `363b3da` was 242 Brotli bytes smaller. The README compares the
   result with Immer plus the equivalent plugins.
 - With patches enabled the gain narrows because one patch per moved index is
   emitted either way; without patches, moving operations on 10,000-row arrays
