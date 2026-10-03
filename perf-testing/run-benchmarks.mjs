@@ -4,7 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readOptions } from './options.mjs';
 import { formatReport, summarize } from './report.mjs';
-import { createScenarios } from './scenarios.mjs';
+import { createScenarios, supportsMode } from './scenarios.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const options = readOptions();
@@ -14,32 +14,56 @@ const runDirectory = mkdtempSync(join(resultsDirectory, 'run-'));
 const reports = [];
 const escape = (name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const timed = !options.check && !options.list;
+const scenarios = createScenarios(options.config, options.filter);
+const runsMode = (scenario, library) =>
+  options.freezes.some((autoFreeze) =>
+    options.patches.some((enablePatches) =>
+      supportsMode(scenario, library, autoFreeze, enablePatches)
+    )
+  );
 // Immer calls its MapSet plugin while finalizing every draft once the plugin
 // is loaded. Map and Set scenarios therefore run in processes of their own, so
-// the other scenarios measure Immer without it.
-const groups = timed
-  ? [false, true]
-      .map((mapSet) =>
-        createScenarios(options.config, options.filter).filter(
-          (scenario) => scenario.mapSet === mapSet
-        )
+// the other scenarios measure Immer without it. With --isolate, every scenario
+// and library gets a process: V8's object shapes, left by whatever ran earlier
+// in a process, change wide-object timings many times over.
+const groups = !timed
+  ? [{ filter: options.filter, libraries: options.libraries }]
+  : options.isolate
+    ? scenarios.flatMap((scenario) =>
+        options.libraries
+          .filter((library) => runsMode(scenario, library))
+          .map((library) => ({
+            filter: `^${escape(scenario.name)}$`,
+            libraries: [library],
+          }))
       )
-      .filter((group) => group.length)
-      .map((group) => `^(${group.map(({ name }) => escape(name)).join('|')})$`)
-  : [options.filter];
-const processes = groups.flatMap((filter, group) =>
+    : [false, true]
+        .map((mapSet) =>
+          scenarios.filter((scenario) => scenario.mapSet === mapSet)
+        )
+        .filter((group) => group.length)
+        .map((group) => ({
+          filter: `^(${group.map(({ name }) => escape(name)).join('|')})$`,
+          libraries: options.libraries,
+        }));
+const processes = groups.flatMap((group, groupIndex) =>
   Array.from({ length: timed ? options.runs : 1 }, (_, runIndex) => ({
-    filter,
-    group,
+    ...group,
+    groupIndex,
     runIndex,
   }))
 );
 // Each run measures every group before the next run starts.
-processes.sort((a, b) => a.runIndex - b.runIndex || a.group - b.group);
-for (const [index, { filter, group, runIndex }] of processes.entries()) {
+processes.sort(
+  (a, b) => a.runIndex - b.runIndex || a.groupIndex - b.groupIndex
+);
+for (const [
+  index,
+  { filter, libraries, groupIndex, runIndex },
+] of processes.entries()) {
   const output = join(
     runDirectory,
-    `process-${runIndex + 1}${groups.length > 1 ? `-${group + 1}` : ''}.json`
+    `process-${runIndex + 1}${groups.length > 1 ? `-${groupIndex + 1}` : ''}.json`
   );
   console.log(`\nIndependent process ${index + 1}/${processes.length}`);
   const child = spawnSync(
@@ -59,6 +83,7 @@ for (const [index, { filter, group, runIndex }] of processes.entries()) {
         MUTATIVE_PERF_OPTIONS: JSON.stringify({
           ...options,
           filter,
+          libraries,
           runIndex,
           output,
         }),

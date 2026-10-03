@@ -40,6 +40,7 @@ export function readOptions(defaults = {}) {
       'sampling-interval': { type: 'string', default: '1024' },
       check: { type: 'boolean', default: false },
       list: { type: 'boolean', default: false },
+      isolate: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
@@ -63,6 +64,8 @@ export function readOptions(defaults = {}) {
   --output PATH            Report JSON path; also writes Markdown
   --check                  Validate workloads without timing
   --list                   List scenario names and reducer-call counts
+  --isolate                Measure each scenario and library in a process of
+                           its own (benchmark:immer only)
   --iterations N           Profiling only (default: 1000)
   --memory-iterations N    Results retained per memory pass (default: 32)
   --sampling-interval N    Allocation sampling interval in bytes (default: 1024)
@@ -133,5 +136,6 @@ from timing.`);
     output: values.output,
     check: values.check,
     list: values.list,
+    isolate: values.isolate,
   };
 }
