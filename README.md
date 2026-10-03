@@ -151,16 +151,16 @@ Overall, Mutative has a huge performance lead over Immer in [more performance te
 
 ### Bundle size
 
-Mutative ships patches, `Map`/`Set` support and optimized array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from the production builds at Mutative source `cf7763e` and Immer 11.1.18. Each browser ESM consumer references the listed exports; the bundle is minified with target `es2018`.
+Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from each library's production ESM artifact (Immer 11.1.18 `dist/immer.production.mjs`; Mutative `dist/mutative.esm.mjs` at source `84863bc` with `process.env.NODE_ENV` defined as `production`), bundled for the browser with `--minify --target=es2018 --format=esm`. Each consumer references the listed exports.
 
 | Bundle | brotli |
 | --- | ---: |
 | Immer core (`produce`, `current`, `original`) | 3.4 kB |
 | Immer with `enablePatches` and `enableMapSet` | 5.2 kB |
 | Immer with `enablePatches`, `enableMapSet` and `enableArrayMethods` | 6.0 kB |
-| Mutative (`create`, `apply`, `current`, `original`) | 8.3 kB |
+| Mutative (`create`, `apply`, `current`, `original`) | 8.4 kB |
 
-Array fast paths preserve draftable elements and patch replay while using the proxy path when accessors or argument conversion can execute user code. These eligibility checks have a cost; the [performance summary](./perf-testing/reports/SUMMARY.md) separates measurements of the corrected implementation from earlier timings. See the [array methods FAQ](#faqs) for the supported fast paths and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
+The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
 
 ## Features and Benefits
 
@@ -634,7 +634,7 @@ Yes. Mutative supports return values for reducer, and `redux-toolkit` is conside
 
 - Which array methods run natively on drafts?
 
-`shift`, `unshift`, `splice` and `reverse` can move elements directly on the copy of a plain dense array with defined data properties. Accessors, sparse arrays, custom constructors/species, array subclasses and custom marks keep the proxy path. `splice` and searches also use the proxy when converting their index arguments can execute user code. `indexOf`, `lastIndexOf` and `includes` inspect only the indices visited by the search, and can search a previously validated copy natively. `sort` and `join` optimize arrays of primitives; objects and functions retain their conversion behavior through the proxy.
+`shift`, `unshift`, `splice` and `reverse` move elements directly on the copy of a plain array without holes, including `undefined` elements; `indexOf`, `lastIndexOf` and `includes` search the current array natively; `sort` and `join` run natively on arrays of primitives. Removed elements are returned as drafts, patches replay in both directions, and a call that changes nothing keeps the state. Sparse arrays, array subclasses, an own `constructor` or `Symbol.isConcatSpreadable`, arrays under a custom `mark`, every method with a callback, `at`, `slice`, `fill` and `copyWithin` use the proxy path. An argument that can run user code, such as an object passed as `fromIndex` or as a `splice` index, is converted on the proxy path, so a conversion that changes the array is observed as the native methods observe it. The fast paths are made for data arrays: an accessor property defined on an array index is read as a data value, and the number and order of such getter calls, their re-entrant effects on the draft, and the identity of objects they return are not guaranteed to match element-by-element execution through the proxy.
 
 Optimized searches compare values by reference, as the proxy path does: an element you have read is found by its draft, an element you have not read by its original object. The search never reads a property of the value it is given, so drafts from other producers and external proxies, including revoked ones, are plain identity values.
 
