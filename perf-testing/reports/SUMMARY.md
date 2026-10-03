@@ -12,6 +12,26 @@ methods need no option. The raw datasets of this batch were not archived; the
 identities and commands below reproduce them, and the
 [archive index](./README.md) describes the retention policy for batches that are.
 
+## Follow-up: receiver cache release
+
+Review found that the receiver cache kept a failed producer's state alive.
+`create` revokes drafts when the recipe throws and when a producer finishes,
+but not when an error is raised after the recipe returned: returning a value
+after changing the draft, returning a modified child draft, or the async
+variants of both. A draft of `create(base)` without a recipe that is never
+finalized has no end at all. The module-level reference to the last array then
+kept the whole state reachable until another array's method was read, while
+`main` collects it on every path.
+
+Source `8fe0d9a` releases that reference whenever a producer ends, normally or
+by an error, and registers drafts of `create` without a recipe only in the
+WeakSet. `test/array-methods-retention.test.ts` forces full collections and
+checks six ways a producer can end; before the fix, four of them kept the state.
+
+A harness A/B against `363b3da`, two passes each with freeze and patches off,
+measured 100-row array operations 0–2% slower, about 0.01 µs, and 10,000-row
+operations within 1%. The tables below remain the archive of `363b3da`.
+
 ## Contract
 
 The fast paths are made for data arrays. On them, values, own-property
@@ -38,7 +58,9 @@ and unchanged calls behave as on the proxy path:
 - A method recognizes its receiver by identity: the array whose method was
   read last, or an array of a live producer registered when another array's
   method was read after it. A borrowed method called on any other object runs
-  the native method on it without reading a property first.
+  the native method on it without reading a property first. The reference to
+  the last array is released when its producer ends, by any path, and drafts
+  of `create` without a recipe are only registered weakly.
 - Sparse arrays, array subclasses, an own `constructor` or
   `Symbol.isConcatSpreadable`, arrays under a custom `mark`, every method with a
   callback, `at`, `slice`, `fill` and `copyWithin` use the proxy path. An
@@ -162,12 +184,12 @@ freeze on, and 1.2–2.1x with patches on.
 
 ## Tradeoffs and limits
 
-- Bundle size: the production CJS artifact is 25,344 bytes raw and 7,799 bytes
-  Brotli. That is 151 Brotli bytes below the accepted baseline before this
-  round (`415b91c`) and 5,830 raw, 1,855 gzip and 1,706 Brotli bytes above
-  `main`. `size-limit` measures 6.44 kB against a 6.5 kB cap, which is 5 kB on
-  `main`. The README compares the result with Immer plus the equivalent
-  plugins.
+- Bundle size at `8fe0d9a`: the production CJS artifact is 25,558 bytes raw
+  and 7,869 bytes Brotli. That is 81 Brotli bytes below the accepted baseline
+  before this round (`415b91c`) and 6,044 raw, 1,921 gzip and 1,776 Brotli
+  bytes above `main`. `size-limit` measures 6.47 kB against a 6.5 kB cap,
+  which is 5 kB on `main`. The measured `363b3da` was 70 Brotli bytes smaller.
+  The README compares the result with Immer plus the equivalent plugins.
 - With patches enabled the gain narrows because one patch per moved index is
   emitted either way; without patches, moving operations on 10,000-row arrays
   take microseconds.
