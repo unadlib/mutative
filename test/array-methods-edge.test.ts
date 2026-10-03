@@ -191,29 +191,34 @@ describe('native array method boundaries', () => {
     ).toBe(base);
   });
 
-  test.each(['shift', 'unshift', 'splice', 'reverse', 'sort', 'join'] as const)(
-    '%s preserves accessor read order',
-    (method) => {
-      const run = (throughProxy: boolean) => {
-        let calls = 0;
-        let result: any;
-        const base = [3, 2, 1];
-        Object.defineProperty(base, '0', {
-          configurable: true,
-          enumerable: true,
-          get: () => ++calls,
-        });
-        const state = create(base, (draft) => {
-          const fn = throughProxy ? Array.prototype[method] : draft[method];
-          result = (fn as Function).apply(
-            draft,
-            method === 'splice' ? [1, 1] : method === 'unshift' ? [0] : []
-          );
-          if (result === draft) result = 'self';
-        });
-        return { calls, result, values: state === base ? 'base' : [...state] };
-      };
-      expect(run(false)).toStrictEqual(run(true));
+  // Index accessors are outside the fast-path contract: their values are read
+  // as data, so a pure getter gives the native result while the number and
+  // order of getter calls are not guaranteed to match the proxy path.
+  test.each([
+    { method: 'shift', args: [], result: 3, values: [2, 1] },
+    { method: 'unshift', args: [0], result: 4, values: [0, 3, 2, 1] },
+    { method: 'splice', args: [0, 1], result: [3], values: [2, 1] },
+    { method: 'reverse', args: [], result: 'self', values: [1, 2, 3] },
+    { method: 'sort', args: [], result: 'self', values: [1, 2, 3] },
+    { method: 'join', args: ['-'], result: '3-2-1', values: 'base' },
+  ] as const)(
+    '$method reads index accessors as data values',
+    ({ method, args, result, values }) => {
+      const base = [0, 2, 1];
+      Object.defineProperty(base, '0', {
+        configurable: true,
+        enumerable: true,
+        get: () => 3,
+      });
+      let returned: any;
+      const state = create(base, (draft) => {
+        returned = (draft[method] as Function).apply(draft, args);
+        if (returned === draft) returned = 'self';
+      });
+      expect(returned).toStrictEqual(result);
+      expect(state === base ? 'base' : [...state]).toStrictEqual(values);
+      expect(Object.getOwnPropertyDescriptor(base, '0')).toHaveProperty('get');
+      expect([...base]).toStrictEqual([3, 2, 1]);
     }
   );
 
