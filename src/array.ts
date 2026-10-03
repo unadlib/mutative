@@ -266,12 +266,21 @@ function relocate(
   for (let position = 0; position < assigned.length; position += 1) {
     assignedMap.delete(assigned[position][0]);
   }
+  // An assigned object that moved is registered for finalization at its new
+  // index, as an assignment through the proxy would do; one that stayed keeps
+  // the registration it has.
   for (let position = 0; position < assigned.length; position += 1) {
     const [key, flag] = assigned[position];
-    const next = map(Number(key));
+    const index = Number(key);
+    const next = map(index);
     if (next >= 0) {
       const value = copy[next];
-      if (flag && typeof value === 'object' && value !== null) {
+      if (
+        flag &&
+        next !== index &&
+        typeof value === 'object' &&
+        value !== null
+      ) {
         registerAssigned(target, next, value);
       } else {
         assignedMap.set(String(next), flag);
