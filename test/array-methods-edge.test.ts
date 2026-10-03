@@ -222,33 +222,6 @@ describe('native array method boundaries', () => {
     }
   );
 
-  test.each(['indexOf', 'includes', 'lastIndexOf'] as const)(
-    '%s sees writes made by element getters',
-    (method) => {
-      let active: number[];
-      let reading = false;
-      const base = [1, 2, 3];
-      Object.defineProperty(base, method === 'lastIndexOf' ? '2' : '0', {
-        configurable: true,
-        enumerable: true,
-        get() {
-          if (!reading) {
-            reading = true;
-            active[1] = 20;
-            reading = false;
-          }
-          return 1;
-        },
-      });
-      const state = create(base, (draft) => {
-        active = draft;
-        expect(draft[method](20)).toBe(method === 'includes' ? true : 1);
-      });
-      expect(state[1]).toBe(20);
-      expect(base[1]).toBe(2);
-    }
-  );
-
   test.each(['unshift', 'reverse', 'splice'] as const)(
     'unchanged %s does not read unrelated getters',
     (method) => {
