@@ -365,20 +365,13 @@ function isBaseElement(target: ProxyDraft, value: object, index: number) {
   );
 }
 
-// Whether a read of `value` at `index` through the proxy would hand out a new
-// draft instead of `value` itself, as it does for an object of the base state.
-// An element inherited from the prototype, this array's own drafts, values
-// assigned in the recipe and non-draftable objects are handed out as they are.
-function draftsOnRead(
-  target: ProxyDraft,
-  source: any[],
-  value: object,
-  index: number
-) {
+// Whether a read of `value` at `index` of an array without holes would hand
+// out a new draft instead of `value` itself, as it does for an object of the
+// base state. This array's own drafts, values assigned in the recipe and
+// non-draftable objects are handed out as they are.
+function draftsOnRead(target: ProxyDraft, value: object, index: number) {
   return (
-    Object.prototype.hasOwnProperty.call(source, index) &&
-    isBaseElement(target, value, index) &&
-    isDraftable(value, target.options)
+    isBaseElement(target, value, index) && isDraftable(value, target.options)
   );
 }
 
@@ -405,11 +398,15 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
     if (typeof value !== 'object' || value === null) {
       return nativeSearch.apply(source, args);
     }
+    // A hole can expose an element inherited from the prototype, which a read
+    // hands out as it is until the proxy path's first drafting read copies it
+    // into an own element; the proxy path decides those searches.
+    if (!isDense(target)) return original.apply(self, args);
     let index: number =
       args.length > 1
         ? find.call(source, value, args[1])
         : find.call(source, value);
-    while (index !== -1 && draftsOnRead(target, source, value, index)) {
+    while (index !== -1 && draftsOnRead(target, value, index)) {
       index = backwards
         ? index === 0
           ? -1
