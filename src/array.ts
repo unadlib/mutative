@@ -10,7 +10,7 @@ import {
   markChanged,
   markFinalization,
 } from './utils';
-import { rejectsRead } from './unsafe';
+import { checksReads } from './unsafe';
 
 const arrayProto = Array.prototype;
 const arrayIncludes = arrayProto.includes;
@@ -319,22 +319,13 @@ function prepare(target: ProxyDraft) {
 
 type Native = (...args: any[]) => any;
 
-// Strict mode rejects reading a non-draftable object outside `unsafe()`. The
-// proxy path reads the elements an operation moves or searches, so an array
-// holding such an object takes the proxy path, which fails, or succeeds,
-// exactly where it always did.
-function rejectsReads(target: ProxyDraft) {
-  const source = latest(target);
-  for (let index = 0; index < source.length; index += 1) {
-    if (rejectsRead(source[index], target.options)) return true;
-  }
-  return false;
-}
-
 // A method that runs `impl` on the array draft behind `this`, or the
 // original method when `this` is not an eligible draft. `impl` receives the
 // original method to fall back to the proxy path, which methods that move
 // elements do for sparse arrays once cheaper checks have not settled the call.
+// In strict mode, outside `unsafe()`, the proxy path checks each element it
+// reads, and calls take it as they are: predicting its reads would inspect
+// elements it never reads, and before arguments are converted.
 function native(
   method: keyof typeof arrayProto,
   impl: (target: ProxyDraft, self: any, args: any[], original: Native) => any
@@ -342,7 +333,7 @@ function native(
   const original: Native = arrayProto[method] as any;
   return function (this: any, ...args: any[]) {
     const target = nativeState(this);
-    return target === null || (target.options.strict && rejectsReads(target))
+    return target === null || checksReads(target.options)
       ? original.apply(this, args)
       : impl(target, this, args, original);
   };
