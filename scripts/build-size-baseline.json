@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "b38a86a347826cf1e6ddca88c63fdf95b84ce00a",
-    "description": "Native array methods with proxy-path search results and strict mode parity",
+    "revision": "f716d250d5ddf997e82a2034c30a67a1193cfc5f",
+    "description": "Native array methods with strict mode on the proxy path, identity-only element checks and proxy-path search results",
     "node": "v24.16.0",
     "commands": [
       "pnpm install --frozen-lockfile",
@@ -15,64 +15,64 @@
   "esbuild": "0.24.0",
   "measurements": {
     "artifact/mutative.cjs.production.min.js": {
-      "raw": 26109,
-      "gzip": 8793,
-      "brotli": 8035
+      "raw": 26164,
+      "gzip": 8805,
+      "brotli": 8041
     },
     "artifact/mutative.umd.production.min.js": {
-      "raw": 26268,
-      "gzip": 8863,
-      "brotli": 8102
+      "raw": 26323,
+      "gzip": 8869,
+      "brotli": 8109
     },
     "artifact/mutative.cjs.development.js": {
-      "raw": 65184,
-      "gzip": 15113,
-      "brotli": 13073
+      "raw": 65275,
+      "gzip": 15152,
+      "brotli": 13113
     },
     "artifact/mutative.umd.development.js": {
-      "raw": 67306,
-      "gzip": 15300,
-      "brotli": 13242
+      "raw": 67399,
+      "gzip": 15343,
+      "brotli": 13274
     },
     "artifact/mutative.esm.js": {
-      "raw": 64906,
-      "gzip": 15058,
-      "brotli": 13022
+      "raw": 64997,
+      "gzip": 15095,
+      "brotli": 13057
     },
     "artifact/mutative.esm.mjs": {
-      "raw": 64907,
-      "gzip": 15059,
-      "brotli": 13025
+      "raw": 64998,
+      "gzip": 15095,
+      "brotli": 13058
     },
     "consumer/import/create": {
-      "raw": 25487,
-      "gzip": 8910,
-      "brotli": 8075
+      "raw": 25554,
+      "gzip": 8953,
+      "brotli": 8132
     },
     "consumer/import/patches": {
-      "raw": 27686,
-      "gzip": 9609,
-      "brotli": 8707
+      "raw": 27753,
+      "gzip": 9652,
+      "brotli": 8750
     },
     "consumer/import/all": {
-      "raw": 28879,
-      "gzip": 9969,
-      "brotli": 9033
+      "raw": 28946,
+      "gzip": 10010,
+      "brotli": 9079
     },
     "consumer/require/create": {
-      "raw": 25676,
-      "gzip": 9047,
-      "brotli": 8264
+      "raw": 25732,
+      "gzip": 9072,
+      "brotli": 8289
     },
     "consumer/require/patches": {
-      "raw": 25744,
-      "gzip": 9085,
-      "brotli": 8299
+      "raw": 25800,
+      "gzip": 9109,
+      "brotli": 8325
     },
     "consumer/require/all": {
-      "raw": 25641,
-      "gzip": 9027,
-      "brotli": 8244
+      "raw": 25697,
+      "gzip": 9052,
+      "brotli": 8288
     }
   }
 }
