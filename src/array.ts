@@ -343,9 +343,15 @@ function native(
 
 // Whether a read of `value` at `index` through the proxy would hand out a new
 // draft instead of `value` itself, as it does for an object of the base state.
-// This array's own drafts, values assigned in the recipe and non-draftable
-// objects are handed out as they are.
-function draftsOnRead(target: ProxyDraft, value: object, index: number) {
+// An element inherited from the prototype, this array's own drafts, values
+// assigned in the recipe and non-draftable objects are handed out as they are.
+function draftsOnRead(
+  target: ProxyDraft,
+  source: any[],
+  value: object,
+  index: number
+) {
+  if (!Object.prototype.hasOwnProperty.call(source, index)) return false;
   if (value === target.original[index]) {
     return isDraftable(value, target.options);
   }
@@ -383,7 +389,7 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
       args.length > 1
         ? find.call(source, value, args[1])
         : find.call(source, value);
-    while (index !== -1 && draftsOnRead(target, value, index)) {
+    while (index !== -1 && draftsOnRead(target, source, value, index)) {
       index = backwards
         ? index === 0
           ? -1
