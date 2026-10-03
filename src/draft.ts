@@ -210,9 +210,12 @@ function setTrap(
   }
   const original = target.original;
   // !case: handle new props with value 'undefined'
+  // The current copy decides whether the key exists: a key removed from the
+  // copy, by delete or by a shrinking array method, is added back by this
+  // assignment even when the original still has it.
   if (
     isEqual(value, current) &&
-    (value !== undefined || hasOwn.call(original, key))
+    (value !== undefined || hasOwn.call(source, key))
   )
     return true;
   ensureShallowCopy(target);
