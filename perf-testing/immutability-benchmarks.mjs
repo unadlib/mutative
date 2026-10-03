@@ -14,6 +14,34 @@ import { validateScenarios } from './validate.mjs';
 const options = process.env.MUTATIVE_PERF_OPTIONS
   ? JSON.parse(process.env.MUTATIVE_PERF_OPTIONS)
   : readOptions();
+
+// The first timed run of a scenario in a process can meet V8 state that later
+// runs do not: 100-key records took 12-15 µs in every library there, 3-4 µs
+// afterwards. Each benchmark therefore first runs its workload on a throwaway
+// fixture for this long, outside timing, then measures a fresh one. The
+// throwaway fixture is unreachable once this returns.
+const PRIMING_MS = 30;
+
+function prime(name, library, autoFreeze, enablePatches) {
+  const primed = prepareScenario(options.config, name, autoFreeze);
+  const { reducer } = createRuntime(
+    library,
+    autoFreeze,
+    enablePatches,
+    undefined,
+    options.immerArrayMethods === true,
+    primed
+  );
+  const start = performance.now();
+  do
+    do_not_optimize(
+      enablePatches
+        ? primed.executeWithPatches(reducer, primed.base, do_not_optimize)
+        : primed.execute(reducer, primed.base)
+    );
+  while (performance.now() - start < PRIMING_MS);
+}
+
 const scenarios = createScenarios(options.config, options.filter);
 if (options.list) {
   for (const scenario of scenarios)
@@ -55,6 +83,7 @@ if (options.list) {
               ...(enablePatches && { patchCounts: patchCounts.get(label) }),
             });
             bench(name, function* () {
+              prime(scenario.name, library, autoFreeze, enablePatches);
               const prepared = prepareScenario(
                 options.config,
                 scenario.name,
@@ -154,6 +183,7 @@ if (options.list) {
         freezeOnInput: 'deeply pre-frozen base and payloads',
         freezeOffInput: 'unfrozen base and payloads',
         fixtureAndActionSetupTimed: false,
+        priming: `${PRIMING_MS} ms of the workload on a throwaway fixture before each benchmark, outside timing`,
         stateResetPerIteration: true,
         gc: 'Mitata once after warmup; natural GC included during timing',
         heapSampling: false,
