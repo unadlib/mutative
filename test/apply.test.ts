@@ -1701,3 +1701,257 @@ test('base - mutate', () => {
   expect(baseState).toEqual({ a: { c: 2 } });
   expect(result).toBeUndefined();
 });
+
+describe('array methods on the draft copy', () => {
+  // Plain arrays run `shift`, `unshift`, `splice`, `reverse`, searches and
+  // primitive sorts natively on the draft's copy: removed and moved elements
+  // are drafted lazily and keep their original index as patch key. Besides the
+  // snapshots of `checkPatches`, each scenario replays without length patches,
+  // with string paths, and with auto-freeze, which take other patch and
+  // finalization paths.
+  function checkArrayPatches<T>(data: T, fn: (draft: T) => void) {
+    checkPatches(data, fn);
+    for (const options of [
+      { enablePatches: { arrayLengthAssignment: false } },
+      { enablePatches: { pathAsArray: false } },
+      { enablePatches: true, enableAutoFreeze: true },
+    ]) {
+      const base = structuredClone(data);
+      const [state, patches, inversePatches] = create(
+        base as any,
+        fn as any,
+        options as any
+      ) as any;
+      const expected = deepClone(data);
+      fn(expected);
+      expect(state).toEqual(expected);
+      expect(apply(base as any, patches)).toEqual(state);
+      expect(apply(state, inversePatches)).toEqual(data);
+    }
+  }
+
+  const row = (id: number) => ({ id, nested: { value: id }, tags: [id] });
+  const rows = (length: number) => Array.from({ length }, (_, id) => row(id));
+
+  test('drafts created before native moves are edited afterwards', () => {
+    checkArrayPatches({ list: rows(12) }, (d) => {
+      const fifth = d.list[5];
+      const last = d.list[11];
+      d.list.reverse();
+      d.list.shift();
+      d.list.splice(3, 0, row(-1));
+      fifth.nested.value = 50;
+      last.tags.push(110);
+      d.list.unshift(last);
+    });
+  });
+
+  test('removed elements are edited and re-inserted at other positions', () => {
+    checkArrayPatches({ list: rows(8) }, (d) => {
+      const first = d.list.shift()!;
+      const [second, third] = d.list.splice(2, 2);
+      first.nested.value = 100;
+      third.tags.push(-1);
+      d.list.splice(1, 0, third, first);
+      d.list.push(second);
+      second.id = 99;
+    });
+  });
+
+  test('every element is shifted out and pushed back in reverse order', () => {
+    checkArrayPatches({ list: rows(4) }, (d) => {
+      const removed: ReturnType<typeof row>[] = [];
+      while (d.list.length > 0) removed.push(d.list.shift()!);
+      removed.reverse();
+      removed[1].nested.value = 11;
+      d.list.push(...removed);
+    });
+  });
+
+  test('shared references are moved and edited through one path', () => {
+    const shared = row(1);
+    checkArrayPatches(
+      { list: [shared, row(2), shared], other: shared },
+      (d) => {
+        d.list.unshift(row(0));
+        d.list.forEach((item) => item.id);
+        d.list[3].nested.value = 30;
+        d.list.reverse();
+        d.other.tags.push(10);
+      }
+    );
+  });
+
+  test('methods of two arrays interleave', () => {
+    checkArrayPatches({ a: rows(5), b: rows(3) }, (d) => {
+      d.a.unshift(d.b.shift()!);
+      d.b.splice(1, 0, ...d.a.splice(2, 2));
+      d.a[0].nested.value = 7;
+      d.b.reverse();
+      d.b[0].tags.push(8);
+    });
+  });
+
+  test('native moves mixed with proxy-path methods', () => {
+    checkArrayPatches({ list: rows(10) }, (d) => {
+      d.list.unshift(row(20));
+      d.list.sort((x, y) => y.id - x.id);
+      d.list.splice(4, 1);
+      d.list.copyWithin(0, 5, 7);
+      d.list.fill(row(30), 8, 9);
+      d.list.reverse();
+      d.list[1].nested.value = -5;
+    });
+  });
+
+  test('assignments past the end and length changes between native moves', () => {
+    checkArrayPatches({ list: rows(4) as any[] }, (d) => {
+      d.list.reverse();
+      d.list[6] = row(6);
+      d.list.reverse();
+      d.list.length = 5;
+      d.list.unshift(row(-1));
+      d.list[4].nested.value = 22;
+    });
+  });
+
+  test('undefined elements move natively', () => {
+    checkArrayPatches(
+      { list: [{ id: 0 }, undefined, { id: 2 }, undefined] as any[] },
+      (d) => {
+        d.list.reverse();
+        d.list.splice(1, 1, undefined, { id: 5 });
+        d.list.unshift(undefined);
+        d.list[3].id = 20;
+        d.list[5].id = 21;
+      }
+    );
+  });
+
+  test('nested arrays are moved inside moved rows', () => {
+    checkArrayPatches(
+      {
+        grid: [
+          [0, 1, 2],
+          [3, 4],
+          [5, 6, 7, 8],
+        ],
+      },
+      (d) => {
+        d.grid.reverse();
+        d.grid[0].reverse();
+        d.grid[1].splice(0, 1, 40, 41);
+        d.grid.unshift([9]);
+        d.grid[3].shift();
+        d.grid[0].push(10);
+      }
+    );
+  });
+
+  test('a root array is moved and its elements edited', () => {
+    checkArrayPatches(rows(6), (d) => {
+      const third = d[2];
+      d.reverse();
+      d.splice(1, 2);
+      third.nested.value = 30;
+      d.unshift(d.pop()!);
+    });
+  });
+
+  test('calls that change nothing are mixed with edits', () => {
+    const shared = row(1);
+    checkArrayPatches(
+      { nums: [1, 2, 3], list: rows(3), palindrome: [shared, row(2), shared] },
+      (d) => {
+        d.nums.sort((x, y) => x - y);
+        d.list.splice(1, 1, d.list[1]);
+        d.list.reverse();
+        d.list.reverse();
+        d.list[1].nested.value = 10;
+        d.palindrome.reverse();
+        d.palindrome[0].id = 5;
+        d.nums.unshift();
+        d.nums.splice(1, 0);
+      }
+    );
+  });
+
+  test('searches drive removals after moves', () => {
+    checkArrayPatches({ list: rows(8) }, (d) => {
+      const item = d.list[3];
+      d.list.reverse();
+      d.list.splice(d.list.indexOf(item), 1);
+      d.list.unshift(item);
+      item.nested.value = 33;
+      d.list.splice(d.list.lastIndexOf(d.list[5]), 1);
+      expect(d.list.includes(item)).toBe(true);
+    });
+  });
+
+  test('splice with negative and oversized arguments, then edit the tail', () => {
+    checkArrayPatches({ list: rows(9) }, (d) => {
+      d.list.splice(-3, 10, row(90), row(91));
+      d.list.splice(-100, 1);
+      d.list.splice(2, 0, ...d.list.splice(4, 2));
+      d.list[d.list.length - 1].nested.value = 1;
+      d.list.splice(1, 2, d.list[2], d.list[1]);
+    });
+  });
+
+  test('arrays inside Map values move natively', () => {
+    checkArrayPatches(
+      {
+        map: new Map([
+          ['a', rows(4)],
+          ['b', rows(2)],
+        ]),
+      },
+      (d) => {
+        const a = d.map.get('a')!;
+        a.reverse();
+        a[0].nested.value = 9;
+        d.map.get('b')!.unshift(a.shift()!);
+        d.map.set('c', a.splice(0, 1));
+      }
+    );
+  });
+
+  test('a draft moved into a wrapper and the array moved again', () => {
+    checkArrayPatches({ list: rows(5) as any[] }, (d) => {
+      const moved = d.list[3];
+      d.list.splice(-2, 0, { id: 99, wrapped: moved });
+      d.list.reverse();
+      moved.nested.value = 30;
+      d.list.push({ wrapped: d.list[0] });
+      d.list.shift();
+    });
+  });
+
+  test('a longer array is moved at both ends and edited in the middle', () => {
+    checkArrayPatches({ list: rows(30) }, (d) => {
+      d.list.splice(15, 1);
+      d.list.shift();
+      d.list.push(row(30));
+      d.list[20].nested.value = -20;
+      d.list.splice(5, 0, row(-5));
+      d.list[3].tags.push(3);
+      d.list.unshift(d.list.pop()!);
+    });
+  });
+
+  test('primitive sorts between native moves', () => {
+    checkArrayPatches(
+      { nums: [5, 3, 9, 1, 7], words: ['b', undefined, 'a', 'c'] as any[] },
+      (d) => {
+        d.nums.unshift(4);
+        d.nums.sort((x, y) => x - y);
+        d.nums.splice(2, 1, 8, 6);
+        d.nums.sort();
+        d.nums.reverse();
+        d.words.sort();
+        d.words.shift();
+        d.words.reverse();
+      }
+    );
+  });
+});

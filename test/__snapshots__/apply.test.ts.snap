@@ -14340,6 +14340,3443 @@ exports[`array length with ref 2`] = `
 ]
 `;
 
+exports[`array methods on the draft copy > a draft moved into a wrapper and the array moved again 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 30,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 99,
+      "wrapped": {
+        "id": 3,
+        "nested": {
+          "value": 30,
+        },
+        "tags": [
+          3,
+        ],
+      },
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "wrapped": {
+        "id": 4,
+        "nested": {
+          "value": 4,
+        },
+        "tags": [
+          4,
+        ],
+      },
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > a draft moved into a wrapper and the array moved again 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      "length",
+    ],
+    "value": 5,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > a longer array is moved at both ends and edited in the middle 1`] = `
+[
+  {
+    "op": "add",
+    "path": [
+      "list",
+      4,
+      "tags",
+      1,
+    ],
+    "value": 3,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      22,
+      "nested",
+      "value",
+    ],
+    "value": -20,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 30,
+      "nested": {
+        "value": 30,
+      },
+      "tags": [
+        30,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": -5,
+      "nested": {
+        "value": -5,
+      },
+      "tags": [
+        -5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 6,
+      "nested": {
+        "value": 6,
+      },
+      "tags": [
+        6,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      8,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      9,
+    ],
+    "value": {
+      "id": 8,
+      "nested": {
+        "value": 8,
+      },
+      "tags": [
+        8,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      10,
+    ],
+    "value": {
+      "id": 9,
+      "nested": {
+        "value": 9,
+      },
+      "tags": [
+        9,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      11,
+    ],
+    "value": {
+      "id": 10,
+      "nested": {
+        "value": 10,
+      },
+      "tags": [
+        10,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      12,
+    ],
+    "value": {
+      "id": 11,
+      "nested": {
+        "value": 11,
+      },
+      "tags": [
+        11,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      13,
+    ],
+    "value": {
+      "id": 12,
+      "nested": {
+        "value": 12,
+      },
+      "tags": [
+        12,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      14,
+    ],
+    "value": {
+      "id": 13,
+      "nested": {
+        "value": 13,
+      },
+      "tags": [
+        13,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      15,
+    ],
+    "value": {
+      "id": 14,
+      "nested": {
+        "value": 14,
+      },
+      "tags": [
+        14,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      22,
+    ],
+    "value": {
+      "id": 22,
+      "nested": {
+        "value": -20,
+      },
+      "tags": [
+        22,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > a longer array is moved at both ends and edited in the middle 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+      "tags",
+      "length",
+    ],
+    "value": 1,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      22,
+      "nested",
+      "value",
+    ],
+    "value": 22,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": 6,
+      "nested": {
+        "value": 6,
+      },
+      "tags": [
+        6,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      8,
+    ],
+    "value": {
+      "id": 8,
+      "nested": {
+        "value": 8,
+      },
+      "tags": [
+        8,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      9,
+    ],
+    "value": {
+      "id": 9,
+      "nested": {
+        "value": 9,
+      },
+      "tags": [
+        9,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      10,
+    ],
+    "value": {
+      "id": 10,
+      "nested": {
+        "value": 10,
+      },
+      "tags": [
+        10,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      11,
+    ],
+    "value": {
+      "id": 11,
+      "nested": {
+        "value": 11,
+      },
+      "tags": [
+        11,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      12,
+    ],
+    "value": {
+      "id": 12,
+      "nested": {
+        "value": 12,
+      },
+      "tags": [
+        12,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      13,
+    ],
+    "value": {
+      "id": 13,
+      "nested": {
+        "value": 13,
+      },
+      "tags": [
+        13,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      14,
+    ],
+    "value": {
+      "id": 14,
+      "nested": {
+        "value": 14,
+      },
+      "tags": [
+        14,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      15,
+    ],
+    "value": {
+      "id": 15,
+      "nested": {
+        "value": 15,
+      },
+      "tags": [
+        15,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      22,
+    ],
+    "value": {
+      "id": 22,
+      "nested": {
+        "value": 22,
+      },
+      "tags": [
+        22,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > a root array is moved and its elements edited 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      2,
+      "nested",
+      "value",
+    ],
+    "value": 30,
+  },
+  {
+    "op": "replace",
+    "path": [
+      1,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 5,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 30,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      3,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "length",
+    ],
+    "value": 4,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > a root array is moved and its elements edited 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      2,
+      "nested",
+      "value",
+    ],
+    "value": 2,
+  },
+  {
+    "op": "replace",
+    "path": [
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      4,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      5,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 5,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > arrays inside Map values move natively 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "b",
+      0,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 9,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "b",
+      1,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "map",
+      "b",
+      2,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "a",
+      0,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "a",
+      1,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "a",
+      "length",
+    ],
+    "value": 2,
+  },
+  {
+    "op": "add",
+    "path": [
+      "map",
+      "c",
+    ],
+    "value": [
+      {
+        "id": 2,
+        "nested": {
+          "value": 2,
+        },
+        "tags": [
+          2,
+        ],
+      },
+    ],
+  },
+]
+`;
+
+exports[`array methods on the draft copy > arrays inside Map values move natively 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "b",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "b",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "b",
+      "length",
+    ],
+    "value": 2,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "a",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "map",
+      "a",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "map",
+      "a",
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "map",
+      "a",
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "remove",
+    "path": [
+      "map",
+      "c",
+    ],
+  },
+]
+`;
+
+exports[`array methods on the draft copy > assignments past the end and length changes between native moves 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": -1,
+      "nested": {
+        "value": -1,
+      },
+      "tags": [
+        -1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 6,
+      "nested": {
+        "value": 6,
+      },
+      "tags": [
+        6,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": undefined,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": undefined,
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 22,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > assignments past the end and length changes between native moves 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      "length",
+    ],
+    "value": 4,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > calls that change nothing are mixed with edits 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "palindrome",
+      0,
+      "id",
+    ],
+    "value": 5,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+      "nested",
+      "value",
+    ],
+    "value": 10,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 10,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > calls that change nothing are mixed with edits 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "palindrome",
+      0,
+      "id",
+    ],
+    "value": 1,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+      "nested",
+      "value",
+    ],
+    "value": 1,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > drafts created before native moves are edited afterwards 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 11,
+      "nested": {
+        "value": 11,
+      },
+      "tags": [
+        11,
+        110,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 10,
+      "nested": {
+        "value": 10,
+      },
+      "tags": [
+        10,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 9,
+      "nested": {
+        "value": 9,
+      },
+      "tags": [
+        9,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 8,
+      "nested": {
+        "value": 8,
+      },
+      "tags": [
+        8,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": -1,
+      "nested": {
+        "value": -1,
+      },
+      "tags": [
+        -1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 50,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      8,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      9,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      10,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      11,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      12,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > drafts created before native moves are edited afterwards 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 5,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      8,
+    ],
+    "value": {
+      "id": 8,
+      "nested": {
+        "value": 8,
+      },
+      "tags": [
+        8,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      9,
+    ],
+    "value": {
+      "id": 9,
+      "nested": {
+        "value": 9,
+      },
+      "tags": [
+        9,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      10,
+    ],
+    "value": {
+      "id": 10,
+      "nested": {
+        "value": 10,
+      },
+      "tags": [
+        10,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      11,
+    ],
+    "value": {
+      "id": 11,
+      "nested": {
+        "value": 11,
+      },
+      "tags": [
+        11,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      "length",
+    ],
+    "value": 12,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > every element is shifted out and pushed back in reverse order 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 11,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > every element is shifted out and pushed back in reverse order 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > methods of two arrays interleave 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "b",
+      0,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+        8,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "b",
+      1,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "b",
+      2,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "b",
+      3,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      "length",
+    ],
+    "value": 4,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > methods of two arrays interleave 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "b",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "b",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "b",
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "b",
+      "length",
+    ],
+    "value": 3,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "a",
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "a",
+      4,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > native moves mixed with proxy-path methods 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 30,
+      "nested": {
+        "value": -5,
+      },
+      "tags": [
+        30,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 8,
+      "nested": {
+        "value": 8,
+      },
+      "tags": [
+        8,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      8,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      9,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > native moves mixed with proxy-path methods 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": 6,
+      "nested": {
+        "value": 6,
+      },
+      "tags": [
+        6,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      8,
+    ],
+    "value": {
+      "id": 8,
+      "nested": {
+        "value": 8,
+      },
+      "tags": [
+        8,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      9,
+    ],
+    "value": {
+      "id": 9,
+      "nested": {
+        "value": 9,
+      },
+      "tags": [
+        9,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > nested arrays are moved inside moved rows 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "grid",
+      0,
+    ],
+    "value": [
+      9,
+      10,
+    ],
+  },
+  {
+    "op": "replace",
+    "path": [
+      "grid",
+      1,
+    ],
+    "value": [
+      8,
+      7,
+      6,
+      5,
+    ],
+  },
+  {
+    "op": "replace",
+    "path": [
+      "grid",
+      2,
+    ],
+    "value": [
+      40,
+      41,
+      4,
+    ],
+  },
+  {
+    "op": "add",
+    "path": [
+      "grid",
+      3,
+    ],
+    "value": [
+      1,
+      2,
+    ],
+  },
+]
+`;
+
+exports[`array methods on the draft copy > nested arrays are moved inside moved rows 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "grid",
+      0,
+    ],
+    "value": [
+      0,
+      1,
+      2,
+    ],
+  },
+  {
+    "op": "replace",
+    "path": [
+      "grid",
+      1,
+    ],
+    "value": [
+      3,
+      4,
+    ],
+  },
+  {
+    "op": "replace",
+    "path": [
+      "grid",
+      2,
+    ],
+    "value": [
+      5,
+      6,
+      7,
+      8,
+    ],
+  },
+  {
+    "op": "replace",
+    "path": [
+      "grid",
+      "length",
+    ],
+    "value": 3,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > primitive sorts between native moves 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "words",
+      0,
+    ],
+    "value": undefined,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "words",
+      1,
+    ],
+    "value": "c",
+  },
+  {
+    "op": "replace",
+    "path": [
+      "words",
+      2,
+    ],
+    "value": "b",
+  },
+  {
+    "op": "replace",
+    "path": [
+      "words",
+      "length",
+    ],
+    "value": 3,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      0,
+    ],
+    "value": 9,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      1,
+    ],
+    "value": 8,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      2,
+    ],
+    "value": 7,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      3,
+    ],
+    "value": 6,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      4,
+    ],
+    "value": 5,
+  },
+  {
+    "op": "add",
+    "path": [
+      "nums",
+      5,
+    ],
+    "value": 3,
+  },
+  {
+    "op": "add",
+    "path": [
+      "nums",
+      6,
+    ],
+    "value": 1,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > primitive sorts between native moves 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "words",
+      0,
+    ],
+    "value": "b",
+  },
+  {
+    "op": "replace",
+    "path": [
+      "words",
+      1,
+    ],
+    "value": undefined,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "words",
+      2,
+    ],
+    "value": "a",
+  },
+  {
+    "op": "add",
+    "path": [
+      "words",
+      3,
+    ],
+    "value": "c",
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      0,
+    ],
+    "value": 5,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      1,
+    ],
+    "value": 3,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      2,
+    ],
+    "value": 9,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      3,
+    ],
+    "value": 1,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      4,
+    ],
+    "value": 7,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "nums",
+      "length",
+    ],
+    "value": 5,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > removed elements are edited and re-inserted at other positions 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+        -1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 100,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 5,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 6,
+      "nested": {
+        "value": 6,
+      },
+      "tags": [
+        6,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 99,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > removed elements are edited and re-inserted at other positions 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 5,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": 6,
+      "nested": {
+        "value": 6,
+      },
+      "tags": [
+        6,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > searches drive removals after moves 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 33,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 6,
+      "nested": {
+        "value": 6,
+      },
+      "tags": [
+        6,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 5,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      "length",
+    ],
+    "value": 7,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > searches drive removals after moves 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 2,
+      "nested": {
+        "value": 2,
+      },
+      "tags": [
+        2,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 5,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": 6,
+      "nested": {
+        "value": 6,
+      },
+      "tags": [
+        6,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > shared references are moved and edited through one path 1`] = `
+[
+  {
+    "op": "add",
+    "path": [
+      "other",
+      "tags",
+      1,
+    ],
+    "value": 10,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 30,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > shared references are moved and edited through one path 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "other",
+      "tags",
+      "length",
+    ],
+    "value": 1,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      "length",
+    ],
+    "value": 3,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > splice with negative and oversized arguments, then edit the tail 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 5,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 90,
+      "nested": {
+        "value": 90,
+      },
+      "tags": [
+        90,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": 91,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        91,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      "length",
+    ],
+    "value": 7,
+  },
+]
+`;
+
+exports[`array methods on the draft copy > splice with negative and oversized arguments, then edit the tail 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 0,
+      "nested": {
+        "value": 0,
+      },
+      "tags": [
+        0,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      1,
+    ],
+    "value": {
+      "id": 1,
+      "nested": {
+        "value": 1,
+      },
+      "tags": [
+        1,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 3,
+      "nested": {
+        "value": 3,
+      },
+      "tags": [
+        3,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": {
+      "id": 4,
+      "nested": {
+        "value": 4,
+      },
+      "tags": [
+        4,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 5,
+      "nested": {
+        "value": 5,
+      },
+      "tags": [
+        5,
+      ],
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      6,
+    ],
+    "value": {
+      "id": 6,
+      "nested": {
+        "value": 6,
+      },
+      "tags": [
+        6,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      7,
+    ],
+    "value": {
+      "id": 7,
+      "nested": {
+        "value": 7,
+      },
+      "tags": [
+        7,
+      ],
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      8,
+    ],
+    "value": {
+      "id": 8,
+      "nested": {
+        "value": 8,
+      },
+      "tags": [
+        8,
+      ],
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > undefined elements move natively 1`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": undefined,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": undefined,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": {
+      "id": 20,
+    },
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      4,
+    ],
+    "value": undefined,
+  },
+  {
+    "op": "add",
+    "path": [
+      "list",
+      5,
+    ],
+    "value": {
+      "id": 21,
+    },
+  },
+]
+`;
+
+exports[`array methods on the draft copy > undefined elements move natively 2`] = `
+[
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      0,
+    ],
+    "value": {
+      "id": 0,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      2,
+    ],
+    "value": {
+      "id": 2,
+    },
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      3,
+    ],
+    "value": undefined,
+  },
+  {
+    "op": "replace",
+    "path": [
+      "list",
+      "length",
+    ],
+    "value": 4,
+  },
+]
+`;
+
 exports[`array pop with ref 1`] = `
 [
   {
