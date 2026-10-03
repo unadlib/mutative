@@ -144,6 +144,10 @@ if (options.list) {
         patchApplicationTimed: scenarios.some(
           (scenario) => scenario.kind === 'apply'
         ),
+        ...(options.libraries.includes('vanilla') && {
+          vanilla:
+            'hand-written reference reducer; freeze and patches off only',
+        }),
         patchSerializationTimed: false,
         patchOutputEscape:
           'each producer tuple escapes; no accumulation across calls',

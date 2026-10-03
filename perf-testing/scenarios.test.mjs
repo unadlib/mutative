@@ -33,7 +33,7 @@ test('scenario names are unique and carry their requirements', () => {
   }
 });
 
-test('supportsMode runs patch application with patches off only', () => {
+test('supportsMode limits the vanilla reducer and patch application', () => {
   const producer = byName('update');
   const apply = byName('apply-update-10pct');
   for (const library of ['mutative', 'mutative-v1', 'immer'])
@@ -48,6 +48,14 @@ test('supportsMode runs patch application with patches off only', () => {
           !patches
         );
       }
+  for (const autoFreeze of [false, true])
+    for (const patches of [false, true]) {
+      assert.equal(
+        supportsMode(producer, 'vanilla', autoFreeze, patches),
+        !autoFreeze && !patches
+      );
+      assert.equal(supportsMode(apply, 'vanilla', autoFreeze, patches), false);
+    }
 });
 
 test('prepared scenarios own fresh fixtures, frozen only on request', () => {

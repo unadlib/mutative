@@ -49,8 +49,10 @@ export function readOptions(defaults = {}) {
   --filter REGEX           Scenario names (default: all scenarios)
   --freeze both|off|on     Matched auto-freeze modes (default: ${defaults.freeze ?? 'both'})
   --patches both|off|on    Generate forward and inverse patches (default: ${defaults.patches ?? 'off'})
-  --library all|both|mutative|mutative-v1|immer (default: ${defaults.library ?? 'all'})
-                           all = candidate + pinned v1 + Immer; both = candidate + Immer
+  --library all|both|mutative|mutative-v1|immer|vanilla (default: ${defaults.library ?? 'all'})
+                           all = candidate + pinned v1 + Immer + vanilla;
+                           both = candidate + Immer; vanilla = hand-written
+                           reducer, freeze and patches off only
   --immer-array-methods    Enable Immer's array-method plugin (default: off)
   --array-size N           Default: 100; minimum: 10
   --nested-array-size N    Default: 10
@@ -89,12 +91,12 @@ from timing.`);
     throw new Error('--patches must be both, off, or on');
   }
   if (
-    !['all', 'both', 'mutative', 'mutative-v1', 'immer'].includes(
+    !['all', 'both', 'mutative', 'mutative-v1', 'immer', 'vanilla'].includes(
       values.library
     )
   ) {
     throw new Error(
-      '--library must be all, both, mutative, mutative-v1, or immer'
+      '--library must be all, both, mutative, mutative-v1, immer, or vanilla'
     );
   }
   // Validate now so an invalid regular expression fails before spawning workers.
@@ -114,7 +116,7 @@ from timing.`);
       values.patches === 'both' ? [false, true] : [values.patches === 'on'],
     libraries:
       values.library === 'all'
-        ? ['mutative', 'mutative-v1', 'immer']
+        ? ['mutative', 'mutative-v1', 'immer', 'vanilla']
         : values.library === 'both'
           ? ['mutative', 'immer']
           : [values.library],

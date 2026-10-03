@@ -76,6 +76,11 @@ export function summarize(reports) {
             libraries.mutative.medianMeanNs
           : null,
       }),
+      ...(libraries.vanilla && {
+        vanillaOverCandidate: libraries.mutative
+          ? libraries.vanilla.medianMeanNs / libraries.mutative.medianMeanNs
+          : null,
+      }),
     };
   });
 }
@@ -96,7 +101,11 @@ const runCount = (report) =>
   new Set(report.runs.map((run) => run.runIndex ?? 0)).size;
 
 export function formatReport(report) {
-  if (report.summary.some((entry) => entry.libraries['mutative-v1'])) {
+  if (
+    report.summary.some(
+      (entry) => entry.libraries['mutative-v1'] || entry.libraries.vanilla
+    )
+  ) {
     return formatVersionedReport(report);
   }
   const first = report.runs[0];
@@ -205,16 +214,16 @@ function formatVersionedReport(report) {
     '',
     `Production artifacts and their hashes are recorded in JSON. ${pluginNote(report)} Setup and validation are excluded. Freeze-on inputs are pre-frozen; patch timing includes forward/inverse generation, excluding replay and serialization. The apply-* scenarios time patch application instead, with patches off.`,
     '',
-    'V1/C and I/C are time ratios to the candidate; values above 1 favor the candidate. Small differences do not establish a winner.',
+    'V1/C, I/C and Va/C are time ratios to the candidate; values above 1 favor the candidate. Vanilla is the hand-written reference reducer, which runs with freeze and patches off only. Small differences do not establish a winner.',
     '',
-    '| Scenario | Freeze | Patches | Calls | Candidate µs | V1 µs | Immer µs | V1/C | I/C |',
-    '| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+    '| Scenario | Freeze | Patches | Calls | Candidate µs | V1 µs | Immer µs | Vanilla µs | V1/C | I/C | Va/C |',
+    '| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
   const time = (library) =>
     library ? (library.medianMeanNs / 1000).toFixed(3) : '—';
   for (const row of report.summary)
     lines.push(
-      `| ${row.scenario} | ${row.autoFreeze ? 'on' : 'off'} | ${row.enablePatches ? 'on' : 'off'} | ${row.operations} | ${time(row.libraries.mutative)} | ${time(row.libraries['mutative-v1'])} | ${time(row.libraries.immer)} | ${row.v1OverCandidate?.toFixed(2) ?? '—'} | ${row.immerOverMutative?.toFixed(2) ?? '—'} |`
+      `| ${row.scenario} | ${row.autoFreeze ? 'on' : 'off'} | ${row.enablePatches ? 'on' : 'off'} | ${row.operations} | ${time(row.libraries.mutative)} | ${time(row.libraries['mutative-v1'])} | ${time(row.libraries.immer)} | ${time(row.libraries.vanilla)} | ${row.v1OverCandidate?.toFixed(2) ?? '—'} | ${row.immerOverMutative?.toFixed(2) ?? '—'} | ${row.vanillaOverCandidate?.toFixed(2) ?? '—'} |`
     );
   lines.push(
     '',

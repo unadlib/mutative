@@ -101,9 +101,14 @@ export function createScenarios(config, filter = '.*') {
   return selected;
 }
 
-// Patch application scenarios produce no patches of their own.
+// The hand-written reducer never freezes or generates patches, and patch
+// application scenarios produce no patches of their own.
 export function supportsMode(scenario, library, autoFreeze, enablePatches) {
-  return !(scenario.kind === 'apply' && enablePatches);
+  if (scenario.kind === 'apply' && enablePatches) return false;
+  return (
+    library !== 'vanilla' ||
+    (!autoFreeze && !enablePatches && scenario.kind !== 'apply')
+  );
 }
 
 export function prepareScenario(config, name, autoFreeze) {

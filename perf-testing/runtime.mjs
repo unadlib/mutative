@@ -13,7 +13,8 @@ import {
   isDraft as isImmerDraft,
 } from 'immer';
 import { do_not_optimize } from 'mitata';
-import { createDraftReducer } from './workloads.mjs';
+import { createDraftReducer, vanillaReducer } from './workloads.mjs';
+import { expectedReads } from './additional-workloads.mjs';
 
 // Replaced by build.mjs with versions, revisions, and hashes of actual inputs.
 export const buildInfo = __BENCHMARK_BUILD__;
@@ -26,6 +27,8 @@ let immerMapSetEnabled = false;
 // loaded, so it is enabled only in processes that run Map or Set scenarios.
 export const isImmerMapSetEnabled = () => immerMapSetEnabled;
 
+const isReadAction = (action) => action.type.startsWith('bench/read-');
+
 export function createRuntime(
   library,
   autoFreeze,
@@ -37,6 +40,21 @@ export function createRuntime(
   const applyScenario = scenario.kind === 'apply';
   if (applyScenario && patches)
     throw new Error('Patch application scenarios run with patches off');
+  if (library === 'vanilla') {
+    if (autoFreeze || patches || applyScenario)
+      throw new Error(
+        'The hand-written reducer runs producer scenarios with freeze and patches off'
+      );
+    // Plain reads of the same values the recipes read through drafts.
+    const reducer = scenario.steps.some(isReadAction)
+      ? (state, action) => {
+          const values = expectedReads(state, action);
+          for (let i = 0; i < values.length; i++) consumeRead(values[i]);
+          return vanillaReducer(state, action);
+        }
+      : vanillaReducer;
+    return { reducer, isDraft: () => false };
+  }
   if (library === 'mutative' || library === 'mutative-v1') {
     const implementation =
       library === 'mutative-v1'
