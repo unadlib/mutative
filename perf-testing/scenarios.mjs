@@ -7,6 +7,7 @@ import {
   rtkqResolved,
 } from './workloads.mjs';
 import { createAdditionalScenarios } from './additional-workloads.mjs';
+import { deepFreeze } from './graph.mjs';
 
 // Shared by benchmarks, correctness validation, and CPU profiling.
 export function createScenarios(config, filter = '.*') {
@@ -74,14 +75,6 @@ export function createScenarios(config, filter = '.*') {
   const selected = scenarios.filter(({ name }) => pattern.test(name));
   if (!selected.length) throw new Error(`No scenarios match ${filter}`);
   return selected;
-}
-
-export function deepFreeze(value) {
-  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
-    for (const child of Object.values(value)) deepFreeze(child);
-    Object.freeze(value);
-  }
-  return value;
 }
 
 export function prepareScenario(config, name, autoFreeze) {

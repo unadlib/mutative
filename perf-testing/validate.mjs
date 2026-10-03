@@ -1,4 +1,11 @@
 import assert from 'node:assert/strict';
+import {
+  assertSameData,
+  canonical,
+  graphChildren,
+  isFrozenValue,
+  replayPatches,
+} from './graph.mjs';
 import { createRuntime } from './runtime.mjs';
 import { prepareScenario } from './scenarios.mjs';
 import { vanillaReducer } from './workloads.mjs';
@@ -10,56 +17,25 @@ function checkGraph(value, runtime, autoFreeze, seen = new Set()) {
   assert.equal(runtime.isDraft(value), false, 'result must not contain drafts');
   if (autoFreeze !== undefined)
     assert.equal(
-      Object.isFrozen(value),
+      isFrozenValue(value),
       autoFreeze,
       'result freeze mode must match'
     );
-  for (const child of Object.values(value))
+  for (const child of graphChildren(value))
     checkGraph(child, runtime, autoFreeze, seen);
 }
 
-// Independent plain-JavaScript replay, including own fields with undefined
-// values in the RTKQ fixture. JSON serialization would lose those fields.
-function replayPatches(base, patches) {
-  let document = structuredClone(base);
-  for (const patch of patches) {
-    const { op, path } = patch;
-    assert.ok(['add', 'remove', 'replace'].includes(op));
-    assert.ok(Array.isArray(path), 'patch paths must be arrays');
-    if (op !== 'remove') assert.ok(Object.hasOwn(patch, 'value'));
-    if (!path.length) {
-      assert.equal(op, 'replace');
-      document = structuredClone(patch.value);
-    } else {
-      let parent = document;
-      for (const key of path.slice(0, -1)) {
-        assert.ok(parent && typeof parent === 'object');
-        assert.ok(Object.hasOwn(parent, key), 'patch parent must exist');
-        parent = parent[key];
-      }
-      assert.ok(parent && typeof parent === 'object');
-      const key = path.at(-1);
-      assert.ok(typeof key === 'string' || typeof key === 'number');
-      if (Array.isArray(parent)) {
-        const index = Number(key);
-        assert.ok(Number.isSafeInteger(index) && index >= 0);
-        assert.ok(
-          index < parent.length || (op === 'add' && index === parent.length)
-        );
-        if (op === 'add') parent.splice(index, 0, structuredClone(patch.value));
-        else if (op === 'remove') parent.splice(index, 1);
-        else parent[index] = structuredClone(patch.value);
-      } else {
-        if (op !== 'add') assert.ok(Object.hasOwn(parent, key));
-        if (op === 'remove') delete parent[key];
-        else parent[key] = structuredClone(patch.value);
-      }
-    }
-  }
-  return document;
-}
+// Map and Set results need the canonical view: Mutative's frozen collections
+// carry enumerable mutators, and only an ordered view checks their order.
+// Other graphs compare directly, as deepStrictEqual already checks prototypes.
+const comparator = (scenario) =>
+  scenario.mapSet
+    ? assertSameData
+    : (actual, expected, message) =>
+        assert.deepEqual(actual, expected, message);
 
 function validatePatchedSteps(prepared, runtime, autoFreeze, label) {
+  const same = comparator(prepared);
   // Build the entire oracle before production so a mutation cannot contaminate it.
   const expectedSteps = [];
   let reference = prepared.base;
@@ -71,7 +47,7 @@ function validatePatchedSteps(prepared, runtime, autoFreeze, label) {
   const patchCounts = { forward: 0, inverse: 0 };
   for (const [index, action] of prepared.steps.entries()) {
     const before = state;
-    const beforeSnapshot = structuredClone(before);
+    const beforeSnapshot = canonical(before);
     const result = runtime.reducer(before, action);
     assert.ok(Array.isArray(result) && result.length === 3, label);
     const [next, forward, inverse] = result;
@@ -79,8 +55,8 @@ function validatePatchedSteps(prepared, runtime, autoFreeze, label) {
     assert.ok(Array.isArray(forward) && Array.isArray(inverse), label);
     checkGraph(forward, runtime);
     checkGraph(inverse, runtime);
-    const patchSnapshot = structuredClone([forward, inverse]);
-    assert.deepEqual(next, expectedSteps[index], `${label}: step ${index}`);
+    const patchSnapshot = canonical([forward, inverse]);
+    same(next, expectedSteps[index], `${label}: step ${index}`);
     if (
       expectedSteps[index] ===
       (index ? expectedSteps[index - 1] : prepared.base)
@@ -89,37 +65,35 @@ function validatePatchedSteps(prepared, runtime, autoFreeze, label) {
       assert.equal(forward.length, 0, `${label}: no forward patches for no-op`);
       assert.equal(inverse.length, 0, `${label}: no inverse patches for no-op`);
     }
-    assert.deepEqual(before, beforeSnapshot, `${label}: step input unchanged`);
-    assert.deepEqual(
+    same(before, beforeSnapshot, `${label}: step input unchanged`);
+    // Replays compare Map and Set contents without their order: a Set patch
+    // adds at the end, wherever the value was.
+    same(
       replayPatches(before, forward),
       next,
-      `${label}: forward replay`
+      `${label}: forward replay`,
+      false
     );
-    assert.deepEqual(
+    same(
       replayPatches(next, inverse),
       beforeSnapshot,
-      `${label}: inverse replay`
+      `${label}: inverse replay`,
+      false
     );
-    assert.deepEqual(
+    same(
       runtime.applyPatches(before, forward),
       next,
-      `${label}: native forward replay`
+      `${label}: native forward replay`,
+      false
     );
-    assert.deepEqual(
+    same(
       runtime.applyPatches(next, inverse),
       beforeSnapshot,
-      `${label}: native inverse replay`
+      `${label}: native inverse replay`,
+      false
     );
-    assert.deepEqual(
-      [forward, inverse],
-      patchSnapshot,
-      `${label}: patches unchanged`
-    );
-    assert.deepEqual(
-      before,
-      beforeSnapshot,
-      `${label}: replay input unchanged`
-    );
+    same([forward, inverse], patchSnapshot, `${label}: patches unchanged`);
+    same(before, beforeSnapshot, `${label}: replay input unchanged`);
     patchCounts.forward += forward.length;
     patchCounts.inverse += inverse.length;
     state = next;
@@ -141,8 +115,9 @@ export function validateScenarios(options, scenarios) {
             scenario.name,
             autoFreeze
           );
-          const baseSnapshot = structuredClone(prepared.base);
-          const actionSnapshot = structuredClone(prepared.steps);
+          const same = comparator(prepared);
+          const baseSnapshot = canonical(prepared.base);
+          const actionSnapshot = canonical(prepared.steps);
           const expected = prepared.execute(vanillaReducer, prepared.base);
           const reads = [];
           let reference = prepared.base;
@@ -165,21 +140,9 @@ export function validateScenarios(options, scenarios) {
           const { result } = validated;
           assert.deepEqual(reads, expectedReadValues, `${label}: read results`);
           if (enablePatches) patchCounts.set(label, validated.patchCounts);
-          assert.deepEqual(
-            result,
-            expected,
-            `${label}: immutable reference result`
-          );
-          assert.deepEqual(
-            prepared.base,
-            baseSnapshot,
-            `${label}: input unchanged`
-          );
-          assert.deepEqual(
-            prepared.steps,
-            actionSnapshot,
-            `${label}: actions unchanged`
-          );
+          same(result, expected, `${label}: immutable reference result`);
+          same(prepared.base, baseSnapshot, `${label}: input unchanged`);
+          same(prepared.steps, actionSnapshot, `${label}: actions unchanged`);
           if (expected === prepared.base)
             assert.equal(result, prepared.base, `${label}: unchanged identity`);
           else
@@ -210,7 +173,7 @@ export function validateScenarios(options, scenarios) {
                 () => {}
               )
             : prepared.execute(runtime.reducer, prepared.base);
-          assert.deepEqual(repeated, result, label);
+          same(repeated, result, label);
           assert.deepEqual(
             reads,
             expectedReadValues,
