@@ -15,9 +15,33 @@ import { checkReadable } from './unsafe';
 const arrayProto = Array.prototype;
 const arrayIncludes = arrayProto.includes;
 
-// Registered only when an optimized method is read. Membership does not run
-// Proxy traps, and retaining a revoked proxy does not retain its draft state.
-export const arrayProxies = new WeakSet<object>();
+// Receivers are recognized by identity only, so a borrowed method never reads
+// a property of an object that is not one of these drafts. The array whose
+// optimized method was read last is kept here; a finished producer revokes
+// its proxies and empties its revoke list, so these references keep no draft
+// state alive. A draft that is never finalized stays referenced until another
+// array's method is read.
+let recentProxy: object | null = null;
+let recentRevoke: unknown[] | null = null;
+// Arrays of a live producer whose methods were read before another array's,
+// as in `a.unshift(b.shift())`. Membership checks run no Proxy trap.
+const arrayProxies = new WeakSet<object>();
+
+/**
+ * Records that the get trap handed out an optimized method of `target`. Only
+ * a switch between arrays of a live producer adds a weak-collection entry, so
+ * the common case of one array per producer allocates nothing.
+ */
+export function trackArrayMethod(target: ProxyDraft) {
+  const proxy = target.proxy!;
+  if (proxy !== recentProxy) {
+    if (recentRevoke !== null && recentRevoke.length > 0) {
+      arrayProxies.add(recentProxy!);
+    }
+    recentProxy = proxy;
+    recentRevoke = target.finalities.revoke;
+  }
+}
 
 function canExecute(value: any) {
   return (
@@ -30,7 +54,7 @@ function canExecute(value: any) {
  * plain arrays only, outside `current()` and without a custom mark.
  */
 function nativeState(self: any): ProxyDraft | null {
-  if (!arrayProxies.has(self)) return null;
+  if (self !== recentProxy && !arrayProxies.has(self)) return null;
   const target: ProxyDraft = self[PROXY_DRAFT];
   return !target.finalized &&
     !target.options.mark &&

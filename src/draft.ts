@@ -9,7 +9,7 @@ import {
 import { dataTypes, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
-import { arrayMethods, arrayProxies, baseIndices } from './array';
+import { arrayMethods, baseIndices, trackArrayMethod } from './array';
 import { internal } from './internal';
 import {
   deepFreeze,
@@ -121,7 +121,7 @@ function getTrap(
       // `arrayMethods`. Subclasses resolve their own methods below.
       const method = arrayMethods[key as any];
       if (method !== undefined) {
-        arrayProxies.add(target.proxy);
+        trackArrayMethod(target);
         return method;
       }
     }

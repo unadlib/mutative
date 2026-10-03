@@ -152,6 +152,61 @@ describe('native array method boundaries', () => {
     expect(run(false)).toStrictEqual(run(true));
   });
 
+  test('methods of several arrays interleave within one producer', () => {
+    const base = {
+      a: [{ id: 1 }, { id: 2 }],
+      b: [{ id: 3 }, { id: 4 }],
+    };
+    const [state, patches, inverse] = create(
+      base,
+      (draft) => {
+        draft.a.unshift(draft.b.shift()!);
+        const shift = draft.a.shift;
+        draft.b.reverse();
+        expect(shift.call(draft.a)).toStrictEqual({ id: 3 });
+        draft.b.splice(draft.a.indexOf(draft.a[1]), 0, { id: 5 });
+      },
+      { enablePatches: true }
+    );
+    expect(state).toStrictEqual({
+      a: [{ id: 1 }, { id: 2 }],
+      b: [{ id: 4 }, { id: 5 }],
+    });
+    expect(base.b).toStrictEqual([{ id: 3 }, { id: 4 }]);
+    expect(apply(base, patches)).toStrictEqual(state);
+    expect(apply(state, inverse)).toStrictEqual(base);
+  });
+
+  test('a method read in a finished producer works on later drafts', () => {
+    let shift!: () => unknown;
+    create({ list: [1, 2] }, (draft) => {
+      shift = draft.list.shift;
+    });
+    const base = { list: [{ id: 1 }, { id: 2 }] };
+    const [state, patches, inverse] = create(
+      base,
+      (draft) => {
+        const removed = shift.call(draft.list) as { id: number };
+        expect(isDraft(removed)).toBe(true);
+        removed.id = 10;
+      },
+      { enablePatches: true }
+    );
+    expect(state.list).toStrictEqual([{ id: 2 }]);
+    expect(base.list).toStrictEqual([{ id: 1 }, { id: 2 }]);
+    expect(apply(base, patches)).toStrictEqual(state);
+    expect(apply(state, inverse)).toStrictEqual(base);
+  });
+
+  test('a stored method throws on a finalized draft like the native method', () => {
+    const [draft, finish] = create({ list: [1, 2] });
+    const { list } = draft;
+    const shift = list.shift;
+    finish();
+    expect(() => shift.call(list)).toThrow(TypeError);
+    expect(() => Array.prototype.shift.call(list)).toThrow(TypeError);
+  });
+
   test.each([false, true])(
     'moved shared objects generate patches only for their current path (freeze=%s)',
     (enableAutoFreeze) => {
