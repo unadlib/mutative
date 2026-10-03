@@ -19,13 +19,10 @@ export const checkReadable = (
   }
 };
 
-// Whether `checkReadable` rejects a read of `value` from a draft, without
-// throwing.
-export const rejectsRead = (value: any, options: Options<any, any>) =>
-  !readable &&
-  typeof value === 'object' &&
-  value !== null &&
-  !isDraftable(value, options);
+// Whether reads from drafts are checked now: in strict mode, outside
+// `unsafe()`.
+export const checksReads = (options: Options<any, any>) =>
+  !!options.strict && !readable;
 
 /**
  * `unsafe(callback)` to access mutable data directly in strict mode.
