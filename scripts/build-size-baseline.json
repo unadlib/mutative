@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "8c42ce2554def3649e652f9d2427d4d264122c9d",
-    "description": "Native array methods under the data-array contract: holes detected with the in operator, searches native and by reference",
+    "revision": "6ce062b36229c6c7404be9b2f77b2a1233c8ea26",
+    "description": "Native array methods under the data-array contract: includes-prefiltered hole scan, reference-only searches, last-read receiver tracking",
     "node": "v24.16.0",
     "commands": [
       "pnpm install --frozen-lockfile",
@@ -15,64 +15,64 @@
   "esbuild": "0.24.0",
   "measurements": {
     "artifact/mutative.cjs.production.min.js": {
-      "raw": 25061,
-      "gzip": 8468,
-      "brotli": 7740
+      "raw": 25344,
+      "gzip": 8532,
+      "brotli": 7799
     },
     "artifact/mutative.umd.production.min.js": {
-      "raw": 25215,
-      "gzip": 8535,
-      "brotli": 7798
+      "raw": 25499,
+      "gzip": 8599,
+      "brotli": 7855
     },
     "artifact/mutative.cjs.development.js": {
-      "raw": 62350,
-      "gzip": 14467,
-      "brotli": 12541
+      "raw": 63223,
+      "gzip": 14692,
+      "brotli": 12737
     },
     "artifact/mutative.umd.development.js": {
-      "raw": 64399,
-      "gzip": 14664,
-      "brotli": 12710
+      "raw": 65293,
+      "gzip": 14889,
+      "brotli": 12887
     },
     "artifact/mutative.esm.js": {
-      "raw": 62072,
-      "gzip": 14411,
-      "brotli": 12482
+      "raw": 62945,
+      "gzip": 14636,
+      "brotli": 12660
     },
     "artifact/mutative.esm.mjs": {
-      "raw": 62073,
-      "gzip": 14412,
-      "brotli": 12486
+      "raw": 62946,
+      "gzip": 14636,
+      "brotli": 12661
     },
     "consumer/import/create": {
-      "raw": 24447,
-      "gzip": 8599,
-      "brotli": 7808
+      "raw": 24716,
+      "gzip": 8662,
+      "brotli": 7863
     },
     "consumer/import/patches": {
-      "raw": 26645,
-      "gzip": 9307,
-      "brotli": 8425
+      "raw": 26915,
+      "gzip": 9367,
+      "brotli": 8482
     },
     "consumer/import/all": {
-      "raw": 27837,
-      "gzip": 9653,
-      "brotli": 8748
+      "raw": 28108,
+      "gzip": 9718,
+      "brotli": 8802
     },
     "consumer/require/create": {
-      "raw": 24636,
-      "gzip": 8748,
-      "brotli": 7999
+      "raw": 24907,
+      "gzip": 8793,
+      "brotli": 8058
     },
     "consumer/require/patches": {
-      "raw": 24704,
-      "gzip": 8784,
-      "brotli": 8061
+      "raw": 24975,
+      "gzip": 8829,
+      "brotli": 8073
     },
     "consumer/require/all": {
-      "raw": 24601,
-      "gzip": 8730,
-      "brotli": 7978
+      "raw": 24872,
+      "gzip": 8771,
+      "brotli": 8021
     }
   }
 }
