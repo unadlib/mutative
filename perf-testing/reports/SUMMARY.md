@@ -172,11 +172,16 @@ Immer with the plugin is faster in 36 cells, all at 100 rows except the
 base elements to a callback or comparator, which Mutative never does: `find` in
 `read-missing` (about 20x), `findIndex` in `remove-high` and
 `remove-high-reuse`, `filter`, and sorts of objects in `sortById-reverse`,
-`array-sort-shallow` and `array-sort-nested` (2–12x).
-[`test/immer-array-methods.md`](../../test/immer-array-methods.md) reproduces
-why handing out raw elements is unsafe. The remaining cells are `push` and
-`pop` with freeze and patches off (`add`, `array-push-*`, `array-pop-*`), which
-Mutative leaves on the proxy path: 1.15–1.59 µs against 0.78–1.34 µs. With
+`array-sort-shallow` and `array-sort-nested` (2–12x). Immer documents that
+the plugin passes raw values to these callbacks, so they read the base without
+creating drafts, and an edit made in a callback does not go through a draft.
+[`test/immer-array-methods.md`](../../test/immer-array-methods.md) records that
+documented behavior with read-only callbacks. The failures it reproduces come
+from raw base objects that the plugin's removal methods return or that
+reordering exposes, whose edits change the base state. The remaining cells are
+`push` and `pop` with freeze and patches off (`add`, `array-push-*`,
+`array-pop-*`), which Mutative leaves on the proxy path: 1.15–1.59 µs against
+0.78–1.34 µs. With
 patches or freezing enabled Mutative is faster on these as well. Every
 `shift`, `unshift`, `splice` and `reverse` cell is faster than Immer with the
 plugin; at 10,000 rows by 20–57x with freeze and patches off, about 5x with
