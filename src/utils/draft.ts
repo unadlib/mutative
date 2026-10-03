@@ -21,7 +21,10 @@ export function getProxyDraft<T extends any>(value: T): ProxyDraft | null {
 
 export function getValue<T extends object>(value: T): T {
   const proxyDraft = getProxyDraft(value);
-  return proxyDraft ? (proxyDraft.copy ?? proxyDraft.original) : value;
+  if (!proxyDraft) return value;
+  // A copy also exists once a child has merely been read; an unchanged draft
+  // still stands for its original, as every other finalization path decides.
+  return proxyDraft.operated ? proxyDraft.copy! : proxyDraft.original;
 }
 
 /**
