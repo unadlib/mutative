@@ -115,15 +115,16 @@ describe('native array methods', () => {
     create(base, (draft) => {
       const item = draft.list[2];
       expect(draft.list.indexOf(item)).toBe(2);
-      // The drafted element replaced its original in the array, as through
-      // the proxy; an element that was never read is still the original.
+      // Elements of the base state are drafted on read, so their original
+      // objects are never found, whether or not they were read before;
+      // search `original(draft.list)` to compare original objects.
       expect(draft.list.indexOf(base.list[2])).toBe(-1);
-      expect(draft.list.indexOf(base.list[3])).toBe(3);
+      expect(draft.list.indexOf(base.list[3])).toBe(-1);
       expect(draft.list.includes(item)).toBe(true);
       expect(draft.list.includes({ id: 2 })).toBe(false);
       draft.list.reverse();
       expect(draft.list.indexOf(item)).toBe(1);
-      expect(draft.list.lastIndexOf(base.list[0])).toBe(3);
+      expect(draft.list.lastIndexOf(base.list[0])).toBe(-1);
       expect(draft.nums.includes(NaN)).toBe(true);
       expect(draft.nums.indexOf(NaN)).toBe(-1);
       expect(draft.nums.lastIndexOf(2)).toBe(3);

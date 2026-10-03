@@ -338,19 +338,56 @@ function native(
   };
 }
 
-// Identity searches run natively on the current array. A primitive index
-// argument converts without side effects, so the native method may convert
-// it; an index that can run user code is converted on the proxy path, which
-// keeps the length it read first. Values are compared by reference only, as
-// through the proxy: the drafts this array created are held by its copy, and
-// the search never reads a property of the value it is given.
+// Whether a read of `value` at `index` through the proxy would hand out a new
+// draft instead of `value` itself, as it does for an object of the base state.
+// This array's own drafts, values assigned in the recipe and non-draftable
+// objects are handed out as they are.
+function draftsOnRead(target: ProxyDraft, value: object, index: number) {
+  if (value === target.original[index]) {
+    return isDraftable(value, target.options);
+  }
+  const state = target.arrayState;
+  if (state === null || !state.relocated || childAt(target, index) === value) {
+    return false;
+  }
+  return baseIndices(target).has(value) && isDraftable(value, target.options);
+}
+
+// Identity searches run natively on the current array and return what the
+// proxy path returns, where every element is compared as a read hands it out.
+// An object of the base state is drafted on read and so never found; a native
+// hit on one is skipped and the search continues past it, so the result does
+// not depend on which elements were read before. A primitive index argument
+// converts without side effects, so the native method may convert it; an index
+// that can run user code is converted on the proxy path, which keeps the
+// length it read first. The search never reads a property of the value it is
+// given.
 function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
   const nativeSearch: Native = arrayProto[method] as any;
+  const backwards = method === 'lastIndexOf';
+  const find: Native = (
+    backwards ? arrayProto.lastIndexOf : arrayProto.indexOf
+  ) as any;
   return native(method, (target, self, args, original) => {
     const source = latest(target);
     if (source.length === 0) return method === 'includes' ? false : -1;
     if (canExecute(args[1])) return original.apply(self, args);
-    return nativeSearch.apply(source, args);
+    const value = args[0];
+    if (typeof value !== 'object' || value === null) {
+      return nativeSearch.apply(source, args);
+    }
+    let index: number =
+      args.length > 1
+        ? find.call(source, value, args[1])
+        : find.call(source, value);
+    while (index !== -1 && draftsOnRead(target, value, index)) {
+      index = backwards
+        ? index === 0
+          ? -1
+          : find.call(source, value, index - 1)
+        : find.call(source, value, index + 1);
+    }
+    return method === 'includes' ? index !== -1 : index;
   });
 }
 
