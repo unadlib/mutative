@@ -289,58 +289,21 @@ function native(
   };
 }
 
-// Identity searches read the array directly. The index argument is converted
-// after the length is read and before the elements, as the native methods
-// do, so a conversion that changes the array is observed the same way. A
-// draft from this producer also matches the original it stands for. Other
-// producers' drafts and external proxies are opaque identity values.
+// Identity searches run natively on the current array. A primitive index
+// argument converts without side effects, so the native method may convert
+// it; an index that can run user code is converted on the proxy path, which
+// keeps the length it read first. Drafts held by the array are found by
+// reference, as through the proxy. A draft from this producer also matches
+// the original it stands for. Other producers' drafts and external proxies
+// are opaque identity values.
 function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
   const nativeSearch: Native = arrayProto[method] as any;
-  return native(method, (target, self, args) => {
-    const length = latest(target).length;
-    if (length === 0) return method === 'includes' ? false : -1;
-    if (canExecute(args[1])) return nativeSearch.apply(self, args);
-    const from =
-      args.length > 1
-        ? toInteger(args[1])
-        : method === 'lastIndexOf'
-          ? length - 1
-          : 0;
+  return native(method, (target, self, args, original) => {
     const source = latest(target);
+    if (source.length === 0) return method === 'includes' ? false : -1;
+    if (canExecute(args[1])) return original.apply(self, args);
+    const found = nativeSearch.apply(source, args);
     const value = args[0];
-    let found: number | boolean = method === 'includes' ? false : -1;
-    if (target.arrayState?.dense === true) {
-      found = nativeSearch.call(source, value, from);
-    } else {
-      const backwards = method === 'lastIndexOf';
-      const start = backwards
-        ? Math.min(from < 0 ? length + from : from, length - 1)
-        : from < 0
-          ? Math.max(length + from, 0)
-          : from;
-      // Inspect only indices the search would visit, preserving early hits.
-      // Before any getter can run, delegate to the proxy so later reads see
-      // changes that the getter makes to the draft.
-      for (
-        let index = start;
-        index >= 0 && index < length;
-        index += backwards ? -1 : 1
-      ) {
-        const descriptor = Object.getOwnPropertyDescriptor(source, index);
-        if (!descriptor || !('value' in descriptor)) {
-          return nativeSearch.apply(self, args);
-        }
-        if (
-          descriptor.value === value ||
-          (method === 'includes' &&
-            descriptor.value !== descriptor.value &&
-            value !== value)
-        ) {
-          found = method === 'includes' ? true : index;
-          break;
-        }
-      }
-    }
     if (
       (found === -1 || found === false) &&
       typeof value === 'object' &&
@@ -350,7 +313,7 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
       // for its draft symbol would invoke arbitrary getters or Proxy traps.
       for (const draft of target.finalities.draft) {
         if (typeof draft !== 'function' && draft.proxy === value) {
-          return nativeSearch.call(source, draft.original, from);
+          return nativeSearch.call(source, draft.original, ...args.slice(1));
         }
       }
     }
