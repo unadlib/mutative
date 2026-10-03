@@ -28,7 +28,13 @@ const { checks } = validateScenarios(options, scenarios);
 const [library] = options.libraries;
 const [autoFreeze] = options.freezes;
 const [enablePatches] = options.patches;
-const runtime = createRuntime(library, autoFreeze, enablePatches);
+const runtime = createRuntime(
+  library,
+  autoFreeze,
+  enablePatches,
+  undefined,
+  options.immerArrayMethods === true
+);
 const execute = enablePatches
   ? (prepared) =>
       prepared.executeWithPatches(
@@ -112,7 +118,7 @@ if (!options.check && !options.list) {
           })),
           iterationsPerScenario: options.iterations,
           samplingIntervalUs: 1000,
-          arrayMethodsEnabled: false,
+          arrayMethodsEnabled: options.immerArrayMethods === true,
           setupAndWarmupProfiled: false,
           bundle: {
             url: import.meta.url,

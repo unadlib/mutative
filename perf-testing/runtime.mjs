@@ -4,7 +4,12 @@ import {
   create as createV1,
   isDraft as isV1Draft,
 } from 'mutative-v1';
-import { enablePatches, Immer, isDraft as isImmerDraft } from 'immer';
+import {
+  enableArrayMethods,
+  enablePatches,
+  Immer,
+  isDraft as isImmerDraft,
+} from 'immer';
 import { do_not_optimize } from 'mitata';
 import { createDraftReducer } from './workloads.mjs';
 
@@ -12,12 +17,14 @@ import { createDraftReducer } from './workloads.mjs';
 export const buildInfo = __BENCHMARK_BUILD__;
 
 let immerPatchesEnabled = false;
+let immerArrayMethodsEnabled = false;
 
 export function createRuntime(
   library,
   autoFreeze,
   patches = false,
-  consumeRead = do_not_optimize
+  consumeRead = do_not_optimize,
+  immerArrayMethods = false
 ) {
   if (library === 'mutative' || library === 'mutative-v1') {
     const implementation =
@@ -45,6 +52,11 @@ export function createRuntime(
     if (patches && !immerPatchesEnabled) {
       enablePatches();
       immerPatchesEnabled = true;
+    }
+    // Opt-in plugin; its global registration also stays out of the timed path.
+    if (immerArrayMethods && !immerArrayMethodsEnabled) {
+      enableArrayMethods();
+      immerArrayMethodsEnabled = true;
     }
     // Isolated instance: no global configuration changes in the timed path.
     const immer = new Immer({ autoFreeze });

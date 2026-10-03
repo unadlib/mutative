@@ -74,7 +74,7 @@ export function formatMemoryReport(report) {
     '',
     'Each worker owns one scenario/library/freeze/patch combination. Setup, validation, and five warmup calls precede measurement. Allocation sampling includes collected objects and profiler/loop overhead; estimates are not exact allocation counts. A separate unprofiled pass retains one result per iteration (the last producer tuple when patches are enabled). Retained-output heap compares post-GC snapshots with outputs live and after releasing them, cancelling persistent runtime-cache growth. Raw before/retained/released snapshots remain in JSON. Small or negative deltas can be measurement noise. RSS is a batch-end snapshot delta, not peak RSS or per-operation allocation. Explicit GC duration is diagnostic, not producer latency.',
     '',
-    `Iterations/pass: ${first.trial.memory.iterations}; allocation sampling interval: ${first.trial.memory.samplingInterval} bytes. Freeze on uses pre-frozen inputs. Patch application and serialization are excluded. Array-method plugins are disabled.`,
+    `Iterations/pass: ${first.trial.memory.iterations}; allocation sampling interval: ${first.trial.memory.samplingInterval} bytes. Freeze on uses pre-frozen inputs. Patch application and serialization are excluded. ${first.methodology?.arrayMethodsEnabled ? "Immer's array-method plugin is enabled; Mutative's native array methods need no option." : 'Array-method plugins are disabled.'}`,
     '',
     '| Scenario | Library | Freeze | Patches | Allocated KiB/iteration (estimate) | Retained heap KiB/iteration | Batch RSS delta MiB | Explicit GC ms |',
     '| --- | --- | --- | --- | ---: | ---: | ---: | ---: |',

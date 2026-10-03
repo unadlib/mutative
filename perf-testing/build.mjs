@@ -115,5 +115,5 @@ await build({
   logLevel: 'info',
 });
 console.log(
-  `Benchmark inputs: candidate Mutative ${candidateManifest.version}, pinned Mutative v1 ${v1Manifest.version}, pinned Immer ${immerManifest.version}; production, array methods disabled.`
+  `Benchmark inputs: candidate Mutative ${candidateManifest.version}, pinned Mutative v1 ${v1Manifest.version}, pinned Immer ${immerManifest.version}; production. Immer's array-method plugin is off unless a run passes --immer-array-methods.`
 );

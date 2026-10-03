@@ -54,7 +54,13 @@ if (options.list) {
                 scenario.name,
                 autoFreeze
               );
-              const runtime = createRuntime(library, autoFreeze, enablePatches);
+              const runtime = createRuntime(
+                library,
+                autoFreeze,
+                enablePatches,
+                undefined,
+                options.immerArrayMethods === true
+              );
               const execute = enablePatches
                 ? () =>
                     prepared.executeWithPatches(
@@ -120,7 +126,7 @@ if (options.list) {
       checks,
       unit: 'nanoseconds per full scenario iteration',
       methodology: {
-        arrayMethodsEnabled: false,
+        arrayMethodsEnabled: options.immerArrayMethods === true,
         patchesEnabled:
           options.patches.length === 1 ? options.patches[0] : null,
         patchModes: options.patches,
