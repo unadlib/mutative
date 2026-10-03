@@ -13,6 +13,7 @@ import {
 import { checkReadable } from './unsafe';
 
 const arrayProto = Array.prototype;
+const arrayIncludes = arrayProto.includes;
 
 // Registered only when an optimized method is read. Membership does not run
 // Proxy traps, and retaining a revoked proxy does not retain its draft state.
@@ -69,10 +70,15 @@ function arrayState(target: ProxyDraft) {
 }
 
 // Holes are the one thing a move cannot replay through patches, so moving
-// methods leave sparse arrays to the proxy. `in` is the HasProperty check the
-// native algorithms use; it runs no element getter. Elements that are
-// `undefined` are ordinary values and move natively.
+// methods leave sparse arrays to the proxy. A hole reads as `undefined`, so an
+// array in which the `includes` builtin finds no `undefined` has none; that
+// scan is fast for every kind of array. Only arrays that hold `undefined` are
+// checked index by index with `in`, the HasProperty check of the native
+// algorithms, which costs several times more per element once many array
+// shapes have passed through it. Elements that are `undefined` are ordinary
+// values and move natively.
 function hasHoles(array: any[]) {
+  if (!arrayIncludes.call(array, undefined)) return false;
   for (let index = 0; index < array.length; index += 1) {
     if (!(index in array)) return true;
   }
@@ -359,7 +365,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
             ? length - start
             : Math.min(Math.max(toInteger(args[1]), 0), length - start);
       const insertCount = Math.max(args.length - 2, 0);
-      if ((deleteCount === 0 && insertCount === 0) || !isDense(target)) {
+      if (deleteCount === 0 && insertCount === 0) {
         return original.apply(self, args);
       }
       const source = latest(target);
@@ -379,6 +385,8 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         }
         if (same) return original.apply(self, args);
       }
+      // Decided after the unchanged cases, which read only the replaced range.
+      if (!isDense(target)) return original.apply(self, args);
       const keys: any[] = [];
       for (let index = 0; index < deleteCount; index += 1) {
         keys.push(removalKey(target, start + index));
