@@ -3,8 +3,12 @@ import os from 'node:os';
 import { bench, do_not_optimize, run } from 'mitata';
 import { readOptions } from './options.mjs';
 import { compactStats } from './report.mjs';
-import { buildInfo, createRuntime } from './runtime.mjs';
-import { createScenarios, prepareScenario } from './scenarios.mjs';
+import { buildInfo, createRuntime, isImmerMapSetEnabled } from './runtime.mjs';
+import {
+  createScenarios,
+  prepareScenario,
+  supportsMode,
+} from './scenarios.mjs';
 import { validateScenarios } from './validate.mjs';
 
 const options = process.env.MUTATIVE_PERF_OPTIONS
@@ -14,7 +18,7 @@ const scenarios = createScenarios(options.config, options.filter);
 if (options.list) {
   for (const scenario of scenarios)
     console.log(
-      `${scenario.name}: ${scenario.operations} reducer calls/iteration`
+      `${scenario.name}: ${scenario.operations} ${scenario.kind === 'apply' ? 'patch applications' : 'reducer calls'}/iteration`
     );
 } else {
   const { checks, patchCounts } = validateScenarios(options, scenarios);
@@ -37,7 +41,9 @@ if (options.list) {
     for (const scenario of scenarios) {
       for (const autoFreeze of freezes) {
         for (const enablePatches of patches) {
-          for (const library of libraries) {
+          for (const library of libraries.filter((candidate) =>
+            supportsMode(scenario, candidate, autoFreeze, enablePatches)
+          )) {
             const name = `${scenario.name}: ${library} (freeze: ${autoFreeze}, patches: ${enablePatches})`;
             const label = `${scenario.name}/${library}/freeze=${autoFreeze}/patches=${enablePatches}`;
             definitions.set(name, {
@@ -59,7 +65,8 @@ if (options.list) {
                 autoFreeze,
                 enablePatches,
                 undefined,
-                options.immerArrayMethods === true
+                options.immerArrayMethods === true,
+                prepared
               );
               const execute = enablePatches
                 ? () =>
@@ -127,12 +134,16 @@ if (options.list) {
       unit: 'nanoseconds per full scenario iteration',
       methodology: {
         arrayMethodsEnabled: options.immerArrayMethods === true,
+        immerMapSetEnabled: isImmerMapSetEnabled(),
         patchesEnabled:
           options.patches.length === 1 ? options.patches[0] : null,
         patchModes: options.patches,
         patchPaths: 'arrays',
         mutativeArrayLengthAssignment: false,
-        patchApplicationTimed: false,
+        // Only apply-* scenarios time patch application, with patches off.
+        patchApplicationTimed: scenarios.some(
+          (scenario) => scenario.kind === 'apply'
+        ),
         patchSerializationTimed: false,
         patchOutputEscape:
           'each producer tuple escapes; no accumulation across calls',

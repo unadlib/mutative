@@ -67,8 +67,11 @@ export function readOptions(defaults = {}) {
 
 Auto-freeze on uses pre-frozen inputs and payloads. Patches use array paths
 and index removals in both libraries; application and serialization are not
-timed. Immer's array-method plugin is enabled only with --immer-array-methods;
-Mutative's native array methods need no option. Setup is excluded from timing.`);
+timed, except in the apply-* scenarios, which time patch application with
+patches off. Immer's array-method plugin is enabled only with
+--immer-array-methods; its MapSet plugin only in processes that run Map or Set
+scenarios. Mutative's native array methods need no option. Setup is excluded
+from timing.`);
     process.exit(0);
   }
 

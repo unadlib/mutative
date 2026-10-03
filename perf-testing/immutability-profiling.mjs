@@ -5,8 +5,12 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { do_not_optimize } from 'mitata';
 import { readOptions } from './options.mjs';
-import { buildInfo, createRuntime } from './runtime.mjs';
-import { createScenarios, prepareScenario } from './scenarios.mjs';
+import { buildInfo, createRuntime, isImmerMapSetEnabled } from './runtime.mjs';
+import {
+  createScenarios,
+  prepareScenario,
+  supportsMode,
+} from './scenarios.mjs';
 import { validateScenarios } from './validate.mjs';
 
 const options = readOptions({
@@ -23,29 +27,40 @@ if (
     'Profile one library, freeze, and patch mode at a time; use --library mutative|mutative-v1|immer --freeze off|on --patches off|on'
   );
 }
-const scenarios = createScenarios(options.config, options.filter);
-const { checks } = validateScenarios(options, scenarios);
 const [library] = options.libraries;
 const [autoFreeze] = options.freezes;
 const [enablePatches] = options.patches;
-const runtime = createRuntime(
-  library,
-  autoFreeze,
-  enablePatches,
-  undefined,
-  options.immerArrayMethods === true
+// Scenarios without this library or mode, such as apply-* with patches on.
+const scenarios = createScenarios(options.config, options.filter).filter(
+  (scenario) => supportsMode(scenario, library, autoFreeze, enablePatches)
 );
+if (!scenarios.length)
+  throw new Error(
+    `No selected scenario runs for ${library} with freeze=${autoFreeze}, patches=${enablePatches}`
+  );
+const { checks } = validateScenarios(options, scenarios);
+// Each scenario owns its runtime: class scenarios pass Mutative's mark, and
+// apply-* scenarios time patch application.
+const preparedScenarios = scenarios.map((scenario) => {
+  const prepared = prepareScenario(options.config, scenario.name, autoFreeze);
+  const { reducer } = createRuntime(
+    library,
+    autoFreeze,
+    enablePatches,
+    undefined,
+    options.immerArrayMethods === true,
+    prepared
+  );
+  return { ...prepared, reducer };
+});
 const execute = enablePatches
   ? (prepared) =>
       prepared.executeWithPatches(
-        runtime.reducer,
+        prepared.reducer,
         prepared.base,
         do_not_optimize
       )
-  : (prepared) => prepared.execute(runtime.reducer, prepared.base);
-const preparedScenarios = scenarios.map((scenario) =>
-  prepareScenario(options.config, scenario.name, autoFreeze)
-);
+  : (prepared) => prepared.execute(prepared.reducer, prepared.base);
 console.log(
   `Validated ${checks} profiling scenarios for ${library}, freeze=${autoFreeze}, patches=${enablePatches}.`
 );
@@ -109,7 +124,10 @@ if (!options.check && !options.list) {
           enablePatches,
           patchPaths: 'arrays',
           mutativeArrayLengthAssignment: false,
-          patchApplicationProfiled: false,
+          patchApplicationProfiled: scenarios.some(
+            (scenario) => scenario.kind === 'apply'
+          ),
+          immerMapSetEnabled: isImmerMapSetEnabled(),
           patchSerializationProfiled: false,
           config: options.config,
           scenarios: scenarios.map(({ name, operations }) => ({
@@ -139,6 +157,6 @@ if (!options.check && !options.list) {
 } else if (options.list) {
   for (const scenario of scenarios)
     console.log(
-      `${scenario.name}: ${scenario.operations} reducer calls/iteration`
+      `${scenario.name}: ${scenario.operations} ${scenario.kind === 'apply' ? 'patch applications' : 'reducer calls'}/iteration`
     );
 }

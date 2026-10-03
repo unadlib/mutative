@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readOptions } from './options.mjs';
 import { formatReport, summarize } from './report.mjs';
+import { createScenarios } from './scenarios.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const options = readOptions();
@@ -11,13 +12,36 @@ const resultsDirectory = join(directory, 'results');
 mkdirSync(resultsDirectory, { recursive: true });
 const runDirectory = mkdtempSync(join(resultsDirectory, 'run-'));
 const reports = [];
-for (
-  let runIndex = 0;
-  runIndex < (options.check || options.list ? 1 : options.runs);
-  runIndex++
-) {
-  const output = join(runDirectory, `process-${runIndex + 1}.json`);
-  console.log(`\nIndependent process ${runIndex + 1}/${options.runs}`);
+const escape = (name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const timed = !options.check && !options.list;
+// Immer calls its MapSet plugin while finalizing every draft once the plugin
+// is loaded. Map and Set scenarios therefore run in processes of their own, so
+// the other scenarios measure Immer without it.
+const groups = timed
+  ? [false, true]
+      .map((mapSet) =>
+        createScenarios(options.config, options.filter).filter(
+          (scenario) => scenario.mapSet === mapSet
+        )
+      )
+      .filter((group) => group.length)
+      .map((group) => `^(${group.map(({ name }) => escape(name)).join('|')})$`)
+  : [options.filter];
+const processes = groups.flatMap((filter, group) =>
+  Array.from({ length: timed ? options.runs : 1 }, (_, runIndex) => ({
+    filter,
+    group,
+    runIndex,
+  }))
+);
+// Each run measures every group before the next run starts.
+processes.sort((a, b) => a.runIndex - b.runIndex || a.group - b.group);
+for (const [index, { filter, group, runIndex }] of processes.entries()) {
+  const output = join(
+    runDirectory,
+    `process-${runIndex + 1}${groups.length > 1 ? `-${group + 1}` : ''}.json`
+  );
+  console.log(`\nIndependent process ${index + 1}/${processes.length}`);
   const child = spawnSync(
     process.execPath,
     [
@@ -32,7 +56,12 @@ for (
       env: {
         ...process.env,
         NODE_ENV: 'production',
-        MUTATIVE_PERF_OPTIONS: JSON.stringify({ ...options, runIndex, output }),
+        MUTATIVE_PERF_OPTIONS: JSON.stringify({
+          ...options,
+          filter,
+          runIndex,
+          output,
+        }),
       },
     }
   );
@@ -41,8 +70,7 @@ for (
     throw new Error(
       `Benchmark process failed: ${child.status ?? child.signal}`
     );
-  if (!options.check && !options.list)
-    reports.push(JSON.parse(readFileSync(output, 'utf8')));
+  if (timed) reports.push(JSON.parse(readFileSync(output, 'utf8')));
 }
 if (reports.length) {
   const report = {

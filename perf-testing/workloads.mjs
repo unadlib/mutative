@@ -386,13 +386,21 @@ export const vanillaReducer = (state, action) => {
   }
 };
 
-export const createDraftReducer = (produce, consumeRead) => {
+export const createDraftReducer = (
+  produce,
+  consumeRead,
+  rawReturn = (value) => value
+) => {
   const draftReducer = (state, action) =>
     produce(state, (draft) => {
-      if (action.type.startsWith('bench/')) {
-        applyAdditionalRecipe(draft, action, consumeRead);
-        return;
-      }
+      if (action.type.startsWith('bench/'))
+        return applyAdditionalRecipe(
+          draft,
+          action,
+          consumeRead,
+          state,
+          rawReturn
+        );
       switch (action.type) {
         case 'test/addItem':
           draft.largeArray.push(action.payload);

@@ -7,7 +7,7 @@ import {
   replayPatches,
 } from './graph.mjs';
 import { createRuntime } from './runtime.mjs';
-import { prepareScenario } from './scenarios.mjs';
+import { prepareScenario, supportsMode } from './scenarios.mjs';
 import { vanillaReducer } from './workloads.mjs';
 import { expectedReads } from './additional-workloads.mjs';
 
@@ -109,7 +109,9 @@ export function validateScenarios(options, scenarios) {
   for (const scenario of scenarios) {
     for (const autoFreeze of options.freezes) {
       for (const enablePatches of options.patches) {
-        for (const library of options.libraries) {
+        for (const library of options.libraries.filter((name) =>
+          supportsMode(scenario, name, autoFreeze, enablePatches)
+        )) {
           const prepared = prepareScenario(
             options.config,
             scenario.name,
@@ -131,7 +133,8 @@ export function validateScenarios(options, scenarios) {
             autoFreeze,
             enablePatches,
             (value) => reads.push(value),
-            options.immerArrayMethods === true
+            options.immerArrayMethods === true,
+            prepared
           );
           const label = `${scenario.name}/${library}/freeze=${autoFreeze}/patches=${enablePatches}`;
           const validated = enablePatches

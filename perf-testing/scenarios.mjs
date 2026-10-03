@@ -7,15 +7,29 @@ import {
   rtkqResolved,
 } from './workloads.mjs';
 import { createAdditionalScenarios } from './additional-workloads.mjs';
+import {
+  createExtendedScenarios,
+  pushAndInsert,
+} from './extended-workloads.mjs';
 import { deepFreeze } from './graph.mjs';
 
 // Shared by benchmarks, correctness validation, and CPU profiling.
 export function createScenarios(config, filter = '.*') {
   const actions = createActions(config);
-  const scenario = (name, steps, createBase = createInitialState) => ({
+  // kind 'apply' times patch application instead of a producer; mark is
+  // Mutative's option for class instances; mapSet needs Immer's MapSet plugin.
+  const scenario = (
+    name,
+    steps,
+    createBase = createInitialState,
+    { kind = 'producer', mark, mapSet = false } = {}
+  ) => ({
     name,
     steps,
     createBase,
+    kind,
+    mark,
+    mapSet,
     operations: steps.length,
     execute(reducer, base) {
       let state = base;
@@ -69,12 +83,27 @@ export function createScenarios(config, filter = '.*') {
     scenario('rtkq-sequence', [
       ...Array.from({ length: config.rtkqCount }, (_, i) => rtkqPending(i)),
       ...Array.from({ length: config.rtkqCount }, (_, i) => rtkqResolved(i)),
-    ])
+    ]),
+    ...createExtendedScenarios(config).map((entry) =>
+      scenario(entry.name, entry.steps, entry.createBase, entry)
+    ),
+    scenario('push-and-insert', [pushAndInsert(0)]),
+    scenario(
+      'push-and-insert-reuse',
+      Array.from({ length: config.reuseStateIterations }, (_, i) =>
+        pushAndInsert(i)
+      )
+    )
   );
   const pattern = new RegExp(filter);
   const selected = scenarios.filter(({ name }) => pattern.test(name));
   if (!selected.length) throw new Error(`No scenarios match ${filter}`);
   return selected;
+}
+
+// Patch application scenarios produce no patches of their own.
+export function supportsMode(scenario, library, autoFreeze, enablePatches) {
+  return !(scenario.kind === 'apply' && enablePatches);
 }
 
 export function prepareScenario(config, name, autoFreeze) {
