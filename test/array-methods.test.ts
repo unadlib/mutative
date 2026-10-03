@@ -110,11 +110,14 @@ describe('native array methods', () => {
     expect(state).toBe(base);
   });
 
-  test('indexOf, lastIndexOf and includes see drafts and their originals', () => {
+  test('indexOf, lastIndexOf and includes compare by reference', () => {
     const base = { list: rows(4), nums: [1, 2, NaN, 2] };
     create(base, (draft) => {
       const item = draft.list[2];
       expect(draft.list.indexOf(item)).toBe(2);
+      // The drafted element replaced its original in the array, as through
+      // the proxy; an element that was never read is still the original.
+      expect(draft.list.indexOf(base.list[2])).toBe(-1);
       expect(draft.list.indexOf(base.list[3])).toBe(3);
       expect(draft.list.includes(item)).toBe(true);
       expect(draft.list.includes({ id: 2 })).toBe(false);
