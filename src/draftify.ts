@@ -16,7 +16,7 @@ export function draftify<
 >(
   baseState: T,
   options: Options<O, F>
-): [T, (returnedValue: [T] | []) => Result<T, O, F>] {
+): [T, (returnedValue: [T] | []) => Result<T, O, F>, Finalities] {
   const finalities: Finalities = {
     draft: [],
     revoke: [],
@@ -51,5 +51,6 @@ export function draftify<
           : finalizedState
       ) as Result<T, O, F>;
     },
+    finalities,
   ];
 }
