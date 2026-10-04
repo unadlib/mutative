@@ -62,6 +62,19 @@ The record and 1,000-property rows ran each library in a process of its own, bec
 
 Run `pnpm benchmark:immer` to measure the suite; the [benchmark guide](./perf-testing/README.md) describes its options.
 
+### Large arrays
+
+At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method plugin, Mutative was faster in 164 of 176 cases at these sizes, 3.5x on geometric mean, and faster in every case that moves elements:
+
+| Auto-freeze | Patches | All workloads, 1,000 rows | All workloads, 10,000 rows | Moves, 1,000 rows | Moves, 10,000 rows |
+| --- | --- | ---: | ---: | ---: | ---: |
+| off | off | 7.3x | 8.8x | 212x | 472x |
+| off | on | 3.9x | 4.2x | 6.7x | 7.7x |
+| on | off | 2.6x | 2.3x | 32x | 35x |
+| on | on | 1.9x | 1.7x | 6.2x | 6.8x |
+
+Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.37 µs against 8,292 µs, 1,125x. With patches, both libraries emit one patch per moved index, which bounds the gain to 6-8x. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
+
 ### With patches
 
 With patches on and auto-freeze off, Mutative was faster than Immer in 126 of 129 cases and never slower, 3.1x on geometric mean, and faster than Mutative 1.3.0 in 103 and within 5% in the rest, 3.7x. In every array case measured it was faster than both: 4.0x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 65.2 µs with patches against 64.8 µs without. Moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches.

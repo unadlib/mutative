@@ -91,6 +91,46 @@ freeze on at 1,000 rows (419 µs against 241 µs). The 2 cells slower than
 Mutative 1.3.0 are `object-delete` with freeze on at 1,000 rows, 119 µs against
 104–105 µs.
 
+### Large arrays
+
+Against Immer without its array-method plugin, by size and mode, over the 23
+scaling scenarios: cells faster / within 5% / slower, and geometric means of
+Immer time over candidate time. The moves are `array-shift-nested`,
+`array-unshift-nested`, `array-splice-insert-nested`, `array-reverse-nested`
+and `array-reverse-primitive`.
+
+| Rows | Freeze | Patches | All scenarios | Geometric mean | Moves, geometric mean | Moves, range |
+| ---: | --- | --- | ---: | ---: | ---: | ---: |
+| 1,000 | off | off | 22 / 0 / 1 | 7.32 | 212 | 70.4–461 |
+| 1,000 | off | on | 21 / 0 / 0 | 3.88 | 6.7 | 6.4–6.8 |
+| 1,000 | on | off | 21 / 0 / 2 | 2.57 | 31.8 | 17.9–47.6 |
+| 1,000 | on | on | 19 / 0 / 2 | 1.87 | 6.2 | 6.0–6.3 |
+| 10,000 | off | off | 21 / 1 / 1 | 8.83 | 472 | 180–1,125 |
+| 10,000 | off | on | 20 / 1 / 0 | 4.22 | 7.7 | 6.7–8.3 |
+| 10,000 | on | off | 21 / 1 / 1 | 2.31 | 35.1 | 19.1–52.3 |
+| 10,000 | on | on | 19 / 1 / 1 | 1.68 | 6.8 | 6.5–7.4 |
+
+Immer time over candidate time for the moves at 10,000 rows, by freeze and
+patch mode:
+
+| Scenario | Off, off | Off, on | On, off | On, on |
+| --- | ---: | ---: | ---: | ---: |
+| array-shift-nested | 1,125 | 8.2 | 39.0 | 7.0 |
+| array-unshift-nested | 507 | 7.6 | 37.6 | 6.7 |
+| array-splice-insert-nested | 180 | 7.8 | 19.1 | 6.5 |
+| array-reverse-nested | 597 | 8.3 | 36.4 | 7.4 |
+| array-reverse-primitive | 383 | 6.7 | 52.3 | 6.6 |
+
+The gap widens with size. With freeze and patches off, the moves were 212 times
+faster at 1,000 rows and 472 times at 10,000 on geometric mean: the candidate
+moves elements natively on its copy, while Immer moves each element through its
+draft proxy. Removing the first of 10,000 rows took 7.37 µs against 8,292 µs.
+With patches, both libraries emit one patch per moved index, which bounds the
+gain to 6–8 times. At these sizes Immer was faster in `return-replace` with
+freeze on, `apply-update-10pct`, and `class-wide-update` with freeze on at
+1,000 rows, and within 5% in `class-wide-update` with freeze on and
+`map-update` at 10,000 rows; the limits below discuss each.
+
 ### Freeze off, patches on
 
 With patches on and freeze off, the candidate was faster than Immer in 126 of
