@@ -365,6 +365,15 @@ const state = create({ a: { b: { c: 1 } }, d: { f: 1 } }, (draft) => {
 });
 ```
 
+`current()` is also the cheap way to search a large array of objects. Every object read through a draft becomes a draft of its own, so `draft.list.find()` pays for a draft per visited element. `current(draft.list)` is the original array while the recipe has not changed it; otherwise it is a copy that holds the current value of each changed element and the original object of every other one. Its indices are those of the draft, also after the recipe added, removed or moved elements. Search it and change the match through the draft. Its elements are not drafts, so the callback must only read them.
+
+```ts
+const state = create(baseState, (draft) => {
+  const index = current(draft.list).findIndex((item) => item.text === "todo");
+  draft.list[index].done = true;
+});
+```
+
 ### `original()`
 
 Get the original value from a draft.
@@ -382,14 +391,7 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-`original()` is also the cheap way to search a large array of objects. Every element read through a draft becomes a draft of its own, so `draft.list.find()` pays for a draft per visited element. Scanning the original and drafting only the hit keeps the recipe fast. Do this before the recipe changes the list, because `original()` reflects the state before any change.
-
-```ts
-const state = create(baseState, (draft) => {
-  const index = original(draft.list).findIndex((item) => item.text === "todo");
-  draft.list[index].done = true;
-});
-```
+`original()` reflects the state before the recipe's changes, so an index found in `original(draft.list)` no longer matches the draft once the recipe has added, removed or moved elements. To search a draft array, use [`current()`](#current).
 
 ### `unsafe()`
 
@@ -586,7 +588,7 @@ Optimized searches give the same results as the proxy path, comparing elements a
 
 In strict mode, outside [`unsafe()`](#unsafe), optimized calls on an array that may hold objects take the proxy path unchanged, so reading a non-draftable element fails exactly as it always did; arrays of primitives, recognized with `typeof` alone, keep the native paths. Elements are moved and compared without being inspected, while the proxy path inspects each element it reads. An element that is itself a Proxy may therefore see fewer calls to its internal methods on the native paths, never more and never at other times; a revoked Proxy element that a search passes over, for example, does not throw there.
 
-Draftable base elements removed or moved by these methods are drafted before they are exposed. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, go through the draft so that their callbacks see every change and can modify elements; use [`original()`](#original) for read-only scans of large arrays.
+Draftable base elements removed or moved by these methods are drafted before they are exposed. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, go through the draft so that their callbacks see every change and can modify elements; use [`current()`](#current) for read-only scans of large arrays.
 
 - Does Mutative support shared references?
 

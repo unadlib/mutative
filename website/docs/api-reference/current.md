@@ -32,6 +32,17 @@ const state = create(baseState, (draft) => {
 });
 ```
 
+## Searching a large array
+
+Every object read through a draft becomes a draft of its own, so `draft.list.find()` pays for a draft per visited element. Searching `current(draft.list)` reads plain values instead: the original array while the recipe has not changed it, and otherwise a copy that holds the current value of each changed element and the original object of every other one. Its indices are those of the draft, also after the recipe added, removed or moved elements. Change the match through the draft. Its elements are not drafts, so the callback must only read them.
+
+```ts
+const state = create(baseState, (draft) => {
+  const index = current(draft.list).findIndex((item) => item.id === id);
+  draft.list[index].done = true;
+});
+```
+
 :::tip
-It is important to note that `current()` should be used judiciously. It is a potentially resource-intensive operation, especially if the draft is a large amount of data. Lastly, `current()` must only be invoked on draft objects and not on original state objects or finalized states.
+`current()` returns the original value of a draft that the recipe has not changed, without copying it. A changed draft is copied, together with its changed descendants, on every call, so take one snapshot for a series of reads rather than calling `current()` in a loop. `current()` must only be invoked on draft objects and not on original state objects or finalized states.
 :::
