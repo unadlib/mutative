@@ -62,6 +62,27 @@ The record and 1,000-property rows ran each library in a process of its own, bec
 
 Run `pnpm benchmark:immer` to measure the suite; the [benchmark guide](./perf-testing/README.md) describes its options.
 
+### With patches
+
+With patches on and auto-freeze off, Mutative was faster than Immer in 126 of 129 cases and never slower, 3.1x on geometric mean, and faster than Mutative 1.3.0 in 103 and within 5% in the rest, 3.7x. In every array case measured it was faster than both: 4.0x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 65.2 µs with patches against 64.8 µs without. Moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches.
+
+Times are microseconds per update with patches on and auto-freeze off:
+
+| Workload | Rows | Mutative | Immer | Mutative 1.3.0 |
+| --- | ---: | ---: | ---: | ---: |
+| Push a row and insert a property | 10,000 | 65.2 | 370 | 212 |
+| Update an array item found by ID | 100 | 2.17 | 3.57 | 3.85 |
+| 200 RTK Query-style updates | — | 1,325 | 1,520 | 2,172 |
+| Remove the first row with `splice` | 100 | 13.5 | 86.5 | 3,108 |
+| Insert a row in the middle | 100 | 9.91 | 51.3 | 1,297 |
+| Sort rows | 100 | 108 | 217 | 2,622 |
+| Remove the first row with `shift` | 10,000 | 1,227 | 10,117 | 282,588 |
+| Reverse the rows | 10,000 | 1,226 | 10,167 | 286,207 |
+| Update every row | 10,000 | 11,591 | 22,553 | 21,851 |
+| Update one of 10,000 records | 10,000 | 1,236 | 2,165 | 1,230 |
+
+Immer's optional `enableArrayMethods()` plugin also runs array methods on the draft's copy, and with patches it comes within 1.05-1.74x of Mutative when moving elements of 1,000 or 10,000 rows. These comparisons leave it off because in Immer 11.1.18 it breaks guarantees that Immer otherwise keeps: `shift`, `pop` and `splice` return raw base objects, so editing a removed object changes the previous state; reordering can expose original objects the same way and leave revoked drafts in the result; and its forward patches can fail to replay. In [the audit](./test/immer-array-methods.md), 123 of 4,913 three-step operation sequences break with the plugin and none without it. The [performance summary](./perf-testing/reports/SUMMARY.md) reports Immer with the plugin separately.
+
 ### Bundle size
 
 Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from each library's production ESM artifact (Immer 11.1.18 `dist/immer.production.mjs`; Mutative `dist/mutative.esm.mjs` at source `e6b6563` with `process.env.NODE_ENV` defined as `production`), bundled for the browser with `--minify --target=es2018 --format=esm`. Each consumer references the listed exports.

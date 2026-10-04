@@ -91,6 +91,101 @@ freeze on at 1,000 rows (419 µs against 241 µs). The 2 cells slower than
 Mutative 1.3.0 are `object-delete` with freeze on at 1,000 rows, 119 µs against
 104–105 µs.
 
+### Freeze off, patches on
+
+With patches on and freeze off, the candidate was faster than Immer in 126 of
+129 cells, within 5% in 3, and never slower (geometric mean 3.07); it was faster
+than Mutative 1.3.0 in 103 and within 5% in 26 (3.70). In the 58 array-related
+cells, array methods and the upstream array workloads at every size, it was
+faster than both in every cell: 3.98 times Immer and 13.13 times Mutative 1.3.0
+on geometric mean.
+
+Patches cost little when an update changes a few paths. They added a median 3%
+to the candidate's time at 1,000 and 10,000 rows and 29% at 100 rows. The former
+`benchmark:base` workload, `push-and-insert` at 10,000 rows, took 64.8 µs
+without patches and 65.2 µs with them; Mutative 1.3.0 went from 67.5 µs to
+212 µs, and Immer from 167 µs to 370 µs. Moving elements is the exception: both
+libraries emit one patch per moved index, so `shift` at 10,000 rows produces
+10,000 forward and 10,000 inverse patches in each. The candidate's time grows
+from 7.37 µs to 1,227 µs, against 10,117 µs for Immer producing the same
+patches.
+
+Array methods on nested rows at 100 rows, in µs per call. The primitive and
+shallow shapes behave alike; over all 33 cells the candidate is 4.24 times
+faster than Immer (2.0–7.2) and 8.42 times faster than Mutative 1.3.0
+(1.6–194).
+
+| Operation | Candidate | Immer | Mutative 1.3.0 | Immer/candidate | 1.3.0/candidate |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| push | 4.05 | 8.52 | 6.40 | 2.11 | 1.58 |
+| pop | 1.72 | 7.02 | 4.39 | 4.08 | 2.55 |
+| shift | 13.3 | 86.3 | 2,558 | 6.50 | 192.75 |
+| unshift | 15.8 | 90.7 | 2,599 | 5.74 | 164.33 |
+| splice, insert | 9.91 | 51.3 | 1,297 | 5.18 | 130.84 |
+| splice, remove | 7.12 | 46.5 | 1,257 | 6.52 | 176.43 |
+| splice, replace | 3.71 | 11.2 | 7.17 | 3.01 | 1.93 |
+| fill | 4.59 | 9.58 | 7.85 | 2.09 | 1.71 |
+| copyWithin | 2.80 | 6.47 | 82.0 | 2.31 | 29.26 |
+| sort | 108 | 217 | 2,622 | 2.01 | 24.24 |
+| reverse | 13.2 | 85.7 | 2,552 | 6.51 | 193.93 |
+
+The array workloads of the upstream suite at 100 rows:
+
+| Scenario | Candidate | Immer | Mutative 1.3.0 | Immer/candidate | 1.3.0/candidate |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| add | 2.02 | 5.12 | 4.25 | 2.54 | 2.11 |
+| remove | 13.5 | 86.5 | 3,108 | 6.42 | 230.78 |
+| filter | 23.3 | 32.8 | 48.7 | 1.41 | 2.09 |
+| concat | 1.04 | 1.22 | 1.27 | 1.17 | 1.23 |
+| mapNested | 45.8 | 65.3 | 104 | 1.42 | 2.26 |
+| sortById-reverse | 70.7 | 102 | 3,122 | 1.44 | 44.16 |
+| reverse-array | 13.3 | 86.3 | 3,167 | 6.49 | 237.97 |
+| update-multiple | 10.1 | 19.6 | 17.3 | 1.93 | 1.71 |
+| remove-high | 20.9 | 57.1 | 634 | 2.73 | 30.29 |
+| remove-reuse | 124 | 791 | 28,166 | 6.37 | 226.87 |
+| mixed-sequence | 56.3 | 114 | 150 | 2.02 | 2.66 |
+
+Moving elements at 1,000 and 10,000 rows, with Immer's array-method plugin
+from the plugin datasets for reference:
+
+| Scenario | Rows | Candidate | Immer | Mutative 1.3.0 | Immer + plugin |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| array-shift-nested | 1,000 | 123 | 834 | 26,568 | 130 |
+| array-splice-insert-nested | 1,000 | 65.5 | 448 | 12,538 | 88.0 |
+| array-reverse-nested | 1,000 | 123 | 833 | 26,701 | 131 |
+| array-shift-nested | 10,000 | 1,227 | 10,117 | 282,588 | 1,471 |
+| array-unshift-nested | 10,000 | 1,228 | 9,314 | 275,569 | 1,483 |
+| array-splice-insert-nested | 10,000 | 632 | 4,908 | 139,836 | 1,016 |
+| array-reverse-nested | 10,000 | 1,226 | 10,167 | 286,207 | 1,487 |
+| array-reverse-primitive | 10,000 | 1,071 | 7,203 | 5,713 | 1,859 |
+
+#### Why Immer's array-method plugin is not the main comparator
+
+Immer's optional `enableArrayMethods()` also runs array methods on the draft's
+copy, and with patches it comes within 1.05–1.74 times of the candidate on the
+moves above. The comparisons nevertheless run Immer without it, because in Immer
+11.1.18 the plugin breaks guarantees that its other configurations and Mutative
+keep. [`test/immer-array-methods.md`](../../test/immer-array-methods.md)
+reproduces four root causes:
+
+- `shift`, `pop` and `splice` return raw base objects. Editing a removed
+  object changes the previous state, or throws when that state is frozen.
+- `reverse` and `sort` can expose original objects at inserted indices as raw
+  values, with the same effect; inverse patches then restore the modified
+  values instead of the original ones.
+- After an insertion, edits to the shifted tail emit child patches before the
+  array additions, so the forward patches cannot be replayed.
+- Reordering a wrapper that holds a moved draft, or a negative `splice` index,
+  leaves revoked drafts in the result and in patch values.
+
+Of 4,913 three-step operation sequences, 123 violate at least one of these
+contracts with the plugin and none without it. The plugin also hands raw base
+elements to callbacks and comparators, which is why it beats the candidate in
+`find`, `findIndex`, `filter` and object `sort` cells: the callback reads
+the base without drafting it. The benchmark callbacks only read, so these
+results are correct with the plugin; recipes that edit removed objects or
+callback arguments are not.
+
 ### Selected times
 
 Microseconds per complete scenario, medians of three runs. Rows marked * come
@@ -188,7 +283,9 @@ rows, in both freeze and patch modes. All 560 combinations pass the correctness
 checks. These scenarios only read in their callbacks, so the plugin's documented
 behavior, raw objects handed to callbacks and returned from removals, does not
 change their results; [`test/immer-array-methods.md`](../../test/immer-array-methods.md)
-records the failures it causes when they write.
+records the failures it causes when they write. The
+[freeze-off, patches-on section](#why-immers-array-method-plugin-is-not-the-main-comparator)
+explains why the main comparison leaves the plugin off.
 
 | Comparator | Faster / within 5% / slower | Geometric mean Immer/candidate |
 | --- | ---: | ---: |
