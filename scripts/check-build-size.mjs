@@ -10,6 +10,7 @@ const baselinePath = join(root, 'scripts/build-size-baseline.json');
 const artifacts = [
   'mutative.cjs.production.min.js',
   'mutative.umd.production.min.js',
+  'mutative.esm.production.min.mjs',
   'mutative.cjs.development.js',
   'mutative.umd.development.js',
   'mutative.esm.js',

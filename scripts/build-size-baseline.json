@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "00164960bea7f5f587eefe51f1d0ca332841c820",
-    "description": "The return value walk keeps no warning state in production builds",
+    "revision": "b30de0699ec8f450a5e36a88198db4f77090d905",
+    "description": "The ESM artifacts read NODE_ENV so bundlers strip development code, plus a production ESM artifact for browsers",
     "node": "v24.16.0",
     "commands": [
       "pnpm install --frozen-lockfile",
@@ -24,6 +24,11 @@
       "gzip": 8856,
       "brotli": 8095
     },
+    "artifact/mutative.esm.production.min.mjs": {
+      "raw": 26104,
+      "gzip": 8834,
+      "brotli": 8078
+    },
     "artifact/mutative.cjs.development.js": {
       "raw": 66588,
       "gzip": 15616,
@@ -35,29 +40,29 @@
       "brotli": 13688
     },
     "artifact/mutative.esm.js": {
-      "raw": 66310,
-      "gzip": 15559,
-      "brotli": 13456
+      "raw": 66763,
+      "gzip": 15715,
+      "brotli": 13581
     },
     "artifact/mutative.esm.mjs": {
-      "raw": 66311,
-      "gzip": 15561,
-      "brotli": 13458
+      "raw": 66764,
+      "gzip": 15717,
+      "brotli": 13579
     },
     "consumer/import/create": {
-      "raw": 25976,
-      "gzip": 9182,
-      "brotli": 8339
+      "raw": 23134,
+      "gzip": 8105,
+      "brotli": 7421
     },
     "consumer/import/patches": {
-      "raw": 28175,
-      "gzip": 9889,
-      "brotli": 8944
+      "raw": 25202,
+      "gzip": 8787,
+      "brotli": 8040
     },
     "consumer/import/all": {
-      "raw": 29368,
-      "gzip": 10245,
-      "brotli": 9267
+      "raw": 26172,
+      "gzip": 9104,
+      "brotli": 8310
     },
     "consumer/require/create": {
       "raw": 25677,

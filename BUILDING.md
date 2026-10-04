@@ -33,12 +33,12 @@ The CJS and UMD bundles fix `__DEV__` at build time, and `dist/index.js` selects
 
 `pnpm size` runs both checks below, including in push, pull request and release workflows:
 
-1. `size-limit` keeps the existing 5 kB limits for production CJS and ESM.
+1. `size-limit` checks the limits in `package.json` for the production CJS artifact and for a production bundle of the ESM entry.
 2. `pnpm size:compare` compares the build with the pre-migration Rollup measurements in `scripts/build-size-baseline.json`.
 
 The baseline comparison measures:
 
-- All six JavaScript artifacts, using raw bytes, gzip level 9 and Brotli.
+- All seven JavaScript artifacts, using raw bytes, gzip level 9 and Brotli.
 - ESM import and production CJS require consumers using the declared package entry points. Each mode covers `create`, patch generation/application and the complete API. The imports are used so bundlers cannot discard the application.
 - Consumer bundles produced by a pinned esbuild version, with identical ES2018 targets, minification and production environment definitions.
 
