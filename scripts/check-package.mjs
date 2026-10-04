@@ -35,6 +35,7 @@ try {
   const bundles = [
     'mutative.cjs.production.min.js',
     'mutative.umd.production.min.js',
+    'mutative.esm.production.min.mjs',
     'mutative.cjs.development.js',
     'mutative.esm.js',
     'mutative.esm.mjs',
@@ -84,7 +85,7 @@ try {
     const code = readFileSync(join(root, 'dist', name), 'utf8');
     assert.doesNotMatch(
       code,
-      /__DEV__|ErrorCode|InvalidBaseState|console\.warn/
+      /__DEV__|ErrorCode|InvalidBaseState|console\.warn|\bprocess\b/
     );
     assert.match(code, /Minified Mutative error/);
   }
@@ -270,7 +271,13 @@ try {
          api.rawReturn(1);
          assert.equal(warnings.length, ${mode === 'production' ? 0 : 1});
          const deep = await import('mutative/dist/mutative.esm.mjs');
-         assert.equal(deep.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);`,
+         assert.equal(deep.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
+         const browser = await import('mutative/dist/mutative.esm.production.min.mjs');
+         assert.deepEqual(Object.keys(browser).sort(), ${JSON.stringify(expectedExports)});
+         assert.equal(browser.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
+         assert.throws(() => browser.current({}), /Minified Mutative error #7/);
+         browser.rawReturn(1);
+         assert.equal(warnings.length, ${mode === 'production' ? 0 : 1});`,
       ],
       consumer,
       { ...process.env, NODE_ENV: mode }

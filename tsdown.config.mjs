@@ -7,10 +7,12 @@ const compiler = typescript();
 // The fourth column fixes `__DEV__` at build time. The ESM artifacts, which
 // bundlers resolve, leave it to the consumer (`null`): they read
 // `process.env.NODE_ENV`, which bundlers replace, so production bundles drop
-// the development code.
+// the development code. Browsers without a bundler have no `process` and load
+// the production ESM artifact instead.
 const variants = [
   ['cjs-production', 'cjs', 'mutative.cjs.production.min.js', false, true],
   ['umd-production', 'umd', 'mutative.umd.production.min.js', false, true],
+  ['esm-production', 'esm', 'mutative.esm.production.min.mjs', false, true],
   ['cjs-development', 'cjs', 'mutative.cjs.development.js', true, false],
   ['esm', 'esm', 'mutative.esm.js', null, false],
   ['esm-node', 'esm', 'mutative.esm.mjs', null, false],

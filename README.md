@@ -154,6 +154,9 @@ CDN
 
 - Unpkg: `<script src="https://unpkg.com/mutative"></script>`
 - JSDelivr: `<script src="https://cdn.jsdelivr.net/npm/mutative"></script>`
+- ES module: `import { create } from 'https://unpkg.com/mutative/dist/mutative.esm.production.min.mjs';`
+
+The package's other ESM files read `process.env.NODE_ENV`, which bundlers and Node.js provide; a browser without a bundler needs the production file above.
 
 ## Usage
 
