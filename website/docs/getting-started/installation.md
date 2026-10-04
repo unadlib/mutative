@@ -12,7 +12,7 @@ Mutative is a npm package that can be used in Node.js and browsers, it is also c
 npm install mutative
 ```
 
-Mutative size is only `4.12 KB` (minified and gzipped), it is very lightweight.
+A production bundle of `create`, `apply`, `current` and `original` is about 7.9 kB after Brotli compression, including patches, `Map`/`Set` support and native array methods.
 
 ## Using Mutative from CDN
 
