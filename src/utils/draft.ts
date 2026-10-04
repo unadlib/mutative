@@ -109,12 +109,6 @@ export function set(target: any, key: PropertyKey, value: any) {
   }
 }
 
-export function peek(target: any, key: PropertyKey) {
-  const state = getProxyDraft(target);
-  const source = state ? latest(state) : target;
-  return source[key];
-}
-
 export function isEqual(x: any, y: any) {
   if (x === y) {
     return x !== 0 || 1 / x === 1 / y;
