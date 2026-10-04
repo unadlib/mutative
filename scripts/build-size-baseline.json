@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "b03d52b01a5e9640a630227f940c06984ea9b206",
-    "description": "Patch, original() and rawReturn() errors use error codes in production builds",
+    "revision": "e94614ac15c2863d877b58fad1db2738c05d9638",
+    "description": "The ESM artifacts compare NODE_ENV at every check, and Node.js resolves the CJS entry",
     "node": "v24.16.0",
     "commands": [
       "pnpm install --frozen-lockfile",
@@ -40,29 +40,29 @@
       "brotli": 13700
     },
     "artifact/mutative.esm.js": {
-      "raw": 66792,
+      "raw": 67217,
       "gzip": 15724,
-      "brotli": 13591
+      "brotli": 13604
     },
     "artifact/mutative.esm.mjs": {
-      "raw": 66793,
+      "raw": 67218,
       "gzip": 15725,
-      "brotli": 13606
+      "brotli": 13605
     },
     "consumer/import/create": {
       "raw": 23134,
-      "gzip": 8104,
-      "brotli": 7414
+      "gzip": 8103,
+      "brotli": 7418
     },
     "consumer/import/patches": {
       "raw": 24903,
-      "gzip": 8667,
-      "brotli": 7934
+      "gzip": 8670,
+      "brotli": 7935
     },
     "consumer/import/all": {
       "raw": 25690,
-      "gzip": 8928,
-      "brotli": 8173
+      "gzip": 8930,
+      "brotli": 8167
     },
     "consumer/require/create": {
       "raw": 25186,
