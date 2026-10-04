@@ -232,4 +232,85 @@ describe('draft fast paths keep the original semantics', () => {
     const descriptor = Object.getOwnPropertyDescriptor(state, '__proto__');
     expect(descriptor && 'value' in descriptor).toBe(true);
   });
+  test('wide object copies keep own enumerable symbols like a spread', () => {
+    const visible = Symbol('visible');
+    const hidden = Symbol('hidden');
+    const base: any = { k: 1, [visible]: 'shown' };
+    Object.defineProperty(base, hidden, { value: 'hidden', enumerable: false });
+    for (let index = 0; index < 200; index += 1) base[`p${index}`] = index;
+    const state: any = create(base, (draft: any) => {
+      draft.k = 2;
+    });
+    expect(state.k).toBe(2);
+    expect(state[visible]).toBe('shown');
+    expect(Object.getOwnPropertySymbols(state)).toStrictEqual(
+      Object.getOwnPropertySymbols({ ...base })
+    );
+    expect(Object.keys(state)).toStrictEqual(Object.keys(base));
+  });
+
+  test('marked instances keep writable properties that are not enumerable', () => {
+    class Model {
+      value = 1;
+    }
+    const base = new Model();
+    Object.defineProperty(base, 'hidden', {
+      value: 'kept',
+      writable: true,
+      enumerable: false,
+      configurable: true,
+    });
+    const state: any = create(
+      base,
+      (draft) => {
+        draft.value = 2;
+      },
+      {
+        mark: (target, { immutable }) =>
+          target instanceof Model ? immutable : undefined,
+      }
+    );
+    expect(state).not.toBe(base);
+    expect(state).toBeInstanceOf(Model);
+    expect(state.value).toBe(2);
+    expect(Object.getOwnPropertyDescriptor(state, 'hidden')).toStrictEqual({
+      value: 'kept',
+      writable: true,
+      enumerable: false,
+      configurable: true,
+    });
+  });
+
+  test.each(['x', 'notAnArrayIndexKey'])(
+    'arrays reject the non-index key %s at any length',
+    (key) => {
+      expect(() =>
+        create({ list: [1] }, (draft: any) => {
+          draft.list[key] = 1;
+        })
+      ).toThrow(
+        "Only supports setting array indices and the 'length' property."
+      );
+    }
+  );
+
+  test('an unmodified draft added to a container created later is patched as its original', () => {
+    const base = { a: { x: { v: 1 } }, b: [] as { v: number }[] };
+    const [state, patches, inverse] = create(
+      base,
+      (draft) => {
+        const x = draft.a.x;
+        draft.b.push(x);
+      },
+      { enablePatches: true }
+    );
+    expect(state.b[0]).toBe(base.a.x);
+    expect(patches).toStrictEqual([
+      { op: 'add', path: ['b', 0], value: { v: 1 } },
+    ]);
+    expect(patches[0].value).toBe(base.a.x);
+    expect(isDraft(patches[0].value)).toBe(false);
+    expect(apply(base, patches)).toStrictEqual(state);
+    expect(apply(state, inverse)).toStrictEqual(base);
+  });
 });
