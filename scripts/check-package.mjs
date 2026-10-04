@@ -14,6 +14,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { SourceMap } from 'node:module';
+import { build } from 'esbuild';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
@@ -86,6 +87,21 @@ try {
       /__DEV__|ErrorCode|InvalidBaseState|console\.warn/
     );
     assert.match(code, /Minified Mutative error/);
+  }
+
+  // The ESM artifacts that bundlers resolve leave the environment to the
+  // consumer, and read `process.env` once rather than at every check.
+  for (const name of bundles.filter(
+    (name) => name.startsWith('mutative.esm.') && !name.includes('production')
+  )) {
+    const code = readFileSync(join(root, 'dist', name), 'utf8');
+    assert.ok(
+      code.startsWith(
+        "const __DEV__ = process.env.NODE_ENV !== 'production';\n"
+      ),
+      `${name} must read the environment first`
+    );
+    assert.equal(code.match(/\bprocess\b/g).length, 1, name);
   }
 
   // Both the TypeScript transform and the minifier must map back to the
@@ -237,22 +253,51 @@ try {
     );
   }
 
-  run(
-    process.execPath,
-    [
-      '--input-type=module',
-      '-e',
-      `import assert from 'node:assert/strict';
-       import * as api from 'mutative';
-       assert.deepEqual(Object.keys(api).sort(), ${JSON.stringify(expectedExports)});
-       assert.equal(api.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
-       assert.throws(() => api.apply(Object.freeze({ count: 1 }), [{ op: 'replace', path: ['count'], value: 2 }], { mutable: true }), TypeError);
-       assert.throws(() => api.current({}), /current\\(\\) is only used for Draft/);
-       const deep = await import('mutative/dist/mutative.esm.mjs');
-       assert.equal(deep.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);`,
-    ],
-    consumer
-  );
+  for (const mode of ['development', 'production']) {
+    run(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        `import assert from 'node:assert/strict';
+         import * as api from 'mutative';
+         assert.deepEqual(Object.keys(api).sort(), ${JSON.stringify(expectedExports)});
+         assert.equal(api.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
+         assert.throws(() => api.apply(Object.freeze({ count: 1 }), [{ op: 'replace', path: ['count'], value: 2 }], { mutable: true }), TypeError);
+         assert.throws(() => api.current({}), /${mode === 'production' ? 'Minified Mutative error #7' : 'current\\(\\) is only used for Draft'}/);
+         const warnings = [];
+         console.warn = (message) => warnings.push(message);
+         api.rawReturn(1);
+         assert.equal(warnings.length, ${mode === 'production' ? 0 : 1});
+         const deep = await import('mutative/dist/mutative.esm.mjs');
+         assert.equal(deep.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);`,
+      ],
+      consumer,
+      { ...process.env, NODE_ENV: mode }
+    );
+
+    // Bundlers replace `process.env.NODE_ENV`: a production bundle of the
+    // ESM entry drops the development code, and a development bundle keeps it.
+    const { outputFiles } = await build({
+      stdin: {
+        contents: "import { current } from 'mutative';\nconsole.log(current);",
+        resolveDir: consumer,
+      },
+      bundle: true,
+      write: false,
+      minify: true,
+      format: 'esm',
+      platform: 'browser',
+      define: { 'process.env.NODE_ENV': JSON.stringify(mode) },
+    });
+    const bundle = outputFiles[0].text;
+    assert.doesNotMatch(bundle, /\bprocess\b/);
+    assert.equal(
+      bundle.includes('current() is only used for Draft'),
+      mode === 'development',
+      `${mode} bundle of the ESM entry`
+    );
+  }
 
   const example = `import { create, type Draft, type Patch } from 'mutative';
 const next = create({ count: 1 }, (draft: Draft<{ count: number }>) => {

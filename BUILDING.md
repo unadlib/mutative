@@ -23,6 +23,8 @@ pnpm format --check
 
 tsdown performs module bundling. Its output explicitly retains strict mode and omits namespace `Symbol.toStringTag` markers, matching the former output contract. Strict mode matters for behavior such as throwing when mutable patch application attempts to write to a frozen object.
 
+The CJS and UMD bundles fix `__DEV__` at build time, and `dist/index.js` selects the CJS development or production bundle from `process.env.NODE_ENV`. The ESM bundles that bundlers resolve, `mutative.esm.js` and `mutative.esm.mjs`, leave the choice to the consumer: their first line is `const __DEV__ = process.env.NODE_ENV !== 'production';`. Bundlers replace `process.env.NODE_ENV`, so production bundles drop the development messages, warnings and checks. Node.js reads the variable once on import rather than at every check, as a `process.env` read takes about 150 ns and some checks run for every draft or frozen value. The read must stay unguarded: with a `typeof process !== 'undefined'` guard, esbuild and Terser keep the development code.
+
 `tsc` emits the declaration tree, and `scripts/write-package-entries.mjs` writes the CJS environment selector and ESM declaration facade. Source maps compose through TypeScript, tsdown and Terser to the shipped `src/*.ts` files.
 
 `pnpm build:analyze` runs the same build and creates the ESM bundle analysis report in `stats.html`.
@@ -60,7 +62,7 @@ A legitimate API expansion or measurement-tool upgrade may require a new baselin
 
 ## Package checks
 
-`pnpm test:package` requires a completed build. It validates the file manifest, production error-code and warning stripping, and source-map paths and locations. It then packs and installs the tarball in a temporary consumer, runs publint and Are the Types Wrong, and exercises CJS, ESM, browser UMD, NodeNext and Bundler type resolution. The runtime checks include strict-mode behavior and confirm that warnings are printed in development and not in production. Temporary consumer files are removed after the check.
+`pnpm test:package` requires a completed build. It validates the file manifest, production error-code and warning stripping, the single environment read of the ESM bundles, and source-map paths and locations. It then packs and installs the tarball in a temporary consumer, runs publint and Are the Types Wrong, and exercises CJS, ESM, browser UMD, NodeNext and Bundler type resolution. The runtime checks include strict-mode behavior and confirm that CJS and Node.js ESM print warnings in development and not in production. An esbuild bundle of the ESM entry must keep the development messages in development and drop them in production. Temporary consumer files are removed after the check.
 
 After changing the compiler or minifier, run these checks as well as the source tests. Source tests alone do not exercise the published JavaScript artifacts.
 
