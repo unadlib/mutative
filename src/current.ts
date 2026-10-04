@@ -71,13 +71,10 @@ function getCurrent(target: any) {
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   // A changed array draft is copied from its current array, since a copy
   // through the proxy runs two traps per element. In strict mode, outside
-  // `unsafe()`, the proxy checks each element it reads, and a mark decides how
-  // elements are read, so such arrays are still copied through the proxy.
+  // `unsafe()`, the proxy checks each element it reads, so such arrays are
+  // still copied through the proxy.
   const array =
-    type === DraftType.Array &&
-    proxyDraft &&
-    !proxyDraft.options.mark &&
-    !checksReads(proxyDraft.options)
+    type === DraftType.Array && proxyDraft && !checksReads(proxyDraft.options)
       ? proxyDraft
       : null;
   let currentValue: any;
