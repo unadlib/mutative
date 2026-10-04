@@ -8,7 +8,7 @@ Mutative is about 3x faster than Immer with matched settings and 6x faster with 
 
 ## Benchmark suite
 
-The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 90 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, and returned values. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 93 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
 ## Mutative vs Immer
 

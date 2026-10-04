@@ -33,7 +33,7 @@ This is why Mutative was created.
 
 > Mutative passed all of Immer's test cases.
 
-The [benchmark suite](./perf-testing/README.md) times 90 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, and returned values. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+The [benchmark suite](./perf-testing/README.md) times 93 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
 With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 508 of 530 measured cases, 3.1x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 133 of 136 cases, 6.0x on geometric mean.
 
@@ -98,14 +98,14 @@ Immer's optional `enableArrayMethods()` plugin also runs array methods on the dr
 
 ### Bundle size
 
-Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from each library's production ESM artifact (Immer 11.1.18 `dist/immer.production.mjs`; Mutative `dist/mutative.esm.mjs` at source `e6b6563` with `process.env.NODE_ENV` defined as `production`), bundled for the browser with `--minify --target=es2018 --format=esm`. Each consumer references the listed exports.
+Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from each library's ESM artifact (Immer 11.1.18 `dist/immer.production.mjs`; Mutative `dist/mutative.esm.mjs` at source `e70aeed` with `process.env.NODE_ENV` defined as `production`; this artifact keeps Mutative's development messages and warnings), bundled for the browser with `--minify --target=es2018 --format=esm`. Each consumer references the listed exports.
 
 | Bundle                                                              | brotli |
 | ------------------------------------------------------------------- | -----: |
 | Immer core (`produce`, `current`, `original`)                       | 3.4 kB |
 | Immer with `enablePatches` and `enableMapSet`                       | 5.2 kB |
 | Immer with `enablePatches`, `enableMapSet` and `enableArrayMethods` | 6.0 kB |
-| Mutative (`create`, `apply`, `current`, `original`)                 | 8.7 kB |
+| Mutative (`create`, `apply`, `current`, `original`)                 | 9.0 kB |
 
 The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
 
@@ -225,6 +225,8 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
   > **It is recommended to enable `strict` in development mode and disable `strict` in production mode.** This will ensure safe explicit returns and also keep good performance in the production build. If the value that does not mix any current draft or is `undefined` is returned, then use [rawReturn()](#rawreturn).
 
   > If you'd like to enable strict mode by default in a development build and turn it off for production, you can use `strict: process.env.NODE_ENV !== 'production'`.
+
+  > In development builds, strict mode also warns once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does. See [`current()`](#current) for searching without creating drafts.
 
 - enablePatches - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean; }`, the default is false.
 
@@ -365,6 +367,15 @@ const state = create({ a: { b: { c: 1 } }, d: { f: 1 } }, (draft) => {
 });
 ```
 
+`current()` is also the cheap way to search a large array of objects. Every object read through a draft becomes a draft of its own, so `draft.list.find()` pays for a draft per visited element. `current(draft.list)` is the original array while the recipe has not changed it; otherwise it is a copy that holds the current value of each changed element and the original object of every other one. Its indices are those of the draft, also after the recipe added, removed or moved elements. Search it and change the match through the draft. Its elements are not drafts, so the callback must only read them.
+
+```ts
+const state = create(baseState, (draft) => {
+  const index = current(draft.list).findIndex((item) => item.text === "todo");
+  draft.list[index].done = true;
+});
+```
+
 ### `original()`
 
 Get the original value from a draft.
@@ -382,14 +393,7 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-`original()` is also the cheap way to search a large array of objects. Every element read through a draft becomes a draft of its own, so `draft.list.find()` pays for a draft per visited element. Scanning the original and drafting only the hit keeps the recipe fast. Do this before the recipe changes the list, because `original()` reflects the state before any change.
-
-```ts
-const state = create(baseState, (draft) => {
-  const index = original(draft.list).findIndex((item) => item.text === "todo");
-  draft.list[index].done = true;
-});
-```
+`original()` reflects the state before the recipe's changes, so an index found in `original(draft.list)` no longer matches the draft once the recipe has added, removed or moved elements. To search a draft array, use [`current()`](#current).
 
 ### `unsafe()`
 
@@ -586,7 +590,7 @@ Optimized searches give the same results as the proxy path, comparing elements a
 
 In strict mode, outside [`unsafe()`](#unsafe), optimized calls on an array that may hold objects take the proxy path unchanged, so reading a non-draftable element fails exactly as it always did; arrays of primitives, recognized with `typeof` alone, keep the native paths. Elements are moved and compared without being inspected, while the proxy path inspects each element it reads. An element that is itself a Proxy may therefore see fewer calls to its internal methods on the native paths, never more and never at other times; a revoked Proxy element that a search passes over, for example, does not throw there.
 
-Draftable base elements removed or moved by these methods are drafted before they are exposed. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, go through the draft so that their callbacks see every change and can modify elements; use [`original()`](#original) for read-only scans of large arrays.
+Draftable base elements removed or moved by these methods are drafted before they are exposed. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, go through the draft so that their callbacks see every change and can modify elements; use [`current()`](#current) for read-only scans of large arrays.
 
 - Does Mutative support shared references?
 

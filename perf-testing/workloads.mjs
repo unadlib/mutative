@@ -389,6 +389,7 @@ export const vanillaReducer = (state, action) => {
 export const createDraftReducer = (
   produce,
   consumeRead,
+  current,
   rawReturn = (value) => value
 ) => {
   const draftReducer = (state, action) =>
@@ -399,7 +400,8 @@ export const createDraftReducer = (
           action,
           consumeRead,
           state,
-          rawReturn
+          rawReturn,
+          current
         );
       switch (action.type) {
         case 'test/addItem':

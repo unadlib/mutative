@@ -54,3 +54,17 @@ test('auto-freeze passes over primitives in Maps, Sets, and arrays', () => {
   expect(() => (state.map as any).set(3, 'c')).toThrow(minified(11));
   expect(() => (state.set as any).add(3)).toThrow(minified(11));
 });
+
+test('strict mode does not warn about unchanged drafts', () => {
+  const { create } = mutative;
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  create(
+    Array.from({ length: 2000 }, (_, id) => ({ id })),
+    (draft) => {
+      draft.find((row) => row.id === -1);
+    },
+    { strict: true }
+  );
+  expect(warn).not.toHaveBeenCalled();
+  warn.mockRestore();
+});

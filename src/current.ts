@@ -9,9 +9,11 @@ import {
   isDraft,
   isDraftable,
   isEqual,
+  latest,
   set,
   shallowCopy,
 } from './utils';
+import { checksReads } from './unsafe';
 import { die, ErrorCode } from './error';
 
 export function handleReturnValue<T extends object>(options: {
@@ -67,6 +69,14 @@ function getCurrent(target: any) {
   if (!isDraftable(target, proxyDraft?.options)) return target;
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
+  // A changed array draft is copied from its current array, since a copy
+  // through the proxy runs two traps per element. In strict mode, outside
+  // `unsafe()`, the proxy checks each element it reads, so such arrays are
+  // still copied through the proxy.
+  const array =
+    type === DraftType.Array && proxyDraft && !checksReads(proxyDraft.options)
+      ? proxyDraft
+      : null;
   let currentValue: any;
   let changed = false;
   function ensureShallowCopy() {
@@ -79,7 +89,7 @@ function getCurrent(target: any) {
           ? proxyDraft
             ? Array.from(proxyDraft.setMap!.values()!)
             : Array.from(target as Set<any>)
-          : shallowCopy(target, proxyDraft?.options);
+          : shallowCopy(array ? latest(array) : target, proxyDraft?.options);
   }
 
   if (proxyDraft) {
@@ -101,7 +111,19 @@ function getCurrent(target: any) {
   }
 
   forEach(currentValue, (key, value) => {
-    if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
+    // Every value the recipe places in an array is recorded as assigned, so
+    // an object that is neither assigned nor a draft is an element of the base
+    // state, which holds no drafts, even after a native method moved it.
+    if (
+      proxyDraft &&
+      (isEqual(get(proxyDraft.original, key), value) ||
+        (array &&
+          !isDraft(value) &&
+          (typeof value !== 'object' ||
+            !(array.assignedMap!.size && array.assignedMap!.get(String(key))))))
+    ) {
+      return;
+    }
     const newValue = getCurrent(value);
     if (newValue !== value) {
       changed = true;

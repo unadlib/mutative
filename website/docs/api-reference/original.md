@@ -37,6 +37,8 @@ const state = create(baseState, (draft) => {
 });
 ```
 
+`original()` reflects the state before the recipe's changes, so an index found in `original(draft.list)` no longer matches the draft once the recipe has added, removed or moved elements. To search a draft array, use [`current()`](/docs/api-reference/current#searching-a-large-array).
+
 :::tip
 `original()` must only be invoked on draft objects and not on original state objects or finalized states.
 :::

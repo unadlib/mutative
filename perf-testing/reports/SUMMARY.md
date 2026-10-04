@@ -224,6 +224,35 @@ Immer with the plugin is faster in 46 cells. Most are scenarios where the plugin
 
 The local budget gate compared the current build with itself at 1,000 rows, since this batch changes no Mutative source file. All 48 decisions passed: five latency pairs and three memory pairs per cell, both freeze and patch modes. Paired candidate/base median ratios span 0.995–1.010 for latency, 0.993–1.019 for sampled allocation, and 1.000 for retained heap.
 
+### Searches of changed arrays
+
+Measured on 2026-10-04 on the same machine and harness, after this batch: the source of `e70aeed`, which makes `current()` copy a changed array draft from its current array and leave the base elements that a native method moved as they are, against `main` at `d3cb6e6` (Mutative only, the Before column), with three runs each and patches off. The `search-*` scenarios find the last row of an array of nested rows and update it after the producer changed the array: `search-draft` searches the draft after updating the first row, `search-current` searches a `current()` snapshot after the same update, and `search-current-shifted` searches a snapshot after `shift()`. Microseconds per scenario, medians of three runs:
+
+| Scenario | Rows | Freeze | Mutative | Before | Mutative 1.3.0 | Immer | Hand-written | Before/Mutative | Immer/Mutative |
+| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| search-draft | 100 | off | 20.6 | 20.7 | 38.4 | 29.6 | 0.22 | 1.00 | 1.44 |
+| search-draft | 100 | on | 23.3 | 23.4 | 41.0 | 37.3 | — | 1.01 | 1.60 |
+| search-current | 100 | off | 13.6 | 43.3 | 45.0 | 241 | 0.22 | 3.20 | 17.8 |
+| search-current | 100 | on | 16.2 | 46.1 | 47.9 | 34.8 | — | 2.84 | 2.15 |
+| search-current-shifted | 100 | off | 7.26 | 70.0 | 149 | 97.3 | 0.21 | 9.64 | 13.4 |
+| search-current-shifted | 100 | on | 9.74 | 72.3 | 151 | 105 | — | 7.42 | 10.8 |
+| search-draft | 1,000 | off | 197 | 196 | 363 | 282 | 1.28 | 1.00 | 1.43 |
+| search-draft | 1,000 | on | 218 | 217 | 384 | 350 | — | 1.00 | 1.61 |
+| search-current | 1,000 | off | 31.4 | 318 | 344 | 2,350 | 1.27 | 10.1 | 74.8 |
+| search-current | 1,000 | on | 52.8 | 340 | 365 | 264 | — | 6.43 | 5.00 |
+| search-current-shifted | 1,000 | off | 61.5 | 679 | 1,451 | 947 | 1.41 | 11.0 | 15.4 |
+| search-current-shifted | 1,000 | on | 81.5 | 698 | 1,463 | 1,025 | — | 8.56 | 12.6 |
+| search-draft | 10,000 | off | 2,266 | 2,265 | 3,635 | 3,493 | 66.2 | 1.00 | 1.54 |
+| search-draft | 10,000 | on | 2,426 | 2,444 | 3,818 | 4,198 | — | 1.01 | 1.73 |
+| search-current | 10,000 | off | 209 | 3,262 | 3,574 | 23,701 | 11.6 | 15.6 | 113.1 |
+| search-current | 10,000 | on | 415 | 3,462 | 3,714 | 2,503 | — | 8.35 | 6.03 |
+| search-current-shifted | 10,000 | off | 772 | 7,490 | 15,487 | 11,734 | 13.2 | 9.71 | 15.2 |
+| search-current-shifted | 10,000 | on | 957 | 7,460 | 15,548 | 12,324 | — | 7.80 | 12.9 |
+
+The draft search is unchanged. On `main`, a snapshot search was slower than the draft search at every size, because `current()` copied the array through two proxy traps per element and walked every element that `shift()` had moved. Now it is faster at every size: 1.5 times at 100 rows, 6.3 times at 1,000 and 10.8 times at 10,000 with freeze off. After `shift()`, most of the remaining 772 µs at 10,000 rows is the map of original indices that the draft builds once when the moved last row is updated (about 400 µs), not the snapshot (about 140 µs). Immer's `current()` walks every unfrozen object, so with freeze off its snapshot searches are slower than its draft search.
+
+The local budget gate compared `e70aeed` with `d3cb6e6` at 1,000 rows: all 48 decisions passed, with paired median ratios of 0.996–1.011 for latency, 0.935–1.025 for sampled allocation and 0.997–1.000 for retained heap. The production CJS artifact grows from 8,031 to 8,104 Brotli bytes, which `size-limit` measures at 6.70 kB against its 6.7 kB cap. The strict-mode warning for unchanged drafts exists only in development builds; the ESM artifact is one, so the README's ESM consumer grows from 8,728 to 8,983 Brotli bytes, about 200 of them for the warning.
+
 ## Tradeoffs and limits
 
 - Returned values: the candidate searches every object of a returned value for drafts, frozen or not, while Immer skips frozen values. `return-replace` with pre-frozen payloads took 2.9 ms against 0.9 µs at 10,000 rows. Wrapping the value in `rawReturn()` skips the search (0.30 µs).
@@ -295,10 +324,23 @@ for rows in 1000 10000; do
 done
 ```
 
+The searches of changed arrays compare the current checkout with a built checkout of `main` at `d3cb6e6`, whose production artifact the harness takes as its candidate, and the budget gate compares the same two builds:
+
+```sh
+MAIN=/absolute/path/to/main-checkout
+MUTATIVE_PERF_CANDIDATE_DIR="$MAIN" MUTATIVE_PERF_BUILD_DIR=perf-testing/dist/main node perf-testing/build.mjs
+for rows in 100 1000 10000; do
+  node perf-testing/run-benchmarks.mjs --runs 3 --filter '^search-' --array-size "$rows" --output "perf-testing/results/search-$rows.json"
+  MUTATIVE_PERF_BUNDLE=perf-testing/dist/main/immutability-benchmarks.mjs node perf-testing/run-benchmarks.mjs --runs 3 --library mutative --filter '^search-' --array-size "$rows" --output "perf-testing/results/search-main-$rows.json"
+done
+node perf-testing/ci.mjs --base-dir "$MAIN"
+```
+
 ## History
 
 Earlier versions of this summary, in Git history, describe each round in detail. Cell counts compare the candidate with the named comparator: faster, within 5%, and slower.
 
+- 2026-10-04, PR #180 at `e70aeed`: `current()` copies changed array drafts from their current array and leaves moved base elements as they are, and strict mode warns once in development builds when a recipe leaves 1,000 or more drafts unchanged. The three `search-*` scenarios were added; see [searches of changed arrays](#searches-of-changed-arrays). Gate 48 of 48. The production CJS artifact grew from 8,031 to 8,104 Brotli bytes against `main`.
 - 2026-10-03, PR #75 at `363b3da`, 67 scenarios: 339 / 1 / 0 of 340 cells against Immer with the plugin off (geometric mean 3.77; 6.21 over the array cells, 1.58 elsewhere), 335 / 4 / 1 against pinned 1.3.0 (5.48), 140 / 191 / 9 against the PR #174 archive (2.24). With Immer's `enableArrayMethods`, 211 / 1 / 36 cells (1.68). Allocation below 1.3.0 in 55 of 56 memory cells; gate 48 of 48. Three review rounds followed before the merge: search results that match the proxy path (`f85df41`), strict-mode calls on the proxy path and no element inspection the proxy path does not make (`06d9d6e`–`6e74707`), and release of the receiver cache when a producer ends (`8fe0d9a`). Harness A/B comparisons put each round within 2% of the previous source, except a search that meets an unread base object, which now checks the array for holes (about 9 µs at 10,000 rows). Between `363b3da` and the merge, the size baseline of the production CJS artifact grew from 7,799 to 8,041 Brotli bytes, and its `size-limit` cap rose from 6.5 kB to 6.7 kB.
 - 2026-10-02, PR #75 at `6193657`: 340 / 0 / 0 cells against Immer (3.78), 335 / 5 / 0 against pinned 1.3.0 (5.50). That source excluded arrays holding `undefined` from the native path and matched a draft's original object in searches; the contract above replaced both.
 - 2026-10-02 and 2026-10-03, local commits `c598b41`–`a1e3235` and `689c181`–`1ba1615` (never pushed or superseded): eligibility checks through property descriptors made 10,000-row moves slower than Immer with its plugin, and a per-element `in` scan and a WeakSet entry per array added 0.2–0.9 µs to 100-row operations. `473c149` and `6ce062b` removed both costs.
