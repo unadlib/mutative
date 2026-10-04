@@ -10,9 +10,9 @@
 
 **Mutative** - A JavaScript library for efficient immutable updates, about 3x faster than Immer with matched settings and 6x faster with each library's defaults, across [90 benchmarked workloads](./perf-testing/reports/SUMMARY.md).
 
-**How does Mutative compare with the spread operation (hand-written reducers)?**
-
 Mutative is about 3x faster than Immer with matched settings, 6x with each library's defaults, and up to 1,125x when moving elements of large arrays. It also beats hand-written spread reducers on wide objects and large-array moves, the cases where copying dominates.
+
+**How does Mutative compare with the spread operation (hand-written reducers)?**
 
 - <a href="https://www.richsnapp.com/article/2019/06-09-reduce-spread-anti-pattern" target="_blank">The reduce ({...spread}) anti-pattern</a>
 - <a href="https://jonlinnell.co.uk/articles/spread-operator-performance?fbclid=IwAR0mElQwz2aOxl8rcsqoYwkcQDlcXcwuyIsTmTAbmyzrarysS8-BC1lSY9k" target="_blank">How slow is the Spread operator in JavaScript?</a>
@@ -695,14 +695,9 @@ Mutative goal is to provide efficient and immutable updates. The focus is on per
 
 Development Workflow:
 
-See [Building and validating Mutative](./BUILDING.md) for the build pipeline,
-package checks, and bundle-size regression policy.
+See [Building and validating Mutative](./BUILDING.md) for the build pipeline, package checks, and bundle-size regression policy.
 
-See [the benchmark suite](./perf-testing/README.md) for the comparison of the
-current build with Mutative 1.3.0, Immer, and a hand-written reducer, matched
-freeze and patch modes, memory measurements, and CI regression budgets. Run
-`pnpm benchmark:immer:check` to validate every workload and
-`pnpm benchmark:immer` to measure them.
+See [the benchmark suite](./perf-testing/README.md) for the comparison of the current build with Mutative 1.3.0, Immer, and a hand-written reducer, matched freeze and patch modes, memory measurements, and CI regression budgets. Run `pnpm benchmark:immer:check` to validate every workload and `pnpm benchmark:immer` to measure them.
 
 - Clone Mutative repo.
 - Run `pnpm install` to install all the dependencies.
