@@ -12,7 +12,7 @@
 
 **How does Mutative compare with the spread operation (hand-written reducers)?**
 
-A hand-written reducer that copies only what it changes is faster than any library that drafts state, and it was faster than Mutative in 109 of the benchmark suite's 129 cases. Mutative was faster when copying wide objects, such as records with 1,000 keys or class instances with 100 fields, by 1.5-2.8x with each measured in a process of its own, and when moving elements of large arrays: inserting at the front of 10,000 rows took 16 µs instead of 86 µs. Spreads also become slow when code copies the same structure again and again, as these articles describe:
+Mutative is about 3x faster than Immer with matched settings, 6x with each library's defaults, and up to 1,125x when moving elements of large arrays. It also beats hand-written spread reducers on wide objects and large-array moves, the cases where copying dominates.
 
 - <a href="https://www.richsnapp.com/article/2019/06-09-reduce-spread-anti-pattern" target="_blank">The reduce ({...spread}) anti-pattern</a>
 - <a href="https://jonlinnell.co.uk/articles/spread-operator-performance?fbclid=IwAR0mElQwz2aOxl8rcsqoYwkcQDlcXcwuyIsTmTAbmyzrarysS8-BC1lSY9k" target="_blank">How slow is the Spread operator in JavaScript?</a>
@@ -39,24 +39,24 @@ With matched settings, both freezing or both not and both generating patches or 
 
 Times are microseconds per update, medians of three runs on an Apple M1 Max with Node.js 24.16.0; lower is better. Mutative, the first Immer column, and the hand-written reducers run without auto-freeze; the second Immer column shows Immer's default.
 
-| Workload | Rows | Mutative | Immer | Immer, auto-freeze | Hand-written |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Update one field of a small object | — | 0.65 | 1.02 | 1.32 | 0.05 |
-| Update an array item found by ID | 100 | 1.33 | 1.99 | 25.9 | 0.84 |
-| 200 RTK Query-style updates | — | 1,031 | 1,180 | 5,209 | 361 |
-| Read every row by index | 10,000 | 5,210 | 11,253 | 11,513 | 135 |
-| Remove the first row | 10,000 | 7.37 | 8,292 | 9,125 | 1.43 |
-| Update every row | 10,000 | 7,008 | 12,803 | 16,454 | 243 |
-| Update one of 10,000 records | 10,000 | 1,242 | 2,172 | 3,222 | 2,177 |
-| Insert into a 1,000-property object | — | 53.0 | 151 | 238 | 131 |
-| Update a Map value | 10,000 | 553 | 557 | 774 | 548 |
-| Add a number to a Set | 10,000 | 1,013 | 1,502 | 1,605 | 72.4 |
-| Update a class instance | 10,000 | 3.19 | 3.74 | 673 | 1.49 |
-| Update a value ten levels deep | — | 3.70 | 4.75 | 8.27 | 0.87 |
-| Apply patches to 10% of rows | 10,000 | 1,558 | 1,465 | 2,440 | — |
-| Return draft.filter() | 10,000 | 2,444 | 4,188 | 4,645 | 80.2 |
-| Return a new state | 10,000 | 2,914 | 8,272 | 0.89 | 0.06 |
-| Return it with rawReturn() | 10,000 | 0.30 | 7,865 | 0.89 | 0.06 |
+| Workload                            |   Rows | Mutative |  Immer | Immer, auto-freeze | Hand-written |
+| ----------------------------------- | -----: | -------: | -----: | -----------------: | -----------: |
+| Update one field of a small object  |      — |     0.65 |   1.02 |               1.32 |         0.05 |
+| Update an array item found by ID    |    100 |     1.33 |   1.99 |               25.9 |         0.84 |
+| 200 RTK Query-style updates         |      — |    1,031 |  1,180 |              5,209 |          361 |
+| Read every row by index             | 10,000 |    5,210 | 11,253 |             11,513 |          135 |
+| Remove the first row                | 10,000 |     7.37 |  8,292 |              9,125 |         1.43 |
+| Update every row                    | 10,000 |    7,008 | 12,803 |             16,454 |          243 |
+| Update one of 10,000 records        | 10,000 |    1,242 |  2,172 |              3,222 |        2,177 |
+| Insert into a 1,000-property object |      — |     53.0 |    151 |                238 |          131 |
+| Update a Map value                  | 10,000 |      553 |    557 |                774 |          548 |
+| Add a number to a Set               | 10,000 |    1,013 |  1,502 |              1,605 |         72.4 |
+| Update a class instance             | 10,000 |     3.19 |   3.74 |                673 |         1.49 |
+| Update a value ten levels deep      |      — |     3.70 |   4.75 |               8.27 |         0.87 |
+| Apply patches to 10% of rows        | 10,000 |    1,558 |  1,465 |              2,440 |            — |
+| Return draft.filter()               | 10,000 |    2,444 |  4,188 |              4,645 |         80.2 |
+| Return a new state                  | 10,000 |    2,914 |  8,272 |               0.89 |         0.06 |
+| Return it with rawReturn()          | 10,000 |     0.30 |  7,865 |               0.89 |         0.06 |
 
 The record and 1,000-property rows ran each library in a process of its own, because code that ran earlier in a process changes how fast V8 copies such wide objects. Immer has no `rawReturn()` and returns the same plain value in the last two rows. Immer was faster in 11 of the 530 matched cases: when returning a new state built from frozen data, which Immer does not search for drafts; when applying patches that replace nested values, by 5-7%; and, with auto-freeze, when updating a class instance with 1,000 fields.
 
@@ -67,11 +67,11 @@ Run `pnpm benchmark:immer` to measure the suite; the [benchmark guide](./perf-te
 At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method plugin, Mutative was faster in 164 of 176 cases at these sizes, 3.5x on geometric mean, and faster in every case that moves elements:
 
 | Auto-freeze | Patches | All workloads, 1,000 rows | All workloads, 10,000 rows | Moves, 1,000 rows | Moves, 10,000 rows |
-| --- | --- | ---: | ---: | ---: | ---: |
-| off | off | 7.3x | 8.8x | 212x | 472x |
-| off | on | 3.9x | 4.2x | 6.7x | 7.7x |
-| on | off | 2.6x | 2.3x | 32x | 35x |
-| on | on | 1.9x | 1.7x | 6.2x | 6.8x |
+| ----------- | ------- | ------------------------: | -------------------------: | ----------------: | -----------------: |
+| off         | off     |                      7.3x |                       8.8x |              212x |               472x |
+| off         | on      |                      3.9x |                       4.2x |              6.7x |               7.7x |
+| on          | off     |                      2.6x |                       2.3x |               32x |                35x |
+| on          | on      |                      1.9x |                       1.7x |              6.2x |               6.8x |
 
 Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.37 µs against 8,292 µs, 1,125x. With patches, both libraries emit one patch per moved index, which bounds the gain to 6-8x. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
 
@@ -81,18 +81,18 @@ With patches on and auto-freeze off, Mutative was faster than Immer in 126 of 12
 
 Times are microseconds per update with patches on and auto-freeze off:
 
-| Workload | Rows | Mutative | Immer | Mutative 1.3.0 |
-| --- | ---: | ---: | ---: | ---: |
-| Push a row and insert a property | 10,000 | 65.2 | 370 | 212 |
-| Update an array item found by ID | 100 | 2.17 | 3.57 | 3.85 |
-| 200 RTK Query-style updates | — | 1,325 | 1,520 | 2,172 |
-| Remove the first row with `splice` | 100 | 13.5 | 86.5 | 3,108 |
-| Insert a row in the middle | 100 | 9.91 | 51.3 | 1,297 |
-| Sort rows | 100 | 108 | 217 | 2,622 |
-| Remove the first row with `shift` | 10,000 | 1,227 | 10,117 | 282,588 |
-| Reverse the rows | 10,000 | 1,226 | 10,167 | 286,207 |
-| Update every row | 10,000 | 11,591 | 22,553 | 21,851 |
-| Update one of 10,000 records | 10,000 | 1,236 | 2,165 | 1,230 |
+| Workload                           |   Rows | Mutative |  Immer | Mutative 1.3.0 |
+| ---------------------------------- | -----: | -------: | -----: | -------------: |
+| Push a row and insert a property   | 10,000 |     65.2 |    370 |            212 |
+| Update an array item found by ID   |    100 |     2.17 |   3.57 |           3.85 |
+| 200 RTK Query-style updates        |      — |    1,325 |  1,520 |          2,172 |
+| Remove the first row with `splice` |    100 |     13.5 |   86.5 |          3,108 |
+| Insert a row in the middle         |    100 |     9.91 |   51.3 |          1,297 |
+| Sort rows                          |    100 |      108 |    217 |          2,622 |
+| Remove the first row with `shift`  | 10,000 |    1,227 | 10,117 |        282,588 |
+| Reverse the rows                   | 10,000 |    1,226 | 10,167 |        286,207 |
+| Update every row                   | 10,000 |   11,591 | 22,553 |         21,851 |
+| Update one of 10,000 records       | 10,000 |    1,236 |  2,165 |          1,230 |
 
 Immer's optional `enableArrayMethods()` plugin also runs array methods on the draft's copy, and with patches it comes within 1.05-1.74x of Mutative when moving elements of 1,000 or 10,000 rows. These comparisons leave it off because in Immer 11.1.18 it breaks guarantees that Immer otherwise keeps: `shift`, `pop` and `splice` return raw base objects, so editing a removed object changes the previous state; reordering can expose original objects the same way and leave revoked drafts in the result; and its forward patches can fail to replay. In [the audit](./test/immer-array-methods.md), 123 of 4,913 three-step operation sequences break with the plugin and none without it. The [performance summary](./perf-testing/reports/SUMMARY.md) reports Immer with the plugin separately.
 
@@ -100,12 +100,12 @@ Immer's optional `enableArrayMethods()` plugin also runs array methods on the dr
 
 Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from each library's production ESM artifact (Immer 11.1.18 `dist/immer.production.mjs`; Mutative `dist/mutative.esm.mjs` at source `e6b6563` with `process.env.NODE_ENV` defined as `production`), bundled for the browser with `--minify --target=es2018 --format=esm`. Each consumer references the listed exports.
 
-| Bundle | brotli |
-| --- | ---: |
-| Immer core (`produce`, `current`, `original`) | 3.4 kB |
-| Immer with `enablePatches` and `enableMapSet` | 5.2 kB |
+| Bundle                                                              | brotli |
+| ------------------------------------------------------------------- | -----: |
+| Immer core (`produce`, `current`, `original`)                       | 3.4 kB |
+| Immer with `enablePatches` and `enableMapSet`                       | 5.2 kB |
 | Immer with `enablePatches`, `enableMapSet` and `enableArrayMethods` | 6.0 kB |
-| Mutative (`create`, `apply`, `current`, `original`) | 8.7 kB |
+| Mutative (`create`, `apply`, `current`, `original`)                 | 8.7 kB |
 
 The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
 
@@ -158,15 +158,15 @@ CDN
 ## Usage
 
 ```ts
-import { create } from 'mutative';
+import { create } from "mutative";
 
 const baseState = {
-  foo: 'bar',
-  list: [{ text: 'coding' }],
+  foo: "bar",
+  list: [{ text: "coding" }],
 };
 
 const state = create(baseState, (draft) => {
-  draft.list.push({ text: 'learning' });
+  draft.list.push({ text: "learning" });
 });
 
 expect(state).not.toBe(baseState);
@@ -197,16 +197,16 @@ Use `create()` for more advanced features by [setting `options`](#createstate-fn
 Use `create()` for draft mutation to get a new state, which also supports currying.
 
 ```ts
-import { create } from 'mutative';
+import { create } from "mutative";
 
 const baseState = {
-  foo: 'bar',
-  list: [{ text: 'todo' }],
+  foo: "bar",
+  list: [{ text: "todo" }],
 };
 
 const state = create(baseState, (draft) => {
-  draft.foo = 'foobar';
-  draft.list.push({ text: 'learning' });
+  draft.foo = "foobar";
+  draft.list.push({ text: "learning" });
 });
 ```
 
@@ -248,7 +248,7 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
 ```ts
 const [draft, finalize] = create(baseState);
-draft.foobar.bar = 'baz';
+draft.foobar.bar = "baz";
 const state = finalize();
 ```
 
@@ -258,7 +258,7 @@ const state = finalize();
 
 ```ts
 const produce = create((draft) => {
-  draft.foobar.bar = 'baz';
+  draft.foobar.bar = "baz";
 });
 const state = produce(baseState);
 ```
@@ -270,22 +270,22 @@ const state = produce(baseState);
 Use `apply()` for applying patches to get the new state.
 
 ```ts
-import { create, apply } from 'mutative';
+import { create, apply } from "mutative";
 
 const baseState = {
-  foo: 'bar',
-  list: [{ text: 'todo' }],
+  foo: "bar",
+  list: [{ text: "todo" }],
 };
 
 const [state, patches, inversePatches] = create(
   baseState,
   (draft) => {
-    draft.foo = 'foobar';
-    draft.list.push({ text: 'learning' });
+    draft.foo = "foobar";
+    draft.list.push({ text: "learning" });
   },
   {
     enablePatches: true,
-  }
+  },
 );
 
 const nextState = apply(baseState, patches);
@@ -299,24 +299,23 @@ expect(prevState).toEqual(baseState);
 The options parameter is optional and supports two types of configurations:
 
 1. Immutable options (similar to create options but without `enablePatches`):
-
    - `strict` - `boolean`, forbid accessing non-draftable values in strict mode
    - `enableAutoFreeze` - `boolean`, enable autoFreeze and return frozen state
    - `mark` - mark function to determine if a value is mutable/immutable
 
 ```ts
-const baseState = { foo: { bar: 'test' } };
+const baseState = { foo: { bar: "test" } };
 
 // This will create a new state.
 const result = apply(baseState, [
   {
-    op: 'replace',
-    path: ['foo', 'bar'],
-    value: 'test2',
+    op: "replace",
+    path: ["foo", "bar"],
+    value: "test2",
   },
 ]);
-expect(baseState).not.toEqual({ foo: { bar: 'test2' } });
-expect(result).toEqual({ foo: { bar: 'test2' } });
+expect(baseState).not.toEqual({ foo: { bar: "test2" } });
+expect(result).toEqual({ foo: { bar: "test2" } });
 ```
 
 2. Mutable option(Mutative v1.2.0+):
@@ -325,23 +324,23 @@ expect(result).toEqual({ foo: { bar: 'test2' } });
 Example with mutable option:
 
 ```ts
-const baseState = { foo: { bar: 'test' } };
+const baseState = { foo: { bar: "test" } };
 
 // This will modify baseState directly
 apply(
   baseState,
   [
     {
-      op: 'replace',
-      path: ['foo', 'bar'],
-      value: 'test2',
+      op: "replace",
+      path: ["foo", "bar"],
+      value: "test2",
     },
   ],
   {
     mutable: true,
-  }
+  },
 );
-expect(baseState).toEqual({ foo: { bar: 'test2' } });
+expect(baseState).toEqual({ foo: { bar: "test2" } });
 ```
 
 > ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state.
@@ -372,14 +371,14 @@ Get the original value from a draft.
 
 ```ts
 const baseState = {
-  foo: 'bar',
-  list: [{ text: 'todo' }],
+  foo: "bar",
+  list: [{ text: "todo" }],
 };
 
 const state = create(baseState, (draft) => {
-  draft.foo = 'foobar';
-  draft.list.push({ text: 'learning' });
-  expect(original(draft.list)).toEqual([{ text: 'todo' }]);
+  draft.foo = "foobar";
+  draft.list.push({ text: "learning" });
+  expect(original(draft.list)).toEqual([{ text: "todo" }]);
 });
 ```
 
@@ -387,7 +386,7 @@ const state = create(baseState, (draft) => {
 
 ```ts
 const state = create(baseState, (draft) => {
-  const index = original(draft.list).findIndex((item) => item.text === 'todo');
+  const index = original(draft.list).findIndex((item) => item.text === "todo");
   draft.list[index].done = true;
 });
 ```
@@ -413,7 +412,7 @@ const state = create(
   },
   {
     strict: true,
-  }
+  },
 );
 ```
 
@@ -426,7 +425,7 @@ Check if a value is a draft.
 ```ts
 const baseState = {
   date: new Date(),
-  list: [{ text: 'todo' }],
+  list: [{ text: "todo" }],
 };
 
 const state = create(baseState, (draft) => {
@@ -442,7 +441,7 @@ Check if a value is draftable
 ```ts
 const baseState = {
   date: new Date(),
-  list: [{ text: 'todo' }],
+  list: [{ text: "todo" }],
 };
 
 expect(isDraftable(baseState.date)).toBeFalsy();
@@ -456,7 +455,7 @@ expect(isDraftable(baseState.list)).toBeTruthy();
 For return values that do not contain any drafts, you can use `rawReturn()` to wrap this return value to improve performance. It ensure that the return value is only returned explicitly.
 
 ```ts
-const baseState = { id: 'test' };
+const baseState = { id: "test" };
 const state = create(baseState as { id: string } | undefined, (draft) => {
   return rawReturn(undefined);
 });
@@ -495,7 +494,7 @@ const state = create(
   },
   {
     strict: true,
-  }
+  },
 );
 // it will warn `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.` in strict mode.
 expect(state).toEqual({ a: 2, b: { c: 1 } });
@@ -509,7 +508,7 @@ expect(isDraft(state.b)).toBeFalsy();
 ```ts
 const baseState = {
   foo: {
-    bar: 'str',
+    bar: "str",
   },
 };
 
@@ -518,7 +517,7 @@ const create = makeCreator({
 });
 
 const [state, patches, inversePatches] = create(baseState, (draft) => {
-  draft.foo.bar = 'new str';
+  draft.foo.bar = "new str";
 });
 ```
 
@@ -529,7 +528,7 @@ const [state, patches, inversePatches] = create(baseState, (draft) => {
 ```ts
 const baseState = {
   foo: {
-    bar: 'str',
+    bar: "str",
   },
   simpleObject: Object.create(null),
 };
@@ -537,12 +536,12 @@ const baseState = {
 const state = create(
   baseState,
   (draft) => {
-    draft.foo.bar = 'new str';
-    draft.simpleObject.a = 'a';
+    draft.foo.bar = "new str";
+    draft.simpleObject.a = "a";
   },
   {
     mark: markSimpleObject,
-  }
+  },
 );
 
 expect(state.simpleObject).not.toBe(baseState.simpleObject);
@@ -604,29 +603,29 @@ Mutative auto freezing option is disabled by default, Immer auto freezing option
 > You need to check if auto freezing has any impact on your project. If it depends on auto freezing, you can enable it yourself in Mutative.
 
 ```ts
-import produce from 'immer';
+import produce from "immer";
 
 const nextState = produce(baseState, (draft) => {
   draft[1].done = true;
-  draft.push({ title: 'something' });
+  draft.push({ title: "something" });
 });
 ```
 
 Use Mutative
 
 ```ts
-import { create } from 'mutative';
+import { create } from "mutative";
 
 const nextState = create(baseState, (draft) => {
   draft[1].done = true;
-  draft.push({ title: 'something' });
+  draft.push({ title: "something" });
 });
 ```
 
 2. `Patches`
 
 ```ts
-import { produceWithPatches, applyPatches } from 'immer';
+import { produceWithPatches, applyPatches } from "immer";
 
 enablePatches();
 
@@ -638,7 +637,7 @@ const [nextState, patches, inversePatches] = produceWithPatches(
   baseState,
   (draft) => {
     draft.age++;
-  }
+  },
 );
 
 const state = applyPatches(nextState, inversePatches);
@@ -649,7 +648,7 @@ expect(state).toEqual(baseState);
 Use Mutative
 
 ```ts
-import { create, apply } from 'mutative';
+import { create, apply } from "mutative";
 
 const baseState = {
   age: 33,
@@ -662,7 +661,7 @@ const [nextState, patches, inversePatches] = create(
   },
   {
     enablePatches: true,
-  }
+  },
 );
 
 const state = apply(nextState, inversePatches);
@@ -673,7 +672,7 @@ expect(state).toEqual(baseState);
 3. Return `undefined`
 
 ```ts
-import produce, { nothing } from 'immer';
+import produce, { nothing } from "immer";
 
 const nextState = produce(baseState, (draft) => {
   return nothing;
@@ -683,7 +682,7 @@ const nextState = produce(baseState, (draft) => {
 Use Mutative
 
 ```ts
-import { create, rawReturn } from 'mutative';
+import { create, rawReturn } from "mutative";
 
 const nextState = create(baseState, (draft) => {
   return rawReturn(undefined);
