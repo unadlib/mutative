@@ -389,6 +389,40 @@ export function createDraft<T extends object>(
 
 internal.createDraft = createDraft;
 
+// Development builds warn once, in strict mode, when a producer leaves at
+// least this many drafts unchanged.
+const UNCHANGED_DRAFTS_WARNING_THRESHOLD = 1000;
+let unchangedDraftsWarned = false;
+
+/**
+ * Every object read through a draft becomes a draft, so a search through a
+ * large draft array creates one per element it visits. Drafts that are
+ * unchanged and still at the key they were read from count; elements that
+ * array methods drafted when removing or moving them do not. An object or
+ * array draft has a copy before it drafts a child.
+ */
+function warnUnchangedDrafts(finalities: Finalities) {
+  let count = 0;
+  for (const entry of finalities.draft) {
+    if (typeof entry !== 'function' && !entry.operated) {
+      const parent = entry.parent;
+      if (
+        parent !== null &&
+        (parent.type === DraftType.Array || parent.type === DraftType.Object) &&
+        parent.copy[entry.key!] === entry.proxy
+      ) {
+        count += 1;
+      }
+    }
+  }
+  if (count >= UNCHANGED_DRAFTS_WARNING_THRESHOLD) {
+    unchangedDraftsWarned = true;
+    console.warn(
+      `Strict mode: the recipe left ${count} drafts unchanged; every object read through a draft becomes one. For read-only scans of large arrays, search 'current(draft.list)' instead; see https://mutative.js.org/docs/api-reference/current`
+    );
+  }
+}
+
 export function finalizeDraft<T>(
   result: T,
   returnedValue: [T] | [],
@@ -397,6 +431,9 @@ export function finalizeDraft<T>(
   enableAutoFreeze?: boolean
 ) {
   const proxyDraft = getProxyDraft(result);
+  if (__DEV__ && proxyDraft?.options.strict && !unchangedDraftsWarned) {
+    warnUnchangedDrafts(proxyDraft.finalities);
+  }
   const original = proxyDraft?.original ?? result;
   const hasReturnedValue = !!returnedValue.length;
   if (proxyDraft?.operated) {
