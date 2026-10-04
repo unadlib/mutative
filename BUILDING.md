@@ -33,7 +33,7 @@ The CJS and UMD bundles fix `__DEV__` at build time, and `dist/index.js` selects
 
 `pnpm size` runs both checks below, including in push, pull request and release workflows:
 
-1. `size-limit` checks the limits in `package.json` for the production CJS artifact and for a production bundle of the ESM entry.
+1. `size-limit` bundles what a consumer imports with webpack in production mode and checks its Brotli size against the limit in `package.json`: all exports of the production CJS artifact, and `create` and all exports of the ESM entry. Each check names its imports: without them, webpack drops the unused exports of the entry and measures only module initialization. Each limit is the size at its last refresh plus 1%, rounded up to 0.1 kB.
 2. `pnpm size:compare` compares the build with the pre-migration Rollup measurements in `scripts/build-size-baseline.json`.
 
 The baseline comparison measures:
