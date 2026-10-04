@@ -649,4 +649,83 @@ describe('native array method contract', () => {
     expect(shape(replay).values).toStrictEqual(shape(state).values);
     expect(shape(replay).own).toStrictEqual(shape(state).own);
   });
+  test.each([
+    { method: 'unshift', args: [9] },
+    { method: 'splice', args: [0, 1, 7, 8] },
+  ] as const)(
+    '$method on an array with holes takes the proxy path',
+    ({ method, args }) => {
+      const base: any[] = [0, 1];
+      base[3] = 3;
+      const produce = (call: (draft: any[]) => unknown) => {
+        let result: unknown;
+        const [state, patches] = create(
+          base,
+          (draft) => {
+            result = call(draft);
+          },
+          { enablePatches: true }
+        );
+        return { result, state, patches };
+      };
+      const viaMethod = produce((draft) => (draft as any)[method](...args));
+      const viaBuiltin = produce((draft) =>
+        (Array.prototype[method] as Function).apply(draft, args)
+      );
+      expect(viaMethod.result).toStrictEqual(viaBuiltin.result);
+      expect(shape(viaMethod.state)).toStrictEqual(shape(viaBuiltin.state));
+      expect(viaMethod.patches).toStrictEqual(viaBuiltin.patches);
+      expect(shape(apply(base, viaMethod.patches))).toStrictEqual(
+        shape(viaMethod.state)
+      );
+    }
+  );
+
+  test.each(['indexOf', 'lastIndexOf', 'includes'] as const)(
+    '%s that meets a base element of an array with holes takes the proxy path',
+    (method) => {
+      const element = { value: 1 };
+      const base: any[] = [element];
+      base[2] = 2;
+      let viaMethod: unknown;
+      let viaBuiltin: unknown;
+      create(base, (draft) => {
+        viaMethod = (draft as any)[method](element);
+      });
+      create(base, (draft) => {
+        viaBuiltin = (Array.prototype[method] as Function).call(draft, element);
+      });
+      expect(viaMethod).toBe(viaBuiltin);
+      expect(viaMethod).toBe(method === 'includes' ? false : -1);
+    }
+  );
+
+  test.each(['indexOf', 'lastIndexOf', 'includes'] as const)(
+    '%s finds a base element that a read hands out without drafting',
+    (method) => {
+      const date = new Date(0);
+      const base: any[] = [{ value: 1 }, date, 2];
+      let viaMethod: unknown;
+      let viaBuiltin: unknown;
+      create(base, (draft) => {
+        viaMethod = (draft as any)[method](date);
+      });
+      create(base, (draft) => {
+        viaBuiltin = (Array.prototype[method] as Function).call(draft, date);
+      });
+      expect(viaMethod).toBe(viaBuiltin);
+      expect(viaMethod).toBe(method === 'includes' ? true : 1);
+    }
+  );
+
+  test('patches include assignments below the range a native method changed', () => {
+    run([0, 1, 2, 3, 4, 5], (array) => {
+      array[0] = 9;
+      return array.splice(4, 1);
+    });
+    run([0, 1, 2, 3, 4, 5], (array) => {
+      array.splice(4, 1);
+      array[1] = 8;
+    });
+  });
 });
