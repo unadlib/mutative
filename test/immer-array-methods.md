@@ -179,8 +179,10 @@ Upgrading from main's 10.1.3 also changes five historical assertions in
 auto-freeze disabled, two reference-array patch cases now replay correctly,
 symbol handling no longer throws, and assigning inherited `undefined` creates
 an own property with an `add` patch. These now assert the corrected behavior.
-The historical performance figures on the comparison page retain their original
-10.1.3 label; they were not remeasured by this correctness audit.
+The performance figures on the comparison page come from the
+[benchmark suite](../perf-testing/README.md), which measures Immer 11.1.18
+without this plugin; its [summary](../perf-testing/reports/SUMMARY.md) also
+reports a run with the plugin enabled.
 
 Local validation on Node.js 24.16.0:
 

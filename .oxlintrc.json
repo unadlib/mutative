@@ -24,12 +24,7 @@
       {
         "newIsCap": true,
         "newIsCapExceptions": ["constructor"],
-        "capIsNew": false,
-        "capIsNewExceptions": [
-          "Immutable.Map",
-          "Immutable.Set",
-          "Immutable.List"
-        ]
+        "capIsNew": false
       }
     ],
     "no-alert": "warn",

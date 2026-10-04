@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-**Mutative** - A JavaScript library for efficient immutable updates, 2-6x faster than naive handcrafted reducer, and more than 10x faster than Immer.
+**Mutative** - A JavaScript library for efficient immutable updates, about 3x faster than Immer with matched settings and 6x faster with each library's defaults, across [90 benchmarked workloads](/docs/getting-started/performance).
 
 ## What is Mutative?
 
@@ -70,7 +70,7 @@ This is why Mutative was created.
 ## Features and Benefits
 
 - **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
-- **High performance** - 10x faster than immer by default, even faster than naive handcrafted reducer.
+- **High performance** - About 6x faster than Immer with each library's defaults, and faster than hand-written spreads on wide objects and large arrays.
 - **Optional freezing state** - No freezing of immutable data by default.
 - **Support for JSON Patch** - Full compliance with JSON Patch specification.
 - **Custom shallow copy** - Support for more types of immutable data.

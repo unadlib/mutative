@@ -1,3 +1,9 @@
+import {
+  applyExtendedRecipe,
+  expectedExtendedReads,
+  reduceExtended,
+} from './extended-workloads.mjs';
+
 // Additional fixtures omit the upstream wide objects so small-state and pure
 // array measurements do not silently retain unrelated large graphs.
 export function createArrayState(config, shape = 'nested') {
@@ -110,7 +116,7 @@ export function expectedReads(state, action) {
     case 'bench/read-length':
       return [state.rows.length];
     default:
-      return [];
+      return expectedExtendedReads(state, action);
   }
 }
 
@@ -185,11 +191,17 @@ export function reduceAdditional(state, action) {
         ),
       };
     default:
-      return state;
+      return reduceExtended(state, action);
   }
 }
 
-export function applyAdditionalRecipe(draft, action, consumeRead) {
+export function applyAdditionalRecipe(
+  draft,
+  action,
+  consumeRead,
+  state,
+  rawReturn
+) {
   switch (action.type) {
     case 'bench/density':
       for (let i = 0; i < action.count; i++) draft.rows[i].nested.value += 1;
@@ -274,8 +286,9 @@ export function applyAdditionalRecipe(draft, action, consumeRead) {
       draft.rows[0].value += 1;
       break;
     default:
-      throw new Error(`Unknown additional recipe: ${action.type}`);
+      return applyExtendedRecipe(draft, action, consumeRead, state, rawReturn);
   }
+  return undefined;
 }
 
 function rowValue(row) {

@@ -1,102 +1,402 @@
-# Native array methods: performance summary
+# Performance summary
 
-Measurements from 2026-10-03 UTC for [PR #75](https://github.com/unadlib/mutative/pull/75)
-at source `363b3da`, the native array methods under their data-array contract.
-The candidate and pinned npm baseline both report Mutative 1.3.0; the candidate
-contains unreleased source changes, including the draft fast paths from
-[PR #174](https://github.com/unadlib/mutative/pull/174). Immer is pinned to
-11.1.18 and Mitata to 1.0.34. The main comparison runs Immer without its
-array-method plugin; a separate dataset below enables `enableArrayMethods`
-through the harness option `--immer-array-methods`. Mutative's native array
-methods need no option. The raw datasets of this batch were not archived; the
-identities and commands below reproduce them, and the
-[archive index](./README.md) describes the retention policy for batches that are.
+Measurements from 2026-10-03 and 2026-10-04 UTC of the source of `main` at
+[`e6b6563`](https://github.com/unadlib/mutative/commit/e6b6563b821305b8ee0d63c42a62cea752cc04f0),
+which includes the draft fast paths of
+[PR #174](https://github.com/unadlib/mutative/pull/174), the Set and assignment
+fixes of [PR #176](https://github.com/unadlib/mutative/pull/176), and the native
+array methods of [PR #75](https://github.com/unadlib/mutative/pull/75). The
+candidate and the pinned npm baseline both report Mutative 1.3.0. Immer is
+pinned to 11.1.18 and Mitata to 1.0.34. The main comparison runs Immer without
+its array-method plugin; a separate dataset below enables `enableArrayMethods`.
+The raw datasets of this batch were not archived; the identities and commands
+below reproduce them, and the [archive index](./README.md) describes the
+retention policy for batches that are.
 
-## Follow-up: element inspections
+This batch replaces the repository's former benchmark scripts with this suite.
+It adds 23 scenarios, a hand-written reducer as a fourth library, isolated
+processes for wide objects, and a priming run before each benchmark, so its
+numbers are not directly comparable with earlier summaries.
 
-Review found that the strict-mode check of `83dffa2` inspected every element
-before each call: it ran `isDraftable` on elements that the proxy path never
-reads, before arguments were converted, and on calls that read no element at
-all. A Proxy element saw a `getPrototypeOf` the proxy path never makes, a
-revoked one threw, and every strict call paid a scan of the whole array. Search
-validation also treated an element inherited from the prototype as an own
-element of the base state. Auditing the same root cause turned up more: a
-removal and an unchanged `splice` read the draft symbol of the elements they
-replaced, and every native move registered the assigned objects that stayed
-in place again.
+## Scope and method
 
-The rule that now holds is that a native path may skip an inspection the
-proxy path makes, but never makes one the proxy path does not, nor earlier.
-`06d9d6e` sends strict calls outside `unsafe()` to the proxy path as they are,
-and `662ee8a` keeps native paths for arrays of primitives, recognized with
-`typeof`, which runs no trap. `a3eca67`, `69d0762` and `f716d25` accept
-inherited hits as reads do and let the proxy path decide object searches that
-meet an inherited element, or a base element in an array with holes, because
-its first drafting read copies inherited elements into own ones. `752a212`
-decides removals and unchanged splices by identity, and `6e74707` registers only
-the assigned objects that move. `test/array-methods-parity.test.ts` now counts
-the internal methods that run on Proxy elements for every optimized method and
-checks that the native path runs none more often, never throws on a revoked
-element where the proxy path does not, and matches it in strict mode and for
-inherited elements; the previous head fails 13 of these tests.
+Apple M1 Max, 64 GiB RAM, darwin/arm64 (kernel 25.6.0), Node 24.16.0,
+V8 13.6.233.17-node.49. Jobs ran sequentially with normal desktop activity.
 
-A harness A/B against the previous head, two passes each with freeze and
-patches off, measured 100-row and 10,000-row array operations within 2%.
-Searches for primitives, the array's own drafts and absent objects are
-unchanged; a search that meets an unread base object now first checks the
-array for holes, about 9 µs at 10,000 rows. In strict mode, a 10,000-row
-`reverse` of numbers takes about 50 µs, while arrays of objects take the proxy
-path, as on `main`. The production CJS artifact grew by 6 Brotli bytes.
+- **Workloads.** 90 scenarios at 100 rows: the 67 of the previous summary and
+  23 added with this batch, for Map and Set values, object records, class
+  instances, a deep path, a combined push and insert, patch application, and
+  returned values. Of them, 23 also ran at 1,000 and 10,000 rows. The
+  [benchmark guide](../README.md#workloads-and-units) describes each one.
+- **Libraries.** The current source, pinned npm Mutative 1.3.0, Immer 11.1.18,
+  and the hand-written reducer that is every scenario's reference result. Each
+  library runs both freeze modes and both patch modes, except that the
+  hand-written reducer runs only without either, and patch application only
+  without patch generation.
+- **Timing.** Three runs of each matrix. Map and Set scenarios run in
+  processes of their own, so that the others measure Immer without its MapSet
+  plugin. Each benchmark first runs its workload for 30 ms on a throwaway
+  fixture. The timing datasets hold 5,922 trials from 252 processes.
+- **Isolation.** Copying objects with hundreds of properties took up to about
+  70 times as long, depending on the V8 object shapes that earlier code in the
+  process left behind. The 11 wide-object and record scenarios at 100 rows and
+  4 at 1,000 and 10,000 rows were therefore also measured with each scenario
+  and library in a process of its own (`--isolate`), and those results replace
+  the shared-process cells in every comparison below.
+- **Memory.** 1,110 isolated workers for 13 scenarios at 100 rows and 8 at
+  1,000 and 10,000 rows.
 
-## Follow-up: search results and strict mode
+Each timing cell is one scenario, size, and mode. A candidate time below 95% of
+the comparator's counts as faster, above 105% as slower, and otherwise as within
+5%. Geometric means are comparator time over candidate time, so values above 1
+favor the candidate. Scenario counts are not an application-weighted score.
 
-Review found that a native search could find an unread object of the base
-state, which the proxy path never finds: it drafts each element it reads and
-compares the draft. The result therefore depended on the type of `fromIndex`,
-on a custom `mark`, on borrowing the method, and on whether the element had
-been read before. In strict mode, native moves and searches also skipped the
-errors that the proxy path raises when it reads a non-draftable object.
+## Results
 
-Commit `f85df41` compares search hits as a read returns them: a native hit on
-an object that a read would draft is skipped, and the search continues past
-it, so searches give the proxy path's results everywhere, as on `main`. Commit
-`83dffa2` sent an array that holds a non-draftable object to the proxy path in
-strict mode, outside `unsafe()`; `06d9d6e` later replaced that check, as
-described above. `test/array-methods-parity.test.ts` checks
-`indexOf`, `lastIndexOf` and `includes` against the borrowed builtin for nine
-kinds of search value, eight `fromIndex` forms, five array histories, default
-and strict mode, `unsafe()` and a no-op `mark`, and checks the strict-mode
-outcomes of every optimized method; the source before these commits fails both.
+### Against Immer and Mutative 1.3.0
 
-A harness A/B against the previous source, two passes each with freeze and
-patches off, measured 100-row array operations within 2% and 10,000-row
-operations within 1%. In a 10,000-row micro-benchmark, searches for a
-primitive and for the array's own draft are unchanged at about 4.5 µs and
-9.7 µs; a search for an unread base object now scans to the end and returns
--1 in 4.5 µs. The production CJS artifact grew by 166 Brotli bytes, and its
-`size-limit` cap was raised from 6.5 kB to 6.7 kB.
+Cells faster / within 5% / slower, and the geometric mean of comparator time
+over candidate time. The Immer defaults row compares the candidate without
+auto-freeze with Immer with it, both without patches.
 
-## Follow-up: receiver cache release
+| Comparator | 100 rows | 1,000 and 10,000 rows | All |
+| --- | ---: | ---: | ---: |
+| Immer 11.1.18 | 344 / 7 / 3 of 354, 2.89 | 164 / 4 / 8 of 176, 3.48 | 508 / 11 / 11 of 530, 3.07 |
+| Immer 11.1.18 with its defaults | 89 / 0 / 1 of 90, 6.06 | 44 / 0 / 2 of 46, 5.91 | 133 / 0 / 3 of 136, 6.01 |
+| Pinned npm Mutative 1.3.0 | 303 / 51 / 0 of 354, 3.08 | 114 / 60 / 2 of 176, 3.33 | 417 / 111 / 2 of 530, 3.16 |
+| Hand-written reducer | 8 / 0 / 79 of 87, 0.18 | 10 / 2 / 30 of 42, 0.16 | 18 / 2 / 109 of 129, 0.17 |
 
-Review found that the receiver cache kept a failed producer's state alive.
-`create` revokes drafts when the recipe throws and when a producer finishes,
-but not when an error is raised after the recipe returned: returning a value
-after changing the draft, returning a modified child draft, or the async
-variants of both. A draft of `create(base)` without a recipe that is never
-finalized has no end at all. The module-level reference to the last array then
-kept the whole state reachable until another array's method was read, while
-`main` collects it on every path.
+Against Immer by workload group, faster / within 5% / slower and geometric mean:
 
-Source `8fe0d9a` releases that reference whenever a producer ends, normally or
-by an error, and registers drafts of `create` without a recipe only in the
-WeakSet. `test/array-methods-retention.test.ts` forces full collections and
-checks six ways a producer can end; before the fix, four of them kept the state.
+| Group | 100 rows | 1,000 rows | 10,000 rows |
+| --- | ---: | ---: | ---: |
+| Upstream workloads | 84 / 0 / 0, 2.09 | — | — |
+| Reads | 20 / 0 / 0, 1.86 | 12 / 0 / 0, 1.81 | 12 / 0 / 0, 1.91 |
+| No-op producers | 7 / 1 / 0, 1.61 | — | — |
+| Small state | 12 / 0 / 0, 1.68 | — | — |
+| Mutation density | 12 / 0 / 0, 1.96 | 4 / 0 / 0, 1.85 | 4 / 0 / 0, 1.84 |
+| Array methods | 132 / 0 / 0, 5.86 | 20 / 0 / 0, 22.94 | 20 / 0 / 0, 30.56 |
+| Map and Set | 34 / 2 / 0, 1.82 | 16 / 0 / 0, 2.25 | 14 / 2 / 0, 1.78 |
+| Object records | 11 / 1 / 0, 1.17 | 8 / 0 / 0, 2.33 | 8 / 0 / 0, 1.59 |
+| Class instances | 6 / 2 / 0, 1.63 | 6 / 0 / 2, 1.54 | 6 / 2 / 0, 1.55 |
+| Deep path | 3 / 1 / 0, 1.17 | — | — |
+| Push and insert | 8 / 0 / 0, 1.92 | 4 / 0 / 0, 2.30 | 4 / 0 / 0, 3.21 |
+| Patch application | 5 / 0 / 1, 2.82 | 3 / 0 / 1, 1.18 | 3 / 0 / 1, 1.17 |
+| Returned values | 10 / 0 / 2, 2.35 | 10 / 0 / 2, 2.24 | 10 / 0 / 2, 2.33 |
 
-A harness A/B against `363b3da`, two passes each with freeze and patches off,
-measured 100-row array operations 0–2% slower, about 0.01 µs, and 10,000-row
-operations within 1%. The tables below remain the archive of `363b3da`.
+The 11 cells slower than Immer are `return-replace` with freeze on at every
+size (30 µs, 291 µs and 2.9 ms against 0.9 µs; see the limits below),
+`apply-update-10pct` with freeze off (0.94–0.95), and `class-wide-update` with
+freeze on at 1,000 rows (419 µs against 241 µs). The 2 cells slower than
+Mutative 1.3.0 are `object-delete` with freeze on at 1,000 rows, 119 µs against
+104–105 µs.
 
-## Contract
+### Large arrays
+
+Against Immer without its array-method plugin, by size and mode, over the 23
+scaling scenarios: cells faster / within 5% / slower, and geometric means of
+Immer time over candidate time. The moves are `array-shift-nested`,
+`array-unshift-nested`, `array-splice-insert-nested`, `array-reverse-nested`
+and `array-reverse-primitive`.
+
+| Rows | Freeze | Patches | All scenarios | Geometric mean | Moves, geometric mean | Moves, range |
+| ---: | --- | --- | ---: | ---: | ---: | ---: |
+| 1,000 | off | off | 22 / 0 / 1 | 7.32 | 212 | 70.4–461 |
+| 1,000 | off | on | 21 / 0 / 0 | 3.88 | 6.7 | 6.4–6.8 |
+| 1,000 | on | off | 21 / 0 / 2 | 2.57 | 31.8 | 17.9–47.6 |
+| 1,000 | on | on | 19 / 0 / 2 | 1.87 | 6.2 | 6.0–6.3 |
+| 10,000 | off | off | 21 / 1 / 1 | 8.83 | 472 | 180–1,125 |
+| 10,000 | off | on | 20 / 1 / 0 | 4.22 | 7.7 | 6.7–8.3 |
+| 10,000 | on | off | 21 / 1 / 1 | 2.31 | 35.1 | 19.1–52.3 |
+| 10,000 | on | on | 19 / 1 / 1 | 1.68 | 6.8 | 6.5–7.4 |
+
+Immer time over candidate time for the moves at 10,000 rows, by freeze and
+patch mode:
+
+| Scenario | Off, off | Off, on | On, off | On, on |
+| --- | ---: | ---: | ---: | ---: |
+| array-shift-nested | 1,125 | 8.2 | 39.0 | 7.0 |
+| array-unshift-nested | 507 | 7.6 | 37.6 | 6.7 |
+| array-splice-insert-nested | 180 | 7.8 | 19.1 | 6.5 |
+| array-reverse-nested | 597 | 8.3 | 36.4 | 7.4 |
+| array-reverse-primitive | 383 | 6.7 | 52.3 | 6.6 |
+
+The gap widens with size. With freeze and patches off, the moves were 212 times
+faster at 1,000 rows and 472 times at 10,000 on geometric mean: the candidate
+moves elements natively on its copy, while Immer moves each element through its
+draft proxy. Removing the first of 10,000 rows took 7.37 µs against 8,292 µs.
+With patches, both libraries emit one patch per moved index, which bounds the
+gain to 6–8 times. At these sizes Immer was faster in `return-replace` with
+freeze on, `apply-update-10pct`, and `class-wide-update` with freeze on at
+1,000 rows, and within 5% in `class-wide-update` with freeze on and
+`map-update` at 10,000 rows; the limits below discuss each.
+
+### Freeze off, patches on
+
+With patches on and freeze off, the candidate was faster than Immer in 126 of
+129 cells, within 5% in 3, and never slower (geometric mean 3.07); it was faster
+than Mutative 1.3.0 in 103 and within 5% in 26 (3.70). In the 58 array-related
+cells, array methods and the upstream array workloads at every size, it was
+faster than both in every cell: 3.98 times Immer and 13.13 times Mutative 1.3.0
+on geometric mean.
+
+Patches cost little when an update changes a few paths. They added a median 3%
+to the candidate's time at 1,000 and 10,000 rows and 29% at 100 rows. The former
+`benchmark:base` workload, `push-and-insert` at 10,000 rows, took 64.8 µs
+without patches and 65.2 µs with them; Mutative 1.3.0 went from 67.5 µs to
+212 µs, and Immer from 167 µs to 370 µs. Moving elements is the exception: both
+libraries emit one patch per moved index, so `shift` at 10,000 rows produces
+10,000 forward and 10,000 inverse patches in each. The candidate's time grows
+from 7.37 µs to 1,227 µs, against 10,117 µs for Immer producing the same
+patches.
+
+Array methods on nested rows at 100 rows, in µs per call. The primitive and
+shallow shapes behave alike; over all 33 cells the candidate is 4.24 times
+faster than Immer (2.0–7.2) and 8.42 times faster than Mutative 1.3.0
+(1.6–194).
+
+| Operation | Candidate | Immer | Mutative 1.3.0 | Immer/candidate | 1.3.0/candidate |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| push | 4.05 | 8.52 | 6.40 | 2.11 | 1.58 |
+| pop | 1.72 | 7.02 | 4.39 | 4.08 | 2.55 |
+| shift | 13.3 | 86.3 | 2,558 | 6.50 | 192.75 |
+| unshift | 15.8 | 90.7 | 2,599 | 5.74 | 164.33 |
+| splice, insert | 9.91 | 51.3 | 1,297 | 5.18 | 130.84 |
+| splice, remove | 7.12 | 46.5 | 1,257 | 6.52 | 176.43 |
+| splice, replace | 3.71 | 11.2 | 7.17 | 3.01 | 1.93 |
+| fill | 4.59 | 9.58 | 7.85 | 2.09 | 1.71 |
+| copyWithin | 2.80 | 6.47 | 82.0 | 2.31 | 29.26 |
+| sort | 108 | 217 | 2,622 | 2.01 | 24.24 |
+| reverse | 13.2 | 85.7 | 2,552 | 6.51 | 193.93 |
+
+The array workloads of the upstream suite at 100 rows:
+
+| Scenario | Candidate | Immer | Mutative 1.3.0 | Immer/candidate | 1.3.0/candidate |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| add | 2.02 | 5.12 | 4.25 | 2.54 | 2.11 |
+| remove | 13.5 | 86.5 | 3,108 | 6.42 | 230.78 |
+| filter | 23.3 | 32.8 | 48.7 | 1.41 | 2.09 |
+| concat | 1.04 | 1.22 | 1.27 | 1.17 | 1.23 |
+| mapNested | 45.8 | 65.3 | 104 | 1.42 | 2.26 |
+| sortById-reverse | 70.7 | 102 | 3,122 | 1.44 | 44.16 |
+| reverse-array | 13.3 | 86.3 | 3,167 | 6.49 | 237.97 |
+| update-multiple | 10.1 | 19.6 | 17.3 | 1.93 | 1.71 |
+| remove-high | 20.9 | 57.1 | 634 | 2.73 | 30.29 |
+| remove-reuse | 124 | 791 | 28,166 | 6.37 | 226.87 |
+| mixed-sequence | 56.3 | 114 | 150 | 2.02 | 2.66 |
+
+Moving elements at 1,000 and 10,000 rows, with Immer's array-method plugin
+from the plugin datasets for reference:
+
+| Scenario | Rows | Candidate | Immer | Mutative 1.3.0 | Immer + plugin |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| array-shift-nested | 1,000 | 123 | 834 | 26,568 | 130 |
+| array-splice-insert-nested | 1,000 | 65.5 | 448 | 12,538 | 88.0 |
+| array-reverse-nested | 1,000 | 123 | 833 | 26,701 | 131 |
+| array-shift-nested | 10,000 | 1,227 | 10,117 | 282,588 | 1,471 |
+| array-unshift-nested | 10,000 | 1,228 | 9,314 | 275,569 | 1,483 |
+| array-splice-insert-nested | 10,000 | 632 | 4,908 | 139,836 | 1,016 |
+| array-reverse-nested | 10,000 | 1,226 | 10,167 | 286,207 | 1,487 |
+| array-reverse-primitive | 10,000 | 1,071 | 7,203 | 5,713 | 1,859 |
+
+#### Why Immer's array-method plugin is not the main comparator
+
+Immer's optional `enableArrayMethods()` also runs array methods on the draft's
+copy, and with patches it comes within 1.05–1.74 times of the candidate on the
+moves above. The comparisons nevertheless run Immer without it, because in Immer
+11.1.18 the plugin breaks guarantees that its other configurations and Mutative
+keep. [`test/immer-array-methods.md`](../../test/immer-array-methods.md)
+reproduces four root causes:
+
+- `shift`, `pop` and `splice` return raw base objects. Editing a removed
+  object changes the previous state, or throws when that state is frozen.
+- `reverse` and `sort` can expose original objects at inserted indices as raw
+  values, with the same effect; inverse patches then restore the modified
+  values instead of the original ones.
+- After an insertion, edits to the shifted tail emit child patches before the
+  array additions, so the forward patches cannot be replayed.
+- Reordering a wrapper that holds a moved draft, or a negative `splice` index,
+  leaves revoked drafts in the result and in patch values.
+
+Of 4,913 three-step operation sequences, 123 violate at least one of these
+contracts with the plugin and none without it. The plugin also hands raw base
+elements to callbacks and comparators, which is why it beats the candidate in
+`find`, `findIndex`, `filter` and object `sort` cells: the callback reads
+the base without drafting it. The benchmark callbacks only read, so these
+results are correct with the plugin; recipes that edit removed objects or
+callback arguments are not.
+
+### Selected times
+
+Microseconds per complete scenario, medians of three runs. Rows marked * come
+from the isolated control.
+
+| Scenario | Rows | Freeze | Patches | Mutative | Mutative 1.3.0 | Immer | Hand-written | Immer/Mutative |
+| --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| small-object-update | 100 | off | off | 0.65 | 1.17 | 1.02 | 0.05 | 1.58 |
+| read-index | 100 | off | off | 49.9 | 80.5 | 110 | 0.72 | 2.21 |
+| rtkq-sequence* | 100 | off | off | 1,031 | 1,878 | 1,180 | 361 | 1.14 |
+| sortById-reverse | 100 | off | off | 55.1 | 102 | 87.4 | 1.27 | 1.59 |
+| array-shift-nested | 100 | off | off | 0.82 | 87.3 | 72.0 | 0.08 | 88.25 |
+| update-largeObject1* | 100 | off | off | 53.0 | 52.8 | 151 | 131 | 2.85 |
+| update-largeObject1* | 100 | on | off | 139 | 151 | 238 | — | 1.72 |
+| object-update* | 100 | off | off | 3.18 | 6.21 | 3.53 | 2.18 | 1.11 |
+| map-update | 100 | off | off | 4.71 | 5.33 | 5.17 | 3.76 | 1.10 |
+| set-update | 100 | off | off | 8.74 | 9.14 | 43.5 | 2.15 | 4.97 |
+| class-update | 100 | on | off | 4.42 | 5.79 | 9.64 | — | 2.18 |
+| apply-array-ops | 100 | off | off | 6.87 | 131 | 105 | — | 15.28 |
+| return-filter | 100 | off | off | 24.6 | 35.2 | 43.2 | 0.84 | 1.76 |
+| array-splice-insert-nested | 1,000 | off | off | 5.14 | 425 | 362 | 2.28 | 70.38 |
+| object-update* | 1,000 | off | off | 53.6 | 53.1 | 132 | 130 | 2.46 |
+| class-wide-update* | 1,000 | on | off | 419 | 422 | 241 | — | 0.57 |
+| array-shift-nested | 10,000 | off | off | 7.37 | 9,824 | 8,292 | 1.43 | 1125.45 |
+| array-unshift-nested | 10,000 | off | off | 16.3 | 10,614 | 8,248 | 85.8 | 506.55 |
+| array-reverse-nested | 10,000 | off | off | 14.3 | 10,851 | 8,512 | 9.99 | 596.73 |
+| array-reverse-nested | 10,000 | off | on | 1,226 | 286,207 | 10,167 | — | 8.29 |
+| read-index | 10,000 | off | off | 5,210 | 8,238 | 11,253 | 135 | 2.16 |
+| set-update | 10,000 | off | off | 1,087 | 1,093 | 5,166 | 418 | 4.75 |
+| object-update* | 10,000 | off | off | 1,242 | 1,240 | 2,172 | 2,177 | 1.75 |
+| apply-reverse | 10,000 | off | off | 13,549 | 15,201 | 16,447 | — | 1.21 |
+| push-and-insert* | 10,000 | off | on | 65.2 | 212 | 370 | — | 5.67 |
+| return-replace | 10,000 | on | off | 2,918 | 2,926 | 0.89 | — | 0.00 |
+
+### Against a hand-written reducer
+
+The hand-written reducer is faster than the candidate in 109 of 129 cells, and
+across all 129 the candidate takes 5.8 times as long on geometric mean: the
+reducer copies only what each update changes and has no draft to create, track,
+or finalize. The candidate is faster in 18 cells. Fifteen copy wide objects:
+objects with 1,000 and 3,000 properties, records with 1,000 or 10,000 keys, and
+class instances with 100 or more fields, by 1.5–2.8 times in isolated processes.
+Three insert at the front of an array, where the reducer's spread copies every
+element and `unshift` runs natively on the draft's copy: 1.1 times faster at 100
+rows and 5.3 times at 10,000. The hand-written reducer is the same spread-based
+code that validates every scenario; faster hand-written code exists for many of
+them.
+
+### Wide objects and process order
+
+Inserting a property into the 1,000-property object depended on the code that
+ran before it in the process. With libraries in alternating orders in six
+processes, the hand-written reducer took 1.8 µs when it ran after the libraries
+and 130–132 µs when it ran first; Immer 2.7–2.8 µs after the hand-written
+reducer and 152–160 µs after Mutative; the candidate 54–58 µs first and
+102–105 µs after the others. The isolated control gives each library its own
+process, where the candidate took 53.0 µs, Mutative 1.3.0 52.8 µs, Immer
+151 µs, and the hand-written reducer 131 µs. A separate effect made the first
+timed run of a scenario in a process slower: updating a 100-key record took
+12–15 µs in every library there and 3–4 µs afterwards. Priming each benchmark
+removed it, and the isolated control repeats the record scenarios with priming.
+
+### Memory
+
+Sampled allocation of the candidate was below Mutative 1.3.0 in 104 of 114
+memory cells. The exceptions are Map and Set updates, by 0.3–8%, and
+`noop-empty` with freeze and patches on (4.1 against 3.7 KiB). It was below
+Immer in 67 of 114 cells: lower for reads, array moves, returned filters, and
+patch application; higher for Map and Set drafts (up to 2.4 times), the
+push-and-insert fixture (1.1–2.6 times), the 1,000-key record (112 against 16
+KiB), and by a few KiB for no-op, small-object, record, and class-instance
+producers. Objects with more than 128 keys are copied into dictionary-mode
+objects, which also retain 48 KiB per output at 1,000 keys, against 8 KiB for
+the other libraries.
+
+| Scenario | Rows | Patches | Candidate | Mutative 1.3.0 | Immer | Hand-written |
+| --- | ---: | --- | ---: | ---: | ---: | ---: |
+| read-index | 100 | off | 97.2 | 153.6 | 193.2 | 1.7 |
+| push-and-insert | 100 | off | 114.4 | 1,366.2 | 65.5 | 19.5 |
+| object-update | 1,000 | off | 112.3 | 1,315.5 | 15.8 | 10.8 |
+| set-add | 10,000 | off | 2,871.3 | 2,899.9 | 1,612.0 | 325.2 |
+| array-reverse-nested | 10,000 | off | 87.8 | 11,119.4 | 12,841.7 | 83.6 |
+| array-reverse-nested | 10,000 | on | 3,044.4 | 268,459.4 | 15,039.4 | — |
+
+Sampled KiB allocated per iteration with freeze off, medians of three isolated
+workers. With patches, nested reverse at 10,000 rows retains about 1,797 KiB per
+output, against 9,891 KiB for Mutative 1.3.0 and 1,797 KiB for Immer.
+
+### Immer with `enableArrayMethods`
+
+The plugin datasets rerun the array-related scenarios with Immer's array-method
+plugin enabled, measuring only the candidate and Immer (`--library both
+--immer-array-methods`): 47 scenarios at 100 rows and 12 at 1,000 and 10,000
+rows, in both freeze and patch modes. All 560 combinations pass the correctness
+checks. These scenarios only read in their callbacks, so the plugin's documented
+behavior, raw objects handed to callbacks and returned from removals, does not
+change their results; [`test/immer-array-methods.md`](../../test/immer-array-methods.md)
+records the failures it causes when they write. The
+[freeze-off, patches-on section](#why-immers-array-method-plugin-is-not-the-main-comparator)
+explains why the main comparison leaves the plugin off.
+
+| Comparator | Faster / within 5% / slower | Geometric mean Immer/candidate |
+| --- | ---: | ---: |
+| Immer 11.1.18 with `enableArrayMethods`, all plugin cells | 229 / 5 / 46 of 280 | 1.63 |
+| Array-method scenarios only | 158 / 1 / 13 of 172 | 2.27 |
+
+| Scenario | Rows | Freeze | Patches | Candidate | Immer + plugin | Immer/candidate |
+| --- | ---: | --- | --- | ---: | ---: | ---: |
+| array-shift-nested | 10,000 | off | off | 7.40 | 421 | 56.93 |
+| array-shift-nested | 10,000 | off | on | 1,219 | 1,471 | 1.21 |
+| array-shift-nested | 10,000 | on | off | 236 | 1,140 | 4.84 |
+| array-reverse-nested | 10,000 | off | off | 14.3 | 431 | 30.17 |
+| array-reverse-nested | 10,000 | off | on | 1,225 | 1,487 | 1.21 |
+| array-splice-insert-nested | 10,000 | off | off | 21.5 | 436 | 20.28 |
+| array-reverse-primitive | 10,000 | off | off | 14.3 | 388 | 27.13 |
+| array-shift-nested | 1,000 | off | on | 123 | 130 | 1.06 |
+| array-shift-nested | 100 | off | off | 0.81 | 2.77 | 3.42 |
+| array-push-primitive | 100 | off | off | 1.16 | 0.86 | 0.74 |
+| array-sort-nested | 100 | off | off | 91.9 | 12.7 | 0.14 |
+| read-missing | 10,000 | off | off | 1,832 | 91.3 | 0.05 |
+
+Immer with the plugin is faster in 46 cells. Most are scenarios where the plugin
+hands raw base elements to a callback or comparator, which Mutative never does:
+`find` in `read-missing` (about 20 times), `findIndex` in `remove-high` and
+`remove-high-reuse`, `filter` in `filter` and `return-filter`, and sorts of
+objects in `sortById-reverse`, `array-sort-shallow` and `array-sort-nested`.
+The others are `push` and `pop` on 100 rows with freeze and patches off, which
+Mutative leaves on the proxy path: 1.2–1.6 µs against 0.8–1.3 µs. Every
+`shift`, `unshift`, `splice` and `reverse` cell is faster than Immer with the
+plugin; at 10,000 rows by 20–57 times with freeze and patches off, 5–9 times
+with freeze on, and 1.2–2.1 times with patches on.
+
+### Paired performance budget
+
+The local budget gate compared the current build with itself at 1,000 rows,
+since this batch changes no Mutative source file. All 48 decisions passed: five latency
+pairs and three memory pairs per cell, both freeze and patch modes. Paired
+candidate/base median ratios span 0.995–1.010 for latency, 0.993–1.019 for
+sampled allocation, and 1.000 for retained heap.
+
+## Tradeoffs and limits
+
+- Returned values: the candidate searches every object of a returned value for
+  drafts, frozen or not, while Immer skips frozen values. `return-replace`
+  with pre-frozen payloads took 2.9 ms against 0.9 µs at 10,000 rows. Wrapping
+  the value in `rawReturn()` skips the search (0.30 µs).
+- Set drafts build a value map of the whole Set on access, copy the Set on the
+  first change, and rebuild it when finalizing: `set-add` took about 100 ns per
+  element at 10,000 elements, against 7 ns for a hand-written copy. Immer took
+  1.5 times as long. Copying the Map dominates `map-update` at 10,000 entries in
+  every library, about 550 µs.
+- With auto-freeze, Immer updated a class instance with 1,000 fields faster:
+  241 µs against 419 µs. Without freezing the candidate is faster, 102 µs
+  against 216 µs, so the difference lies in freezing the candidate's copy, which
+  it makes property by property with descriptors where Immer 11 uses
+  `Object.assign`.
+- Applying patches that replace nested values was 5–7% slower than Immer;
+  structural patches are faster, as `apply-array-ops` shows (15 times).
+- Wide-object timings depend on V8 state that earlier code leaves behind, by up
+  to about 70 times. The isolated control removes the influence of other
+  libraries, not that of a real application's code.
+- Freeze-on inputs are already frozen, so freezing cold external data is
+  excluded. Allocation is sampled, and small retained deltas are noisy. All
+  measurements come from one machine and Node.js; browser engines may differ.
+- Bundle size: a consumer of `create`, `apply`, `current` and `original`
+  bundles to 8.7 kB with Brotli (8,733 bytes), against 3.4 kB for Immer's core
+  and 6.0 kB with its patch, Map and Set, and array-method plugins, with esbuild
+  0.24.0 as in the README. `size-limit` measures the production CJS artifact at
+  6.64 kB against its 6.7 kB cap, and the ESM consumer at 5.45 kB against 6.5 kB.
+
+## Native array method contract
 
 The fast paths are made for data arrays. On them, values, own-property
 presence and patch replay match plain JS on a copy, and drafts, strict mode
@@ -151,233 +451,87 @@ and unchanged calls behave as on the proxy path:
   reference for every supported input; the proxy path itself is not, because it
   turns `delete` into an `undefined` assignment.
 
-Behavior changes against the previously pushed PR head `3125fe7`: searches give
-the proxy path's results, as on `main`, so neither a draft's original object nor
-an unread object of the base state is found; strict mode fails on non-draftable
-elements as on `main`; arrays holding `undefined` take the native path; arguments that can run user code, an own `constructor` or
-`Symbol.isConcatSpreadable`, and calls on foreign receivers take the proxy
-path; and a moved shared element emits patches only for its current index.
-The intermediate local commits `c598b41`–`a1e3235` also routed arrays with
-index accessors to the proxy path through a property-descriptor scan; the
-contract replaces that scan and keeps their other fixes.
-
-## Scope and results
-
-Apple M1 Max, 64 GiB RAM, darwin/arm64 (kernel 25.6.0), Node 24.16.0,
-V8 13.6.233.17-node.49. Jobs ran sequentially with normal desktop activity.
-The suite covers 67 scenarios at 100 rows and nine scaling scenarios at 1,000
-and 10,000 rows, each with both freeze and patch modes: 3,060 timing trials in
-9 processes and 504 isolated memory workers. A separate six-process control
-checks wide-object insertion order effects.
-
-Each timing cell is one scenario, size, and mode. The comparison uses medians of
-three independent-process means; a candidate time below 95% of the comparator
-is faster, above 105% is slower, and otherwise is within the 5% band.
-
-| Comparator | Faster / within 5% / slower, out of 340 cells | Geometric mean comparator/candidate |
-| --- | ---: | ---: |
-| Pinned Immer 11.1.18, plugin off | 339 / 1 / 0 | 3.77 |
-| Pinned npm Mutative 1.3.0 | 335 / 4 / 1 | 5.48 |
-| Previous PR head `6193657` (2026-10-02 archive) | 5 / 323 / 12 | 1.00 |
-| Archived 2026-10-01 candidate (PR #174) | 140 / 191 / 9 | 2.24 |
-
-Over the 216 array-related cells (array method scenarios, `add`, `remove`,
-`filter`, `concat`, `mapNested`, `update-multiple`, `sortById-reverse`,
-`reverse-array`, and the `remove*-reuse` sequences) the geometric mean of Immer
-time over candidate time is 6.21; over the other 124 cells it is 1.58.
-Against the previous PR head the array cells measure 1.00 and the other
-cells 1.00, so the contract keeps the earlier gains.
-
-Selected times below are microseconds per complete scenario, with freeze off.
-Scenario counts are not an application-weighted performance score.
-
-| Scenario | Rows | Patches | Candidate | Previous PR head | Pinned v1 | Immer |
-| --- | ---: | --- | ---: | ---: | ---: | ---: |
-| small-object-update | — | off | 0.654 | 0.640 | 1.126 | 0.875 |
-| read-index | 100 | off | 49.593 | 49.680 | 77.402 | 95.831 |
-| rtkq-sequence | — | off | 1,051.604 | 1,048.312 | 1,797.029 | 1,198.278 |
-| sortById-reverse | 100 | off | 55.278 | 54.639 | 101.485 | 73.283 |
-| array-shift-nested | 100 | off | 0.831 | 0.802 | 86.601 | 71.493 |
-| array-splice-insert-nested | 1,000 | off | 5.142 | 5.196 | 420.345 | 365.222 |
-| array-shift-nested | 10,000 | off | 7.441 | 7.494 | 8,947.050 | 8,117.582 |
-| array-unshift-nested | 10,000 | off | 16.183 | 16.074 | 8,998.492 | 8,203.816 |
-| array-splice-insert-nested | 10,000 | off | 21.424 | 21.653 | 4,343.785 | 3,967.784 |
-| array-reverse-nested | 10,000 | off | 14.130 | 14.243 | 9,382.749 | 8,333.950 |
-| array-reverse-nested | 10,000 | on | 1,220.700 | 1,220.189 | 282,397.320 | 10,005.183 |
-| array-reverse-primitive | 10,000 | off | 14.109 | 14.195 | 4,245.941 | 4,346.116 |
-| read-index | 10,000 | off | 5,244.479 | 5,273.611 | 7,982.587 | 9,911.318 |
-
-Sampled allocation is lower than pinned v1 in 55 of 56 memory cells. The exception is `noop-empty` with freeze and patches off (3.7 vs 3.6 KiB), where both libraries allocate about 3.5–4 KiB per iteration. For nested reverse at 10,000 rows with freeze off, allocation is about 88.1 KiB/iteration without patches (11,113.5 KiB for pinned v1, 12,806.8 KiB for Immer) and about 3,034.1 KiB with patches (268,277.3 KiB for v1, 14,833.1 KiB for Immer); retained output with patches is about 1,797.4 versus 9,890.9 KiB for v1.
-
-### Paired performance budget
-
-The local budget gate compared this source with `main` (`1004d65`) at 1,000 rows on the same machine before the timing datasets. All 48 decisions passed: five latency pairs and three memory pairs per cell, both freeze and patch modes. Paired candidate/base median ratios span 0.003–1.017 for latency, 0.017–1.007 for sampled allocation, and 0.998–1.000 for retained heap.
-
-## Immer with `enableArrayMethods`
-
-The plugin datasets rerun the array scenarios with Immer's array-method plugin
-enabled and only the candidate and Immer measured (`--library both
---immer-array-methods`): the array-related scenarios at 100 rows, and the nine
-scaling scenarios at 1,000 and 10,000 rows, both freeze and patch modes. The
-plugin hands raw objects to callbacks and returns them from removals, see
-[`test/immer-array-methods.md`](../../test/immer-array-methods.md). These
-scenarios only read in their callbacks, so their results are unchanged: all
-268 Immer combinations pass the harness correctness checks with the plugin
-enabled.
-
-| Comparator | Faster / within 5% / slower | Geometric mean Immer/candidate |
-| --- | ---: | ---: |
-| Immer 11.1.18 with `enableArrayMethods`, all plugin cells | 211 / 1 / 36 | 1.68 |
-| Array-method scenarios only | 163 / 0 / 17 | 2.15 |
-
-| Scenario | Rows | Freeze | Patches | Candidate | Immer + plugin | Immer/candidate |
-| --- | ---: | --- | --- | ---: | ---: | ---: |
-| array-shift-nested | 10,000 | off | off | 7.442 | 426.146 | 57.26 |
-| array-shift-nested | 10,000 | off | on | 1,208.605 | 1,487.794 | 1.23 |
-| array-shift-nested | 10,000 | on | off | 234.197 | 1,197.946 | 5.12 |
-| array-reverse-nested | 10,000 | off | off | 14.117 | 423.308 | 29.98 |
-| array-reverse-nested | 10,000 | off | on | 1,213.295 | 1,485.004 | 1.22 |
-| array-splice-insert-nested | 10,000 | off | off | 21.245 | 431.772 | 20.32 |
-| array-reverse-primitive | 10,000 | off | off | 14.110 | 389.640 | 27.61 |
-| array-shift-nested | 1,000 | off | on | 121.922 | 129.503 | 1.06 |
-| array-shift-nested | 100 | off | off | 0.814 | 2.675 | 3.28 |
-| array-push-primitive | 100 | off | off | 1.154 | 0.854 | 0.74 |
-| array-sort-nested | 100 | off | off | 91.684 | 12.626 | 0.14 |
-| read-missing | 10,000 | off | off | 1,871.847 | 90.560 | 0.05 |
-
-Immer with the plugin is faster in 36 cells, all at 100 rows except the
-`find`-based `read-missing` cells. Most are scenarios where the plugin hands raw
-base elements to a callback or comparator, which Mutative never does: `find` in
-`read-missing` (about 20x), `findIndex` in `remove-high` and
-`remove-high-reuse`, `filter`, and sorts of objects in `sortById-reverse`,
-`array-sort-shallow` and `array-sort-nested` (2–12x). Immer documents that
-the plugin passes raw values to these callbacks, so they read the base without
-creating drafts, and an edit made in a callback does not go through a draft.
-[`test/immer-array-methods.md`](../../test/immer-array-methods.md) records that
-documented behavior with read-only callbacks. The failures it reproduces come
-from raw base objects that the plugin's removal methods return or that
-reordering exposes, whose edits change the base state. The remaining cells are
-`push` and `pop` with freeze and patches off (`add`, `array-push-*`,
-`array-pop-*`), which Mutative leaves on the proxy path: 1.15–1.59 µs against
-0.78–1.34 µs. With
-patches or freezing enabled Mutative is faster on these as well. Every
-`shift`, `unshift`, `splice` and `reverse` cell is faster than Immer with the
-plugin; at 10,000 rows by 20–57x with freeze and patches off, about 5x with
-freeze on, and 1.2–2.1x with patches on.
-
-## Tradeoffs and limits
-
-- Bundle size at `3679e30`: the production CJS artifact is 26,164 bytes raw
-  and 8,041 bytes Brotli. That is 91 Brotli bytes above the accepted baseline
-  before this round (`415b91c`) and 6,650 raw, 2,128 gzip and 1,948 Brotli
-  bytes above `main`. `size-limit` measures 6.64 kB against a 6.7 kB cap,
-  which is 5 kB on `main`; the ESM consumer measures 5.45 kB against 6.5 kB.
-  The measured `363b3da` was 242 Brotli bytes smaller. The README compares the
-  result with Immer plus the equivalent plugins.
-- With patches enabled the gain narrows because one patch per moved index is
-  emitted either way; without patches, moving operations on 10,000-row arrays
-  take microseconds.
-- Methods with callbacks (`forEach`, `map`, `filter`, `find`, `some`, `every`,
-  `reduce`), `at`, `slice`, `fill`, `copyWithin`, and `sort` on arrays with
-  objects keep the proxy path; their times are unchanged.
-- Sparse arrays keep the proxy path, so the result and the replay of its
-  patches agree on every index.
-- Argument conversion, comparators and separators run in the native order
-  relative to the length and element reads and exactly once; removed elements
-  are always exposed as drafts, and in strict mode reading a non-draftable
-  element fails as it does on the proxy path.
-- Every timing cell but one is faster than Immer with the plugin off: `concat`
-  with freeze on and patches off is within 5% (20.0 µs against 20.2 µs).
-- One cell is slower than pinned v1: the same `concat` cell, 20.0 µs against
-  17.8 µs. The process ranges overlap (candidate 18.0–21.8 µs, v1
-  16.8–18.2 µs), the candidate matches the previous head (19.7 µs), and
-  `concat` is not one of the optimized methods.
-- Against the previous head's archive, 12 cells are more than 5% slower. Nine
-  are freeze-on cells whose code path did not change, the cross-session drift
-  seen in earlier rounds, and `update-largeObject1` with freeze off is
-  process-order sensitive (below). The other two are 100-row primitive `sort`
-  and `reverse` with freeze and patches off, by 0.7 µs and 0.04 µs. A
-  same-session A/B of both sources inside the harness puts the contract 2–3%
-  behind the previous head on 100-row primitive operations (0.01–0.12 µs), the
-  cost of the added eligibility checks, and level with it at 10,000 rows.
-- Wide-object insertion remains process-order sensitive: 53.8–56.6 µs when the
-  candidate runs first and 98.7–102.7 µs after Immer. Both orders beat Immer
-  (199.2–203.4 µs).
-- Freeze-on inputs are already frozen. Allocation is sampled, and small retained
-  deltas are noisy. Cold-data freezing, patch application/serialization, Map/Set,
-  deeper paths, and browser engines are outside this matrix.
-
 ## Source and artifact identity
 
-The measured source is that of [`363b3da`](https://github.com/unadlib/mutative/commit/363b3da1df5d8e729f471a909c607dd46ed1a10e);
-the summary commit that follows changes documentation only. The local gate's
-base checkout is [`1004d65`](https://github.com/unadlib/mutative/commit/1004d65325adb68cf09c88311e368fbdde9a7283).
+The measured source is that of
+[`e6b6563`](https://github.com/unadlib/mutative/commit/e6b6563b821305b8ee0d63c42a62cea752cc04f0).
+Timing used the harness at `a470abc`; memory used `4ea4fc0`, whose memory
+worker is the same. Both builds report the same source and production hashes.
 
 SHA-256 identities (`source` uses the sorted path/content algorithm in
 [`build.mjs`](../build.mjs); `production` is `dist/mutative.cjs.production.min.js`):
 
 ```text
-Candidate source:     f3b52081dac0de59d02d1716ea24a6c481dfebc796b2608e08c558e707758c8b
-Candidate production: 11150e6b85a2580b78994c1b3f8e33904db2710645a2541134dcc7548fa3260d
-Gate base production: ed3c321d17f8c629116bc955613c635f54c113267116bd63be1e0aec2714b270
+Candidate source:     604a1a8f39171e525be99e760b9b432e873cca5da574284a662e47147b75b4da
+Candidate production: a9ca4c1d4cf094c0966ce35eb9550c69e102b18d7119b38fbab32f677ef91133
 Pinned v1 production: 15ad9df11178c64f80e66797ffe784a4eeedfb03759ca59ef61a64f4142fde41
 Immer production:     30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9
 ```
 
 ## Reproduce
 
-Use Node 24.16.0 and the frozen lockfile at `363b3da` for the measured candidate.
-Build a separate checkout of `1004d65` with its frozen lockfile for the gate base.
-Run the following sequentially from the candidate checkout; timings will vary.
-The [benchmark guide](../README.md) explains workload semantics and options.
+Use Node 24.16.0 and the frozen lockfile. Run the following sequentially from
+the repository root; timings will vary. The [benchmark guide](../README.md)
+explains workload semantics and options.
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm build
 pnpm benchmark:immer:build
-node perf-testing/ci.mjs --base-dir /absolute/path/to/built-base-checkout
-node perf-testing/run-benchmarks.mjs --runs 3 --patches both --output perf-testing/results/expanded-default.json
-node perf-testing/run-benchmarks.mjs --runs 6 --freeze off --filter '^update-largeObject1$' --output perf-testing/results/object-order.json
-node perf-testing/run-memory.mjs --runs 3 --patches both --memory-iterations 32 --filter '^(small-object-update|noop-empty|read-index|mutation-density-100pct|array-reverse-primitive|array-reverse-nested)$' --output perf-testing/results/expanded-memory-default.json
+node perf-testing/ci.mjs --self-control
 
+node perf-testing/run-benchmarks.mjs --runs 3 --patches both --output perf-testing/results/default.json
+node perf-testing/run-benchmarks.mjs --runs 6 --freeze off --filter '^update-largeObject1$' --output perf-testing/results/object-order.json
+
+SCALE='^(read-index|read-forEach|read-missing|mutation-density-100pct|array-shift-nested|array-unshift-nested|array-splice-insert-nested|array-reverse-nested|array-reverse-primitive|map-update|map-read|set-add|set-update|object-update|object-delete|class-update|class-wide-update|apply-update-10pct|apply-reverse|return-replace|return-replace-raw|return-filter|push-and-insert)$'
+WIDE='^(update-largeObject1|update-largeObject2|update-largeObject1-reuse|update-largeObject2-reuse|push-and-insert|push-and-insert-reuse|object-update|object-update-10pct|object-delete|class-wide-update|rtkq-sequence)$'
+WIDE_SCALE='^(push-and-insert|object-update|object-delete|class-wide-update)$'
+MEMORY='^(small-object-update|noop-empty|read-index|mutation-density-100pct|array-reverse-primitive|array-reverse-nested|map-update|set-add|object-update|class-update|apply-update-10pct|return-filter|push-and-insert)$'
+MEMORY_SCALE='^(read-index|mutation-density-100pct|array-reverse-primitive|array-reverse-nested|map-update|set-add|object-update|push-and-insert)$'
+PLUGIN='^(array-|sortById-reverse|reverse-array|add$|remove$|remove-high$|update-multiple|concat|filter|mapNested|remove-reuse|remove-high-reuse|apply-array-ops|apply-reverse|return-filter|push-and-insert$)'
+PLUGIN_SCALE='^(read-index|read-forEach|read-missing|mutation-density-100pct|array-shift-nested|array-unshift-nested|array-splice-insert-nested|array-reverse-nested|array-reverse-primitive|apply-reverse|return-filter|push-and-insert)$'
+
+node perf-testing/run-benchmarks.mjs --isolate --runs 3 --patches both --filter "$WIDE" --output perf-testing/results/isolated-default.json
+node perf-testing/run-memory.mjs --runs 3 --patches both --memory-iterations 32 --filter "$MEMORY" --output perf-testing/results/memory-default.json
+node perf-testing/run-benchmarks.mjs --runs 3 --patches both --library both --immer-array-methods --filter "$PLUGIN" --output perf-testing/results/plugin-default.json
 for rows in 1000 10000; do
   iterations=16
   if [ "$rows" = 10000 ]; then iterations=8; fi
-  node perf-testing/run-benchmarks.mjs --runs 3 --patches both --array-size "$rows" --filter '^(read-index|read-forEach|read-missing|mutation-density-100pct|array-shift-nested|array-unshift-nested|array-splice-insert-nested|array-reverse-nested|array-reverse-primitive)$' --output "perf-testing/results/expanded-array-$rows.json"
-  node perf-testing/run-memory.mjs --runs 3 --patches both --array-size "$rows" --memory-iterations "$iterations" --filter '^(read-index|mutation-density-100pct|array-reverse-primitive|array-reverse-nested)$' --output "perf-testing/results/expanded-memory-array-$rows.json"
-  node perf-testing/run-benchmarks.mjs --runs 3 --patches both --library both --immer-array-methods --array-size "$rows" --filter '^(read-index|read-forEach|read-missing|mutation-density-100pct|array-shift-nested|array-unshift-nested|array-splice-insert-nested|array-reverse-nested|array-reverse-primitive)$' --output "perf-testing/results/plugin-array-$rows.json"
+  node perf-testing/run-benchmarks.mjs --runs 3 --patches both --array-size "$rows" --filter "$SCALE" --output "perf-testing/results/scale-$rows.json"
+  node perf-testing/run-benchmarks.mjs --isolate --runs 3 --patches both --array-size "$rows" --filter "$WIDE_SCALE" --output "perf-testing/results/isolated-$rows.json"
+  node perf-testing/run-memory.mjs --runs 3 --patches both --array-size "$rows" --memory-iterations "$iterations" --filter "$MEMORY_SCALE" --output "perf-testing/results/memory-$rows.json"
+  node perf-testing/run-benchmarks.mjs --runs 3 --patches both --library both --immer-array-methods --array-size "$rows" --filter "$PLUGIN_SCALE" --output "perf-testing/results/plugin-$rows.json"
 done
-node perf-testing/run-benchmarks.mjs --runs 3 --patches both --library both --immer-array-methods --filter '^(array-|sortById-reverse|reverse-array|add$|remove$|remove-high$|update-multiple|concat|filter|mapNested|remove-reuse|remove-high-reuse)' --output perf-testing/results/plugin-default.json
 ```
 
 ## History
 
-- 2026-10-02, source `6193657` (previous PR head, 2026-10-02 archive, not
-  retained): 340 / 0 / 0 cells faster than Immer with the plugin off (geometric
-  mean 3.78; 6.24 over the array cells, 1.58 elsewhere), 335 / 5 / 0 against
-  pinned 1.3.0 (5.50), 140 / 199 / 1 against the #174 archive (2.25),
-  allocation below 1.3.0 in 54 of 56 memory cells, gate 48 of 48. That source
-  excluded arrays holding `undefined` from the native path and matched a
-  draft's original in searches.
-- 2026-10-02, local commits `c598b41`–`a1e3235` (never pushed): eligibility
-  checks through property descriptors, which cost about 46 ns per element on
-  the first moving operation and per visited search index. Their 1,000-row
-  paired budget against the PR base measured `array-shift-nested` at 47.5 µs
-  (base 470.7 µs) and `array-reverse-nested` at 48.1 µs (base 478.3 µs);
-  10,000-row micro-benchmarks put `shift`, `unshift`, `splice` and `reverse`
-  at 460–490 µs, slower than Immer with its array-method plugin (386–414 µs).
-  The contract above replaced this approach; the correctness fixes of those
-  commits remain.
-- 2026-10-03, local commits `689c181`–`1ba1615` (superseded before the
-  push): the first archive of the contract measured 10,000-row moves at
-  57–77 µs instead of 7–22 µs, and 100-row array operations about 0.9 µs
-  slower than the previous PR head. An A/B of candidate builds inside the
-  harness attributed this to two costs. The per-element `in` scan took 4–5 ns
-  per element once many array shapes had passed through it, against 0.5 ns in
-  an isolated loop. A WeakSet entry added for every array draft whose method
-  was read cost about 0.17 µs per producer call. `473c149` runs the `in` scan
-  only for arrays in which `includes` finds `undefined`, and `6ce062b`
-  registers an array only when a live producer switches between arrays. An
-  intermediate commit that moved the density check into the method wrapper
-  (`8c42ce2`) rested on a garbage-collection-dominated loop and is reverted by
-  `1cb86c0`.
+Earlier versions of this summary, in Git history, describe each round in
+detail. Cell counts compare the candidate with the named comparator: faster,
+within 5%, and slower.
+
+- 2026-10-03, PR #75 at `363b3da`, 67 scenarios: 339 / 1 / 0 of 340 cells
+  against Immer with the plugin off (geometric mean 3.77; 6.21 over the array
+  cells, 1.58 elsewhere), 335 / 4 / 1 against pinned 1.3.0 (5.48), 140 / 191 / 9
+  against the PR #174 archive (2.24). With Immer's `enableArrayMethods`,
+  211 / 1 / 36 cells (1.68). Allocation below 1.3.0 in 55 of 56 memory cells;
+  gate 48 of 48. Three review rounds followed before the merge: search results
+  that match the proxy path (`f85df41`), strict-mode calls on the proxy path
+  and no element inspection the proxy path does not make (`06d9d6e`–`6e74707`),
+  and release of the receiver cache when a producer ends (`8fe0d9a`). Harness
+  A/B comparisons put each round within 2% of the previous source, except a
+  search that meets an unread base object, which now checks the array for
+  holes (about 9 µs at 10,000 rows). Between `363b3da` and the merge, the size
+  baseline of the production CJS artifact grew from 7,799 to 8,041 Brotli
+  bytes, and its `size-limit` cap rose from 6.5 kB to 6.7 kB.
+- 2026-10-02, PR #75 at `6193657`: 340 / 0 / 0 cells against Immer (3.78),
+  335 / 5 / 0 against pinned 1.3.0 (5.50). That source excluded arrays holding
+  `undefined` from the native path and matched a draft's original object in
+  searches; the contract above replaced both.
+- 2026-10-02 and 2026-10-03, local commits `c598b41`–`a1e3235` and
+  `689c181`–`1ba1615` (never pushed or superseded): eligibility checks through
+  property descriptors made 10,000-row moves slower than Immer with its
+  plugin, and a per-element `in` scan and a WeakSet entry per array added
+  0.2–0.9 µs to 100-row operations. `473c149` and `6ce062b` removed both costs.
+- 2026-10-01, PR #174 (draft fast paths) and 2026-09-30 baseline: see the
+  [archive index](./README.md).

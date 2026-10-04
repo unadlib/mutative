@@ -3,18 +3,50 @@ import os from 'node:os';
 import { bench, do_not_optimize, run } from 'mitata';
 import { readOptions } from './options.mjs';
 import { compactStats } from './report.mjs';
-import { buildInfo, createRuntime } from './runtime.mjs';
-import { createScenarios, prepareScenario } from './scenarios.mjs';
+import { buildInfo, createRuntime, isImmerMapSetEnabled } from './runtime.mjs';
+import {
+  createScenarios,
+  prepareScenario,
+  supportsMode,
+} from './scenarios.mjs';
 import { validateScenarios } from './validate.mjs';
 
 const options = process.env.MUTATIVE_PERF_OPTIONS
   ? JSON.parse(process.env.MUTATIVE_PERF_OPTIONS)
   : readOptions();
+
+// The first timed run of a scenario in a process can meet V8 state that later
+// runs do not: 100-key records took 12-15 µs in every library there, 3-4 µs
+// afterwards. Each benchmark therefore first runs its workload on a throwaway
+// fixture for this long, outside timing, then measures a fresh one. The
+// throwaway fixture is unreachable once this returns.
+const PRIMING_MS = 30;
+
+function prime(name, library, autoFreeze, enablePatches) {
+  const primed = prepareScenario(options.config, name, autoFreeze);
+  const { reducer } = createRuntime(
+    library,
+    autoFreeze,
+    enablePatches,
+    undefined,
+    options.immerArrayMethods === true,
+    primed
+  );
+  const start = performance.now();
+  do
+    do_not_optimize(
+      enablePatches
+        ? primed.executeWithPatches(reducer, primed.base, do_not_optimize)
+        : primed.execute(reducer, primed.base)
+    );
+  while (performance.now() - start < PRIMING_MS);
+}
+
 const scenarios = createScenarios(options.config, options.filter);
 if (options.list) {
   for (const scenario of scenarios)
     console.log(
-      `${scenario.name}: ${scenario.operations} reducer calls/iteration`
+      `${scenario.name}: ${scenario.operations} ${scenario.kind === 'apply' ? 'patch applications' : 'reducer calls'}/iteration`
     );
 } else {
   const { checks, patchCounts } = validateScenarios(options, scenarios);
@@ -37,7 +69,9 @@ if (options.list) {
     for (const scenario of scenarios) {
       for (const autoFreeze of freezes) {
         for (const enablePatches of patches) {
-          for (const library of libraries) {
+          for (const library of libraries.filter((candidate) =>
+            supportsMode(scenario, candidate, autoFreeze, enablePatches)
+          )) {
             const name = `${scenario.name}: ${library} (freeze: ${autoFreeze}, patches: ${enablePatches})`;
             const label = `${scenario.name}/${library}/freeze=${autoFreeze}/patches=${enablePatches}`;
             definitions.set(name, {
@@ -49,6 +83,7 @@ if (options.list) {
               ...(enablePatches && { patchCounts: patchCounts.get(label) }),
             });
             bench(name, function* () {
+              prime(scenario.name, library, autoFreeze, enablePatches);
               const prepared = prepareScenario(
                 options.config,
                 scenario.name,
@@ -59,7 +94,8 @@ if (options.list) {
                 autoFreeze,
                 enablePatches,
                 undefined,
-                options.immerArrayMethods === true
+                options.immerArrayMethods === true,
+                prepared
               );
               const execute = enablePatches
                 ? () =>
@@ -127,18 +163,27 @@ if (options.list) {
       unit: 'nanoseconds per full scenario iteration',
       methodology: {
         arrayMethodsEnabled: options.immerArrayMethods === true,
+        immerMapSetEnabled: isImmerMapSetEnabled(),
         patchesEnabled:
           options.patches.length === 1 ? options.patches[0] : null,
         patchModes: options.patches,
         patchPaths: 'arrays',
         mutativeArrayLengthAssignment: false,
-        patchApplicationTimed: false,
+        // Only apply-* scenarios time patch application, with patches off.
+        patchApplicationTimed: scenarios.some(
+          (scenario) => scenario.kind === 'apply'
+        ),
+        ...(options.libraries.includes('vanilla') && {
+          vanilla:
+            'hand-written reference reducer; freeze and patches off only',
+        }),
         patchSerializationTimed: false,
         patchOutputEscape:
           'each producer tuple escapes; no accumulation across calls',
         freezeOnInput: 'deeply pre-frozen base and payloads',
         freezeOffInput: 'unfrozen base and payloads',
         fixtureAndActionSetupTimed: false,
+        priming: `${PRIMING_MS} ms of the workload on a throwaway fixture before each benchmark, outside timing`,
         stateResetPerIteration: true,
         gc: 'Mitata once after warmup; natural GC included during timing',
         heapSampling: false,

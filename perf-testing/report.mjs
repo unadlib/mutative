@@ -76,24 +76,43 @@ export function summarize(reports) {
             libraries.mutative.medianMeanNs
           : null,
       }),
+      ...(libraries.vanilla && {
+        vanillaOverCandidate: libraries.mutative
+          ? libraries.vanilla.medianMeanNs / libraries.mutative.medianMeanNs
+          : null,
+      }),
     };
   });
 }
 
 const pluginNote = (report) =>
-  report.runs[0].methodology?.arrayMethodsEnabled
-    ? "Immer's array-method plugin is enabled; Mutative's native array methods need no option."
-    : 'Array-method plugins are disabled.';
+  `${
+    report.runs[0].methodology?.arrayMethodsEnabled
+      ? "Immer's array-method plugin is enabled; Mutative's native array methods need no option."
+      : 'Array-method plugins are disabled.'
+  }${
+    report.runs.some((run) => run.methodology?.immerMapSetEnabled)
+      ? " Immer's MapSet plugin is enabled only in the processes that run Map and Set scenarios."
+      : ''
+  }`;
+
+// Map and Set scenarios run in processes of their own within each run.
+const runCount = (report) =>
+  new Set(report.runs.map((run) => run.runIndex ?? 0)).size;
 
 export function formatReport(report) {
-  if (report.summary.some((entry) => entry.libraries['mutative-v1'])) {
+  if (
+    report.summary.some(
+      (entry) => entry.libraries['mutative-v1'] || entry.libraries.vanilla
+    )
+  ) {
     return formatVersionedReport(report);
   }
   const first = report.runs[0];
   const lines = [
     '# Mutative vs Immer workload benchmarks',
     '',
-    `Recorded: ${report.recordedAt}. ${report.runs.length} independent Node processes; median of each process's mean time.`,
+    `Recorded: ${report.recordedAt}. ${runCount(report)} runs in ${report.runs.length} independent Node processes; median of each process's mean time.`,
     '',
     `Local Mutative **${first.build.versions.mutative}** at \`${first.build.gitRevision}\`; installed Immer **${first.build.versions.immer}**; Mitata **${first.build.versions.mitata}**.`,
     '',
@@ -103,7 +122,7 @@ export function formatReport(report) {
     '',
     `Both libraries use production artifacts. ${pluginNote(report)} Freeze off uses unfrozen inputs; freeze on uses pre-frozen inputs and payloads. Construction, configuration, and correctness checks are outside timing. Each iteration resets to its immutable base and evolves it only within that scenario.`,
     '',
-    'Enabled patch trials generate forward and inverse operations at every reducer call. Both libraries use array paths and index-based array removals (Mutative: arrayLengthAssignment false). Every producer tuple escapes; patch application, serialization, and accumulation are excluded from timing. Operation counts sum across all calls in the scenario.',
+    'Enabled patch trials generate forward and inverse operations at every reducer call. Both libraries use array paths and index-based array removals (Mutative: arrayLengthAssignment false). Every producer tuple escapes; patch application, serialization, and accumulation are excluded from timing, except that the apply-* scenarios time patch application with patches off. Operation counts sum across all calls in the scenario.',
     '',
     'Times are **microseconds per full scenario**, including natural GC. Ratio = Immer time / Mutative time; above 1 favors Mutative, below 1 favors Immer. These are scenario measurements, not a universal speedup. P99 describes Mitata samples, which can be batches of operations; it is not per-request tail latency.',
     '',
@@ -187,24 +206,24 @@ function formatVersionedReport(report) {
   const lines = [
     '# Candidate Mutative vs pinned v1 and Immer',
     '',
-    `Recorded: ${report.recordedAt}; ${report.runs.length} independent processes. Times are median process means in µs per complete scenario.`,
+    `Recorded: ${report.recordedAt}; ${runCount(report)} runs in ${report.runs.length} independent processes. Times are median process means in µs per complete scenario.`,
     '',
     `Candidate Mutative ${first.build.versions.mutative} at \`${first.build.candidate?.gitRevision ?? first.build.gitRevision}\`; pinned Mutative v1 ${first.build.versions['mutative-v1']}; pinned Immer ${first.build.versions.immer}. The candidate is only v2 when its actual package version is 2.x.`,
     '',
     `Environment: ${first.environment.cpu}; Node ${first.environment.node}, V8 ${first.environment.v8}, ${first.environment.platform}/${first.environment.arch}.`,
     '',
-    `Production artifacts and their hashes are recorded in JSON. ${pluginNote(report)} Setup and validation are excluded. Freeze-on inputs are pre-frozen; patch timing includes forward/inverse generation, excluding replay and serialization.`,
+    `Production artifacts and their hashes are recorded in JSON. ${pluginNote(report)} Setup and validation are excluded. Freeze-on inputs are pre-frozen; patch timing includes forward/inverse generation, excluding replay and serialization. The apply-* scenarios time patch application instead, with patches off.`,
     '',
-    'V1/C and I/C are time ratios to the candidate; values above 1 favor the candidate. Small differences do not establish a winner.',
+    'V1/C, I/C and Va/C are time ratios to the candidate; values above 1 favor the candidate. Vanilla is the hand-written reference reducer, which runs with freeze and patches off only. Small differences do not establish a winner.',
     '',
-    '| Scenario | Freeze | Patches | Calls | Candidate µs | V1 µs | Immer µs | V1/C | I/C |',
-    '| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+    '| Scenario | Freeze | Patches | Calls | Candidate µs | V1 µs | Immer µs | Vanilla µs | V1/C | I/C | Va/C |',
+    '| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
   const time = (library) =>
     library ? (library.medianMeanNs / 1000).toFixed(3) : '—';
   for (const row of report.summary)
     lines.push(
-      `| ${row.scenario} | ${row.autoFreeze ? 'on' : 'off'} | ${row.enablePatches ? 'on' : 'off'} | ${row.operations} | ${time(row.libraries.mutative)} | ${time(row.libraries['mutative-v1'])} | ${time(row.libraries.immer)} | ${row.v1OverCandidate?.toFixed(2) ?? '—'} | ${row.immerOverMutative?.toFixed(2) ?? '—'} |`
+      `| ${row.scenario} | ${row.autoFreeze ? 'on' : 'off'} | ${row.enablePatches ? 'on' : 'off'} | ${row.operations} | ${time(row.libraries.mutative)} | ${time(row.libraries['mutative-v1'])} | ${time(row.libraries.immer)} | ${time(row.libraries.vanilla)} | ${row.v1OverCandidate?.toFixed(2) ?? '—'} | ${row.immerOverMutative?.toFixed(2) ?? '—'} | ${row.vanillaOverCandidate?.toFixed(2) ?? '—'} |`
     );
   lines.push(
     '',

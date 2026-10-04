@@ -22,39 +22,14 @@ Mutative is a high-performance immutable update library, and Immer is a popular 
 
 Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
 
-The [Immer array methods audit](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md) reproduces patch ordering, base mutation, and draft finalization failures in Immer 11.1.18 when `enableArrayMethods()` is enabled. The [reproduction tests](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.test.ts) include plugin-disabled controls and the same recipes run against Mutative. This correctness audit is separate from the historical performance measurements below.
+The [Immer array methods audit](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md) reproduces patch ordering, base mutation, and draft finalization failures in Immer 11.1.18 when `enableArrayMethods()` is enabled. The [reproduction tests](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.test.ts) include plugin-disabled controls and the same recipes run against Mutative. This correctness audit is separate from the performance measurements below.
 
 ## Mutative vs Immer Performance
 
 > Mutative passed all of Immer's test cases.
 
-Measure(ops/sec) to update 50K arrays and 1K objects, bigger is better([view source](https://github.com/unadlib/mutative/blob/main/test/performance/benchmark.ts)). [Mutative v1.3.0 vs Immer v10.1.3]
+With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer 11.1.18 in 508 of 530 measured cases, 3.1x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 133 of 136 cases, 6.0x on geometric mean. Immer was faster when a producer returns a new state built from frozen data, when applying patches that replace nested values, and, with auto-freeze, when updating class instances with 1,000 fields.
 
-![Benchmark](img/benchmark.jpg)
+With patches on and auto-freeze off, Mutative was faster in 126 of 129 cases and never slower, and faster in every array case: 4.0x Immer and 13x Mutative 1.3.0 on geometric mean. The comparisons run Immer without its `enableArrayMethods()` plugin. In Immer 11.1.18 the plugin returns raw base objects from `shift`, `pop` and `splice`, so editing them changes the previous state, and its patches can fail to replay; the audit above reproduces these failures.
 
-```
-Naive handcrafted reducer - No Freeze x 4,777 ops/sec ±1.06% (94 runs sampled)
-Mutative - No Freeze x 6,783 ops/sec ±0.71% (96 runs sampled)
-Immer - No Freeze x 5.72 ops/sec ±0.39% (19 runs sampled)
-
-Mutative - Freeze x 1,069 ops/sec ±0.75% (97 runs sampled)
-Immer - Freeze x 392 ops/sec ±0.66% (92 runs sampled)
-
-Mutative - Patches and No Freeze x 1,006 ops/sec ±1.73% (95 runs sampled)
-Immer - Patches and No Freeze x 5.73 ops/sec ±0.16% (19 runs sampled)
-
-Mutative - Patches and Freeze x 548 ops/sec ±1.06% (94 runs sampled)
-Immer - Patches and Freeze x 287 ops/sec ±0.84% (93 runs sampled)
-
-The fastest method is Mutative - No Freeze
-```
-
-Run `pnpm benchmark` to measure performance.
-
-> OS: macOS 14.7, CPU: Apple M1 Max, Node.js: v22.11.0
-
-Immer relies on auto-freeze to be enabled, if auto-freeze is disabled, Immer will have a huge performance drop and Mutative will have a huge performance lead, especially with large data structures it will have a performance lead of more than 50x.
-
-So if you are using Immer, you will have to enable auto-freeze for performance. Mutative is disabled auto-freeze by default. With the default configuration of both, we can see the 17x performance gap between Mutative (`6,783 ops/sec`) and Immer (`392 ops/sec`).
-
-Overall, Mutative has a huge performance lead over Immer in [more performance testing scenarios](https://github.com/unadlib/mutative/tree/main/test/performance). Run `pnpm performance` to get all the performance results locally.
+See [Performance](/docs/getting-started/performance) for selected results, and the [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) for the complete results, the method, and their limits.

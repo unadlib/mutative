@@ -180,19 +180,16 @@ importers:
         version: 11.1.6(size-limit@11.1.6)
       '@size-limit/webpack':
         specifier: ^11.1.6
-        version: 11.1.6(size-limit@11.1.6)(uglify-js@3.19.3)
+        version: 11.1.6(esbuild@0.24.0)(size-limit@11.1.6)(uglify-js@3.19.3)
       '@size-limit/webpack-why':
         specifier: ^11.1.6
-        version: 11.1.6(size-limit@11.1.6)(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3))
+        version: 11.1.6(esbuild@0.24.0)(size-limit@11.1.6)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3))
       '@types/node':
         specifier: ^24.0.13
         version: 24.0.13
       '@vitest/coverage-v8':
         specifier: ^5.0.1
         version: 5.0.1(vitest@5.0.1)
-      benchmark:
-        specifier: ^2.1.4
-        version: 2.1.4
       commitizen:
         specifier: ^4.3.1
         version: 4.3.1
@@ -211,18 +208,9 @@ importers:
       immer:
         specifier: 11.1.18
         version: 11.1.18
-      immutable:
-        specifier: ^5.1.3
-        version: 5.1.3
-      json2csv:
-        specifier: ^5.0.7
-        version: 5.0.7
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
-      lodash.clonedeep:
-        specifier: ^4.5.0
-        version: 4.5.0
       mitata:
         specifier: 1.0.34
         version: 1.0.34
@@ -238,27 +226,18 @@ importers:
       publint:
         specifier: ^0.3.24
         version: 0.3.24
-      quickchart-js:
-        specifier: ^3.1.3
-        version: 3.1.3
       redux:
         specifier: ^5.0.1
         version: 5.0.1
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      seamless-immutable:
-        specifier: ^7.1.4
-        version: 7.1.4
       size-limit:
         specifier: ^11.1.6
         version: 11.1.6
       terser:
         specifier: 5.34.1
         version: 5.34.1
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@types/node@24.0.13)(typescript@5.8.3)
       tsdown:
         specifier: ^0.23.0
         version: 0.23.0(@arethetypeswrong/core@0.18.5)(publint@0.3.24)(typescript@5.8.3)
@@ -279,7 +258,7 @@ importers:
         version: 1.3.2
       vitest:
         specifier: ^5.0.1
-        version: 5.0.1(@types/node@24.0.13)(@vitest/coverage-v8@5.0.1)(vite@8.3.1(@types/node@24.0.13)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1))
+        version: 5.0.1(@types/node@24.0.13)(@vitest/coverage-v8@5.0.1)(vite@8.3.1(@types/node@24.0.13)(esbuild@0.24.0)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1))
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -1381,9 +1360,6 @@ packages:
   bcrypt-pbkdf@1.0.2:
     resolution: {integrity: sha512-qeFIXtP4MSoi6NLqO12WfqARWWuCKi2Rn/9hJLEmtB5yTNr9DqFWkJRCf2qShWzPeAMRnOgCrq0sg/KLv5ES9w==}
 
-  benchmark@2.1.4:
-    resolution: {integrity: sha512-l9MlfN4M1K/H2fbhfMy3B7vJd6AGKJVQn2h6Sg/Yx+KckoUA7ewS5Vv6TjSq18ooE1kS9hhAlQRH3AkXIh/aOQ==}
-
   bl@4.1.0:
     resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
 
@@ -1527,10 +1503,6 @@ packages:
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
 
-  commander@6.2.1:
-    resolution: {integrity: sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==}
-    engines: {node: '>= 6'}
-
   commitizen@4.3.1:
     resolution: {integrity: sha512-gwAPAVTy/j5YcOOebcCRIijn+mSjWJC+IYKivTu6aG8Ei/scoXgfsMRnuAk6b0GRste2J4NGxVdMN3ZpfNaVaw==}
     engines: {node: '>= 12'}
@@ -1565,9 +1537,6 @@ packages:
 
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
-
-  cross-fetch@3.1.5:
-    resolution: {integrity: sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -1910,9 +1879,6 @@ packages:
   immer@11.1.18:
     resolution: {integrity: sha512-EQyQtLiYW029lyoczMl/Hh4Xu7cDecSc58JRYpHyL4tIAu3eqd1yJzQX04d2BZHDkzFFvm6qJEJWOtfDSWAXbQ==}
 
-  immutable@5.1.3:
-    resolution: {integrity: sha512-+chQdDfvscSF1SJqv2gn4SRO2ZyS3xL3r7IW/wWEEzrzLisnOlKiQu5ytC/BVNcS15C39WT2Hg/bjKjDMcu+zg==}
-
   import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
@@ -2008,9 +1974,6 @@ packages:
     resolution: {integrity: sha512-zptv57P3GpL+O0I7VdMJNBZCu+BPHVQUk55Ft8/QCJjTVxrnJHuVuX/0Bl2A6/+2oyR/ZMEuFKwmzqqZ/U5nPQ==}
     engines: {node: 20 || >=22}
 
-  javascript-stringify@2.1.0:
-    resolution: {integrity: sha512-JVAfqNPTvNq3sB/VHQJAFxN/sPgKnsKrCwyRt15zwNCdrMMJDdcEOdubuy+DuJYYdm0ox1J4uzEuYKkN+9yhVg==}
-
   jest-worker@27.5.1:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
@@ -2055,18 +2018,8 @@ packages:
   json-stringify-safe@5.0.1:
     resolution: {integrity: sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==}
 
-  json2csv@5.0.7:
-    resolution: {integrity: sha512-YRZbUnyaJZLZUJSRi2G/MqahCyRv9n/ds+4oIetjDF3jWQA7AG7iSeKTiZiCNqtMZM7HDyt0e/W6lEnoGEmMGA==}
-    engines: {node: '>= 10', npm: '>= 6.13.0'}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-    hasBin: true
-
   jsonfile@6.1.0:
     resolution: {integrity: sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==}
-
-  jsonparse@1.3.1:
-    resolution: {integrity: sha512-POQXvpdL69+CluYsillJ7SUhKvytYjW9vG/GKpnf+xP8UWgYEM/RaMzHHofbALDiKbbP1W8UEYmgGl39WkPZsg==}
-    engines: {'0': node >= 0.2.0}
 
   jsprim@1.4.2:
     resolution: {integrity: sha512-P2bSOMAc/ciLz6DzgjVlGJP9+BrJWu5UDGK70C2iweC5QBIeFf0ZXRvGjEj2uYgrY2MkAAhsSWHDWlFtEroZWw==}
@@ -2163,13 +2116,6 @@ packages:
   loader-runner@4.3.0:
     resolution: {integrity: sha512-3R/1M+yS3j5ou80Me59j7F9IMs4PXs3VqRrm0TU3AbKPxlmpoY1TNscJV/oGJXo8qCatFGTfDbY6W6ipGOYXfg==}
     engines: {node: '>=6.11.5'}
-
-  lodash.clonedeep@4.5.0:
-    resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
-
-  lodash.get@4.4.2:
-    resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
-    deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
 
   lodash.isplainobject@4.0.6:
     resolution: {integrity: sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA==}
@@ -2318,15 +2264,6 @@ packages:
     resolution: {integrity: sha512-Z3lTE9pLaJF47NyMhd4ww1yFTAP8YhYI8SleJiHzM46Fgpm5cnNzSl9XfzFNqbaz+VlJrIj3fXQ4DeN1Rjm6cw==}
     engines: {node: '>=18'}
 
-  node-fetch@2.6.7:
-    resolution: {integrity: sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==}
-    engines: {node: 4.x || >=6.0.0}
-    peerDependencies:
-      encoding: ^0.1.0
-    peerDependenciesMeta:
-      encoding:
-        optional: true
-
   node-releases@2.0.19:
     resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
 
@@ -2458,9 +2395,6 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  platform@1.3.6:
-    resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
-
   postcss@8.5.28:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
@@ -2487,9 +2421,6 @@ packages:
 
   quansync@1.0.0:
     resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
-
-  quickchart-js@3.1.3:
-    resolution: {integrity: sha512-QzPUXBA/UntYBbOMITtMz7B426fes1XFmmjmjA070jXeMWhyhDojJf2aSZPsekj35ywfJhWjY6TKf3S0/XxyAg==}
 
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
@@ -2597,9 +2528,6 @@ packages:
   schema-utils@3.3.0:
     resolution: {integrity: sha512-pN/yOAvcC+5rQ5nERGuwrjLlYvLTbCibnZ1I7B1LaiAz9BRBlE9GMgE/eqV30P7aJQUf7Ddimy/RsbYO/GrVGg==}
     engines: {node: '>= 10.13.0'}
-
-  seamless-immutable@7.1.4:
-    resolution: {integrity: sha512-XiUO1QP4ki4E2PHegiGAlu6r82o5A+6tRh7IkGGTVg/h+UoeX4nFBeCGPOhb4CYjvkqsfm/TUtvOMYC1xmV30A==}
 
   semver@7.7.2:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
@@ -2778,9 +2706,6 @@ packages:
   tough-cookie@2.5.0:
     resolution: {integrity: sha512-nlLsUzgm1kfLXSXfRZMc1KLAugd4hqJHDTvc2hDIwS3mZAfMEuMbc03SujMF+GEcpaX/qboeycw6iO8JwVv2+g==}
     engines: {node: '>=0.8'}
-
-  tr46@0.0.3:
-    resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
   tree-kill@1.2.2:
     resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
@@ -3022,9 +2947,6 @@ packages:
   wcwidth@1.0.1:
     resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
 
-  webidl-conversions@3.0.1:
-    resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
-
   webpack-sources@3.2.3:
     resolution: {integrity: sha512-/DyMEOrDgLKKIG0fmvtz+4dUX/3Ghozwgm6iPp8KRhvn+eQf9+Q7GWxVNMk3+uCPWfdXYC4ExGBckIXdFEfH1w==}
     engines: {node: '>=10.13.0'}
@@ -3038,9 +2960,6 @@ packages:
     peerDependenciesMeta:
       webpack-cli:
         optional: true
-
-  whatwg-url@5.0.0:
-    resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
 
   which@1.3.1:
     resolution: {integrity: sha512-HxJdYWq1MTIQbJ3nw0cqssHoTNU267KlrDuGZ1WYlxDStUtKUhOaJmh112/TZmHxxUfuJqPXSOm7tDyas0OSIQ==}
@@ -3216,6 +3135,7 @@ snapshots:
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
+    optional: true
 
   '@discoveryjs/json-ext@0.5.7': {}
 
@@ -3346,6 +3266,7 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.4
+    optional: true
 
   '@loaderkit/resolve@1.0.6':
     dependencies:
@@ -3566,22 +3487,22 @@ snapshots:
       '@size-limit/file': 11.1.6(size-limit@11.1.6)
       size-limit: 11.1.6
 
-  '@size-limit/webpack-why@11.1.6(size-limit@11.1.6)(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3))':
+  '@size-limit/webpack-why@11.1.6(esbuild@0.24.0)(size-limit@11.1.6)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3))':
     dependencies:
-      '@statoscope/webpack-plugin': 5.28.2(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3))
+      '@statoscope/webpack-plugin': 5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3))
       size-limit: 11.1.6
-      webpack: 5.95.0(uglify-js@3.19.3)
+      webpack: 5.95.0(esbuild@0.24.0)(uglify-js@3.19.3)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
       - uglify-js
       - webpack-cli
 
-  '@size-limit/webpack@11.1.6(size-limit@11.1.6)(uglify-js@3.19.3)':
+  '@size-limit/webpack@11.1.6(esbuild@0.24.0)(size-limit@11.1.6)(uglify-js@3.19.3)':
     dependencies:
       nanoid: 5.0.7
       size-limit: 11.1.6
-      webpack: 5.95.0(uglify-js@3.19.3)
+      webpack: 5.95.0(esbuild@0.24.0)(uglify-js@3.19.3)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -3638,7 +3559,7 @@ snapshots:
     dependencies:
       '@statoscope/stats': 5.28.1
 
-  '@statoscope/webpack-model@5.28.2(uglify-js@3.19.3)':
+  '@statoscope/webpack-model@5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)':
     dependencies:
       '@statoscope/extensions': 5.28.1
       '@statoscope/helpers': 5.28.1
@@ -3649,7 +3570,7 @@ snapshots:
       '@statoscope/stats-extension-stats-validation-result': 5.28.1
       '@statoscope/types': 5.28.1
       '@types/md5': 2.3.5
-      '@types/webpack': 5.28.5(uglify-js@3.19.3)
+      '@types/webpack': 5.28.5(esbuild@0.24.0)(uglify-js@3.19.3)
       md5: 2.3.0
     transitivePeerDependencies:
       - '@swc/core'
@@ -3657,7 +3578,7 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@statoscope/webpack-plugin@5.28.2(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3))':
+  '@statoscope/webpack-plugin@5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3))':
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
       '@statoscope/report-writer': 5.28.1
@@ -3665,40 +3586,40 @@ snapshots:
       '@statoscope/stats-extension-compressed': 5.28.1
       '@statoscope/stats-extension-custom-reports': 5.28.1
       '@statoscope/types': 5.28.1
-      '@statoscope/webpack-model': 5.28.2(uglify-js@3.19.3)
-      '@statoscope/webpack-stats-extension-compressed': 5.28.2(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3))
-      '@statoscope/webpack-stats-extension-package-info': 5.28.2(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3))
+      '@statoscope/webpack-model': 5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)
+      '@statoscope/webpack-stats-extension-compressed': 5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3))
+      '@statoscope/webpack-stats-extension-package-info': 5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3))
       '@statoscope/webpack-ui': 5.28.2
       '@types/node': 18.19.54
-      '@types/webpack': 5.28.5(uglify-js@3.19.3)
+      '@types/webpack': 5.28.5(esbuild@0.24.0)(uglify-js@3.19.3)
       open: 8.4.2
-      webpack: 5.95.0(uglify-js@3.19.3)
+      webpack: 5.95.0(esbuild@0.24.0)(uglify-js@3.19.3)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
       - uglify-js
       - webpack-cli
 
-  '@statoscope/webpack-stats-extension-compressed@5.28.2(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3))':
+  '@statoscope/webpack-stats-extension-compressed@5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3))':
     dependencies:
       '@statoscope/stats': 5.28.1
       '@statoscope/stats-extension-compressed': 5.28.1
-      '@statoscope/webpack-model': 5.28.2(uglify-js@3.19.3)
-      '@types/webpack': 5.28.5(uglify-js@3.19.3)
-      webpack: 5.95.0(uglify-js@3.19.3)
+      '@statoscope/webpack-model': 5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)
+      '@types/webpack': 5.28.5(esbuild@0.24.0)(uglify-js@3.19.3)
+      webpack: 5.95.0(esbuild@0.24.0)(uglify-js@3.19.3)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
       - uglify-js
       - webpack-cli
 
-  '@statoscope/webpack-stats-extension-package-info@5.28.2(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3))':
+  '@statoscope/webpack-stats-extension-package-info@5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3))':
     dependencies:
       '@statoscope/stats': 5.28.1
       '@statoscope/stats-extension-package-info': 5.28.1
-      '@statoscope/webpack-model': 5.28.2(uglify-js@3.19.3)
-      '@types/webpack': 5.28.5(uglify-js@3.19.3)
-      webpack: 5.95.0(uglify-js@3.19.3)
+      '@statoscope/webpack-model': 5.28.2(esbuild@0.24.0)(uglify-js@3.19.3)
+      '@types/webpack': 5.28.5(esbuild@0.24.0)(uglify-js@3.19.3)
+      webpack: 5.95.0(esbuild@0.24.0)(uglify-js@3.19.3)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -3710,13 +3631,17 @@ snapshots:
       '@statoscope/types': 5.28.1
       '@types/md5': 2.3.5
 
-  '@tsconfig/node10@1.0.9': {}
+  '@tsconfig/node10@1.0.9':
+    optional: true
 
-  '@tsconfig/node12@1.0.11': {}
+  '@tsconfig/node12@1.0.11':
+    optional: true
 
-  '@tsconfig/node14@1.0.3': {}
+  '@tsconfig/node14@1.0.3':
+    optional: true
 
-  '@tsconfig/node16@1.0.3': {}
+  '@tsconfig/node16@1.0.3':
+    optional: true
 
   '@types/archy@0.0.32': {}
 
@@ -3751,11 +3676,11 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
-  '@types/webpack@5.28.5(uglify-js@3.19.3)':
+  '@types/webpack@5.28.5(esbuild@0.24.0)(uglify-js@3.19.3)':
     dependencies:
       '@types/node': 24.0.13
       tapable: 2.2.1
-      webpack: 5.95.0(uglify-js@3.19.3)
+      webpack: 5.95.0(esbuild@0.24.0)(uglify-js@3.19.3)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -3772,7 +3697,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 5.0.1(@types/node@24.0.13)(@vitest/coverage-v8@5.0.1)(vite@8.3.1(@types/node@24.0.13)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1))
+      vitest: 5.0.1(@types/node@24.0.13)(@vitest/coverage-v8@5.0.1)(vite@8.3.1(@types/node@24.0.13)(esbuild@0.24.0)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1))
 
   '@vitest/istanbul-lib-coverage@1.0.1': {}
 
@@ -3780,14 +3705,14 @@ snapshots:
     dependencies:
       '@vitest/istanbul-lib-coverage': 1.0.1
 
-  '@vitest/mocker@5.0.1(vite@8.3.1(@types/node@24.0.13)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1))':
+  '@vitest/mocker@5.0.1(vite@8.3.1(@types/node@24.0.13)(esbuild@0.24.0)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.1
       estree-walker: 3.0.3
       magic-string: 1.4.2
     optionalDependencies:
-      vite: 8.3.1(@types/node@24.0.13)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1)
+      vite: 8.3.1(@types/node@24.0.13)(esbuild@0.24.0)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1)
 
   '@vitest/spy@5.0.1': {}
 
@@ -3949,7 +3874,8 @@ snapshots:
     dependencies:
       acorn: 8.15.0
 
-  acorn-walk@8.2.0: {}
+  acorn-walk@8.2.0:
+    optional: true
 
   acorn@8.15.0: {}
 
@@ -3998,7 +3924,8 @@ snapshots:
 
   archy@1.0.0: {}
 
-  arg@4.1.3: {}
+  arg@4.1.3:
+    optional: true
 
   argparse@1.0.10:
     dependencies:
@@ -4035,11 +3962,6 @@ snapshots:
   bcrypt-pbkdf@1.0.2:
     dependencies:
       tweetnacl: 0.14.5
-
-  benchmark@2.1.4:
-    dependencies:
-      lodash: 4.17.21
-      platform: 1.3.6
 
   bl@4.1.0:
     dependencies:
@@ -4177,8 +4099,6 @@ snapshots:
 
   commander@2.20.3: {}
 
-  commander@6.2.1: {}
-
   commitizen@4.3.1:
     dependencies:
       cachedir: 2.3.0
@@ -4229,13 +4149,8 @@ snapshots:
       minimist: 1.2.8
       request: 2.88.2
 
-  create-require@1.1.1: {}
-
-  cross-fetch@3.1.5:
-    dependencies:
-      node-fetch: 2.6.7
-    transitivePeerDependencies:
-      - encoding
+  create-require@1.1.1:
+    optional: true
 
   cross-spawn@7.0.6:
     dependencies:
@@ -4292,7 +4207,8 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  diff@4.0.2: {}
+  diff@4.0.2:
+    optional: true
 
   dts-resolver@3.0.0: {}
 
@@ -4560,8 +4476,6 @@ snapshots:
 
   immer@11.1.18: {}
 
-  immutable@5.1.3: {}
-
   import-fresh@3.3.0:
     dependencies:
       parent-module: 1.0.1
@@ -4646,8 +4560,6 @@ snapshots:
     dependencies:
       '@isaacs/cliui': 8.0.2
 
-  javascript-stringify@2.1.0: {}
-
   jest-worker@27.5.1:
     dependencies:
       '@types/node': 24.0.13
@@ -4688,19 +4600,11 @@ snapshots:
 
   json-stringify-safe@5.0.1: {}
 
-  json2csv@5.0.7:
-    dependencies:
-      commander: 6.2.1
-      jsonparse: 1.3.1
-      lodash.get: 4.4.2
-
   jsonfile@6.1.0:
     dependencies:
       universalify: 2.0.0
     optionalDependencies:
       graceful-fs: 4.2.11
-
-  jsonparse@1.3.1: {}
 
   jsprim@1.4.2:
     dependencies:
@@ -4771,10 +4675,6 @@ snapshots:
 
   loader-runner@4.3.0: {}
 
-  lodash.clonedeep@4.5.0: {}
-
-  lodash.get@4.4.2: {}
-
   lodash.isplainobject@4.0.6:
     optional: true
 
@@ -4814,7 +4714,8 @@ snapshots:
       '@babel/types': 7.29.8
       source-map-js: 1.2.1
 
-  make-error@1.3.6: {}
+  make-error@1.3.6:
+    optional: true
 
   markdown-it@14.1.0:
     dependencies:
@@ -4911,10 +4812,6 @@ snapshots:
       char-regex: 1.0.2
       emojilib: 2.4.0
       skin-tone: 2.0.0
-
-  node-fetch@2.6.7:
-    dependencies:
-      whatwg-url: 5.0.0
 
   node-releases@2.0.19: {}
 
@@ -5058,8 +4955,6 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  platform@1.3.6: {}
-
   postcss@8.5.28:
     dependencies:
       nanoid: 3.3.19
@@ -5082,13 +4977,6 @@ snapshots:
   qs@6.5.3: {}
 
   quansync@1.0.0: {}
-
-  quickchart-js@3.1.3:
-    dependencies:
-      cross-fetch: 3.1.5
-      javascript-stringify: 2.1.0
-    transitivePeerDependencies:
-      - encoding
 
   randombytes@2.1.0:
     dependencies:
@@ -5217,8 +5105,6 @@ snapshots:
       ajv: 6.12.6
       ajv-keywords: 3.5.2(ajv@6.12.6)
 
-  seamless-immutable@7.1.4: {}
-
   semver@7.7.2: {}
 
   serialize-javascript@6.0.1:
@@ -5325,15 +5211,16 @@ snapshots:
 
   tapable@2.2.1: {}
 
-  terser-webpack-plugin@5.3.10(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3)):
+  terser-webpack-plugin@5.3.10(esbuild@0.24.0)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.29
       jest-worker: 27.5.1
       schema-utils: 3.3.0
       serialize-javascript: 6.0.1
       terser: 5.34.1
-      webpack: 5.95.0(uglify-js@3.19.3)
+      webpack: 5.95.0(esbuild@0.24.0)(uglify-js@3.19.3)
     optionalDependencies:
+      esbuild: 0.24.0
       uglify-js: 3.19.3
 
   terser@5.34.1:
@@ -5386,8 +5273,6 @@ snapshots:
       psl: 1.9.0
       punycode: 2.3.0
 
-  tr46@0.0.3: {}
-
   tree-kill@1.2.2: {}
 
   ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3):
@@ -5407,6 +5292,7 @@ snapshots:
       typescript: 5.8.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
+    optional: true
 
   tsdown@0.23.0(@arethetypeswrong/core@0.18.5)(publint@0.3.24)(typescript@5.8.3):
     dependencies:
@@ -5494,7 +5380,8 @@ snapshots:
 
   uuid@3.4.0: {}
 
-  v8-compile-cache-lib@3.0.1: {}
+  v8-compile-cache-lib@3.0.1:
+    optional: true
 
   validate-npm-package-name@5.0.1: {}
 
@@ -5508,7 +5395,7 @@ snapshots:
 
   vite-bundle-analyzer@1.3.2: {}
 
-  vite@8.3.1(@types/node@24.0.13)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1):
+  vite@8.3.1(@types/node@24.0.13)(esbuild@0.24.0)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
@@ -5517,15 +5404,16 @@ snapshots:
       tinyglobby: 0.2.17
     optionalDependencies:
       '@types/node': 24.0.13
+      esbuild: 0.24.0
       fsevents: 2.3.3
       jiti: 2.0.0
       terser: 5.34.1
       yaml: 2.8.1
 
-  vitest@5.0.1(@types/node@24.0.13)(@vitest/coverage-v8@5.0.1)(vite@8.3.1(@types/node@24.0.13)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1)):
+  vitest@5.0.1(@types/node@24.0.13)(@vitest/coverage-v8@5.0.1)(vite@8.3.1(@types/node@24.0.13)(esbuild@0.24.0)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.1(vite@8.3.1(@types/node@24.0.13)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1))
+      '@vitest/mocker': 5.0.1(vite@8.3.1(@types/node@24.0.13)(esbuild@0.24.0)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1))
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -5536,7 +5424,7 @@ snapshots:
       tinybench: 6.1.4
       tinyexec: 1.3.0
       tinyglobby: 0.2.17
-      vite: 8.3.1(@types/node@24.0.13)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1)
+      vite: 8.3.1(@types/node@24.0.13)(esbuild@0.24.0)(jiti@2.0.0)(terser@5.34.1)(yaml@2.8.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.0.13
@@ -5553,11 +5441,9 @@ snapshots:
     dependencies:
       defaults: 1.0.4
 
-  webidl-conversions@3.0.1: {}
-
   webpack-sources@3.2.3: {}
 
-  webpack@5.95.0(uglify-js@3.19.3):
+  webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3):
     dependencies:
       '@types/estree': 1.0.8
       '@webassemblyjs/ast': 1.12.1
@@ -5579,18 +5465,13 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.10(uglify-js@3.19.3)(webpack@5.95.0(uglify-js@3.19.3))
+      terser-webpack-plugin: 5.3.10(esbuild@0.24.0)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3))
       watchpack: 2.4.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
       - uglify-js
-
-  whatwg-url@5.0.0:
-    dependencies:
-      tr46: 0.0.3
-      webidl-conversions: 3.0.1
 
   which@1.3.1:
     dependencies:
@@ -5653,7 +5534,8 @@ snapshots:
       y18n: 5.0.8
       yargs-parser: 21.1.1
 
-  yn@3.1.1: {}
+  yn@3.1.1:
+    optional: true
 
   yuku-ast@0.10.2:
     dependencies:

@@ -40,6 +40,7 @@ export function readOptions(defaults = {}) {
       'sampling-interval': { type: 'string', default: '1024' },
       check: { type: 'boolean', default: false },
       list: { type: 'boolean', default: false },
+      isolate: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
@@ -49,8 +50,10 @@ export function readOptions(defaults = {}) {
   --filter REGEX           Scenario names (default: all scenarios)
   --freeze both|off|on     Matched auto-freeze modes (default: ${defaults.freeze ?? 'both'})
   --patches both|off|on    Generate forward and inverse patches (default: ${defaults.patches ?? 'off'})
-  --library all|both|mutative|mutative-v1|immer (default: ${defaults.library ?? 'all'})
-                           all = candidate + pinned v1 + Immer; both = candidate + Immer
+  --library all|both|mutative|mutative-v1|immer|vanilla (default: ${defaults.library ?? 'all'})
+                           all = candidate + pinned v1 + Immer + vanilla;
+                           both = candidate + Immer; vanilla = hand-written
+                           reducer, freeze and patches off only
   --immer-array-methods    Enable Immer's array-method plugin (default: off)
   --array-size N           Default: 100; minimum: 10
   --nested-array-size N    Default: 10
@@ -61,14 +64,19 @@ export function readOptions(defaults = {}) {
   --output PATH            Report JSON path; also writes Markdown
   --check                  Validate workloads without timing
   --list                   List scenario names and reducer-call counts
+  --isolate                Measure each scenario and library in a process of
+                           its own (benchmark:immer only)
   --iterations N           Profiling only (default: 1000)
   --memory-iterations N    Results retained per memory pass (default: 32)
   --sampling-interval N    Allocation sampling interval in bytes (default: 1024)
 
 Auto-freeze on uses pre-frozen inputs and payloads. Patches use array paths
 and index removals in both libraries; application and serialization are not
-timed. Immer's array-method plugin is enabled only with --immer-array-methods;
-Mutative's native array methods need no option. Setup is excluded from timing.`);
+timed, except in the apply-* scenarios, which time patch application with
+patches off. Immer's array-method plugin is enabled only with
+--immer-array-methods; its MapSet plugin only in processes that run Map or Set
+scenarios. Mutative's native array methods need no option. Setup is excluded
+from timing.`);
     process.exit(0);
   }
 
@@ -86,12 +94,12 @@ Mutative's native array methods need no option. Setup is excluded from timing.`)
     throw new Error('--patches must be both, off, or on');
   }
   if (
-    !['all', 'both', 'mutative', 'mutative-v1', 'immer'].includes(
+    !['all', 'both', 'mutative', 'mutative-v1', 'immer', 'vanilla'].includes(
       values.library
     )
   ) {
     throw new Error(
-      '--library must be all, both, mutative, mutative-v1, or immer'
+      '--library must be all, both, mutative, mutative-v1, immer, or vanilla'
     );
   }
   // Validate now so an invalid regular expression fails before spawning workers.
@@ -111,7 +119,7 @@ Mutative's native array methods need no option. Setup is excluded from timing.`)
       values.patches === 'both' ? [false, true] : [values.patches === 'on'],
     libraries:
       values.library === 'all'
-        ? ['mutative', 'mutative-v1', 'immer']
+        ? ['mutative', 'mutative-v1', 'immer', 'vanilla']
         : values.library === 'both'
           ? ['mutative', 'immer']
           : [values.library],
@@ -128,5 +136,6 @@ Mutative's native array methods need no option. Setup is excluded from timing.`)
     output: values.output,
     check: values.check,
     list: values.list,
+    isolate: values.isolate,
   };
 }

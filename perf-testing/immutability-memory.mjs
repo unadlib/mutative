@@ -2,8 +2,12 @@ import { writeFileSync } from 'node:fs';
 import os from 'node:os';
 import { measureMemory } from './memory.mjs';
 import { readOptions } from './options.mjs';
-import { buildInfo, createRuntime } from './runtime.mjs';
-import { createScenarios, prepareScenario } from './scenarios.mjs';
+import { buildInfo, createRuntime, isImmerMapSetEnabled } from './runtime.mjs';
+import {
+  createScenarios,
+  prepareScenario,
+  supportsMode,
+} from './scenarios.mjs';
 import { validateScenarios } from './validate.mjs';
 
 const options = process.env.MUTATIVE_PERF_OPTIONS
@@ -20,11 +24,15 @@ if (
     'Each memory worker requires exactly one scenario/library/freeze/patch combination'
   );
 }
-const { checks, patchCounts } = validateScenarios(options, scenarios);
 const scenario = scenarios[0];
 const [library] = options.libraries;
 const [autoFreeze] = options.freezes;
 const [enablePatches] = options.patches;
+if (!supportsMode(scenario, library, autoFreeze, enablePatches))
+  throw new Error(
+    `${scenario.name} does not run for ${library} with freeze=${autoFreeze}, patches=${enablePatches}`
+  );
+const { checks, patchCounts } = validateScenarios(options, scenarios);
 const prepared = prepareScenario(options.config, scenario.name, autoFreeze);
 let lastRead;
 const runtime = createRuntime(
@@ -34,7 +42,8 @@ const runtime = createRuntime(
   (value) => {
     lastRead = value;
   },
-  options.immerArrayMethods === true
+  options.immerArrayMethods === true,
+  prepared
 );
 const execute = () => {
   let state = prepared.base;
@@ -66,6 +75,7 @@ const report = {
   recordedAt: new Date().toISOString(),
   methodology: {
     arrayMethodsEnabled: options.immerArrayMethods === true,
+    immerMapSetEnabled: isImmerMapSetEnabled(),
     latencyMeasured: false,
     allocationIncludesCollectedObjects: true,
     allocationIncludesHarnessOverhead: true,
