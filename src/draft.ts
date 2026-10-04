@@ -67,15 +67,16 @@ function getTrap(
 ) {
   if (key === PROXY_DRAFT) return target;
   const { options, type } = target;
+  const source = latest(target);
   let markResult: any;
   if (options.mark) {
-    // handle `Uncaught TypeError: Method get Map.prototype.size called on incompatible receiver #<Map>`
-    // or `Uncaught TypeError: Method get Set.prototype.size called on incompatible receiver #<Set>`
+    // The mark classifies the value the draft holds now, so a value the
+    // recipe assigned is read back as assigned. `size` is read without the
+    // proxy as receiver: the Map and Set getters reject any other receiver.
     const value =
-      key === 'size' &&
-      (target.original instanceof Map || target.original instanceof Set)
-        ? Reflect.get(target.original, key)
-        : Reflect.get(target.original, key, receiver);
+      key === 'size' && (source instanceof Map || source instanceof Set)
+        ? Reflect.get(source, key)
+        : Reflect.get(source, key, receiver);
     markResult = options.mark(value, dataTypes);
     if (markResult === dataTypes.mutable) {
       if (options.strict) {
@@ -84,7 +85,6 @@ function getTrap(
       return value;
     }
   }
-  const source = latest(target);
 
   if (type === DraftType.Map) {
     if (mapHandlerKeys.includes(key as any)) {
