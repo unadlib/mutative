@@ -24,3 +24,11 @@ If an exception occurs in production, its message includes an error code and a l
 |   10 | `InvalidMark`                    | The configured `mark()` function is not a stable marker function.                                             |
 |   11 | `CannotModifyFrozenObject`       | A frozen object cannot be modified.                                                                           |
 |   12 | `InvalidPatchPath`               | A patch path could not be resolved.                                                                           |
+|   13 | `ReservedPatchAttribute`         | Patches cannot write reserved attributes such as `__proto__`, `constructor` or a function's `prototype`.      |
+|   14 | `CannotApplyPatch`               | `apply()` could not resolve the path of a patch.                                                              |
+|   15 | `ReplacePatchOnSet`              | A `replace` patch cannot be applied to a Set.                                                                 |
+|   16 | `UnsupportedPatchOperation`      | A patch has an unsupported `op`; `apply()` supports `add`, `remove` and `replace`.                            |
+|   17 | `ApplyOptionsToDraft`            | `apply()` does not accept options when it applies patches to a draft.                                         |
+|   18 | `OriginalOnNonDraft`             | `original()` only accepts a draft.                                                                            |
+|   19 | `RawReturnWithoutValue`          | `rawReturn()` must be called with a value.                                                                    |
+|   20 | `RawReturnWithExtraArguments`    | `rawReturn()` takes exactly one argument.                                                                     |
