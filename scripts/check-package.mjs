@@ -46,6 +46,7 @@ try {
     .map((path) => relative(join(root, 'src'), path).replace(/\.ts$/, '.d.ts'));
   const expected = [
     'index.js',
+    'index.mjs',
     'index.d.mts',
     ...declarations,
     ...bundles.flatMap((name) => [name, `${name}.map`]),
@@ -91,18 +92,15 @@ try {
   }
 
   // The ESM artifacts that bundlers resolve leave the environment to the
-  // consumer, and read `process.env` once rather than at every check.
+  // consumer: every development check compares `process.env.NODE_ENV`, which
+  // bundlers replace, and nothing else reads `process`.
   for (const name of bundles.filter(
     (name) => name.startsWith('mutative.esm.') && !name.includes('production')
   )) {
     const code = readFileSync(join(root, 'dist', name), 'utf8');
-    assert.ok(
-      code.startsWith(
-        "const __DEV__ = process.env.NODE_ENV !== 'production';\n"
-      ),
-      `${name} must read the environment first`
-    );
-    assert.equal(code.match(/\bprocess\b/g).length, 1, name);
+    const checks = code.match(/process\.env\.NODE_ENV !== "production"/g);
+    assert.ok(checks?.length, `${name} must check the environment`);
+    assert.equal(code.match(/\bprocess\b/g).length, checks.length, name);
   }
 
   // Both the TypeScript transform and the minifier must map back to the
@@ -262,6 +260,9 @@ try {
         '-e',
         `import assert from 'node:assert/strict';
          import * as api from 'mutative';
+         import { createRequire } from 'node:module';
+         // Node.js resolves the CJS entry, so import and require share one instance.
+         assert.equal(createRequire(import.meta.url)('mutative').create, api.create);
          assert.deepEqual(Object.keys(api).sort(), ${JSON.stringify(expectedExports)});
          assert.equal(api.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
          assert.throws(() => api.apply(Object.freeze({ count: 1 }), [{ op: 'replace', path: ['count'], value: 2 }], { mutable: true }), TypeError);
