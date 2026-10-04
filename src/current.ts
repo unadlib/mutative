@@ -9,9 +9,11 @@ import {
   isDraft,
   isDraftable,
   isEqual,
+  latest,
   set,
   shallowCopy,
 } from './utils';
+import { checksReads } from './unsafe';
 import { die, ErrorCode } from './error';
 
 export function handleReturnValue<T extends object>(options: {
@@ -67,6 +69,17 @@ function getCurrent(target: any) {
   if (!isDraftable(target, proxyDraft?.options)) return target;
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
+  // A changed array draft is copied from its current array, since a copy
+  // through the proxy runs two traps per element. In strict mode, outside
+  // `unsafe()`, the proxy checks each element it reads, and a mark decides how
+  // elements are read, so such arrays are still copied through the proxy.
+  const array =
+    type === DraftType.Array &&
+    proxyDraft &&
+    !proxyDraft.options.mark &&
+    !checksReads(proxyDraft.options)
+      ? proxyDraft
+      : null;
   let currentValue: any;
   let changed = false;
   function ensureShallowCopy() {
@@ -79,7 +92,7 @@ function getCurrent(target: any) {
           ? proxyDraft
             ? Array.from(proxyDraft.setMap!.values()!)
             : Array.from(target as Set<any>)
-          : shallowCopy(target, proxyDraft?.options);
+          : shallowCopy(array ? latest(array) : target, proxyDraft?.options);
   }
 
   if (proxyDraft) {
