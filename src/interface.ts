@@ -143,6 +143,7 @@ export interface ApplyMutableOptions {
 export interface Options<O extends PatchesOptions, F extends boolean> {
   /**
    * In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.
+   * Development builds also warn once when a recipe leaves 1,000 or more drafts unchanged.
    */
   strict?: boolean;
   /**
@@ -163,6 +164,7 @@ export interface Options<O extends PatchesOptions, F extends boolean> {
 export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
   /**
    * In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.
+   * Development builds also warn once when a recipe leaves 1,000 or more drafts unchanged.
    */
   strict?: boolean;
   /**

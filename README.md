@@ -226,6 +226,8 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
   > If you'd like to enable strict mode by default in a development build and turn it off for production, you can use `strict: process.env.NODE_ENV !== 'production'`.
 
+  > In development builds, strict mode also warns once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does. See [`current()`](#current) for searching without creating drafts.
+
 - enablePatches - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean; }`, the default is false.
 
   > Enable patch, and return the patches/inversePatches.

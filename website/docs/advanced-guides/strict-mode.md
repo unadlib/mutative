@@ -14,6 +14,8 @@ strict option is `boolean` type, the default is `false`.
 
 - When strict mode is enabled, mutable data can only be accessed using [`unsafe()`](/docs/api-reference/unsafe).
 
+- In development builds, warn once when a recipe leaves 1,000 or more drafts unchanged. Every object read through a draft becomes a draft, so a search through a large draft array, such as `draft.list.find()`, creates one for each element it visits. Search [`current(draft.list)`](/docs/api-reference/current#searching-a-large-array) instead and change the match through the draft.
+
 :::tip
 **It is recommended to enable `strict` in development mode and disable `strict` in production mode.** This will ensure safe explicit returns and also keep good performance in the production build. If the value that does not mix any current draft or is `undefined` is returned, then use [rawReturn()](/docs/api-reference/rawreturn).
 

@@ -43,6 +43,8 @@ const state = create(baseState, (draft) => {
 });
 ```
 
+In [strict mode](/docs/advanced-guides/strict-mode), development builds warn once when a recipe leaves 1,000 or more drafts unchanged, which is what a search through a large draft array does.
+
 :::tip
 `current()` returns the original value of a draft that the recipe has not changed, without copying it. A changed draft is copied, together with its changed descendants, on every call, so take one snapshot for a series of reads rather than calling `current()` in a loop. `current()` must only be invoked on draft objects and not on original state objects or finalized states.
 :::
