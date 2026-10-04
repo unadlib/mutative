@@ -103,8 +103,6 @@ dist
 # TernJS port file
 .tern-port
 
-benchmark.csv
-
 # Analyzer output
 stats.html
 
