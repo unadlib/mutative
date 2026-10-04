@@ -114,7 +114,19 @@ function getCurrent(target: any) {
   }
 
   forEach(currentValue, (key, value) => {
-    if (proxyDraft && isEqual(get(proxyDraft.original, key), value)) return;
+    // Every value the recipe places in an array is recorded as assigned, so
+    // an object that is neither assigned nor a draft is an element of the base
+    // state, which holds no drafts, even after a native method moved it.
+    if (
+      proxyDraft &&
+      (isEqual(get(proxyDraft.original, key), value) ||
+        (array &&
+          !isDraft(value) &&
+          (typeof value !== 'object' ||
+            !(array.assignedMap!.size && array.assignedMap!.get(String(key))))))
+    ) {
+      return;
+    }
     const newValue = getCurrent(value);
     if (newValue !== value) {
       changed = true;
