@@ -24,8 +24,8 @@ const FeatureList = [
     title: 'High Performance',
     description: (
       <>
-        Mutative is faster than naive handcrafted reducer, and more than 10x
-        faster than Immer.
+        Mutative is about 3x faster than Immer with matched settings, and 6x
+        faster when both use their default settings.
       </>
     ),
   },
