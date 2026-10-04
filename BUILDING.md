@@ -60,7 +60,7 @@ A legitimate API expansion or measurement-tool upgrade may require a new baselin
 
 ## Package checks
 
-`pnpm test:package` requires a completed build. It validates the file manifest, production error-code stripping, and source-map paths and locations. It then packs and installs the tarball in a temporary consumer, runs publint and Are the Types Wrong, and exercises CJS, ESM, browser UMD, NodeNext and Bundler type resolution. The runtime checks include strict-mode behavior. Temporary consumer files are removed after the check.
+`pnpm test:package` requires a completed build. It validates the file manifest, production error-code and warning stripping, and source-map paths and locations. It then packs and installs the tarball in a temporary consumer, runs publint and Are the Types Wrong, and exercises CJS, ESM, browser UMD, NodeNext and Bundler type resolution. The runtime checks include strict-mode behavior and confirm that warnings are printed in development and not in production. Temporary consumer files are removed after the check.
 
 After changing the compiler or minifier, run these checks as well as the source tests. Source tests alone do not exercise the published JavaScript artifacts.
 
