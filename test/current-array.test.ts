@@ -42,7 +42,10 @@ const operations = [...arrayMethodOperations, ...assignedDraftOperations];
 
 describe.each([
   { mode: 'native methods', options: {} },
-  { mode: 'the proxy path', options: { mark: () => undefined } },
+  {
+    mode: 'array methods on the proxy path',
+    options: { mark: () => undefined },
+  },
   { mode: 'strict mode', options: { strict: true } },
   { mode: 'auto-freeze', options: { enableAutoFreeze: true } },
 ])('current() with $mode', ({ options }) => {
@@ -199,23 +202,31 @@ test('strict mode still checks the elements of a changed array', () => {
   );
 });
 
-test('arrays under a mark are still read through the proxy', () => {
-  const marked: unknown[] = [];
-  const base = { list: [{ id: 0 }, { id: 1 }] };
-  create(
+test('arrays under a mark hold the elements the recipe assigned or moved', () => {
+  class Foo {
+    n: number;
+    constructor(n: number) {
+      this.n = n;
+    }
+  }
+  const base = { list: [new Foo(0), new Foo(1), new Foo(2)] };
+  const next = new Foo(3);
+  let snapshot: Foo[] | undefined;
+  const state = create(
     base,
     (draft) => {
-      draft.list[0].id = 2;
-      marked.length = 0;
-      expect(current(draft.list)).toEqual([{ id: 2 }, { id: 1 }]);
-      // The proxy's reads consult the mark for each element.
-      expect(marked).toContain(base.list[1]);
+      draft.list[0] = next;
+      draft.list.reverse();
+      snapshot = current(draft.list);
     },
     {
-      mark: (value) => {
-        marked.push(value);
-        return undefined;
-      },
+      mark: (value, { mutable }) =>
+        value instanceof Foo ? mutable : undefined,
     }
   );
+  expect(snapshot).toHaveLength(3);
+  expect(snapshot![0]).toBe(base.list[2]);
+  expect(snapshot![1]).toBe(base.list[1]);
+  expect(snapshot![2]).toBe(next);
+  expect(state.list).toEqual(snapshot);
 });

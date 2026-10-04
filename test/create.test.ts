@@ -1317,6 +1317,35 @@ describe('hook in options', () => {
     expect(state.foo).not.toBe(data.foo);
     expect([...state.set.values()][0]).toBe(foobar);
   });
+
+  test('mutable values assigned in the recipe are read back', () => {
+    class Foo {
+      n: number;
+      constructor(n: number) {
+        this.n = n;
+      }
+    }
+    const data = { list: [new Foo(0), new Foo(1)], foo: new Foo(2) };
+    const state = create(
+      data,
+      (draft) => {
+        draft.list[0] = new Foo(3);
+        expect(draft.list[0].n).toBe(3);
+        draft.foo = new Foo(4);
+        expect(draft.foo.n).toBe(4);
+        draft.list.reverse();
+        expect(draft.list.map((foo) => foo.n)).toEqual([1, 3]);
+      },
+      {
+        mark: (target, { mutable }) => {
+          if (target instanceof Foo) return mutable;
+        },
+      }
+    );
+    expect(state.list.map((foo) => foo.n)).toEqual([1, 3]);
+    expect(state.foo.n).toBe(4);
+    expect(state.list[0]).toBe(data.list[1]);
+  });
 });
 
 describe('changes with mutable data', () => {
