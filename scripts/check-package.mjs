@@ -81,7 +81,10 @@ try {
 
   for (const name of bundles.filter((name) => name.includes('production'))) {
     const code = readFileSync(join(root, 'dist', name), 'utf8');
-    assert.doesNotMatch(code, /__DEV__|ErrorCode|InvalidBaseState/);
+    assert.doesNotMatch(
+      code,
+      /__DEV__|ErrorCode|InvalidBaseState|console\.warn/
+    );
     assert.match(code, /Minified Mutative error/);
   }
 
@@ -191,7 +194,11 @@ try {
          assert.throws(() => api.apply(Object.freeze({ count: 1 }), [{ op: 'replace', path: ['count'], value: 2 }], { mutable: true }), TypeError);
          assert.equal(require('mutative/dist/mutative.cjs.production.min.js').create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
          assert.equal(require('mutative/dist/mutative.umd.production.min.js').create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
-         assert.throws(() => api.current({}), /${mode === 'production' ? 'Minified Mutative error #7' : 'current\\(\\) is only used for Draft'}/);`,
+         assert.throws(() => api.current({}), /${mode === 'production' ? 'Minified Mutative error #7' : 'current\\(\\) is only used for Draft'}/);
+         const warnings = [];
+         console.warn = (message) => warnings.push(message);
+         api.rawReturn(1);
+         assert.equal(warnings.length, ${mode === 'production' ? 0 : 1});`,
       ],
       consumer,
       { ...process.env, NODE_ENV: mode }

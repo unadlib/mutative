@@ -281,6 +281,28 @@ test('check warning rawReturn() in strict mode', () => {
   warnSpy.mockReset();
 });
 
+test('rawReturn() values without drafts do not warn in strict mode', () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const baseState = { a: { b: 1 } };
+  [
+    () => rawReturn({ a: { b: 2 } }),
+    () => rawReturn([baseState.a]),
+    () => rawReturn(new Map([[1, baseState.a]])),
+    () => rawReturn(new Set([1, baseState.a])),
+    () => rawReturn(undefined),
+  ].forEach((callback: any) => {
+    create(baseState, callback, { strict: true });
+  });
+  expect(warn).not.toHaveBeenCalled();
+  // A primitive gets only the warning of rawReturn() itself.
+  create(baseState, () => rawReturn(1 as any), { strict: true });
+  expect(warn).toHaveBeenCalledTimes(1);
+  expect(warn).toHaveBeenCalledWith(
+    'rawReturn() must be called with an object(including plain object, arrays, Set, Map, etc.) or `undefined`, other types do not need to be returned via rawReturn().'
+  );
+  warn.mockRestore();
+});
+
 test('return parent draft', () => {
   expect(
     create({ a: 1 }, (draft) => {

@@ -16,49 +16,50 @@ import {
 import { checksReads } from './unsafe';
 import { die, ErrorCode } from './error';
 
-export function handleReturnValue<T extends object>(options: {
-  rootDraft: ProxyDraft<any> | undefined;
-  value: T;
-  useRawReturn?: boolean;
-  isContainDraft?: boolean;
-  isRoot?: boolean;
-}) {
-  const { rootDraft, value, useRawReturn = false, isRoot = true } = options;
-  forEach(value, (key, item, source) => {
-    const proxyDraft = getProxyDraft(item);
-    // just handle the draft which is created by the same rootDraft
-    if (
-      proxyDraft &&
-      rootDraft &&
-      proxyDraft.finalities === rootDraft.finalities
-    ) {
-      options.isContainDraft = true;
-      const currentValue = proxyDraft.original;
-      // final update value, but just handle return value
-      if (source instanceof Set) {
-        const arr = Array.from(source);
-        source.clear();
-        arr.forEach((_item) =>
-          source.add(key === _item ? currentValue : _item)
-        );
-      } else {
-        set(source, key, currentValue);
+// Only development builds read `containsDraft`, so production builds keep no
+// state for the warnings.
+export function handleReturnValue(
+  rootDraft: ProxyDraft<any> | undefined,
+  value: object,
+  useRawReturn?: boolean
+) {
+  let containsDraft = false;
+  const replaceDrafts = (target: object) =>
+    forEach(target, (key, item, source) => {
+      const proxyDraft = getProxyDraft(item);
+      // just handle the draft which is created by the same rootDraft
+      if (
+        proxyDraft &&
+        rootDraft &&
+        proxyDraft.finalities === rootDraft.finalities
+      ) {
+        containsDraft = true;
+        const currentValue = proxyDraft.original;
+        // final update value, but just handle return value
+        if (source instanceof Set) {
+          const arr = Array.from(source);
+          source.clear();
+          arr.forEach((_item) =>
+            source.add(key === _item ? currentValue : _item)
+          );
+        } else {
+          set(source, key, currentValue);
+        }
+      } else if (typeof item === 'object' && item !== null) {
+        replaceDrafts(item);
       }
-    } else if (typeof item === 'object' && item !== null) {
-      options.value = item;
-      options.isRoot = false;
-      handleReturnValue(options);
-    }
-  });
-  if (__DEV__ && isRoot) {
-    if (!options.isContainDraft)
+    });
+  replaceDrafts(value);
+  if (__DEV__) {
+    if (useRawReturn) {
+      if (containsDraft) {
+        console.warn(
+          `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
+        );
+      }
+    } else if (!containsDraft) {
       console.warn(
         `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`
-      );
-
-    if (useRawReturn) {
-      console.warn(
-        `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
       );
     }
   }

@@ -68,3 +68,19 @@ test('strict mode does not warn about unchanged drafts', () => {
   expect(warn).not.toHaveBeenCalled();
   warn.mockRestore();
 });
+
+test('option and return value warnings are not printed', () => {
+  const { apply, create, rawReturn } = mutative;
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  apply({ count: 1 }, [{ op: 'replace', path: ['count'], value: 2 }], {
+    mutable: true,
+    enableAutoFreeze: true,
+  });
+  create({ a: { b: 1 } }, () => ({ a: { b: 2 } }));
+  create({ a: { b: 1 } }, (draft) => rawReturn({ a: draft.a }), {
+    strict: true,
+  });
+  rawReturn(1 as any);
+  expect(warn).not.toHaveBeenCalled();
+  warn.mockRestore();
+});

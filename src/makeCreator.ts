@@ -188,17 +188,13 @@ export const makeCreator: MakeCreator = (arg) => {
         if (rawReturnValue) {
           const _value = rawReturnValue[0];
           if (_options.strict && typeof value === 'object' && value !== null) {
-            handleReturnValue({
-              rootDraft: proxyDraft,
-              value,
-              useRawReturn: true,
-            });
+            handleReturnValue(proxyDraft, value, true);
           }
           return finalize([_value]);
         }
         if (value !== undefined) {
           if (typeof value === 'object' && value !== null) {
-            handleReturnValue({ rootDraft: proxyDraft, value });
+            handleReturnValue(proxyDraft, value);
           }
           return finalize([value]);
         }
