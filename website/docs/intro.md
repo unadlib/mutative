@@ -70,7 +70,7 @@ This is why Mutative was created.
 ## Features and Benefits
 
 - **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
-- **High performance** - About 6x faster than Immer with each library's defaults, and faster than hand-written spreads on wide objects and large arrays.
+- **High performance** - About 6x faster than Immer out of the box, and faster than hand-written spreads when updating objects with thousands of keys or inserting at the front of large arrays.
 - **Optional freezing state** - No freezing of immutable data by default.
 - **Support for JSON Patch** - Full compliance with JSON Patch specification.
 - **Custom shallow copy** - Support for more types of immutable data.

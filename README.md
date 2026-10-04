@@ -8,9 +8,9 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/mutative)](https://npmtrends.com/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-**Mutative** - A JavaScript library for efficient immutable updates, about 3x faster than Immer with matched settings and 6x faster with each library's defaults, across [90 benchmarked workloads](./perf-testing/reports/SUMMARY.md).
+**Mutative** - A JavaScript library for efficient immutable updates. Across [90 benchmarked workloads](./perf-testing/reports/SUMMARY.md), it is about 3x faster than Immer with the same settings and 6x faster out of the box.
 
-Mutative is about 3x faster than Immer with matched settings, 6x with each library's defaults, and up to 1,125x when moving elements of large arrays. It also beats hand-written spread reducers on wide objects and large-array moves, the cases where copying dominates.
+The gap widens on large arrays, where Mutative moves elements up to 1,125x faster than Immer. When copying dominates, such as updating objects with thousands of keys or inserting at the front of a large array, Mutative is even faster than hand-written spread reducers.
 
 **How does Mutative compare with the spread operation (hand-written reducers)?**
 
@@ -112,7 +112,7 @@ The difference buys the draft fast paths and the native array methods measured i
 ## Features and Benefits
 
 - **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
-- **High performance** - About 6x faster than Immer with each library's defaults, and faster than hand-written spreads on wide objects and large arrays.
+- **High performance** - About 6x faster than Immer out of the box, and faster than hand-written spreads when updating objects with thousands of keys or inserting at the front of large arrays.
 - **Optional freezing state** - No freezing of immutable data by default.
 - **Support for JSON Patch** - Full compliance with JSON Patch specification.
 - **Custom shallow copy** - Support for more types of immutable data.
