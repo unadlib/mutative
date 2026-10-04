@@ -51,14 +51,15 @@ export function handleReturnValue<T extends object>(options: {
     }
   });
   if (__DEV__ && isRoot) {
-    if (!options.isContainDraft)
+    if (useRawReturn) {
+      if (options.isContainDraft) {
+        console.warn(
+          `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
+        );
+      }
+    } else if (!options.isContainDraft) {
       console.warn(
         `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`
-      );
-
-    if (useRawReturn) {
-      console.warn(
-        `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
       );
     }
   }
