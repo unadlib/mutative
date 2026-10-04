@@ -1,6 +1,6 @@
 # Mutative benchmarks
 
-This suite ports the workloads from `immerjs/immer/perf-testing` at [`061c2425e1c9dff89e4e4189d42af1b7839dfe0a`](https://github.com/immerjs/immer/tree/061c2425e1c9dff89e4e4189d42af1b7839dfe0a/perf-testing) and extends them with Map and Set values, object records, class instances, a deep path, a combined large-state update, patch application, and producers that return a value. The upstream MIT license is retained in [LICENSE](./LICENSE). It is the repository's only benchmark suite.
+This suite ports the workloads from `immerjs/immer/perf-testing` at [`061c2425e1c9dff89e4e4189d42af1b7839dfe0a`](https://github.com/immerjs/immer/tree/061c2425e1c9dff89e4e4189d42af1b7839dfe0a/perf-testing) and extends them with Map and Set values, object records, class instances, a deep path, a combined large-state update, patch application, producers that return a value, and searches of changed arrays. The upstream MIT license is retained in [LICENSE](./LICENSE). It is the repository's only benchmark suite.
 
 It compares a **candidate production Mutative build**, the **exactly pinned Mutative v1.3.0 npm baseline** (`mutative-v1` alias), **Immer 11.1.18** in the root `package.json` and `pnpm-lock.yaml`, and a **hand-written reducer**: the spread-and-copy implementation that is also every scenario's reference result. Immer 11.1.18 was npm's `latest` on 2026-09-30. The candidate defaults to the current checkout. Its actual version, source revision, and production hash are reported; the current candidate is still 1.3.0 and must not be described as v2. Immer's `enableArrayMethods` plugin is enabled only when a run passes `--immer-array-methods`; such reports record `arrayMethodsEnabled: true` and the budget gate rejects them. Mutative's native array methods need no option. Immer's `enableMapSet` plugin is loaded only in processes that run Map or Set scenarios; see [fairness and interpretation](#fairness-and-interpretation). See the existing [array-method reproductions](../test/immer-array-methods.md).
 
@@ -79,6 +79,7 @@ The runner never upgrades dependencies implicitly. Reports record the actual ins
 | Large-state push and insert   | push-and-insert, push-and-insert-reuse                                                                                     |                         1 and 10 |
 | Patch application             | apply-update-10pct, apply-array-ops, apply-reverse                                                                         |                   1 `apply` call |
 | Returned values               | return-replace, return-replace-raw, return-filter                                                                          |                                1 |
+| Searches                      | search-draft, search-current, search-current-shifted                                                                       |                                1 |
 
 Defaults retain upstream's 100-row array, 10 nested items per row, 1,000/3,000 property objects, five updates in `update-multiple`, and ten state-reuse calls. The RTKQ scenario is a simulated reducer pattern, not Redux Toolkit execution. `--reuse-iterations` must not exceed `--array-size` so reused updates always target existing items.
 
@@ -95,6 +96,8 @@ Map and Set scenarios use a `Map` of `--array-size` rows keyed by number, a `Set
 The `apply-*` scenarios time Mutative's `apply()` and Immer's `applyPatches()` on an array of nested rows. They replace the nested value of the first 10% of rows; insert, remove and replace rows; or replace every row with a detached copy of its mirror, as the forward patches of a reversal would. Both libraries deep-clone patch values while applying them. These scenarios run with patches off, and the hand-written reducer does not run them.
 
 The `return-*` scenarios return a value from the producer instead of changing the draft. `return-replace` returns a copy of the state with replaced rows, and both libraries search it for drafts. `return-replace-raw` wraps the same value in Mutative's `rawReturn()`, which skips that search; Immer has no equivalent and receives the plain value. `return-filter` returns `draft.filter()` of a root array, whose drafts the libraries must resolve to their original rows.
+
+The `search-*` scenarios find the last row of an array of nested rows and update it after the producer has changed the array: `search-draft` and `search-current` first update the first row, and `search-current-shifted` removes it with `shift()`. `search-draft` calls `findIndex` on the draft, which drafts every row it visits; the other two search the library's `current()` snapshot of the array and update the match through the draft.
 
 ## Fairness and interpretation
 

@@ -200,7 +200,8 @@ export function applyAdditionalRecipe(
   action,
   consumeRead,
   state,
-  rawReturn
+  rawReturn,
+  current
 ) {
   switch (action.type) {
     case 'bench/density':
@@ -286,7 +287,14 @@ export function applyAdditionalRecipe(
       draft.rows[0].value += 1;
       break;
     default:
-      return applyExtendedRecipe(draft, action, consumeRead, state, rawReturn);
+      return applyExtendedRecipe(
+        draft,
+        action,
+        consumeRead,
+        state,
+        rawReturn,
+        current
+      );
   }
   return undefined;
 }

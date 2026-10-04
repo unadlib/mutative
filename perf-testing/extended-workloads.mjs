@@ -204,6 +204,18 @@ export function createExtendedScenarios(config) {
     entry('return-filter', () => range(size).map(row), [
       { type: 'bench/return-filter' },
     ]),
+    // Find the last row and update it after the array changed: by searching
+    // the draft, which drafts every row it visits, or a current() snapshot,
+    // which reads plain values, after an update or after a shift.
+    entry('search-draft', rowsState, [
+      { type: 'bench/search', via: 'draft', id: size - 1 },
+    ]),
+    entry('search-current', rowsState, [
+      { type: 'bench/search', via: 'current', id: size - 1 },
+    ]),
+    entry('search-current-shifted', rowsState, [
+      { type: 'bench/search', via: 'current', shift: true, id: size - 1 },
+    ]),
   ];
 }
 
@@ -219,7 +231,8 @@ export function applyExtendedRecipe(
   action,
   consumeRead,
   state,
-  rawReturn
+  rawReturn,
+  current
 ) {
   switch (action.type) {
     case 'bench/map-update':
@@ -283,6 +296,14 @@ export function applyExtendedRecipe(
       return rawReturn({ ...state, rows: action.payload });
     case 'bench/return-filter':
       return draft.filter((item) => item.value % 2 === 0);
+    case 'bench/search': {
+      if (action.shift) draft.rows.shift();
+      else draft.rows[0].nested.value += 1;
+      const rows = action.via === 'current' ? current(draft.rows) : draft.rows;
+      const index = rows.findIndex((item) => item.id === action.id);
+      if (index !== -1) draft.rows[index].nested.value += 1;
+      break;
+    }
     default:
       throw new Error(`Unknown extended recipe: ${action.type}`);
   }
@@ -414,6 +435,13 @@ export function reduceExtended(state, action) {
       return { ...state, rows: action.payload };
     case 'bench/return-filter':
       return state.filter((item) => item.value % 2 === 0);
+    case 'bench/search': {
+      const rows = state.rows.slice(action.shift ? 1 : 0);
+      if (!action.shift) rows[0] = incrementNested(rows[0]);
+      const index = rows.findIndex((item) => item.id === action.id);
+      if (index !== -1) rows[index] = incrementNested(rows[index]);
+      return { ...state, rows };
+    }
     default:
       return state;
   }

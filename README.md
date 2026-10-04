@@ -33,7 +33,7 @@ This is why Mutative was created.
 
 > Mutative passed all of Immer's test cases.
 
-The [benchmark suite](./perf-testing/README.md) times 90 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, and returned values. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+The [benchmark suite](./perf-testing/README.md) times 93 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
 With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 508 of 530 measured cases, 3.1x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 133 of 136 cases, 6.0x on geometric mean.
 

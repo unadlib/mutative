@@ -1,11 +1,19 @@
-import { apply, create, isDraft as isMutativeDraft, rawReturn } from 'mutative';
+import {
+  apply,
+  create,
+  current,
+  isDraft as isMutativeDraft,
+  rawReturn,
+} from 'mutative';
 import {
   apply as applyV1,
   create as createV1,
+  current as currentV1,
   isDraft as isV1Draft,
   rawReturn as rawReturnV1,
 } from 'mutative-v1';
 import {
+  current as currentImmer,
   enableArrayMethods,
   enableMapSet,
   enablePatches,
@@ -61,10 +69,11 @@ export function createRuntime(
         ? {
             create: createV1,
             apply: applyV1,
+            current: currentV1,
             isDraft: isV1Draft,
             rawReturn: rawReturnV1,
           }
-        : { create, apply, isDraft: isMutativeDraft, rawReturn };
+        : { create, apply, current, isDraft: isMutativeDraft, rawReturn };
     const mark = scenario.mark ? { mark: scenario.mark } : {};
     const options = {
       enableAutoFreeze: autoFreeze,
@@ -80,6 +89,7 @@ export function createRuntime(
         : createDraftReducer(
             (base, recipe) => implementation.create(base, recipe, options),
             consumeRead,
+            implementation.current,
             implementation.rawReturn
           ),
       isDraft: implementation.isDraft,
@@ -110,7 +120,8 @@ export function createRuntime(
         ? (state, action) => applyPatches(state, action.patches)
         : createDraftReducer(
             patches ? immer.produceWithPatches : immer.produce,
-            consumeRead
+            consumeRead,
+            currentImmer
           ),
       isDraft: isImmerDraft,
       applyPatches,
