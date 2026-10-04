@@ -1,4 +1,5 @@
 import { RAW_RETURN_SYMBOL } from './constant';
+import { die, ErrorCode } from './error';
 
 /**
  * Use rawReturn() to wrap the return value to skip the draft check and thus improve performance.
@@ -20,10 +21,10 @@ import { RAW_RETURN_SYMBOL } from './constant';
  */
 export function rawReturn<T extends object | undefined>(value: T): T {
   if (arguments.length === 0) {
-    throw new Error('rawReturn() must be called with a value.');
+    die(ErrorCode.RawReturnWithoutValue);
   }
   if (arguments.length > 1) {
-    throw new Error('rawReturn() must be called with one argument.');
+    die(ErrorCode.RawReturnWithExtraArguments);
   }
   if (
     __DEV__ &&

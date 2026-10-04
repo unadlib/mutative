@@ -17,6 +17,14 @@ export const enum ErrorCode {
   InvalidMark = 10,
   CannotModifyFrozenObject = 11,
   InvalidPatchPath = 12,
+  ReservedPatchAttribute = 13,
+  CannotApplyPatch = 14,
+  ReplacePatchOnSet = 15,
+  UnsupportedPatchOperation = 16,
+  ApplyOptionsToDraft = 17,
+  OriginalOnNonDraft = 18,
+  RawReturnWithoutValue = 19,
+  RawReturnWithExtraArguments = 20,
 }
 
 type ErrorArguments = {
@@ -33,6 +41,14 @@ type ErrorArguments = {
   [ErrorCode.InvalidMark]: [];
   [ErrorCode.CannotModifyFrozenObject]: [];
   [ErrorCode.InvalidPatchPath]: [path: (string | number)[]];
+  [ErrorCode.ReservedPatchAttribute]: [];
+  [ErrorCode.CannotApplyPatch]: [path: (string | number)[]];
+  [ErrorCode.ReplacePatchOnSet]: [];
+  [ErrorCode.UnsupportedPatchOperation]: [op: string];
+  [ErrorCode.ApplyOptionsToDraft]: [];
+  [ErrorCode.OriginalOnNonDraft]: [target: any];
+  [ErrorCode.RawReturnWithoutValue]: [];
+  [ErrorCode.RawReturnWithExtraArguments]: [];
 };
 
 type ErrorBuilders = {
@@ -71,6 +87,23 @@ const errors: ErrorBuilders = __DEV__
       () => `Cannot modify frozen object`,
       // ErrorCode.InvalidPatchPath
       (path) => `Cannot resolve patch at '${path.join('/')}'.`,
+      // ErrorCode.ReservedPatchAttribute
+      () =>
+        `Patching reserved attributes like __proto__ and constructor is not allowed.`,
+      // ErrorCode.CannotApplyPatch
+      (path) => `Cannot apply patch at '${path.join('/')}'.`,
+      // ErrorCode.ReplacePatchOnSet
+      () => `Cannot apply replace patch to set.`,
+      // ErrorCode.UnsupportedPatchOperation
+      (op) => `Unsupported patch operation: ${op}.`,
+      // ErrorCode.ApplyOptionsToDraft
+      () => `Cannot apply patches with options to a draft.`,
+      // ErrorCode.OriginalOnNonDraft
+      (target) => `original() is only used for a draft, parameter: ${target}`,
+      // ErrorCode.RawReturnWithoutValue
+      () => 'rawReturn() must be called with a value.',
+      // ErrorCode.RawReturnWithExtraArguments
+      () => 'rawReturn() must be called with one argument.',
     ]
   : ([] as unknown as ErrorBuilders);
 

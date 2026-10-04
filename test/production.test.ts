@@ -27,6 +27,30 @@ test('errors carry their minified code', () => {
   expect(() => current({} as any)).toThrow(minified(7));
 });
 
+test('patch, original() and rawReturn() errors carry their minified code', () => {
+  const { apply, create, original, rawReturn } = mutative;
+  expect(() =>
+    apply({ a: 1 }, [{ op: 'replace', path: ['__proto__', 'x'], value: 1 }])
+  ).toThrow(minified(13));
+  expect(() =>
+    apply({ a: 1 }, [{ op: 'add', path: ['a', 'b', 'c'], value: 1 }])
+  ).toThrow(minified(14));
+  expect(() =>
+    apply({ set: new Set([1]) }, [
+      { op: 'replace', path: ['set', 0], value: 2 },
+    ])
+  ).toThrow(minified(15));
+  expect(() =>
+    apply({ a: 1 }, [{ op: 'copy' as any, path: ['a'], value: 1 }])
+  ).toThrow(minified(16));
+  create({ a: 1 }, (draft) => {
+    expect(() => apply(draft, [], {})).toThrow(minified(17));
+  });
+  expect(() => original({})).toThrow(minified(18));
+  expect(() => (rawReturn as any)()).toThrow(minified(19));
+  expect(() => (rawReturn as any)({}, {})).toThrow(minified(20));
+});
+
 test('auto-freeze passes over primitives in Maps, Sets, and arrays', () => {
   const { create } = mutative;
   const state = create(

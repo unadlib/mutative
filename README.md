@@ -98,16 +98,14 @@ Immer's optional `enableArrayMethods()` plugin also runs array methods on the dr
 
 ### Bundle size
 
-Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from each library's ESM artifact (Immer 11.1.18 `dist/immer.production.mjs`; Mutative `dist/mutative.esm.mjs` at source `e70aeed` with `process.env.NODE_ENV` defined as `production`; this artifact keeps Mutative's development messages and warnings), bundled for the browser with `--minify --target=es2018 --format=esm`. Each consumer references the listed exports.
+Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from the ESM entry that bundlers resolve for each library (Immer 11.1.21 `dist/immer.mjs`; Mutative `dist/mutative.esm.mjs` at source `18a0ea7`), with `process.env.NODE_ENV` defined as `production`, bundled for the browser with `--minify --target=es2018 --format=esm`. The first row imports only `produce` or `create`. The second adds `applyPatches`, `current` and `original` with Immer's `enablePatches`, `enableMapSet` and `enableArrayMethods`, and `apply`, `current` and `original` for Mutative.
 
-| Bundle                                                              | brotli |
-| ------------------------------------------------------------------- | -----: |
-| Immer core (`produce`, `current`, `original`)                       | 3.4 kB |
-| Immer with `enablePatches` and `enableMapSet`                       | 5.2 kB |
-| Immer with `enablePatches`, `enableMapSet` and `enableArrayMethods` | 6.0 kB |
-| Mutative (`create`, `apply`, `current`, `original`)                 | 9.0 kB |
+| Bundle                                      |  Immer | Mutative |
+| ------------------------------------------- | -----: | -------: |
+| `produce` / `create` only                   | 3.6 kB |   7.4 kB |
+| With patches, `Map`/`Set` and array methods | 6.4 kB |   7.9 kB |
 
-The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
+Mutative's `create` includes patches, `Map`/`Set` support and the native array methods even when a recipe does not use them: they are part of `create`, not separate imports, so bundlers cannot drop them. The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
 
 ## Features and Benefits
 
@@ -154,6 +152,9 @@ CDN
 
 - Unpkg: `<script src="https://unpkg.com/mutative"></script>`
 - JSDelivr: `<script src="https://cdn.jsdelivr.net/npm/mutative"></script>`
+- ES module: `import { create } from 'https://unpkg.com/mutative/dist/mutative.esm.production.min.mjs';`
+
+The package's other ESM files read `process.env.NODE_ENV`, which bundlers and Node.js provide; a browser without a bundler needs the production file above.
 
 ## Usage
 

@@ -15,6 +15,7 @@
     ".": {
       "import": {
         "types": "./dist/index.d.mts",
+        "node": "./dist/index.mjs",
         "default": "./dist/mutative.esm.mjs"
       },
       "require": {
@@ -57,12 +58,22 @@
   },
   "size-limit": [
     {
+      "name": "production CJS, all exports",
       "path": "dist/mutative.cjs.production.min.js",
-      "limit": "6.7 KB"
+      "import": "*",
+      "limit": "8.2 KB"
     },
     {
-      "path": "dist/mutative.esm.js",
-      "limit": "6.5 KB"
+      "name": "ESM, create",
+      "path": "dist/mutative.esm.mjs",
+      "import": "{ create }",
+      "limit": "7.2 KB"
+    },
+    {
+      "name": "ESM, all exports",
+      "path": "dist/mutative.esm.mjs",
+      "import": "*",
+      "limit": "8.1 KB"
     }
   ],
   "repository": {

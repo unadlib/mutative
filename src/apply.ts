@@ -8,6 +8,7 @@ import type {
 } from './interface';
 import { deepClone, get, getType, isDraft, unescapePath } from './utils';
 import { create } from './create';
+import { die, ErrorCode } from './error';
 
 /**
  * `apply(state, patches)` to apply patches to state
@@ -68,9 +69,7 @@ export function apply<
             keyForCheck !== undefined &&
             keyForCheck === 'prototype')
         ) {
-          throw new Error(
-            `Patching reserved attributes like __proto__ and constructor is not allowed.`
-          );
+          die(ErrorCode.ReservedPatchAttribute);
         }
         if (
           (parentType === DraftType.Object ||
@@ -88,7 +87,7 @@ export function apply<
         // use `index` in Set draft
         base = get(parentType === DraftType.Set ? Array.from(base) : base, key);
         if (typeof base !== 'object') {
-          throw new Error(`Cannot apply patch at '${path.join('/')}'.`);
+          die(ErrorCode.CannotApplyPatch, path);
         }
       }
 
@@ -102,7 +101,7 @@ export function apply<
             case DraftType.Map:
               return base.set(key, value);
             case DraftType.Set:
-              throw new Error(`Cannot apply replace patch to set.`);
+              return die(ErrorCode.ReplacePatchOnSet);
             default:
               return (base[key] = value);
           }
@@ -134,7 +133,7 @@ export function apply<
               return delete base[key];
           }
         default:
-          throw new Error(`Unsupported patch operation: ${op}.`);
+          die(ErrorCode.UnsupportedPatchOperation, op);
       }
     });
   };
@@ -153,7 +152,7 @@ export function apply<
   }
   if (isDraft(state)) {
     if (applyOptions !== undefined) {
-      throw new Error(`Cannot apply patches with options to a draft.`);
+      die(ErrorCode.ApplyOptionsToDraft);
     }
     mutate(state as Draft<T>);
     return state as ApplyResult<T, F, A>;
