@@ -1,3 +1,4 @@
+import type { ProxyDraft } from './interface';
 import { dataTypes, iteratorPrototype, iteratorSymbol } from './constant';
 import { internal } from './internal';
 import { checkReadable } from './unsafe';
@@ -10,6 +11,38 @@ import {
   markChanged,
   markFinalization,
 } from './utils';
+
+// The value at `key` as `get()` returns it: a draft of a draftable value of
+// the original Map. Iteration calls this with the draft state it looked up
+// once, instead of calling `get()` through the proxy, which binds a new
+// function for every entry.
+function getEntry(target: ProxyDraft, key: any) {
+  const value = latest(target).get(key);
+  const mutable = target.options.mark?.(value, dataTypes) === dataTypes.mutable;
+  if (target.options.strict) {
+    checkReadable(value, target.options, mutable);
+  }
+  if (mutable) {
+    return value;
+  }
+  if (target.finalized || !isDraftable(value, target.options)) {
+    return value;
+  }
+  // drafted or reassigned
+  if (value !== target.original.get(key)) {
+    return value;
+  }
+  const draft = internal.createDraft(
+    value,
+    target,
+    key,
+    target.finalities,
+    target.options
+  );
+  ensureShallowCopy(target);
+  target.copy.set(key, draft);
+  return draft;
+}
 
 export const mapHandler = {
   get size() {
@@ -59,68 +92,42 @@ export const mapHandler = {
   },
   forEach(callback: (value: any, key: any, self: any) => void, thisArg?: any) {
     const target = getProxyDraft(this)!;
-    latest(target).forEach((_value: any, _key: any) => {
-      callback.call(thisArg, this.get(_key), _key, this);
+    latest(target).forEach((_value: any, key: any) => {
+      callback.call(thisArg, getEntry(target, key), key, this);
     });
   },
   get(key: any): any {
-    const target = getProxyDraft(this)!;
-    const value = latest(target).get(key);
-    const mutable =
-      target.options.mark?.(value, dataTypes) === dataTypes.mutable;
-    if (target.options.strict) {
-      checkReadable(value, target.options, mutable);
-    }
-    if (mutable) {
-      return value;
-    }
-    if (target.finalized || !isDraftable(value, target.options)) {
-      return value;
-    }
-    // drafted or reassigned
-    if (value !== target.original.get(key)) {
-      return value;
-    }
-    const draft = internal.createDraft(
-      value,
-      target,
-      key,
-      target.finalities,
-      target.options
-    );
-    ensureShallowCopy(target);
-    target.copy.set(key, draft);
-    return draft;
+    return getEntry(getProxyDraft(this)!, key);
   },
   keys(): IterableIterator<any> {
     return latest(getProxyDraft(this)!).keys();
   },
   values(): IterableIterator<any> {
+    const target = getProxyDraft(this)!;
     const iterator = this.keys();
     return {
       __proto__: iteratorPrototype,
       next: () => {
         const result = iterator.next();
         if (result.done) return result;
-        const value = this.get(result.value);
         return {
           done: false,
-          value,
+          value: getEntry(target, result.value),
         };
       },
     } as any;
   },
   entries(): IterableIterator<[any, any]> {
+    const target = getProxyDraft(this)!;
     const iterator = this.keys();
     return {
       __proto__: iteratorPrototype,
       next: () => {
         const result = iterator.next();
         if (result.done) return result;
-        const value = this.get(result.value);
         return {
           done: false,
-          value: [result.value, value],
+          value: [result.value, getEntry(target, result.value)],
         };
       },
     } as any;

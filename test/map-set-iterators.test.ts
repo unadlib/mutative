@@ -81,6 +81,54 @@ describe('iterators of Map and Set drafts', () => {
     ]);
   });
 
+  test('Map iteration reads entries as get() does', () => {
+    class Mutable {
+      value = 1;
+    }
+    const mutable = new Mutable();
+    const base = new Map<string, any>([
+      ['a', { v: 1 }],
+      ['b', mutable],
+      ['c', 1],
+    ]);
+    const state = create(
+      base,
+      (draft) => {
+        const read: any[] = [];
+        draft.forEach((value) => read.push(value));
+        expect(read[0]).toBe(draft.get('a'));
+        expect(read[1]).toBe(mutable);
+        expect([...draft.values()]).toStrictEqual(read);
+        expect([...draft.entries()].map(([, value]) => value)).toStrictEqual(
+          read
+        );
+        read[0].v = 2;
+        read[1].value = 2;
+      },
+      {
+        mark: (value) => (value instanceof Mutable ? 'mutable' : undefined),
+      }
+    );
+    expect(state.get('a')).toStrictEqual({ v: 2 });
+    expect(base.get('a')).toStrictEqual({ v: 1 });
+    expect(mutable.value).toBe(2);
+    for (const iterate of [
+      (map: Map<string, any>) => map.forEach(() => undefined),
+      (map: Map<string, any>) => [...map.values()],
+      (map: Map<string, any>) => [...map.entries()],
+    ]) {
+      expect(() =>
+        create(
+          { map: new Map([['date', new Date(0)]]) },
+          (draft) => {
+            iterate(draft.map);
+          },
+          { strict: true }
+        )
+      ).toThrow('Strict mode');
+    }
+  });
+
   test.runIf(hasIteratorHelpers)('iterator helpers are available', () => {
     create(
       {
