@@ -27,7 +27,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 ## Returned values
 
-- With `enableAutoFreeze`, production builds no longer search frozen objects in a value returned from a recipe, or the values they hold, for drafts, and leave a draft there unresolved. Development builds still search them and throw when they find one, also in an unfrozen object that a frozen one holds, where v1 replaced it. Never put a draft in a frozen object or in a value it holds. Without auto-freeze, returned values are searched as in v1.
+- With `enableAutoFreeze`, production builds no longer search frozen objects in a value returned from a recipe, the returned value included, or the values they hold, for drafts, and leave a draft there unresolved. Development builds still search them and throw when they find one, also in an unfrozen object that a frozen one holds, where v1 replaced it. Never put a draft in a frozen object or in a value it holds. Without auto-freeze, returned values are searched as in v1.
 
 ## Development builds
 

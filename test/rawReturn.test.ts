@@ -650,3 +650,27 @@ test('development builds fail on drafts that frozen returned values hold', () =>
   const state = create(baseState, holdInFrozen);
   expect((state.held as any).inner.a).toBe(baseState.a);
 });
+
+test('development builds fail on drafts under a frozen returned value', () => {
+  const message = /holds a draft in a frozen object or in a value it holds/;
+  const baseState = { a: { value: 1 }, held: {} as Record<string, unknown> };
+  const options = { enableAutoFreeze: true };
+  // A draft in the frozen returned value itself.
+  expect(() =>
+    create(
+      baseState,
+      (draft) => Object.freeze({ a: draft.a, held: {} }),
+      options
+    )
+  ).toThrow(message);
+  // A draft in an unfrozen object that the frozen returned value holds.
+  const holdUnderFrozenRoot = (draft: typeof baseState) =>
+    Object.freeze({ a: baseState.a, held: { a: draft.a } });
+  expect(() => create(baseState, holdUnderFrozenRoot, options)).toThrow(
+    message
+  );
+  // Without auto-freeze, the returned value is searched as before.
+  const state = create(baseState, holdUnderFrozenRoot);
+  expect(state.held.a).toBe(baseState.a);
+  expect(isDraft(state.held.a)).toBeFalsy();
+});
