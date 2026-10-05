@@ -157,3 +157,30 @@ test('with auto-freeze, drafts that frozen returned values hold stay unresolved'
   // Without auto-freeze, frozen objects are searched as before.
   expect(create(baseState, holdInFrozen).held.inner.a).toBe(baseState.a);
 });
+
+test('with auto-freeze, a frozen returned value is not searched', () => {
+  const { create } = mutative;
+  const options = { enableAutoFreeze: true };
+  const baseState = { a: { value: 1 }, held: {} as any };
+  let reads = 0;
+  const previous = Object.freeze({
+    a: baseState.a,
+    get held() {
+      reads += 1;
+      return {};
+    },
+  });
+  // An earlier state is returned as it is.
+  expect(create(baseState, () => previous, options)).toBe(previous);
+  expect(reads).toBe(0);
+  // A draft in an unfrozen object that the frozen returned value holds stays
+  // unresolved.
+  const holdUnderFrozenRoot = (draft: typeof baseState) =>
+    Object.freeze({ a: baseState.a, held: { a: draft.a } });
+  const state = create(baseState, holdUnderFrozenRoot, options);
+  expect(() => state.held.a.value).toThrow(TypeError);
+  // Without auto-freeze, the returned value is searched as before.
+  expect(create(baseState, holdUnderFrozenRoot).held.a).toBe(baseState.a);
+  expect(create(baseState, () => previous).held).toEqual({});
+  expect(reads).toBe(2);
+});

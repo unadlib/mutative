@@ -26,9 +26,9 @@ export function handleReturnValue(
 ) {
   let containsDraft = false;
   // With auto-freeze, the state is frozen, so production builds do not search
-  // frozen objects or the values they hold, which spares searching state
-  // built from earlier states. Without it, values are rarely frozen and
-  // checking would cost more than it saves.
+  // frozen objects, the returned value included, or the values they hold,
+  // which spares searching state built from earlier states. Without it,
+  // values are rarely frozen and checking would cost more than it saves.
   const skipsFrozen = !!rootDraft?.options.enableAutoFreeze;
   // `frozen` tells development builds that a skipped object holds `target`.
   const replaceDrafts = (target: object, frozen?: boolean) =>
@@ -67,7 +67,12 @@ export function handleReturnValue(
         }
       }
     });
-  replaceDrafts(value);
+  // The returned value follows the same rule as the values it holds.
+  if (!skipsFrozen || !Object.isFrozen(value)) {
+    replaceDrafts(value);
+  } else if (__DEV__) {
+    replaceDrafts(value, true);
+  }
   if (__DEV__) {
     if (useRawReturn) {
       if (containsDraft) {
