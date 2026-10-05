@@ -1959,17 +1959,21 @@ describe('array methods on the draft copy', () => {
 describe('patch values that apply() copies', () => {
   test('own symbol keys are copied', () => {
     const key = Symbol('key');
+    const flag = Symbol('flag');
+    const empty = Symbol('empty');
     const base: any = { item: null };
     const [state, patches] = create(
       base,
       (draft: any) => {
-        draft.item = { [key]: { deep: 1 }, x: 1 };
+        draft.item = { [key]: { deep: 1 }, [flag]: true, [empty]: null, x: 1 };
       },
       { enablePatches: true }
     );
     const next = apply(base, patches);
     expect(next.item[key]).toStrictEqual({ deep: 1 });
     expect(next.item[key]).not.toBe(state.item[key]);
+    expect(next.item[flag]).toBe(true);
+    expect(next.item[empty]).toBeNull();
     expect(next).toStrictEqual(state);
   });
 
