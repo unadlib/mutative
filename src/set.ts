@@ -2,6 +2,7 @@ import { ProxyDraft } from './interface';
 import { dataTypes, iteratorPrototype, iteratorSymbol } from './constant';
 import { internal } from './internal';
 import {
+  assertDraftActive,
   ensureShallowCopy,
   getProxyDraft,
   isDraftable,
@@ -27,6 +28,7 @@ const getNextIterator =
   () => {
     const result = iterator.next();
     if (result.done) return result;
+    assertDraftActive(target);
     const key = result.value as any;
     let value = target.setMap!.get(key);
     const currentDraft = getProxyDraft(value);
@@ -35,9 +37,8 @@ const getNextIterator =
     if (target.options.strict) {
       checkReadable(key, target.options, mutable);
     }
-    // An item of the original Set that was not drafted yet still maps to
-    // itself. A finalized item maps to its copy, which must stay: patches
-    // iterate the Set to resolve the path of a changed item.
+    // Only an original item still mapped to itself needs a draft. Preserve
+    // copies when this mapping has already been finalized.
     if (
       !mutable &&
       !currentDraft &&

@@ -3,6 +3,7 @@ import { dataTypes, iteratorPrototype, iteratorSymbol } from './constant';
 import { internal } from './internal';
 import { checkReadable } from './unsafe';
 import {
+  assertDraftActive,
   ensureShallowCopy,
   getProxyDraft,
   isDraftable,
@@ -93,6 +94,7 @@ export const mapHandler = {
   forEach(callback: (value: any, key: any, self: any) => void, thisArg?: any) {
     const target = getProxyDraft(this)!;
     latest(target).forEach((_value: any, key: any) => {
+      assertDraftActive(target);
       callback.call(thisArg, getEntry(target, key), key, this);
     });
   },
@@ -110,6 +112,7 @@ export const mapHandler = {
       next: () => {
         const result = iterator.next();
         if (result.done) return result;
+        assertDraftActive(target);
         return {
           done: false,
           value: getEntry(target, result.value),
@@ -125,6 +128,7 @@ export const mapHandler = {
       next: () => {
         const result = iterator.next();
         if (result.done) return result;
+        assertDraftActive(target);
         return {
           done: false,
           value: [result.value, getEntry(target, result.value)],
