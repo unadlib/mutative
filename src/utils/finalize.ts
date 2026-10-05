@@ -75,7 +75,8 @@ export type GeneratePatches = (
 ) => void;
 
 export function finalizeSetValue(target: ProxyDraft) {
-  if (target.type === DraftType.Set && target.copy) {
+  // A Set draft whose items never changed may have no item mapping.
+  if (target.type === DraftType.Set && target.copy && target.setMap) {
     target.copy.clear();
     target.setMap!.forEach((value) => {
       target.copy!.add(getValue(value));

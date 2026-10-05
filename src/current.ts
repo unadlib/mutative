@@ -14,6 +14,7 @@ import {
   shallowCopy,
 } from './utils';
 import { checksReads } from './unsafe';
+import { getSetMap } from './set';
 import { die, ErrorCode } from './error';
 
 // Only development builds read `containsDraft`, so production builds keep no
@@ -105,7 +106,7 @@ function getCurrent(target: any) {
           : new Map(target)
         : type === DraftType.Set
           ? proxyDraft
-            ? Array.from(proxyDraft.setMap!.values()!)
+            ? Array.from(getSetMap(proxyDraft).values())
             : Array.from(target as Set<any>)
           : shallowCopy(array ? latest(array) : target, proxyDraft?.options);
   }
