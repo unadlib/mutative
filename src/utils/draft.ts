@@ -52,9 +52,13 @@ export function getPath(
     const parentCopy = parent.copy;
     let key: any = target.key;
     if (parent.type === DraftType.Set) {
-      // Set items are keyed by their original value; paths use positions.
+      // Set items are keyed by their original value; paths use positions,
+      // which patches can follow only while the Set itself is unchanged.
+      // Once the recipe added or removed items, the Set's own patches carry
+      // every changed item by value, so patches under this path would be
+      // applied to whatever sits at the position in the base Set.
+      if (parent.assignedMap!.size > 0) return null;
       key = Array.from(parent.setMap!.keys()).indexOf(key);
-      if (!(parentCopy.size > key)) return null;
     } else if (get(parentCopy, key) !== target.proxy) {
       // The child left its key: it was moved, deleted or replaced, possibly
       // by another draft of a shared object. The parent's patches carry its

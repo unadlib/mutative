@@ -79,7 +79,7 @@ expect(inversePatches).toMatchInlineSnapshot(`
 
 ## Sets of objects
 
-Patches add a Set element by its value and remove one by the value it holds, so a `remove` patch removes an object only from a Set that holds that same object. `apply()` copies the value of each patch before applying it, so a Set that `apply()` changes holds copies of the objects that patches add, and the inverse patches cannot remove those copies: an undo after a redo leaves the object in the Set. Patches for Sets of primitives, and patches that change an object element in place, are not affected. When patches are replayed on states that `apply()` returned, as undo and redo do, keep such objects in a Map keyed by an id or in an array instead.
+Patches add a Set element by its value and remove one by the value it holds, so a `remove` patch removes an object only from a Set that holds that same object. A Set whose elements changed in place, without any element added or removed, gets patches under the position of each changed element, and they replay in both directions. Once a recipe adds or removes elements of a Set, the Set's `remove` and `add` patches carry every changed element by value instead. `apply()` copies the value of each patch before applying it, so a Set that `apply()` changes holds copies of the objects that patches add, and the inverse patches cannot remove those copies: an undo after a redo leaves the object in the Set. Patches for Sets of primitives are not affected. When patches are replayed on states that `apply()` returned, as undo and redo do, keep such objects in a Map keyed by an id or in an array instead.
 
 ## JSON patches
 

@@ -348,7 +348,7 @@ expect(baseState).toEqual({ foo: { bar: "test2" } });
 
 > ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state.
 
-> Patches add and remove Set elements by value, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/pathes#sets-of-objects).
+> Patches add and remove Set elements by value, also a changed element of a Set that added or removed elements, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/pathes#sets-of-objects).
 
 ### `current()`
 
@@ -719,6 +719,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - **Order.** The patches of a nested draft now come before those of its parents, the order Immer uses. For example, `const item = draft.list[0]; draft.list.length = 0; item.text = 'b'; draft.item = item;` yields the `list` length replace before the `item` add. Applying the patches gives the same state as before, and replace patches that only restated an unchanged draft at its original index are no longer emitted.
 - **Values.** A patch value that was a draft is now the object that the next state holds instead of a deep copy, and it is frozen with the state when `enableAutoFreeze` is on. `apply()` still copies patch values before applying them. Copy a patch value before mutating it.
 - **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, no longer emits patches under its old path; the patches of its parent carry its value. In v1, the patches of such a recipe could fail to apply, for example the inverse patches once a primitive took the old key.
+- **Set items.** A changed item of a Set that also added or removed items is carried by the Set's `remove` and `add` patches. v1 also emitted patches under the item's position in the changed Set, which replay applied to whatever sat at that position in the base Set, or could not apply at all. A Set that only changed its items keeps the patches under each item's position.
 - **Original objects assigned over drafts.** Assigning the original object of a draft to the key that holds the draft is recorded like any other assignment: when the draft was read at that key, the key holds its original value again and emits no patch; when the draft was moved there from another key, the key emits the patch of that assignment. In v1, the first case emitted a `remove` patch for a key the state kept, and the second emitted none, so replaying the patches dropped the key or the element.
 
 ### Arrays
