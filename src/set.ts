@@ -37,11 +37,12 @@ const getNextIterator =
     if (target.options.strict) {
       checkReadable(key, target.options, mutable);
     }
-    // Only an original item still mapped to itself needs a draft. Preserve
-    // copies when this mapping has already been finalized.
+    // Only an original item still mapped to itself needs a draft, also when it
+    // is a draft of an outer create() call. Preserve copies when this mapping
+    // has already been finalized.
     if (
       !mutable &&
-      !currentDraft &&
+      (!currentDraft || currentDraft.finalities !== target.finalities) &&
       value === key &&
       isDraftable(key, target.options) &&
       !target.finalized &&

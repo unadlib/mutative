@@ -154,4 +154,16 @@ describe('drafts whose original is a draft of an outer create() call', () => {
     });
     expect(state).toBe(base);
   });
+
+  test('changes through the items of such a Set draft stay in its result', () => {
+    const base = { set: new Set([{ value: 1 }]) };
+    const state = create(base, (draft) => {
+      const result = create({ set: draft.set }, (innerDraft) => {
+        for (const item of innerDraft.set) item.value += 1;
+      });
+      expect([...result.set]).toEqual([{ value: 2 }]);
+      expect([...draft.set]).toEqual([{ value: 1 }]);
+    });
+    expect(state).toBe(base);
+  });
 });
