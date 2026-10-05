@@ -9,7 +9,7 @@ import {
 import { dataTypes, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
-import { arrayMethods, baseIndices, trackArrayMethod } from './array';
+import { arrayMethods, baseIndexOf, trackArrayMethod } from './array';
 import { internal } from './internal';
 import {
   deepFreeze,
@@ -163,7 +163,7 @@ function getTrap(
   if (value !== target.original[key]) {
     const state = target.arrayState;
     if (state === null || !state.relocated) return value;
-    const index = baseIndices(target).get(value);
+    const index = baseIndexOf(target, value);
     if (index === undefined) return value;
     draftKey = index;
   }

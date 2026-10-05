@@ -103,6 +103,7 @@ function arrayState(target: ProxyDraft) {
     diffStart: 0,
     diffEnd: 0,
     baseRefs: null,
+    lookups: 0,
     inert: null,
     dense: null,
   });
@@ -134,7 +135,7 @@ function isDense(target: ProxyDraft) {
 
 // Original index of each element of the original array, built once elements
 // have been moved natively and identity against the index no longer works.
-export function baseIndices(target: ProxyDraft) {
+function baseIndices(target: ProxyDraft) {
   const state = arrayState(target);
   let indices = state.baseRefs;
   if (indices === null) {
@@ -147,6 +148,23 @@ export function baseIndices(target: ProxyDraft) {
   return indices;
 }
 
+/**
+ * The original index of `value` once elements have moved natively, or
+ * undefined when it is not an element of the original array. The first few
+ * lookups search the original array from its end, which finds the index the
+ * map of original indices holds for a repeated element, so a few reads after
+ * a move do not index a large array; later lookups build the map.
+ */
+export function baseIndexOf(target: ProxyDraft, value: any) {
+  const state = arrayState(target);
+  if (state.baseRefs === null && state.lookups < 8) {
+    state.lookups += 1;
+    const index = arrayProto.lastIndexOf.call(target.original, value);
+    return index === -1 ? undefined : index;
+  }
+  return baseIndices(target).get(value);
+}
+
 // The original index of `value`, found at `index` before an operation, or -1
 // when it did not come from the original array.
 function baseIndex(target: ProxyDraft, value: any, index: number) {
@@ -154,7 +172,7 @@ function baseIndex(target: ProxyDraft, value: any, index: number) {
   if (state === null || !state.relocated) {
     return target.original[index] === value ? index : -1;
   }
-  const found = baseIndices(target).get(value);
+  const found = baseIndexOf(target, value);
   return found === undefined ? -1 : found;
 }
 
@@ -357,7 +375,7 @@ function isBaseElement(target: ProxyDraft, value: object, index: number) {
     state !== null &&
     state.relocated &&
     childAt(target, index) !== value &&
-    baseIndices(target).has(value)
+    baseIndexOf(target, value) !== undefined
   );
 }
 

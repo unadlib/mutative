@@ -75,6 +75,8 @@ export interface ArrayState {
   diffEnd: number;
   // Original index by element of the original array, built lazily.
   baseRefs: Map<any, number> | null;
+  // Original indices looked up by searching before `baseRefs` is built.
+  lookups: number;
   // Whether no element can be drafted; null until checked.
   inert: boolean | null;
   // Whether the array has no holes; null until checked.
