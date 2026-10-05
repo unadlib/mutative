@@ -239,3 +239,32 @@ test('copyWithin - 2', () => {
     draft.a[0].i++;
   });
 });
+
+test('array patches compare values as assignments do', () => {
+  const base = [0, -0, 5];
+  const [state, patches, inversePatches] = create(
+    base,
+    (draft) => {
+      draft[0] = -0;
+      draft[1] = 0;
+    },
+    { enablePatches: true }
+  );
+  expect(patches).toStrictEqual([
+    { op: 'replace', path: [0], value: -0 },
+    { op: 'replace', path: [1], value: 0 },
+  ]);
+  expect(apply(base, patches)).toStrictEqual(state);
+  expect(apply(state, inversePatches)).toStrictEqual(base);
+  const [, reversePatches] = create(
+    [1, NaN, 2],
+    (draft) => {
+      draft.reverse();
+    },
+    { enablePatches: true }
+  );
+  expect(reversePatches).toStrictEqual([
+    { op: 'replace', path: [0], value: 2 },
+    { op: 'replace', path: [2], value: 1 },
+  ]);
+});
