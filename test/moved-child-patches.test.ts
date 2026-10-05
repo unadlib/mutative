@@ -82,6 +82,27 @@ describe('patches of drafts that left their key', () => {
     ]);
   });
 
+  test('a Set item added back after additions is carried by the add patch', () => {
+    const a = { v: 1 };
+    const b = { v: 2 };
+    const base = new Set([a, b]);
+    const [state, patches] = replay(base, (draft) => {
+      draft.add({ v: 3 });
+      const [first] = draft;
+      expect(first.v).toBe(1);
+      draft.delete(first);
+      draft.add(a);
+      // The item is drafted again at a position past the base Set's size.
+      for (const item of draft) if (item.v === 1) item.v = 10;
+    });
+    expect([...state]).toStrictEqual([{ v: 2 }, { v: 3 }, { v: 10 }]);
+    expect(patches).toStrictEqual([
+      { op: 'remove', path: [0], value: { v: 1 } },
+      { op: 'add', path: [1], value: { v: 3 } },
+      { op: 'add', path: [2], value: { v: 10 } },
+    ]);
+  });
+
   test('a changed nested draft whose parent moved away', () => {
     const base = { list: [{ inner: { v: 3 } }, 'gap', { inner: { v: 1 } }] };
     const [state] = replay(base, (draft) => {
