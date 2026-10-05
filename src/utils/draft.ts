@@ -1,6 +1,5 @@
 import { DraftType, Mark, ProxyDraft } from '../interface';
 import { dataTypes, PROXY_DRAFT } from '../constant';
-import { has } from './proto';
 import { die, ErrorCode } from '../error';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
@@ -50,31 +49,18 @@ export function getPath(
 ): (string | number | object)[] | null {
   const parent = target.parent;
   if (parent) {
-    // check if the parent is a draft and the original value is not equal to the current value
     const parentCopy = parent.copy;
-    // Native moves keep a child's original key. Another draft of the same
-    // shared object can now occupy that key, so original identity is not
-    // enough: the array will emit the moved child's value at its new index.
-    if (
-      parent.type === DraftType.Array &&
-      parent.arrayState?.relocated &&
-      parentCopy[target.key!] !== target.proxy
-    ) {
+    let key: any = target.key;
+    if (parent.type === DraftType.Set) {
+      // Set items are keyed by their original value; paths use positions.
+      key = Array.from(parent.setMap!.keys()).indexOf(key);
+      if (!(parentCopy.size > key)) return null;
+    } else if (get(parentCopy, key) !== target.proxy) {
+      // The child left its key: it was moved, deleted or replaced, possibly
+      // by another draft of a shared object. The parent's patches carry its
+      // value wherever it is now, so patches under this path would be stale.
       return null;
     }
-    const proxyDraft = getProxyDraft(get(parentCopy, target.key!));
-    if (proxyDraft !== null && proxyDraft?.original !== target.original) {
-      return null;
-    }
-    const isSet = parent.type === DraftType.Set;
-    const key = isSet
-      ? Array.from(parent.setMap!.keys()).indexOf(target.key)
-      : target.key;
-    // check if the key is still in the next state parent
-    if (
-      !((isSet && parentCopy.size > (key as number)) || has(parentCopy, key!))
-    )
-      return null;
     path.push(key);
     return getPath(parent, path);
   }
