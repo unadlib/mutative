@@ -62,6 +62,11 @@ type MakeCreator = <
   ): [Draft<T>, () => Result<T, O, F>];
 };
 
+// The number of recipes that are running. Like Immer, a producer called from
+// a recipe never freezes its result, which may hold drafts that the outer
+// producer still has to finalize.
+let depth = 0;
+
 /**
  * `makeCreator(options)` to make a creator function.
  *
@@ -144,7 +149,7 @@ export const makeCreator: MakeCreator = (arg) => {
       : options.mark;
     const enablePatches = options.enablePatches ?? false;
     const strict = options.strict ?? false;
-    const enableAutoFreeze = options.enableAutoFreeze ?? false;
+    const enableAutoFreeze = !depth && (options.enableAutoFreeze ?? false);
     const _options: Options<any, any> = {
       enableAutoFreeze,
       mark,
@@ -175,10 +180,13 @@ export const makeCreator: MakeCreator = (arg) => {
       throw error;
     }
     let result: any;
+    depth += 1;
     try {
       result = mutate(draft);
     } catch (error) {
       fail(error);
+    } finally {
+      depth -= 1;
     }
     const returnValue = (value: any) => {
       const proxyDraft = getProxyDraft(draft)!;
