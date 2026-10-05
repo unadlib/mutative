@@ -1,7 +1,7 @@
 import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getValue, isDraftable } from './draft';
-import { isBaseMapInstance, isBaseSetInstance } from './proto';
+import { isBaseMapInstance, isBaseSetInstance, isPlainArray } from './proto';
 import { die, ErrorCode } from '../error';
 
 function strictCopy(target: any) {
@@ -78,10 +78,35 @@ function copyPlainObject(original: any) {
   return copy;
 }
 
+const arrayValues = Array.prototype[Symbol.iterator];
+const arrayIterator = Object.getPrototypeOf(arrayValues.call([]));
+const arrayIteratorNext = arrayIterator.next;
+
+/**
+ * `concat` leaves V8's fast path for frozen, sealed and non-extensible arrays
+ * and takes about ten times as long as a spread there. A spread copies a
+ * plain array the same way when it has no holes and none of the iterators it
+ * calls has been replaced. Holes read as `undefined`, so arrays that hold
+ * `undefined` keep `concat`.
+ */
+function copyLockedArray(original: any[]) {
+  return isPlainArray(original) &&
+    !Object.prototype.hasOwnProperty.call(original, Symbol.iterator) &&
+    Array.prototype[Symbol.iterator] === arrayValues &&
+    arrayIterator.next === arrayIteratorNext &&
+    !Array.prototype.includes.call(original, undefined)
+    ? [...original]
+    : Array.prototype.concat.call(original);
+}
+
 export function shallowCopy(original: any, options?: Options<any, any>) {
   let markResult: any;
   if (Array.isArray(original)) {
-    return Array.prototype.concat.call(original);
+    // With auto-freeze, the arrays of a state are frozen; otherwise checking
+    // for that would cost more than it saves.
+    return options?.enableAutoFreeze && !Object.isExtensible(original)
+      ? copyLockedArray(original)
+      : Array.prototype.concat.call(original);
   } else if (original instanceof Set) {
     if (!isBaseSetInstance(original)) {
       const SubClass = Object.getPrototypeOf(original).constructor;

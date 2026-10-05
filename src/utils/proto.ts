@@ -16,6 +16,19 @@ export function getDescriptor(target: object, key: PropertyKey) {
   return;
 }
 
+/**
+ * Whether `concat` and the array methods treat `array` like any array: no
+ * subclass, and no own `constructor` or `Symbol.isConcatSpreadable` that
+ * changes what `concat` creates.
+ */
+export function isPlainArray(array: any[]) {
+  return (
+    !Object.prototype.hasOwnProperty.call(array, 'constructor') &&
+    !Object.prototype.hasOwnProperty.call(array, Symbol.isConcatSpreadable) &&
+    Object.getPrototypeOf(array) === Array.prototype
+  );
+}
+
 export function isBaseSetInstance(obj: any) {
   return Object.getPrototypeOf(obj) === Set.prototype;
 }
