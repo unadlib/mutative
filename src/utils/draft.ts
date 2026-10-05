@@ -1,6 +1,5 @@
 import { DraftType, Finalities, Mark, ProxyDraft } from '../interface';
 import { dataTypes, PROXY_DRAFT } from '../constant';
-import { die, ErrorCode } from '../error';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
@@ -68,14 +67,9 @@ export function getPath(
     path.push(key);
     return getPath(parent, path);
   }
-  // `target` is root draft.
+  // `target` is the root draft. Every level above found its child at its
+  // key, so the path resolves in the root's copy.
   path.reverse();
-  try {
-    // check if the path is valid
-    resolvePath(target.copy, path);
-  } catch {
-    return null;
-  }
   return path;
 }
 
@@ -133,16 +127,4 @@ export function unescapePath(path: string | (string | number)[]) {
     .split('/')
     .map((_item) => _item.replace(/~1/g, '/').replace(/~0/g, '~'))
     .slice(1);
-}
-
-export function resolvePath(base: any, path: (string | number)[]) {
-  for (let index = 0; index < path.length - 1; index += 1) {
-    const key = path[index];
-    // use `index` in Set draft
-    base = get(getType(base) === DraftType.Set ? Array.from(base) : base, key);
-    if (typeof base !== 'object') {
-      die(ErrorCode.InvalidPatchPath, path);
-    }
-  }
-  return base;
 }
