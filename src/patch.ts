@@ -55,7 +55,8 @@ function generateArrayPatches(
     indices.push(assigned[position]);
   for (let position = 0; position < indices.length; position += 1) {
     const index = indices[position];
-    if (index < original.length && copy[index] !== original[index]) {
+    // As the set trap compares, so 0 and -0 differ and NaN equals itself.
+    if (index < original.length && !isEqual(copy[index], original[index])) {
       const _path = basePath.concat([index]);
       const path = escapePath(_path, pathAsArray);
       patches.push({
