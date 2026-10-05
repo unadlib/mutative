@@ -20839,24 +20839,6 @@ exports[`simple map 2`] = `
 exports[`simple set 1`] = `
 [
   {
-    "op": "replace",
-    "path": [
-      "set",
-      1,
-      "bar",
-    ],
-    "value": "new str1",
-  },
-  {
-    "op": "replace",
-    "path": [
-      "set",
-      0,
-      "bar",
-    ],
-    "value": "new str0",
-  },
-  {
     "op": "remove",
     "path": [
       "set",
@@ -20960,24 +20942,6 @@ exports[`simple set 2`] = `
     "value": {
       "bar": "str",
     },
-  },
-  {
-    "op": "replace",
-    "path": [
-      "set",
-      1,
-      "bar",
-    ],
-    "value": "str",
-  },
-  {
-    "op": "replace",
-    "path": [
-      "set",
-      0,
-      "bar",
-    ],
-    "value": "str",
   },
 ]
 `;
