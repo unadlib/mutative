@@ -19,8 +19,8 @@ const arrayIncludes = arrayProto.includes;
 // Receivers are recognized by identity only, so a borrowed method never reads
 // a property of an object that is not one of these drafts. The array whose
 // optimized method was read last is kept here with its producer's revoke list.
-// `create` releases both when that producer ends, also when it fails after
-// the recipe returned and its drafts were never revoked. Drafts returned by
+// `create` releases both when that producer ends, including failures while
+// inspecting or finalizing the recipe's return value. Drafts returned by
 // `create(base)` without a recipe have no such end and are only registered
 // weakly.
 let recentProxy: object | null = null;

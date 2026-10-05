@@ -228,8 +228,13 @@ export const makeCreator: MakeCreator = (arg) => {
         releaseArrayMethods(finalities.revoke);
       }
     };
-    return result instanceof Promise
-      ? result.then(finish, fail)
-      : finish(result);
+    try {
+      // Classifying a returned Proxy, or reading/calling an overridden then,
+      // can throw before a Promise has registered the failure handler.
+      if (result instanceof Promise) return result.then(finish, fail);
+    } catch (error) {
+      return fail(error);
+    }
+    return finish(result);
   };
 };

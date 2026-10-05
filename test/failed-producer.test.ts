@@ -25,6 +25,86 @@ describe('drafts of a failed producer', () => {
     expectRevoked(root, child);
   });
 
+  test('a recipe that returns an already revoked draft', () => {
+    let revoked: any;
+    create({}, (draft) => {
+      revoked = draft;
+    });
+    let root: any;
+    let child: any;
+    expect(() =>
+      create({ child: { value: 1 } }, (draft) => {
+        root = draft;
+        child = draft.child;
+        return revoked;
+      })
+    ).toThrow(TypeError);
+    expectRevoked(root, child);
+  });
+
+  test.each([
+    [
+      'getPrototypeOf',
+      (error: Error) =>
+        new Proxy(
+          {},
+          {
+            getPrototypeOf: () => {
+              throw error;
+            },
+          }
+        ),
+    ],
+    [
+      'then getter',
+      (error: Error) =>
+        Object.defineProperty(Promise.resolve(), 'then', {
+          get() {
+            throw error;
+          },
+        }),
+    ],
+    [
+      'then call',
+      (error: Error) =>
+        Object.defineProperty(Promise.resolve(), 'then', {
+          value() {
+            throw error;
+          },
+        }),
+    ],
+  ] as const)("an exception from a returned value's %s", (_name, returned) => {
+    const error = new Error('returned value');
+    let root: any;
+    let child: any;
+    let received: unknown;
+    try {
+      create({ child: { value: 1 } }, (draft) => {
+        root = draft;
+        child = draft.child;
+        return returned(error) as any;
+      });
+    } catch (failure) {
+      received = failure;
+    }
+    expect(received).toBe(error);
+    expectRevoked(root, child);
+  });
+
+  test('a rejected async recipe keeps its error and revokes every draft', async () => {
+    const error = new Error('async recipe');
+    let root: any;
+    let child: any;
+    const pending = create({ child: { value: 1 } }, async (draft) => {
+      root = draft;
+      child = draft.child;
+      await Promise.resolve();
+      throw error;
+    });
+    await expect(pending).rejects.toBe(error);
+    expectRevoked(root, child);
+  });
+
   test('a recipe that changes the draft and returns another value', () => {
     let root: any;
     let child: any;
