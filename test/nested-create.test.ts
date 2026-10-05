@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { apply, create, isDraft } from '../src';
+import { apply, create, current, isDraft } from '../src';
 
 describe('auto-freeze of create() calls inside a recipe', () => {
   test('a create() call inside a recipe does not freeze its result', () => {
@@ -172,6 +172,22 @@ describe('drafts whose original is a draft of an outer create() call', () => {
     expect(base.other).toEqual({ value: 0 });
     expect(state.list[0]).toBe(state.other);
     expect(state.other).toEqual({ value: 1 });
+  });
+
+  test('current() returns the current state of the drafts of an outer create() call', () => {
+    let changed: any;
+    let unchanged: any;
+    create({ node: { a: { value: 1 }, b: { value: 1 } } }, (draft) => {
+      draft.node.b.value = 2;
+      create({ node: draft.node }, (innerDraft) => {
+        innerDraft.node.a.value = 2;
+        changed = current(innerDraft);
+        unchanged = current(innerDraft.node.b);
+      });
+    });
+    // Both producers have ended, so a draft left in a snapshot would throw.
+    expect(changed).toEqual({ node: { a: { value: 2 }, b: { value: 2 } } });
+    expect(unchanged).toEqual({ value: 2 });
   });
 
   test('a Map draft is copied through the outer draft', () => {

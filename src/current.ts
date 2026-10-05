@@ -88,11 +88,16 @@ export function handleReturnValue(
   }
 }
 
-function getCurrent(target: any) {
+function getCurrent(target: any): any {
   const proxyDraft = getProxyDraft(target);
   if (!isDraftable(target, proxyDraft?.options)) return target;
   const type = getType(target);
-  if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
+  // The original of a draft can be a draft of an outer create() call, whose
+  // current state stands in for it.
+  const nested = !!proxyDraft && isDraft(proxyDraft.original);
+  if (proxyDraft && !proxyDraft.operated) {
+    return nested ? getCurrent(proxyDraft.original) : proxyDraft.original;
+  }
   // A changed array draft is copied from its current array, since a copy
   // through the proxy runs two traps per element. In strict mode, outside
   // `unsafe()`, the proxy checks each element it reads, so such arrays are
@@ -140,7 +145,7 @@ function getCurrent(target: any) {
     // state, which holds no drafts, even after a native method moved it.
     if (
       proxyDraft &&
-      (isEqual(get(proxyDraft.original, key), value) ||
+      ((!nested && isEqual(get(proxyDraft.original, key), value)) ||
         (array &&
           !isDraft(value) &&
           (typeof value !== 'object' ||
