@@ -80,6 +80,38 @@ describe('draft fast paths keep the original semantics', () => {
     expect(frozen).toBeInstanceOf(List);
   });
 
+  test('array copies keep the elements of an array that concat would not spread', () => {
+    const base: any = [1, 2];
+    base[Symbol.isConcatSpreadable] = false;
+    const state = create(base, (draft: any) => {
+      draft[0] = 9;
+      draft.push(3);
+    });
+    expect(Array.from(state)).toStrictEqual([9, 2, 3]);
+    expect(Array.from(base)).toStrictEqual([1, 2]);
+    class Single extends Array<number> {
+      get [Symbol.isConcatSpreadable]() {
+        return false;
+      }
+    }
+    const list = create(Single.from([1, 2]), (draft) => {
+      draft[1] = 5;
+    });
+    expect(list).toBeInstanceOf(Single);
+    expect(Array.from(list)).toStrictEqual([1, 5]);
+    const frozen: any = [1, 2];
+    frozen[Symbol.isConcatSpreadable] = false;
+    Object.freeze(frozen);
+    const next = create(
+      frozen,
+      (draft: any) => {
+        draft[0] = 9;
+      },
+      { enableAutoFreeze: true }
+    );
+    expect(Array.from(next)).toStrictEqual([9, 2]);
+  });
+
   test('reading a copied plain value does not re-invoke the original getter', () => {
     let calls = 0;
     const base = {
