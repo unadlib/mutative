@@ -577,3 +577,28 @@ test('change Date instance', () => {
   expect(data.date).toBe(state.date);
   expect(state.date.getTime()).toBe(42);
 });
+
+test('a nested unsafe() keeps the access of the outer call', () => {
+  const base = { date: new Date(0), list: [new Date(1)] };
+  create(
+    base,
+    (draft) => {
+      unsafe(() => {
+        expect(unsafe(() => draft.date)).toBe(base.date);
+        expect(draft.date).toBe(base.date);
+        try {
+          unsafe(() => {
+            throw new Error('inner');
+          });
+        } catch {
+          // The outer call can still read mutable data.
+        }
+        expect(draft.list[0]).toBe(base.list[0]);
+      });
+      expect(() => draft.date).toThrow(
+        `Strict mode: Mutable data cannot be accessed directly, please use 'unsafe(callback)' wrap.`
+      );
+    },
+    { strict: true }
+  );
+});
