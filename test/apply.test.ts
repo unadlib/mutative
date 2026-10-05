@@ -2051,3 +2051,30 @@ test('a Map key that is an array stays one path segment', () => {
   expect(previous.get(key)).toBe(1);
   expect(previous.get(gone)).toBe(3);
 });
+
+// The limit that the patches guide describes for Sets of objects.
+test('Set patches remove object elements by identity', () => {
+  const base = new Set<any>();
+  const [state, patches, inversePatches] = create(
+    base,
+    (draft) => {
+      draft.add({ x: 1 });
+    },
+    { enablePatches: true }
+  );
+  const undone = apply(state, inversePatches);
+  expect(undone.size).toBe(0);
+  const redone = apply(undone, patches);
+  expect([...redone]).toStrictEqual([{ x: 1 }]);
+  expect([...redone][0]).not.toBe([...state][0]);
+  expect(apply(redone, inversePatches).size).toBe(1);
+  const numbers = create(
+    new Set([1]),
+    (draft) => {
+      draft.add(2);
+    },
+    { enablePatches: true }
+  );
+  const replayed = apply(new Set([1]), numbers[1]);
+  expect([...apply(replayed, numbers[2])]).toStrictEqual([1]);
+});
