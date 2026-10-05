@@ -2,6 +2,7 @@
  * Error codes are kept as a const enum so production builds can inline them.
  * Verify that production bundles contain neither an `ErrorCode` object nor
  * the member names when changing the build toolchain.
+ * Keep numeric codes stable; retired codes must not be reassigned.
  */
 export const enum ErrorCode {
   InvalidBaseState = 0,
@@ -16,14 +17,15 @@ export const enum ErrorCode {
   UnsupportedMarkResult = 9,
   InvalidMark = 10,
   CannotModifyFrozenObject = 11,
-  ReservedPatchAttribute = 12,
-  CannotApplyPatch = 13,
-  ReplacePatchOnSet = 14,
-  UnsupportedPatchOperation = 15,
-  ApplyOptionsToDraft = 16,
-  OriginalOnNonDraft = 17,
-  RawReturnWithoutValue = 18,
-  RawReturnWithExtraArguments = 19,
+  // 12 was InvalidPatchPath and is reserved for historical errors.
+  ReservedPatchAttribute = 13,
+  CannotApplyPatch = 14,
+  ReplacePatchOnSet = 15,
+  UnsupportedPatchOperation = 16,
+  ApplyOptionsToDraft = 17,
+  OriginalOnNonDraft = 18,
+  RawReturnWithoutValue = 19,
+  RawReturnWithExtraArguments = 20,
 }
 
 type ErrorArguments = {
@@ -83,6 +85,8 @@ const errors: ErrorBuilders = __DEV__
         `Please check mark() to ensure that it is a stable marker draftable function.`,
       // ErrorCode.CannotModifyFrozenObject
       () => `Cannot modify frozen object`,
+      // Retired InvalidPatchPath (12).
+      undefined,
       // ErrorCode.ReservedPatchAttribute
       () =>
         `Patching reserved attributes like __proto__ and constructor is not allowed.`,
