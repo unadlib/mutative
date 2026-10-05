@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "56675c6c13104d80df264df2d7d97f7db081da38",
-    "description": "Patches skip drafts that left their key, an original object assigned over a draft is recorded like any assignment, auto-freeze freezes Map and Set instances, Map and Set drafts iterate like built-in collections, failed producers revoke their drafts, and apply() keeps the symbol and own __proto__ keys of patch values",
+    "revision": "ded8e6cab63790e0ab91db0823b59983f8602a12",
+    "description": "Patches skip drafts that left their key, an original object assigned over a draft is recorded like any assignment, Set items keep their changes and are carried by the Set patches once it changed membership, the patch path validation and its error code are gone, auto-freeze freezes Map and Set instances, Map and Set drafts iterate like built-in collections, failed producers revoke their drafts, and apply() keeps the symbol and own __proto__ keys of patch values",
     "node": "v24.16.0",
     "commands": [
       "pnpm install --frozen-lockfile",
@@ -15,69 +15,69 @@
   "esbuild": "0.24.0",
   "measurements": {
     "artifact/mutative.cjs.production.min.js": {
-      "raw": 26546,
-      "gzip": 8859,
-      "brotli": 8112
+      "raw": 26409,
+      "gzip": 8816,
+      "brotli": 8062
     },
     "artifact/mutative.umd.production.min.js": {
-      "raw": 26703,
-      "gzip": 8922,
-      "brotli": 8172
+      "raw": 26566,
+      "gzip": 8882,
+      "brotli": 8130
     },
     "artifact/mutative.esm.production.min.mjs": {
-      "raw": 26527,
-      "gzip": 8883,
-      "brotli": 8143
+      "raw": 26390,
+      "gzip": 8841,
+      "brotli": 8100
     },
     "artifact/mutative.cjs.development.js": {
-      "raw": 69854,
-      "gzip": 16461,
-      "brotli": 14308
+      "raw": 69486,
+      "gzip": 16358,
+      "brotli": 14252
     },
     "artifact/mutative.umd.development.js": {
-      "raw": 72069,
-      "gzip": 16670,
-      "brotli": 14451
+      "raw": 71687,
+      "gzip": 16568,
+      "brotli": 14405
     },
     "artifact/mutative.esm.js": {
-      "raw": 70581,
-      "gzip": 16566,
-      "brotli": 14371
+      "raw": 70213,
+      "gzip": 16464,
+      "brotli": 14308
     },
     "artifact/mutative.esm.mjs": {
-      "raw": 70582,
-      "gzip": 16567,
-      "brotli": 14365
+      "raw": 70214,
+      "gzip": 16465,
+      "brotli": 14312
     },
     "consumer/import/create": {
-      "raw": 23893,
-      "gzip": 8310,
-      "brotli": 7619
+      "raw": 23743,
+      "gzip": 8252,
+      "brotli": 7571
     },
     "consumer/import/patches": {
-      "raw": 25796,
-      "gzip": 8924,
-      "brotli": 8187
+      "raw": 25646,
+      "gzip": 8868,
+      "brotli": 8143
     },
     "consumer/import/all": {
-      "raw": 26581,
-      "gzip": 9184,
-      "brotli": 8405
+      "raw": 26431,
+      "gzip": 9133,
+      "brotli": 8370
     },
     "consumer/require/create": {
-      "raw": 26071,
-      "gzip": 9148,
-      "brotli": 8390
+      "raw": 25935,
+      "gzip": 9093,
+      "brotli": 8351
     },
     "consumer/require/patches": {
-      "raw": 26139,
-      "gzip": 9186,
-      "brotli": 8412
+      "raw": 26003,
+      "gzip": 9131,
+      "brotli": 8354
     },
     "consumer/require/all": {
-      "raw": 26036,
-      "gzip": 9127,
-      "brotli": 8354
+      "raw": 25900,
+      "gzip": 9073,
+      "brotli": 8298
     }
   }
 }
