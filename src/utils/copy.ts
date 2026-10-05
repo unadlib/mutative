@@ -176,8 +176,23 @@ function deepClone(target: any) {
     }
     return new Set(iterable);
   }
-  const copy = Object.create(Object.getPrototypeOf(target));
-  for (const key in target) copy[key] = deepClone(target[key]);
+  // Own enumerable string and symbol keys, as drafts copy plain objects. The
+  // spread keeps an own `__proto__` key a data property, and assignments to
+  // the copy's own keys cannot change its prototype.
+  const copy = { ...target };
+  for (const key in copy) {
+    const value = copy[key];
+    if (typeof value === 'object' && value !== null) {
+      copy[key] = deepClone(value);
+    }
+  }
+  const symbols = Object.getOwnPropertySymbols(copy);
+  for (let index = 0; index < symbols.length; index += 1) {
+    const value = copy[symbols[index]];
+    if (typeof value === 'object' && value !== null) {
+      copy[symbols[index]] = deepClone(value);
+    }
+  }
   return copy;
 }
 
