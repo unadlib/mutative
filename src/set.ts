@@ -35,9 +35,13 @@ const getNextIterator =
     if (target.options.strict) {
       checkReadable(key, target.options, mutable);
     }
+    // An item of the original Set that was not drafted yet still maps to
+    // itself. A finalized item maps to its copy, which must stay: patches
+    // iterate the Set to resolve the path of a changed item.
     if (
       !mutable &&
       !currentDraft &&
+      value === key &&
       isDraftable(key, target.options) &&
       !target.finalized &&
       target.original!.has(key)
