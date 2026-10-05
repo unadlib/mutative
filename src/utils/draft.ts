@@ -17,6 +17,12 @@ export function getProxyDraft<T extends any>(value: T): ProxyDraft | null {
   return (value as { [PROXY_DRAFT]: any })?.[PROXY_DRAFT];
 }
 
+// Iterators retain draft state instead of reading through the proxy. Once
+// its scope has been revoked, use the proxy to throw the same native error.
+export function assertDraftActive(target: ProxyDraft) {
+  if (target.finalities.revoke.length === 0) getProxyDraft(target.proxy);
+}
+
 export function getValue<T extends object>(value: T): T {
   const proxyDraft = getProxyDraft(value);
   if (!proxyDraft) return value;
