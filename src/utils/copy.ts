@@ -78,6 +78,17 @@ function copyPlainObject(original: any) {
   return copy;
 }
 
+// Copies an array with `concat`, which keeps holes and creates the copy
+// through `Symbol.species`. `concat` puts an array whose
+// `Symbol.isConcatSpreadable` is false into the copy as one element instead,
+// so such an array is copied with `slice`.
+function concatCopy(original: any[]) {
+  const copy = Array.prototype.concat.call(original);
+  return copy.length === 1 && copy[0] === original
+    ? Array.prototype.slice.call(original)
+    : copy;
+}
+
 const arrayValues = Array.prototype[Symbol.iterator];
 const arrayIterator = Object.getPrototypeOf(arrayValues.call([]));
 const arrayIteratorNext = arrayIterator.next;
@@ -96,7 +107,7 @@ function copyLockedArray(original: any[]) {
     arrayIterator.next === arrayIteratorNext &&
     !Array.prototype.includes.call(original, undefined)
     ? [...original]
-    : Array.prototype.concat.call(original);
+    : concatCopy(original);
 }
 
 export function shallowCopy(original: any, options?: Options<any, any>) {
@@ -106,7 +117,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
     // for that would cost more than it saves.
     return options?.enableAutoFreeze && !Object.isExtensible(original)
       ? copyLockedArray(original)
-      : Array.prototype.concat.call(original);
+      : concatCopy(original);
   } else if (original instanceof Set) {
     if (!isBaseSetInstance(original)) {
       const SubClass = Object.getPrototypeOf(original).constructor;
