@@ -56,11 +56,28 @@ function verify(value) {
 async function edit(file, text, expected) {
   const before = completed;
   writeFileSync(join(fixture, file), text);
-  await until(
-    () => completed >= before + 2,
-    `both variants rebuild after ${file}`
-  );
-  verify(expected);
+  await rebuilt(expected, before, `both variants rebuild after ${file}`);
+}
+
+async function rebuilt(expected, before, description) {
+  let outputError;
+  try {
+    await until(() => {
+      if (completed < before + 2) return false;
+      // Queued rebuilds can finish after the next edit starts. Their logs
+      // do not establish that both variants contain the latest source.
+      try {
+        verify(expected);
+        return true;
+      } catch (error) {
+        outputError = error;
+        return false;
+      }
+    }, description);
+  } catch (error) {
+    if (outputError) error.cause = outputError;
+    throw error;
+  }
 }
 
 try {
@@ -132,8 +149,7 @@ try {
     exited = true;
     changed();
   });
-  await until(() => completed >= 2, 'initial build');
-  verify(1);
+  await rebuilt(1, 0, 'initial build');
   await edit(
     'src/value.ts',
     "import { Counter } from './constants'; export function value(): number { return Counter.Current + 10; }\n",
