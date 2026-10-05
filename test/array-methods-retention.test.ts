@@ -62,6 +62,31 @@ describe('array method receivers do not keep producers alive', () => {
         create(base, (draft: any) => draft.list.unshift({ id: -1 })),
     ],
     [
+      'a recipe that returns a revoked draft',
+      (base: any) => {
+        let revoked: any;
+        create({}, (draft) => {
+          revoked = draft;
+        });
+        return create(base, (draft: any) => {
+          draft.list.shift();
+          return revoked;
+        });
+      },
+    ],
+    [
+      'a recipe whose returned Promise throws from then',
+      (base: any) =>
+        create(base, (draft: any) => {
+          draft.list.shift();
+          return Object.defineProperty(Promise.resolve(), 'then', {
+            get() {
+              throw new Error('then');
+            },
+          });
+        }),
+    ],
+    [
       'a recipe that returns a modified child draft',
       (base: any) =>
         create(base, (draft: any) => {
