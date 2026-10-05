@@ -108,3 +108,52 @@ test('option and return value warnings are not printed', () => {
   expect(warn).not.toHaveBeenCalled();
   warn.mockRestore();
 });
+
+test('with auto-freeze, returned values are not searched inside frozen objects', () => {
+  const { create, isDraft } = mutative;
+  let reads = 0;
+  const payload = Object.freeze({
+    get rows() {
+      reads += 1;
+      return [] as number[];
+    },
+  });
+  const baseState = { a: { value: 1 }, payload, nested: { a: { value: 2 } } };
+  const recipe = (draft: any) => ({
+    a: draft.a,
+    payload,
+    nested: { a: draft.a },
+  });
+  const state = create(baseState, recipe, { enableAutoFreeze: true });
+  expect(reads).toBe(0);
+  expect(state.payload).toBe(payload);
+  expect(state.nested.a).toBe(baseState.a);
+  expect(isDraft(state.nested.a)).toBe(false);
+  // Without auto-freeze, frozen objects are searched as before.
+  create(baseState, recipe);
+  expect(reads).toBe(1);
+});
+
+test('with auto-freeze, drafts that frozen returned values hold stay unresolved', () => {
+  const { create } = mutative;
+  const options = { enableAutoFreeze: true };
+  const baseState = { a: { value: 1 }, held: {} as any };
+  const state = create(
+    baseState,
+    (draft) => ({ a: draft.a, held: Object.freeze({ a: draft.a }) }),
+    options
+  );
+  expect(state.a).toBe(baseState.a);
+  expect(() => state.held.a.value).toThrow(TypeError);
+
+  const holdInFrozen = (draft: any) => {
+    const inner: Record<string, any> = {};
+    const held = Object.freeze({ inner });
+    inner.a = draft.a;
+    return { a: draft.a, held };
+  };
+  const next = create(baseState, holdInFrozen, options);
+  expect(() => next.held.inner.a.value).toThrow(TypeError);
+  // Without auto-freeze, frozen objects are searched as before.
+  expect(create(baseState, holdInFrozen).held.inner.a).toBe(baseState.a);
+});

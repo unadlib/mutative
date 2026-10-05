@@ -6,6 +6,8 @@ sidebar_position: 6
 
 For return values that do not contain any drafts, you can use `rawReturn()` to wrap this return value to improve performance. It ensure that the return value is only returned explicitly.
 
+Mutative searches the value a recipe returns for drafts, so that drafts mixed into it are replaced. With auto-freeze enabled, production builds do not search frozen objects or the values they hold, so returning state built from earlier, frozen states costs little even without `rawReturn()`. Development builds still search them and throw when they find a draft there, so never put a draft in a frozen object or in a value it holds.
+
 ## Usage
 
 The `rawReturn()` API offers developers an advanced control mechanism over the return value of state mutation operations. Unlike the standard behavior where the state manipulation function returns the updated draft state, `rawReturn()` allows the return of a raw value directly, bypassing the draft mechanism.

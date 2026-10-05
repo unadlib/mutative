@@ -591,3 +591,62 @@ test('no mixed draft with strict mode', () => {
     `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`
   );
 });
+
+test('returned frozen values are kept and drafts outside them are replaced', () => {
+  let reads = 0;
+  const payload = Object.freeze({
+    get rows() {
+      reads += 1;
+      return [] as number[];
+    },
+  });
+  const baseState = { a: { value: 1 }, payload, nested: { a: { value: 2 } } };
+  const state = create(baseState, (draft) => ({
+    a: draft.a,
+    payload,
+    nested: { a: draft.a },
+  }));
+  expect(state.payload).toBe(payload);
+  expect(state.a).toBe(baseState.a);
+  expect(state.nested.a).toBe(baseState.a);
+  expect(isDraft(state.nested.a)).toBeFalsy();
+  // Development builds search frozen values too, to report drafts in them.
+  expect(reads).toBe(1);
+});
+
+test('development builds fail on drafts that frozen returned values hold', () => {
+  const message = /holds a draft in a frozen object or in a value it holds/;
+  const baseState = { a: { value: 1 }, held: {} as Record<string, unknown> };
+  const options = { enableAutoFreeze: true };
+  // A draft in a frozen object.
+  expect(() =>
+    create(
+      baseState,
+      (draft) => ({ a: draft.a, held: Object.freeze({ a: draft.a }) }),
+      options
+    )
+  ).toThrow(message);
+  // A draft in an unfrozen object that a frozen object holds.
+  const holdInFrozen = (draft: typeof baseState) => {
+    const inner: Record<string, unknown> = {};
+    const held = Object.freeze({ inner });
+    inner.a = draft.a;
+    return { a: draft.a, held };
+  };
+  expect(() => create(baseState, holdInFrozen, options)).toThrow(message);
+  // A draft in a frozen Map, whose entries can still change.
+  expect(() =>
+    create(
+      baseState,
+      (draft) => {
+        const registry = Object.freeze(new Map<string, unknown>());
+        registry.set('a', draft.a);
+        return { a: draft.a, held: { registry } };
+      },
+      options
+    )
+  ).toThrow(message);
+  // Without auto-freeze, frozen objects are searched as before.
+  const state = create(baseState, holdInFrozen);
+  expect((state.held as any).inner.a).toBe(baseState.a);
+});
