@@ -190,6 +190,43 @@ describe('drafts whose original is a draft of an outer create() call', () => {
     expect(unchanged).toEqual({ value: 2 });
   });
 
+  test('patch values hold no drafts of an outer create() call', () => {
+    const base = {
+      node: { child: { value: 1 }, other: { value: 1 } },
+      set: new Set([{ id: 1 }, { id: 2 }]),
+    };
+    let patches: any;
+    let inversePatches: any;
+    create(base, (draft) => {
+      draft.node.other.value = 2;
+      [, patches, inversePatches] = create(
+        { node: draft.node, set: draft.set } as any,
+        (innerDraft) => {
+          delete innerDraft.node.child;
+          innerDraft.node.moved = innerDraft.node.other;
+          for (const item of innerDraft.set) {
+            if (item.id === 1) innerDraft.set.delete(item);
+          }
+          innerDraft.set.add({ id: 3 });
+        },
+        { enablePatches: true }
+      );
+    });
+    // Both producers have ended, so a draft left in a patch would throw.
+    expect(patches).toEqual([
+      { op: 'remove', path: ['set', 0], value: { id: 1 } },
+      { op: 'add', path: ['set', 1], value: { id: 3 } },
+      { op: 'remove', path: ['node', 'child'] },
+      { op: 'add', path: ['node', 'moved'], value: { value: 2 } },
+    ]);
+    expect(inversePatches).toEqual([
+      { op: 'remove', path: ['set', 1], value: { id: 3 } },
+      { op: 'add', path: ['set', 0], value: { id: 1 } },
+      { op: 'add', path: ['node', 'child'], value: { value: 1 } },
+      { op: 'remove', path: ['node', 'moved'] },
+    ]);
+  });
+
   test('a Map draft is copied through the outer draft', () => {
     const base = { map: new Map([['a', 1]]) };
     const state = create(base, (draft) => {

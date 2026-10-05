@@ -1,16 +1,19 @@
 import { DraftType, Operation, Patches, ProxyDraft } from './interface';
-import { escapePath, get, getProxyDraft, has, isEqual } from './utils';
+import { escapePath, get, getProxyDraft, has, isDraft, isEqual } from './utils';
 import { current } from './current';
 
 /**
  * Patch values must not contain drafts. A draft that is still present when its
  * container generates patches is represented by its original object when it
- * was not modified, or by a snapshot of its current state otherwise.
+ * was not modified, or by a snapshot of its current state otherwise, as is a
+ * draft whose original is a draft of an outer create() call.
  */
 function cloneIfNeeded<T>(target: T): T {
   const proxyDraft = getProxyDraft(target);
   if (!proxyDraft) return target;
-  return proxyDraft.operated ? current(target as any) : proxyDraft.original;
+  return proxyDraft.operated || isDraft(proxyDraft.original)
+    ? current(target as any)
+    : proxyDraft.original;
 }
 
 function generateArrayPatches(
@@ -115,7 +118,7 @@ function generatePatchesFromAssigned(
   pathAsArray: boolean
 ) {
   assignedMap!.forEach((assignedValue, key) => {
-    const originalValue = get(original, key);
+    const originalValue = cloneIfNeeded(get(original, key));
     const value = cloneIfNeeded(get(copy, key));
     const op = !assignedValue
       ? Operation.Remove
@@ -145,8 +148,9 @@ function generateSetPatches(
   pathAsArray: boolean
 ) {
   let index = 0;
-  original.forEach((value: any) => {
-    if (!copy!.has(value)) {
+  original.forEach((item: any) => {
+    if (!copy!.has(item)) {
+      const value = cloneIfNeeded(item);
       const _path = basePath.concat([index]);
       const path = escapePath(_path, pathAsArray);
       patches.push({
@@ -163,8 +167,9 @@ function generateSetPatches(
     index += 1;
   });
   index = 0;
-  copy!.forEach((value: any) => {
-    if (!original.has(value)) {
+  copy!.forEach((item: any) => {
+    if (!original.has(item)) {
+      const value = cloneIfNeeded(item);
       const _path = basePath.concat([index]);
       const path = escapePath(_path, pathAsArray);
       patches.push({
