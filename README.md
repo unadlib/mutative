@@ -348,6 +348,8 @@ expect(baseState).toEqual({ foo: { bar: "test2" } });
 
 > ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state.
 
+> Patches add and remove Set elements by value, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/pathes#sets-of-objects).
+
 ### `current()`
 
 Get the current value from a draft.

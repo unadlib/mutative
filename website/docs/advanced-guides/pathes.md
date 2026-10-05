@@ -77,6 +77,10 @@ expect(inversePatches).toMatchInlineSnapshot(`
   `);
 ```
 
+## Sets of objects
+
+Patches add a Set element by its value and remove one by the value it holds, so a `remove` patch removes an object only from a Set that holds that same object. `apply()` copies the value of each patch before applying it, so a Set that `apply()` changes holds copies of the objects that patches add, and the inverse patches cannot remove those copies: an undo after a redo leaves the object in the Set. Patches for Sets of primitives, and patches that change an object element in place, are not affected. When patches are replayed on states that `apply()` returned, as undo and redo do, keep such objects in a Map keyed by an id or in an array instead.
+
 ## JSON patches
 
 Mutative integrates JSON Patch functionality to enhance its state management capabilities. This integration allows Mutative to generate and apply a sequence of operations (patches) that describe changes made to a JSON object. JSON Patch is particularly useful in scenarios where tracking changes to state in a detailed and structured manner is important, such as in synchronization tasks or when maintaining historical records of state changes.
