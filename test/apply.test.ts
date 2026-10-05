@@ -1955,3 +1955,66 @@ describe('array methods on the draft copy', () => {
     );
   });
 });
+
+describe('patch values that apply() copies', () => {
+  test('own symbol keys are copied', () => {
+    const key = Symbol('key');
+    const base: any = { item: null };
+    const [state, patches] = create(
+      base,
+      (draft: any) => {
+        draft.item = { [key]: { deep: 1 }, x: 1 };
+      },
+      { enablePatches: true }
+    );
+    const next = apply(base, patches);
+    expect(next.item[key]).toStrictEqual({ deep: 1 });
+    expect(next.item[key]).not.toBe(state.item[key]);
+    expect(next).toStrictEqual(state);
+  });
+
+  test('an own __proto__ key stays a data property', () => {
+    const value = JSON.parse('{"__proto__":{"flag":1},"x":2}');
+    const base: any = { item: null };
+    const [state, patches] = create(
+      base,
+      (draft: any) => {
+        draft.item = value;
+      },
+      { enablePatches: true }
+    );
+    const next = apply(base, patches);
+    expect(Object.getPrototypeOf(next.item)).toBe(Object.prototype);
+    expect(next.item.flag).toBeUndefined();
+    expect(Object.getOwnPropertyDescriptor(next.item, '__proto__')).toEqual({
+      value: { flag: 1 },
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+    expect(next.item).not.toBe(state.item);
+    expect(next.item.x).toBe(2);
+  });
+
+  test('nested values are copied, not shared', () => {
+    const base: any = { item: null };
+    const [state, patches] = create(
+      base,
+      (draft: any) => {
+        draft.item = {
+          list: [{ id: 1 }],
+          map: new Map([['a', { v: 1 }]]),
+          set: new Set([1]),
+          date: new Date(0),
+        };
+      },
+      { enablePatches: true }
+    );
+    const next = apply(base, patches);
+    expect(next).toStrictEqual(state);
+    expect(next.item.list[0]).not.toBe(state.item.list[0]);
+    expect(next.item.map.get('a')).not.toBe(state.item.map.get('a'));
+    expect(next.item.set).not.toBe(state.item.set);
+    expect(next.item.date).toBe(state.item.date);
+  });
+});
