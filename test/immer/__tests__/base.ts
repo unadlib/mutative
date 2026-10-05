@@ -1361,10 +1361,8 @@ function runBaseTest(name, autoFreeze, useStrictShallowCopy, useListener) {
               expect(child).not.toBe(parent);
               expect(isDraft(child)).toBeTruthy();
               expect(isDraft(parent)).toBeTruthy();
-              expect(isDraft(original(child))).toBeFalsy();
-              // !!! This is different from immer
-              // expect(original(child)).toBe(parent);
-              expect(original(child)).not.toBe(parent);
+              expect(isDraft(original(child))).toBeTruthy();
+              expect(original(child)).toBe(parent);
             });
           });
         });
@@ -1432,8 +1430,7 @@ function runBaseTest(name, autoFreeze, useStrictShallowCopy, useListener) {
             const r = produce({ a: parent.a }, (child) => {
               child.b = 1; // Ensure a copy is returned.
             });
-            // !!! This is different from immer
-            // expect(Object.isFrozen(r)).toBeFalsy();
+            expect(Object.isFrozen(r)).toBeFalsy();
           });
         });
       });

@@ -267,3 +267,177 @@ describe('drafts whose original is a draft of an outer create() call', () => {
     expect(state.list).toEqual([{ value: 3 }, { value: 1 }, { value: 4 }]);
   });
 });
+
+describe('create() with a draft as its base, like Immer', () => {
+  type Node = { name: string; metadata: { value: string } };
+
+  // A helper that may run inside a recipe, as in #160.
+  const rename = (node: Node, name: string) =>
+    create(node, (draft) => {
+      draft.name = name;
+    });
+
+  test.each([false, true])(
+    'a value that the recipe leaves unchanged is a draft of the outer create() call (auto-freeze: %s)',
+    (enableAutoFreeze) => {
+      const base = { nodes: [{ name: 'a', metadata: { value: '' } }] };
+      const state = create(
+        base,
+        (draft) => {
+          draft.nodes = draft.nodes.map((node) => {
+            const renamed = rename(node, 'b');
+            expect(isDraft(renamed.metadata)).toBe(true);
+            renamed.metadata.value = 'changed';
+            return renamed;
+          });
+        },
+        { enableAutoFreeze }
+      );
+      expect(base).toEqual({ nodes: [{ name: 'a', metadata: { value: '' } }] });
+      expect(state).toEqual({
+        nodes: [{ name: 'b', metadata: { value: 'changed' } }],
+      });
+      expect(Object.isFrozen(state.nodes[0].metadata)).toBe(enableAutoFreeze);
+    }
+  );
+
+  test('array drafts', () => {
+    const base = {
+      list: [
+        { id: 1, data: { value: 0 } },
+        { id: 2, data: { value: 0 } },
+        { id: 3, data: { value: 0 } },
+      ],
+    };
+    const state = create(base, (draft) => {
+      const list = create(draft.list, (listDraft) => {
+        listDraft.push({ id: 4, data: { value: 0 } });
+        listDraft.splice(0, 1);
+        listDraft.reverse();
+        listDraft[0].data.value = 4;
+      });
+      expect(isDraft(list[1])).toBe(true);
+      list[1].data.value = 3;
+      draft.list = list;
+    });
+    expect(base.list.map((item) => item.data.value)).toEqual([0, 0, 0]);
+    expect(state.list).toEqual([
+      { id: 4, data: { value: 4 } },
+      { id: 3, data: { value: 3 } },
+      { id: 2, data: { value: 0 } },
+    ]);
+    expect(state.list[2]).toBe(base.list[1]);
+  });
+
+  test('Map drafts', () => {
+    const base = {
+      map: new Map([
+        ['a', { value: 0 }],
+        ['b', { value: 0 }],
+      ]),
+    };
+    const state = create(base, (draft) => {
+      const map = create(draft.map, (mapDraft) => {
+        mapDraft.set('c', { value: 0 });
+        mapDraft.delete('a');
+      });
+      expect(isDraft(map.get('b'))).toBe(true);
+      map.get('b')!.value = 1;
+      draft.map = map;
+    });
+    expect(base.map.get('b')).toEqual({ value: 0 });
+    expect([...state.map]).toEqual([
+      ['b', { value: 1 }],
+      ['c', { value: 0 }],
+    ]);
+  });
+
+  test('Set drafts', () => {
+    const item = { value: 0 };
+    const base = { set: new Set([item]) };
+    const state = create(base, (draft) => {
+      const set = create(draft.set, (setDraft) => {
+        setDraft.add({ value: 1 });
+      });
+      const [first] = set;
+      expect(isDraft(first)).toBe(true);
+      first.value = 2;
+      draft.set = set;
+    });
+    expect(item).toEqual({ value: 0 });
+    expect([...state.set]).toEqual([{ value: 2 }, { value: 1 }]);
+  });
+
+  test('the recipe sees the changes of the outer recipe', () => {
+    const base = { child: { count: 1, nested: { total: 0 } } };
+    const state = create(base as any, (draft) => {
+      draft.child.count = 2;
+      draft.child.extra = 1;
+      draft.child = create(draft.child, (child: any) => {
+        child.nested.total = child.count + child.extra;
+      });
+    });
+    expect(state).toEqual({
+      child: { count: 2, extra: 1, nested: { total: 3 } },
+    });
+    expect(base).toEqual({ child: { count: 1, nested: { total: 0 } } });
+  });
+
+  test('a recipe that changes nothing returns the draft', () => {
+    create({ child: { value: 1 } }, (draft) => {
+      expect(create(draft.child, () => {})).toBe(draft.child);
+      expect(create(draft, () => {})).toBe(draft);
+    });
+  });
+
+  test('without a recipe, a draft base is copied, like createDraft()', () => {
+    create({ value: 1 } as any, (draft) => {
+      draft.value = 2;
+      const [copy, finalize] = create(draft);
+      draft.value = 3;
+      copy.extra = true;
+      expect(finalize()).toEqual({ value: 2, extra: true });
+      expect(draft).toEqual({ value: 3 });
+    });
+  });
+
+  test('the result holds drafts of the outer create() call until it ends', () => {
+    let result: any;
+    create({ child: { value: 1 }, other: { value: 1 } }, (draft) => {
+      result = create(draft, (innerDraft) => {
+        innerDraft.other.value = 2;
+      });
+      draft.child.value = 3;
+      expect(result.child.value).toBe(3);
+    });
+    expect(result.other).toEqual({ value: 2 });
+    expect(() => result.child.value).toThrow(TypeError);
+  });
+
+  test('patches of a recipe on a draft base replay its changes', () => {
+    const base = { list: [{ id: 1 }, { id: 2 }] };
+    let before: any;
+    let after: any;
+    let patches: any;
+    let inversePatches: any;
+    create(base, (draft) => {
+      before = current(draft.list);
+      [after, patches, inversePatches] = create(
+        draft.list,
+        (listDraft) => {
+          listDraft.pop();
+          listDraft[0].id = 3;
+        },
+        { enablePatches: true }
+      );
+    });
+    expect(after).toEqual([{ id: 3 }]);
+    expect(apply(before, patches)).toEqual(after);
+    expect(apply(after, inversePatches)).toEqual(before);
+    expect(inversePatches).toContainEqual({
+      op: 'add',
+      path: [1],
+      value: base.list[1],
+    });
+  });
+});

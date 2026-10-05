@@ -130,7 +130,12 @@ export const makeCreator: MakeCreator = (arg) => {
       ...arg,
       ...options,
     };
-    const state = isDraft(base) ? current(base) : base;
+    // Like Immer's `produce`, a recipe drafts a draft base itself, so the
+    // values that it leaves unchanged are drafts of the outer create() call,
+    // which finalizes them, rather than objects of the base state. Without a
+    // recipe, a draft base is copied, as Immer's `createDraft` does.
+    const state =
+      isDraft(base) && typeof arg1 !== 'function' ? current(base) : base;
     const mark = Array.isArray(options.mark)
       ? (((value: unknown, types: typeof dataTypes) => {
           for (const mark of options.mark as Mark<any, any>[]) {
