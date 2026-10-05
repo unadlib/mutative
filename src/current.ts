@@ -24,7 +24,13 @@ export function handleReturnValue(
   useRawReturn?: boolean
 ) {
   let containsDraft = false;
-  const replaceDrafts = (target: object) =>
+  // With auto-freeze, the state is frozen, so production builds do not search
+  // frozen objects or the values they hold, which spares searching state
+  // built from earlier states. Without it, values are rarely frozen and
+  // checking would cost more than it saves.
+  const skipsFrozen = !!rootDraft?.options.enableAutoFreeze;
+  // `frozen` tells development builds that a skipped object holds `target`.
+  const replaceDrafts = (target: object, frozen?: boolean) =>
     forEach(target, (key, item, source) => {
       const proxyDraft = getProxyDraft(item);
       // just handle the draft which is created by the same rootDraft
@@ -33,6 +39,11 @@ export function handleReturnValue(
         rootDraft &&
         proxyDraft.finalities === rootDraft.finalities
       ) {
+        if (__DEV__ && frozen) {
+          throw new Error(
+            `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.`
+          );
+        }
         containsDraft = true;
         const currentValue = proxyDraft.original;
         // final update value, but just handle return value
@@ -46,7 +57,13 @@ export function handleReturnValue(
           set(source, key, currentValue);
         }
       } else if (typeof item === 'object' && item !== null) {
-        replaceDrafts(item);
+        // Development builds search skipped objects too, to report the drafts
+        // that production builds would leave there.
+        if (!skipsFrozen || !Object.isFrozen(item)) {
+          replaceDrafts(item, frozen);
+        } else if (__DEV__) {
+          replaceDrafts(item, true);
+        }
       }
     });
   replaceDrafts(value);
