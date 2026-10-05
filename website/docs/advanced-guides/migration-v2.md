@@ -38,6 +38,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 ## Fixes that change results
 
+- With `enablePatches`, every changed item of a Set keeps its changes. In v1, when two or more items of a Set that was not the root changed below their first level, the state kept the change of only one of them.
 - A Set that receives an unchanged draft holds the original object, as the rest of the state does, instead of the draft's shallow copy.
 - Assigning `undefined` to a key that `delete`, `shift`, `unshift` or a shrinking `splice` removed from a draft adds the key back; v1 left a hole or kept the shorter length.
 - Under a `mark` that returns `mutable`, a value that the recipe assigned or moved is read back as assigned, through the draft and in `current()`; v1 returned the original value.
