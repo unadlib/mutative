@@ -226,14 +226,22 @@ function setTrap(
   }
   const current = source[key];
   const currentProxyDraft = getProxyDraft(current);
+  const original = target.original;
   if (currentProxyDraft && isEqual(currentProxyDraft.original, value)) {
-    // !case: ignore the case of assigning the original draftable value to a draft
+    // !case: assigning the original object of the draft at this key drops
+    // the draft. The key holds its original value again unless the draft
+    // was moved here from another key, in which case it is an assignment.
     target.copy![key] = value;
     target.assignedMap = target.assignedMap ?? new Map();
-    target.assignedMap.set(key, false);
+    if (hasOwn.call(original, key) && isEqual(value, original[key])) {
+      target.assignedMap.delete(key);
+    } else {
+      markChanged(target);
+      target.assignedMap.set(key, true);
+      markFinalization(target, key, value);
+    }
     return true;
   }
-  const original = target.original;
   // !case: handle new props with value 'undefined'
   // The current copy decides whether the key exists: a key removed from the
   // copy, by delete or by a shrinking array method, is added back by this
