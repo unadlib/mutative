@@ -122,7 +122,8 @@ function generatePatchesFromAssigned(
         ? Operation.Replace
         : Operation.Add;
     if (isEqual(originalValue, value) && op === Operation.Replace) return;
-    const _path = basePath.concat(key);
+    // A Map key can be an array, which stays one path segment.
+    const _path = basePath.concat([key]);
     const path = escapePath(_path, pathAsArray);
     patches.push(op === Operation.Remove ? { op, path } : { op, path, value });
     inversePatches.push(
