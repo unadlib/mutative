@@ -166,13 +166,19 @@ export const makeCreator: MakeCreator = (arg) => {
       finalities.scoped = false;
       return [draft, finalize];
     }
+    // A failed producer revokes its drafts, without reading the root draft,
+    // which finalization may already have revoked, and releases the array
+    // method cache, which must not keep it alive.
+    function fail(error: unknown): never {
+      revokeProxy(finalities);
+      releaseArrayMethods(finalities.revoke);
+      throw error;
+    }
     let result: any;
     try {
       result = mutate(draft);
     } catch (error) {
-      revokeProxy(getProxyDraft(draft));
-      releaseArrayMethods(finalities.revoke);
-      throw error;
+      fail(error);
     }
     const returnValue = (value: any) => {
       const proxyDraft = getProxyDraft(draft)!;
@@ -211,29 +217,19 @@ export const makeCreator: MakeCreator = (arg) => {
       }
       return finalize([value]);
     };
-    // Returned values are checked and finalized after the recipe, and errors
-    // raised there leave the drafts unrevoked; every path ends by releasing
-    // the array method cache, which must not keep a failed producer alive.
-    if (result instanceof Promise) {
-      return result.then(
-        (value) => {
-          try {
-            return returnValue(value);
-          } finally {
-            releaseArrayMethods(finalities.revoke);
-          }
-        },
-        (error) => {
-          revokeProxy(getProxyDraft(draft)!);
-          releaseArrayMethods(finalities.revoke);
-          throw error;
-        }
-      );
-    }
-    try {
-      return returnValue(result);
-    } finally {
-      releaseArrayMethods(finalities.revoke);
-    }
+    // Returned values are checked and finalized after the recipe, and a
+    // failure there ends the producer like an error in the recipe does.
+    const finish = (value: any) => {
+      try {
+        return returnValue(value);
+      } catch (error) {
+        return fail(error);
+      } finally {
+        releaseArrayMethods(finalities.revoke);
+      }
+    };
+    return result instanceof Promise
+      ? result.then(finish, fail)
+      : finish(result);
   };
 };

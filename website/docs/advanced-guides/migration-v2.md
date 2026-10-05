@@ -46,3 +46,4 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - `apply()` copies the own symbol keys of patch values, and an own `__proto__` key, as `JSON.parse()` creates one, stays a data property. v1 dropped symbol keys there and turned an own `__proto__` key into the prototype of the copy.
 - A patch for a Map key that is an array holds the key as one path segment; v1 spread the array into the path, so applying the patch wrote to other keys.
 - In strict mode, a nested `unsafe()` call no longer ends the access of the outer call; in v1, reading mutable data after it in the outer callback threw.
+- A producer that fails after its recipe returned, for example because the recipe changed the draft and returned another value, revokes its drafts, as a recipe that throws does; v1 left them usable.

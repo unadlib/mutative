@@ -452,7 +452,7 @@ export function finalizeDraft<T>(
         ? proxyDraft.copy
         : proxyDraft.original
       : result;
-  if (proxyDraft) revokeProxy(proxyDraft);
+  if (proxyDraft) revokeProxy(proxyDraft.finalities);
   if (enableAutoFreeze) {
     deepFreeze(state, state, proxyDraft?.options.updatedValues);
   }

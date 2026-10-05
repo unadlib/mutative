@@ -1,4 +1,4 @@
-import { DraftType, Mark, ProxyDraft } from '../interface';
+import { DraftType, Finalities, Mark, ProxyDraft } from '../interface';
 import { dataTypes, PROXY_DRAFT } from '../constant';
 import { die, ErrorCode } from '../error';
 
@@ -103,12 +103,10 @@ export function isEqual(x: any, y: any) {
   }
 }
 
-export function revokeProxy(proxyDraft: ProxyDraft | null) {
-  if (!proxyDraft) return;
-  while (proxyDraft.finalities.revoke.length > 0) {
-    const revoke = proxyDraft.finalities.revoke.pop()!;
-    revoke();
-  }
+// Revokes every draft of a producer without reading any of them.
+export function revokeProxy(finalities: Finalities) {
+  const revoke = finalities.revoke;
+  while (revoke.length > 0) revoke.pop()!();
 }
 
 // handle JSON Pointer path with spec https://www.rfc-editor.org/rfc/rfc6901
