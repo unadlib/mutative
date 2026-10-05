@@ -16,15 +16,14 @@ export const enum ErrorCode {
   UnsupportedMarkResult = 9,
   InvalidMark = 10,
   CannotModifyFrozenObject = 11,
-  InvalidPatchPath = 12,
-  ReservedPatchAttribute = 13,
-  CannotApplyPatch = 14,
-  ReplacePatchOnSet = 15,
-  UnsupportedPatchOperation = 16,
-  ApplyOptionsToDraft = 17,
-  OriginalOnNonDraft = 18,
-  RawReturnWithoutValue = 19,
-  RawReturnWithExtraArguments = 20,
+  ReservedPatchAttribute = 12,
+  CannotApplyPatch = 13,
+  ReplacePatchOnSet = 14,
+  UnsupportedPatchOperation = 15,
+  ApplyOptionsToDraft = 16,
+  OriginalOnNonDraft = 17,
+  RawReturnWithoutValue = 18,
+  RawReturnWithExtraArguments = 19,
 }
 
 type ErrorArguments = {
@@ -40,7 +39,6 @@ type ErrorArguments = {
   [ErrorCode.UnsupportedMarkResult]: [markResult: any];
   [ErrorCode.InvalidMark]: [];
   [ErrorCode.CannotModifyFrozenObject]: [];
-  [ErrorCode.InvalidPatchPath]: [path: (string | number)[]];
   [ErrorCode.ReservedPatchAttribute]: [];
   [ErrorCode.CannotApplyPatch]: [path: (string | number)[]];
   [ErrorCode.ReplacePatchOnSet]: [];
@@ -85,8 +83,6 @@ const errors: ErrorBuilders = __DEV__
         `Please check mark() to ensure that it is a stable marker draftable function.`,
       // ErrorCode.CannotModifyFrozenObject
       () => `Cannot modify frozen object`,
-      // ErrorCode.InvalidPatchPath
-      (path) => `Cannot resolve patch at '${path.join('/')}'.`,
       // ErrorCode.ReservedPatchAttribute
       () =>
         `Patching reserved attributes like __proto__ and constructor is not allowed.`,
