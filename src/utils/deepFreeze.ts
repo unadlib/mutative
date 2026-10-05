@@ -62,21 +62,26 @@ export function deepFreeze(
     return;
   }
   const type = getType(target);
+  // Like other objects, a Map or Set is frozen before its contents, so that a
+  // later freeze skips it and a circular reference ends the walk. Freezing
+  // leaves its entries mutable, which the guards installed first prevent.
   switch (type) {
     case DraftType.Map:
+      target.set = target.clear = target.delete = throwFrozenError;
+      Object.freeze(target);
       for (const [key, value] of target) {
         if (isFreezable(key)) deepFreeze(key, key, updatedValues, stack, keys);
         if (isFreezable(value))
           deepFreeze(value, key, updatedValues, stack, keys);
       }
-      target.set = target.clear = target.delete = throwFrozenError;
       break;
     case DraftType.Set:
+      target.add = target.clear = target.delete = throwFrozenError;
+      Object.freeze(target);
       for (const value of target) {
         if (isFreezable(value))
           deepFreeze(value, value, updatedValues, stack, keys);
       }
-      target.add = target.clear = target.delete = throwFrozenError;
       break;
     case DraftType.Array:
       Object.freeze(target);

@@ -79,6 +79,26 @@ test('auto-freeze passes over primitives in Maps, Sets, and arrays', () => {
   expect(() => (state.set as any).add(3)).toThrow(minified(11));
 });
 
+test('auto-freeze freezes a Map or Set that holds itself', () => {
+  const { create } = mutative;
+  const state = create(
+    {} as { map?: Map<string, any>; set?: Set<any> },
+    (draft) => {
+      const map = new Map<string, any>();
+      map.set('self', map);
+      const set = new Set<any>();
+      set.add(set);
+      draft.map = map;
+      draft.set = set;
+    },
+    { enableAutoFreeze: true }
+  );
+  expect(Object.isFrozen(state.map)).toBe(true);
+  expect(state.map!.get('self')).toBe(state.map);
+  expect(Object.isFrozen(state.set)).toBe(true);
+  expect(state.set!.has(state.set)).toBe(true);
+});
+
 test('strict mode does not warn about unchanged drafts', () => {
   const { create } = mutative;
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
