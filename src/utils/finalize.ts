@@ -1,4 +1,4 @@
-import { DraftType, Patches, ProxyDraft } from '../interface';
+import { DraftType, Finalities, Patches, ProxyDraft } from '../interface';
 import {
   get,
   getPath,
@@ -13,9 +13,10 @@ import { forEach } from './forEach';
 
 export function handleValue(
   target: any,
-  handledSet: WeakSet<any>,
+  finalities: Finalities,
   options?: ProxyDraft['options']
 ) {
+  const handledSet = finalities.handledSet;
   if (
     isDraft(target) ||
     !isDraftable(target, options) ||
@@ -29,6 +30,8 @@ export function handleValue(
   forEach(target, (key, value) => {
     if (isDraft(value)) {
       const proxyDraft = getProxyDraft(value)!;
+      // A draft of an outer create() call is left for that call to finalize.
+      if (proxyDraft.finalities !== finalities) return;
       // A draft where a child node has been changed, or assigned a value
       const updatedValue =
         proxyDraft.assignedMap?.size || proxyDraft.operated
@@ -37,7 +40,7 @@ export function handleValue(
       // final update value
       set(isSet ? setMap! : target, key, updatedValue);
     } else {
-      handleValue(value, handledSet, options);
+      handleValue(value, finalities, options);
     }
   });
   if (setMap) {
@@ -59,11 +62,7 @@ export function finalizeAssigned(proxyDraft: ProxyDraft, key: PropertyKey) {
     proxyDraft.assignedMap!.get(key) &&
     copy
   ) {
-    handleValue(
-      get(copy, key),
-      proxyDraft.finalities.handledSet,
-      proxyDraft.options
-    );
+    handleValue(get(copy, key), proxyDraft.finalities, proxyDraft.options);
   }
 }
 
@@ -79,7 +78,12 @@ export function finalizeSetValue(target: ProxyDraft) {
   if (target.type === DraftType.Set && target.copy && target.setMap) {
     target.copy.clear();
     target.setMap!.forEach((value) => {
-      target.copy!.add(getValue(value));
+      // A draft of an outer create() call is left for that call to finalize.
+      target.copy!.add(
+        getProxyDraft(value)?.finalities === target.finalities
+          ? getValue(value)
+          : value
+      );
     });
   }
 }
@@ -127,9 +131,10 @@ export function finalizeNode(
       parentType === DraftType.Set || parentType === DraftType.Map;
     const draft = isMapLike ? copy.get(key) : copy[key];
     // Fast path: the node is still at its own key. Otherwise another draft
-    // may have been moved here, e.g. by `reverse()`, and is finalized instead.
+    // may have been moved here, e.g. by `reverse()`, and is finalized instead,
+    // unless it is a draft of an outer create() call.
     const proxyDraft = draft === node.proxy ? node : getProxyDraft(draft);
-    if (proxyDraft) {
+    if (proxyDraft && proxyDraft.finalities === node.finalities) {
       // assign the updated value to the copy object
       const updatedValue = proxyDraft.operated
         ? proxyDraft.copy

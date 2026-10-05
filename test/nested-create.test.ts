@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { apply, create } from '../src';
+import { apply, create, isDraft } from '../src';
 
 describe('auto-freeze of create() calls inside a recipe', () => {
   test('a create() call inside a recipe does not freeze its result', () => {
@@ -142,6 +142,38 @@ describe('drafts whose original is a draft of an outer create() call', () => {
     expect(state).toBe(base);
   });
 
+  test('a Set keeps the drafts of an outer create() call that it holds', () => {
+    const item = { value: 1 };
+    const base = { set: new Set([item]) };
+    const state = create(base, (draft) => {
+      const result = create({ set: draft.set }, (innerDraft) => {
+        innerDraft.set.add({ value: 2 });
+      });
+      const [first] = result.set;
+      expect(isDraft(first)).toBe(true);
+      first.value = 3;
+      draft.set = result.set;
+    });
+    expect(item).toEqual({ value: 1 });
+    expect([...state.set]).toEqual([{ value: 3 }, { value: 2 }]);
+  });
+
+  test('a value assigned in the recipe keeps the drafts of an outer create() call', () => {
+    const base = { node: { child: { value: 0 } }, other: { value: 0 } };
+    const state = create(base as any, (draft) => {
+      const result: any = create({ node: draft.node }, (innerDraft: any) => {
+        innerDraft.node.child.value = 1;
+        innerDraft.list = [draft.other];
+      });
+      expect(isDraft(result.list[0])).toBe(true);
+      result.list[0].value = 1;
+      draft.list = result.list;
+    });
+    expect(base.other).toEqual({ value: 0 });
+    expect(state.list[0]).toBe(state.other);
+    expect(state.other).toEqual({ value: 1 });
+  });
+
   test('a Map draft is copied through the outer draft', () => {
     const base = { map: new Map([['a', 1]]) };
     const state = create(base, (draft) => {
@@ -165,5 +197,20 @@ describe('drafts whose original is a draft of an outer create() call', () => {
       expect([...draft.set]).toEqual([{ value: 1 }]);
     });
     expect(state).toBe(base);
+  });
+
+  test('an array draft that moves drafts of an outer create() call leaves them to that call', () => {
+    const base = { list: [{ value: 0 }, { value: 1 }, { value: 2 }] };
+    const state = create(base, (draft) => {
+      const result = create({ list: draft.list }, (innerDraft) => {
+        innerDraft.list.reverse();
+        innerDraft.list[0].value = 3;
+      });
+      expect(isDraft(result.list[2])).toBe(true);
+      result.list[2].value = 4;
+      draft.list = result.list;
+    });
+    expect(base.list).toEqual([{ value: 0 }, { value: 1 }, { value: 2 }]);
+    expect(state.list).toEqual([{ value: 3 }, { value: 1 }, { value: 4 }]);
   });
 });
