@@ -365,11 +365,9 @@ export function createDraft<T extends object>(
     proxy: null,
     finalities,
     options,
-    // Mapping of draft Set items to their corresponding draft values.
-    setMap:
-      type === DraftType.Set
-        ? new Map((original as Set<any>).entries())
-        : undefined,
+    // Mapping of draft Set items to their corresponding draft values, built
+    // once a Set draft is changed or iterated; see `getSetMap`.
+    setMap: undefined,
     assignedMap: undefined,
     callbacks: undefined,
     children: undefined,
