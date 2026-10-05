@@ -2018,3 +2018,36 @@ describe('patch values that apply() copies', () => {
     expect(next.item.date).toBe(state.item.date);
   });
 });
+
+test('a Map key that is an array stays one path segment', () => {
+  const key = ['key'];
+  const nested = ['nested'];
+  const gone = ['gone'];
+  const base = new Map<string[], any>([
+    [key, 1],
+    [nested, { v: 1 }],
+    [gone, 3],
+  ]);
+  const [state, patches, inversePatches] = create(
+    base,
+    (draft) => {
+      draft.get(nested).v = 2;
+      draft.set(key, 2);
+      draft.delete(gone);
+    },
+    { enablePatches: true }
+  );
+  expect(patches).toStrictEqual([
+    { op: 'replace', path: [nested, 'v'], value: 2 },
+    { op: 'replace', path: [key], value: 2 },
+    { op: 'remove', path: [gone] },
+  ]);
+  const next = apply(base, patches);
+  expect([...next]).toStrictEqual([...state]);
+  expect(next.get(key)).toBe(2);
+  expect(next.has(gone)).toBe(false);
+  const previous = apply(state, inversePatches);
+  expect([...previous]).toStrictEqual([...base]);
+  expect(previous.get(key)).toBe(1);
+  expect(previous.get(gone)).toBe(3);
+});
