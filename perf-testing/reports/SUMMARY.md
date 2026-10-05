@@ -1,5 +1,78 @@
 # Performance summary
 
+## PR #184 review fixes
+
+Measured on 2026-10-05 UTC on the same Apple M1 Max and Node 24.16.0. This comparison covers main at `ba8d0cd`, the PR before its follow-up review at `1348794`, and the fixed runtime source at `6b08f57`, measured from checkout `639804b`. Package versions remain 1.3.0. The historical cross-library comparison below retains its original source and dates.
+
+The follow-up fixes reject further values from collection iterators after their drafts end, revoke drafts and release array receivers when returned-value inspection throws, and preserve production error codes 13–20 while reserving retired code 12. A live collection iterator checks the existing revoke list before reading an entry; Map iteration still avoids the per-entry proxy lookup and method binding. The changes add 66 tests, including async/manual iterator lifetimes and actual collection of failed-producer array state.
+
+### Complete base/head matrix
+
+All 93 scenarios ran in both freeze and patch modes where supported: **366 cells per source, three runs each**, 2,196 trials across 12 sequential processes. Every timed workload passed value, immutability and patch-replay validation; generated patch counts were unchanged in these workloads. The geometric mean of fixed/main time is **0.982**: 42 cells more than 5% faster, 318 within 5%, and 6 more than 5% slower.
+
+| Workload family | Cells | Fixed / main, geometric mean |
+| --- | ---: | ---: |
+| map | 20 | 0.928 |
+| set | 16 | 0.978 |
+| array | 132 | 1.000 |
+| read | 20 | 1.001 |
+| noop | 8 | 1.012 |
+| small | 12 | 0.972 |
+| mutation-density | 12 | 0.906 |
+| apply | 6 | 1.003 |
+| return | 12 | 0.995 |
+| search | 12 | 0.996 |
+
+The six slower cells were push-and-insert in three modes, remove and update with freezing on, and push-and-insert-reuse without freeze or patches (1.059–1.118). These workloads carry wide objects, and 46 of the base matrix's 366 cells varied by more than 5% between runs of the same source. A follow-up measured those four scenarios with one scenario per process, three runs per source, in all 16 modes. Its fixed/main ratios span **0.772–1.018** (geometric mean 0.953); the apparent regressions did not reproduce. The reversals of direction in wide-object cells are a reason to retain both measurements and avoid a general speed claim.
+
+Ratios in this section are fixed time divided by main time, so values below one favor the PR. These are workload counts, not an application-weighted score. The matrix is a PR comparison; it does not remeasure the older cross-library claims below.
+
+### Focused costs and benefits
+
+The following diagnostics use the actual production CJS files, five independent process rounds per source with rotating source order, 50 ms warmup and five samples of at least 65 ms per process. Setup is outside timing and results escape. Times are microseconds, medians of process medians; the last column is the median paired ratio.
+
+| Workload | Main | Before follow-up fixes | Fixed | Fixed / before, paired |
+| --- | ---: | ---: | ---: | ---: |
+| Update beside an unchanged frozen 10k-entry Map | 66.704 | 0.438 | 0.440 | 0.999 |
+| Update beside an unchanged frozen 10k-item Set | 26.111 | 0.437 | 0.439 | 0.998 |
+| Map forEach, 10k primitive entries | 932.040 | 272.030 | 278.522 | 1.024 |
+| Map values, 10k primitive entries | 884.452 | 253.573 | 257.202 | 1.012 |
+| Map forEach, 10k object entries | 2533.102 | 2057.117 | 2073.617 | 1.024 |
+| Map get, 1k lookups | 94.642 | 93.967 | 93.914 | 1.001 |
+| Update all 1k rows with patches | 565.492 | 500.631 | 504.142 | 1.009 |
+| Apply 100 object-valued patches | 68.459 | 64.273 | 63.999 | 1.001 |
+| Read 1k rows by index | 263.003 | 264.326 | 260.874 | 0.978 |
+| Small object update | 0.355 | 0.354 | 0.354 | 1.002 |
+| Small object update with patches | 0.524 | 0.445 | 0.440 | 0.987 |
+
+Map iteration pays roughly 1–2.4% for its lifetime checks versus the unsafe previous head while retaining about a 70% time reduction versus main for primitive entries. The frozen-collection gains apply to repeated producers sharing an already-frozen collection, not a cold freeze or every Map/Set update. Updating and freezing a two-entry Map measured 0.560 → 0.592 µs versus main (+32 ns); the corresponding Set measured 0.769 → 0.798 µs. Ordinary small producers and Map get calls were essentially unchanged by the follow-up fixes.
+
+### Size and validation
+
+Production CJS Brotli is 8,079 → 8,106 B versus main (+27 B), and 8,062 → 8,106 B versus the previous PR head (+44 B). Production ESM is 8,112 → 8,156 B versus main; UMD is 8,142 → 8,170 B. The esbuild consumer importing only create is 7,627 → 7,606 B. The existing size-limit caps remain 8.4 / 7.4 / 8.3 kB; current results are 8.30 / 7.27 / 8.16 kB. The refreshed baseline preserves its 1% and 64 B growth policy.
+
+Local validation passed: 4,656 tests, 234 documented expected failures and 8 skipped; source statement/branch/function/line coverage is 100%. Lint, format, types, production/development smoke checks, package consumers, watch builds and all 29 benchmark-tooling tests passed. Before timing, the bounded four-library check passed all 1,188 supported scenario/library/freeze/patch combinations, with 18 additional apply checks. A follow-up watch-check change waits for the actual ESM and CJS output values rather than accepting queued completion messages as proof of freshness. This changes no runtime artifact. The remote [PR checks](https://github.com/unadlib/mutative/pull/184/checks) run Node 22/24, coverage and the unchanged paired latency/allocation/retained-heap budgets.
+
+Production CJS SHA-256:
+
+```text
+main ba8d0cd:  947c5669874e46d0b08cf4ec6f74641ad151756d988999e46357967367f66a72
+prior PR:      ffefb0eeb87ac86b3202963e345804a85e3771709394908e1629e2b014219356
+fixed source:  b38d8a426f27e5e7c24679aeda47c31c623a761454f89745a44ad96db5583b80
+```
+
+To reproduce the complete matrix, build main at `ba8d0cd` in a separate checkout with the frozen lockfile, set `PR184_BASE` to that directory, and run from checkout `639804b` sequentially:
+
+```sh
+pnpm build
+pnpm benchmark:immer:build
+MUTATIVE_PERF_CANDIDATE_DIR="$PR184_BASE" MUTATIVE_PERF_BUILD_DIR=perf-testing/dist/pr184-base pnpm benchmark:immer:build
+MUTATIVE_PERF_BUNDLE=perf-testing/dist/pr184-base/immutability-benchmarks.mjs node perf-testing/run-benchmarks.mjs --library mutative --runs 3 --freeze both --patches both --output perf-testing/results/pr184-base.json
+node perf-testing/run-benchmarks.mjs --library mutative --runs 3 --freeze both --patches both --output perf-testing/results/pr184-fixed.json
+```
+
+## Historical cross-library comparison
+
 Measurements from 2026-10-03 and 2026-10-04 UTC of the source of `main` at [`e6b6563`](https://github.com/unadlib/mutative/commit/e6b6563b821305b8ee0d63c42a62cea752cc04f0), which includes the draft fast paths of [PR #174](https://github.com/unadlib/mutative/pull/174), the Set and assignment fixes of [PR #176](https://github.com/unadlib/mutative/pull/176), and the native array methods of [PR #75](https://github.com/unadlib/mutative/pull/75). The candidate and the pinned npm baseline both report Mutative 1.3.0. Immer is pinned to 11.1.18 and Mitata to 1.0.34. The main comparison runs Immer without its array-method plugin; a separate dataset below enables `enableArrayMethods`. The raw datasets of this batch were not archived; the identities and commands below reproduce them, and the [archive index](./README.md) describes the retention policy for batches that are.
 
 This batch replaces the repository's former benchmark scripts with this suite. It adds 23 scenarios, a hand-written reducer as a fourth library, isolated processes for wide objects, and a priming run before each benchmark, so its numbers are not directly comparable with earlier summaries.
