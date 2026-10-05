@@ -1,4 +1,4 @@
-import { dataTypes, iteratorSymbol } from './constant';
+import { dataTypes, iteratorPrototype, iteratorSymbol } from './constant';
 import { internal } from './internal';
 import { checkReadable } from './unsafe';
 import {
@@ -98,7 +98,7 @@ export const mapHandler = {
   values(): IterableIterator<any> {
     const iterator = this.keys();
     return {
-      [iteratorSymbol]: () => this.values(),
+      __proto__: iteratorPrototype,
       next: () => {
         const result = iterator.next();
         if (result.done) return result;
@@ -113,7 +113,7 @@ export const mapHandler = {
   entries(): IterableIterator<[any, any]> {
     const iterator = this.keys();
     return {
-      [iteratorSymbol]: () => this.entries(),
+      __proto__: iteratorPrototype,
       next: () => {
         const result = iterator.next();
         if (result.done) return result;

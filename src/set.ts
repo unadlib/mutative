@@ -1,5 +1,5 @@
 import { ProxyDraft } from './interface';
-import { dataTypes, iteratorSymbol } from './constant';
+import { dataTypes, iteratorPrototype, iteratorSymbol } from './constant';
 import { internal } from './internal';
 import {
   ensureShallowCopy,
@@ -127,22 +127,22 @@ export const setHandler = {
     ensureShallowCopy(target);
     const iterator = getSetMap(target).keys();
     return {
-      [Symbol.iterator]: () => this.values(),
+      __proto__: iteratorPrototype,
       next: getNextIterator(target, iterator, true),
-    };
+    } as any;
   },
   entries(): IterableIterator<[any, any]> {
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
     const iterator = getSetMap(target).keys();
     return {
-      [Symbol.iterator]: () => this.entries(),
+      __proto__: iteratorPrototype,
       next: getNextIterator(
         target,
         iterator,
         false
       ) as () => IteratorReturnResult<any>,
-    };
+    } as any;
   },
   keys(): IterableIterator<any> {
     return this.values();
