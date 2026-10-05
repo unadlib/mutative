@@ -55,12 +55,12 @@ export const checksReads = (options: Options<any, any>) =>
  * ```
  */
 export function unsafe<T>(callback: () => T): T {
+  // A nested call hands the outer call's access back when it ends.
+  const previous = readable;
   readable = true;
-  let result: T;
   try {
-    result = callback();
+    return callback();
   } finally {
-    readable = false;
+    readable = previous;
   }
-  return result;
 }
