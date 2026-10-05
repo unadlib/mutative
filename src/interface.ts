@@ -42,6 +42,9 @@ export interface Finalities {
   // and releases module-level references to its drafts. False for drafts
   // returned by `create(base)` without a recipe.
   scoped: boolean;
+  // Whether the base state is a draft of an outer producer, so that the
+  // originals of this producer's drafts can be drafts too.
+  nested: boolean;
 }
 
 export interface ProxyDraft<T = any> {

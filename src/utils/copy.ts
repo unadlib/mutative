@@ -1,6 +1,6 @@
 import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
-import { getValue, isDraft, isDraftable } from './draft';
+import { getProxyDraft, getValue, isDraft, isDraftable, latest } from './draft';
 import { isBaseMapInstance, isBaseSetInstance, isPlainArray } from './proto';
 import { die, ErrorCode } from '../error';
 
@@ -40,8 +40,7 @@ const propIsEnum = Object.prototype.propertyIsEnumerable;
  */
 const SPREAD_KEY_LIMIT = 128;
 
-function copyPlainObject(original: any) {
-  const keys = Object.keys(original);
+function copyPlainObject(original: any, keys = Object.keys(original)) {
   if (keys.length <= SPREAD_KEY_LIMIT) {
     // Own enumerable string and symbol keys, like the loop below.
     return { ...original };
@@ -78,6 +77,24 @@ function copyPlainObject(original: any) {
   return copy;
 }
 
+// current() copies drafts, and the drafts of a producer whose base is a draft
+// have drafts as originals. A draft is copied from its current object, since
+// spreading the Proxy takes a slow generic path; the objects it holds are then
+// read through it, which drafts them when it belongs to an outer producer.
+function copyDraft(original: any, draft: ProxyDraft) {
+  const source = latest(draft);
+  const keys = Object.keys(source);
+  if (keys.length > SPREAD_KEY_LIMIT) return copyPlainObject(original, keys);
+  const copy: any = { ...source };
+  Reflect.ownKeys(copy).forEach((key) => {
+    const value = copy[key];
+    // The spread made every key an own data property, so assigning one,
+    // `__proto__` included, only replaces its value.
+    if (typeof value === 'object' && value !== null) copy[key] = original[key];
+  });
+  return copy;
+}
+
 // Copies an array with `concat`, which keeps holes and creates the copy
 // through `Symbol.species`. `concat` puts an array whose
 // `Symbol.isConcatSpreadable` is false into the copy as one element instead,
@@ -110,7 +127,11 @@ function copyLockedArray(original: any[]) {
     : concatCopy(original);
 }
 
-export function shallowCopy(original: any, options?: Options<any, any>) {
+export function shallowCopy(
+  original: any,
+  options?: Options<any, any>,
+  draft?: ProxyDraft | null
+) {
   let markResult: any;
   if (Array.isArray(original)) {
     // With auto-freeze, the arrays of a state are frozen; otherwise checking
@@ -154,7 +175,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
     typeof original === 'object' &&
     Object.getPrototypeOf(original) === Object.prototype
   ) {
-    return copyPlainObject(original);
+    return draft ? copyDraft(original, draft) : copyPlainObject(original);
   } else {
     die(ErrorCode.InvalidMark);
   }
@@ -162,7 +183,12 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
 
 export function ensureShallowCopy(target: ProxyDraft) {
   if (target.copy) return;
-  target.copy = shallowCopy(target.original, target.options)!;
+  target.copy = shallowCopy(
+    target.original,
+    target.options,
+    // Only a producer whose base is a draft checks whether originals are.
+    target.finalities.nested ? getProxyDraft(target.original) : null
+  )!;
 }
 
 function deepClone<T>(target: T): T;

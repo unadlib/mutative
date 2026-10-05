@@ -368,6 +368,25 @@ describe('create() with a draft as its base, like Immer', () => {
     expect([...state.set]).toEqual([{ value: 2 }, { value: 1 }]);
   });
 
+  test('drafts of a wide object', () => {
+    const wide: any = {};
+    for (let index = 0; index < 200; index += 1) {
+      wide[`key${index}`] = { index };
+    }
+    const state = create({ wide }, (draft) => {
+      const result = create(draft.wide, (wideDraft) => {
+        wideDraft.key0.index = -1;
+      });
+      expect(isDraft(result.key1)).toBe(true);
+      result.key1.index = -2;
+      draft.wide = result;
+    });
+    expect(wide.key1).toEqual({ index: 1 });
+    expect(state.wide.key0).toEqual({ index: -1 });
+    expect(state.wide.key1).toEqual({ index: -2 });
+    expect(state.wide.key2).toBe(wide.key2);
+  });
+
   test('the recipe sees the changes of the outer recipe', () => {
     const base = { child: { count: 1, nested: { total: 0 } } };
     const state = create(base as any, (draft) => {

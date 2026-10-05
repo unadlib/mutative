@@ -118,7 +118,12 @@ function getCurrent(target: any): any {
           ? proxyDraft
             ? Array.from(getSetMap(proxyDraft).values())
             : Array.from(target as Set<any>)
-          : shallowCopy(array ? latest(array) : target, proxyDraft?.options);
+          : // A draft is copied from its current object, see `shallowCopy`.
+            shallowCopy(
+              array ? latest(array) : target,
+              proxyDraft?.options,
+              proxyDraft
+            );
   }
 
   if (proxyDraft) {

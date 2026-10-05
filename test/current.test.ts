@@ -345,3 +345,25 @@ test('current() for Custom Set/Map draft', () => {
     expect(f).toMatchSnapshot();
   });
 });
+
+test('current() of a changed draft of a wide object', () => {
+  const symbol = Symbol('key');
+  // JSON.parse creates an own `__proto__` key.
+  const base: any = JSON.parse('{"__proto__": {"own": true}}');
+  for (let index = 0; index < 200; index += 1) {
+    base[`key${index}`] = { index };
+  }
+  base[symbol] = { symbol: true };
+  create(base, (draft) => {
+    draft.key0.index = -1;
+    const value = current(draft);
+    expect(value.key0).toEqual({ index: -1 });
+    expect(value.key1).toBe(base.key1);
+    expect(value[symbol]).toBe(base[symbol]);
+    expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
+    expect(Object.getOwnPropertyDescriptor(value, '__proto__')!.value).toBe(
+      Object.getOwnPropertyDescriptor(base, '__proto__')!.value
+    );
+    expect(Object.keys(value)).toEqual(Object.keys(base));
+  });
+});
