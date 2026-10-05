@@ -41,3 +41,4 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - Assigning `undefined` to a key that `delete`, `shift`, `unshift` or a shrinking `splice` removed from a draft adds the key back; v1 left a hole or kept the shorter length.
 - Under a `mark` that returns `mutable`, a value that the recipe assigned or moved is read back as assigned, through the draft and in `current()`; v1 returned the original value.
 - `current()` of a draft whose state holds a plain Set with drafts returns a snapshot; v1 threw.
+- With `enableAutoFreeze`, Map and Set instances are frozen too, so adding a property or replacing a method fails as on any frozen object; v1 only replaced their mutators. Later producers skip a frozen Map or Set instead of walking its entries again, and a Map or Set that holds itself no longer overflows the stack in production builds.
