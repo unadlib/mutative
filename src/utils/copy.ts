@@ -1,6 +1,6 @@
 import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
-import { getValue, isDraftable } from './draft';
+import { getValue, isDraft, isDraftable } from './draft';
 import { isBaseMapInstance, isBaseSetInstance, isPlainArray } from './proto';
 import { die, ErrorCode } from '../error';
 
@@ -123,7 +123,8 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
       const SubClass = Object.getPrototypeOf(original).constructor;
       return new SubClass(original.values());
     }
-    return Set.prototype.difference
+    // The Set draft of an outer create() call has no Set internals.
+    return !isDraft(original) && Set.prototype.difference
       ? Set.prototype.difference.call(original, new Set())
       : new Set(original.values());
   } else if (original instanceof Map) {
