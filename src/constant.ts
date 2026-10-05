@@ -4,6 +4,13 @@ export const RAW_RETURN_SYMBOL = Symbol('__MUTATIVE_RAW_RETURN_SYMBOL__');
 
 export const iteratorSymbol: typeof Symbol.iterator = Symbol.iterator;
 
+// The prototype of built-in iterators. An iterator that inherits from it
+// returns itself when iterated, and has the iterator helpers, such as
+// `toArray()`, where the engine provides them.
+export const iteratorPrototype = Object.getPrototypeOf(
+  Object.getPrototypeOf([][iteratorSymbol]())
+);
+
 export const dataTypes = {
   mutable: 'mutable',
   immutable: 'immutable',
