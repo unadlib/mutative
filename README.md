@@ -595,6 +595,10 @@ In strict mode, outside [`unsafe()`](#unsafe), optimized calls on an array that 
 
 Draftable base elements removed or moved by these methods are drafted before they are exposed. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, go through the draft so that their callbacks see every change and can modify elements; use [`current()`](#current) for read-only scans of large arrays.
 
+- Can a recipe change a Map draft while iterating over it?
+
+Yes. Deleting the entry being visited and changing the values of other entries work as on a Map, and Set drafts iterate like Sets. One difference remains: an iteration over a Map draft that starts before the recipe has changed that Map, or read an object value from it, walks the entries of the base Map. An entry that the recipe deletes later in such an iteration is still visited, with `undefined` as its value, and an entry that it adds is not visited. To delete other entries while iterating, iterate over `Array.from(draft.keys())` and skip the keys for which `draft.has()` returns false.
+
 - Does Mutative support shared references?
 
 Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](https://mutative.js.org/docs/extra-topics/shared-references).

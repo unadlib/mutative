@@ -129,6 +129,53 @@ describe('iterators of Map and Set drafts', () => {
     }
   });
 
+  // The difference from a Map that the FAQ describes, and its workaround.
+  test('an iteration that starts before a Map draft changes walks the base Map', () => {
+    const base = new Map([
+      ['a', 1],
+      ['b', 2],
+    ]);
+    const seen: any[] = [];
+    create(base, (draft) => {
+      draft.forEach((value, key) => {
+        seen.push([key, value]);
+        if (key === 'a') {
+          draft.delete('b');
+          draft.set('c', 3);
+        }
+      });
+    });
+    expect(seen).toStrictEqual([
+      ['a', 1],
+      ['b', undefined],
+    ]);
+    const visited: any[] = [];
+    const state = create(base, (draft) => {
+      for (const key of Array.from(draft.keys())) {
+        if (draft.has(key)) {
+          visited.push([key, draft.get(key)]);
+          if (key === 'a') draft.delete('b');
+        }
+      }
+    });
+    expect(visited).toStrictEqual([['a', 1]]);
+    expect([...state]).toStrictEqual([['a', 1]]);
+  });
+
+  test('Set drafts iterate like Sets while they change', () => {
+    const seen: any[] = [];
+    create(new Set([1, 2]), (draft) => {
+      for (const value of draft) {
+        seen.push(value);
+        if (value === 1) {
+          draft.delete(2);
+          draft.add(3);
+        }
+      }
+    });
+    expect(seen).toStrictEqual([1, 3]);
+  });
+
   test.runIf(hasIteratorHelpers)('iterator helpers are available', () => {
     create(
       {
