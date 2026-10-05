@@ -6,6 +6,7 @@ import {
   getProxyDraft,
   isDraftable,
   isEqual,
+  isPlainArray,
   latest,
   markChanged,
   markFinalization,
@@ -77,12 +78,7 @@ function nativeState(self: any): ProxyDraft | null {
   const target: ProxyDraft = self[PROXY_DRAFT];
   return !target.finalized &&
     !target.options.mark &&
-    !Object.prototype.hasOwnProperty.call(target.original, 'constructor') &&
-    !Object.prototype.hasOwnProperty.call(
-      target.original,
-      Symbol.isConcatSpreadable
-    ) &&
-    Object.getPrototypeOf(target.original) === arrayProto
+    isPlainArray(target.original)
     ? target
     : null;
 }
