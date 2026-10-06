@@ -1,5 +1,6 @@
 import { DraftType, Finalities, Mark, ProxyDraft } from '../interface';
 import { dataTypes, PROXY_DRAFT } from '../constant';
+import { die, ErrorCode } from '../error';
 
 export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
@@ -48,6 +49,18 @@ export function isDraftable(value: any, options?: { mark?: Mark<any, any> }) {
   );
 }
 
+// A string path holds only strings, so a Map key of another type or a symbol
+// key would name a different key when the patch is applied.
+export function checkPathKey(target: ProxyDraft, key: any) {
+  if (
+    typeof key !== 'string' &&
+    (target.type === DraftType.Map || typeof key === 'symbol') &&
+    target.options.enablePatches.pathAsArray === false
+  ) {
+    die(ErrorCode.UnsupportedStringPathKey, key);
+  }
+}
+
 export function getPath(
   target: ProxyDraft,
   path: any[] = []
@@ -69,6 +82,8 @@ export function getPath(
       // by another draft of a shared object. The parent's patches carry its
       // value wherever it is now, so patches under this path would be stale.
       return null;
+    } else {
+      checkPathKey(parent, key);
     }
     path.push(key);
     return getPath(parent, path);

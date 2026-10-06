@@ -26,6 +26,7 @@ export const enum ErrorCode {
   OriginalOnNonDraft = 18,
   RawReturnWithoutValue = 19,
   RawReturnWithExtraArguments = 20,
+  UnsupportedStringPathKey = 21,
 }
 
 type ErrorArguments = {
@@ -49,6 +50,7 @@ type ErrorArguments = {
   [ErrorCode.OriginalOnNonDraft]: [target: any];
   [ErrorCode.RawReturnWithoutValue]: [];
   [ErrorCode.RawReturnWithExtraArguments]: [];
+  [ErrorCode.UnsupportedStringPathKey]: [key: any];
 };
 
 type ErrorBuilders = {
@@ -104,6 +106,9 @@ const errors: ErrorBuilders = __DEV__
       () => 'rawReturn() must be called with a value.',
       // ErrorCode.RawReturnWithExtraArguments
       () => 'rawReturn() must be called with one argument.',
+      // ErrorCode.UnsupportedStringPathKey
+      (key) =>
+        `Patches with string paths only support string Map keys and no symbol keys, got a key of type '${typeof key}'. Set 'pathAsArray' to true to keep keys of other types.`,
     ]
   : ([] as unknown as ErrorBuilders);
 

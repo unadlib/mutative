@@ -49,6 +49,15 @@ test('patch, original() and rawReturn() errors carry their minified code', () =>
   expect(() => original({})).toThrow(minified(18));
   expect(() => (rawReturn as any)()).toThrow(minified(19));
   expect(() => (rawReturn as any)({}, {})).toThrow(minified(20));
+  expect(() =>
+    create(
+      new Map([[1, 1]]),
+      (draft) => {
+        draft.set(1, 2);
+      },
+      { enablePatches: { pathAsArray: false } }
+    )
+  ).toThrow(minified(21));
 });
 
 test('auto-freeze passes over primitives in Maps, Sets, and arrays', () => {
