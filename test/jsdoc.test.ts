@@ -38,7 +38,7 @@ describe('jsdoc', () => {
     await jsdocTests('../src/original.ts', __dirname);
   });
   test('unsafe()', async () => {
-    await jsdocTests('../src/unsafe.ts', __dirname);
+    await jsdocTests('../src/utils/unsafe.ts', __dirname);
   });
   test('rawReturn()', async () => {
     await jsdocTests('../src/rawReturn.ts', __dirname);

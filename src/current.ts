@@ -12,8 +12,8 @@ import {
   latest,
   set,
   shallowCopy,
+  checksReads,
 } from './utils';
-import { checksReads } from './unsafe';
 import { getSetMap } from './set';
 import { die, ErrorCode } from './error';
 

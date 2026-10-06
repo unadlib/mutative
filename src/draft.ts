@@ -24,8 +24,8 @@ import {
   revokeProxy,
   markFinalization,
   finalizeNode,
+  checkReadable,
 } from './utils';
-import { checkReadable } from './unsafe';
 import { generatePatches } from './patch';
 import { die, ErrorCode } from './error';
 

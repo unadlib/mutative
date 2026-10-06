@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { apply, create, current, isDraft } from '../src';
+import { apply, create, current, isDraft, unsafe } from '../src';
 
 describe('auto-freeze of create() calls inside a recipe', () => {
   test('a create() call inside a recipe does not freeze its result', () => {
@@ -612,5 +612,71 @@ describe('Set drafts that hold drafts of another create() call', () => {
     });
     expect([...state.set]).toEqual([{ id: 2 }, { id: 1 }]);
     expect(patches).toEqual([]);
+  });
+});
+
+describe('strict mode and create() on a draft', () => {
+  test('the copy of a draft of the outer create() call reads non-draftable values unchecked', () => {
+    const date = new Date(0);
+    const base: any = {
+      node: {
+        date,
+        list: [date, { v: 1 }],
+        set: new Set([date, { v: 1 }]),
+        map: new Map([['date', date]]),
+        k: 1,
+      },
+    };
+    const state = create(
+      base,
+      (draft: any) => {
+        const result = create(draft.node, (inner) => {
+          inner.k = 2;
+          inner.list.push(2);
+          inner.set.add(2);
+          inner.map.set('k', 2);
+        });
+        expect(result.date).toBe(date);
+        expect(result.list[0]).toBe(date);
+        expect(isDraft(result.list[1])).toBe(true);
+        draft.node = result;
+      },
+      { strict: true }
+    );
+    expect(state.node.date).toBe(date);
+    expect(state.node.list).toEqual([date, { v: 1 }, 2]);
+    expect([...state.node.set]).toEqual([date, { v: 1 }, 2]);
+    expect([...state.node.map]).toEqual([
+      ['date', date],
+      ['k', 2],
+    ]);
+    expect(base.node.list).toEqual([date, { v: 1 }]);
+  });
+
+  test('the drafts of a strict create() call on a draft check the reads of its recipe', () => {
+    const date = new Date(0);
+    create({ node: { date, k: 1 } }, (draft) => {
+      expect(() =>
+        create(
+          draft.node,
+          (inner) => {
+            inner.k = 2;
+            expect(inner.date).toBe(date);
+          },
+          { strict: true }
+        )
+      ).toThrow(/Strict mode/);
+      const result = create(
+        draft.node,
+        (inner) => {
+          inner.k = 2;
+          unsafe(() => {
+            expect(inner.date).toBe(date);
+          });
+        },
+        { strict: true }
+      );
+      expect(result).toEqual({ date, k: 2 });
+    });
   });
 });

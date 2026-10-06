@@ -1,6 +1,6 @@
-import { Options } from './interface';
-import { isDraftable } from './utils';
-import { die, ErrorCode } from './error';
+import type { Options } from '../interface';
+import { isDraftable } from './draft';
+import { die, ErrorCode } from '../error';
 
 let readable = false;
 

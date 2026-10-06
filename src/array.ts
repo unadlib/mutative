@@ -10,8 +10,8 @@ import {
   latest,
   markChanged,
   markFinalization,
+  checksReads,
 } from './utils';
-import { checksReads } from './unsafe';
 
 const arrayProto = Array.prototype;
 const arrayIncludes = arrayProto.includes;

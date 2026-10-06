@@ -1,7 +1,6 @@
 import type { ProxyDraft } from './interface';
 import { dataTypes, iteratorPrototype, iteratorSymbol } from './constant';
 import { internal } from './internal';
-import { checkReadable } from './unsafe';
 import {
   assertDraftActive,
   ensureShallowCopy,
@@ -11,6 +10,7 @@ import {
   latest,
   markChanged,
   markFinalization,
+  checkReadable,
 } from './utils';
 
 // The value at `key` as `get()` returns it: a draft of a draftable value of

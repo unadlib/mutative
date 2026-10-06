@@ -3,7 +3,7 @@ export { create } from './create';
 export { apply } from './apply';
 export { original } from './original';
 export { current } from './current';
-export { unsafe } from './unsafe';
+export { unsafe } from './utils';
 export { rawReturn } from './rawReturn';
 export { isDraft } from './utils/draft';
 export { isDraftable } from './utils/draft';

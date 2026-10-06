@@ -8,15 +8,18 @@ import {
   isDraftable,
   markChanged,
   markFinalization,
+  checkReadable,
+  unsafe,
 } from './utils';
-import { checkReadable } from './unsafe';
 
 /**
  * The item mapping of a Set draft. Reads that leave the Set unchanged, such
- * as `has` and `size`, answer from the original instead of building it.
+ * as `has` and `size`, answer from the original instead of building it. The
+ * original of a Set draft of an outer create() call is that call's draft,
+ * whose iterator checks reads in strict mode; this read is not the recipe's.
  */
 export function getSetMap(target: ProxyDraft<any>): Map<any, any> {
-  return (target.setMap ??= new Map(target.original.entries()));
+  return (target.setMap ??= unsafe(() => new Map(target.original.entries())));
 }
 
 const getNextIterator =

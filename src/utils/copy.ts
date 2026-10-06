@@ -2,6 +2,7 @@ import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
 import { getProxyDraft, getValue, isDraft, isDraftable, latest } from './draft';
 import { isBaseMapInstance, isBaseSetInstance, isPlainArray } from './proto';
+import { unsafe } from './unsafe';
 import { die, ErrorCode } from '../error';
 
 function strictCopy(target: any) {
@@ -202,12 +203,20 @@ export function shallowCopy(
 
 export function ensureShallowCopy(target: ProxyDraft) {
   if (target.copy) return;
-  target.copy = shallowCopy(
-    target.original,
-    target.options,
-    // Only a producer whose base is a draft checks whether originals are.
-    target.finalities.nested ? getProxyDraft(target.original) : null
-  )!;
+  // Only a producer whose base is a draft checks whether originals are.
+  target.copy = target.finalities.nested
+    ? copyOuterDraft(target)
+    : shallowCopy(target.original, target.options)!;
+}
+
+// The copy of a draft whose original is a draft of an outer create() call
+// reads every object it holds through that draft, which in strict mode would
+// reject the non-draftable ones as if the recipe had read them. The copy
+// reads them unchecked; the drafts of this call check the recipe's reads.
+function copyOuterDraft(target: ProxyDraft) {
+  return unsafe(() =>
+    shallowCopy(target.original, target.options, getProxyDraft(target.original))
+  );
 }
 
 function deepClone<T>(target: T): T;
