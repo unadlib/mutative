@@ -16,7 +16,7 @@ import {
   isEqual,
   revokeProxy,
 } from './utils';
-import { current, handleReturnValue } from './current';
+import { current, getCurrent, handleReturnValue } from './current';
 import { RAW_RETURN_SYMBOL, dataTypes } from './constant';
 import { die, ErrorCode } from './error';
 
@@ -144,11 +144,17 @@ export const makeCreator: MakeCreator = (arg) => {
         `create() received a draft as its base and drafts current(draft), unlike Immer's produce: the values that its recipe leaves unchanged are objects of the base state, so changing them after the result is assigned back changes the base state. Make such changes in the recipe or before calling create(), or set the cloneDraftBase option; see https://mutative.js.org/docs/api-reference/create#create-on-a-draft`
       );
     }
-    const state = draftBase
-      ? options.cloneDraftBase
-        ? options.cloneDraftBase(current(base))
-        : current(base)
-      : base;
+    let state = draftBase ? current(base) : base;
+    if (draftBase && options.cloneDraftBase) {
+      // `current()` keeps the drafts that an object passed to create() held,
+      // which cloners such as `structuredClone` reject, so only then are they
+      // replaced by their current state.
+      try {
+        state = options.cloneDraftBase(state);
+      } catch {
+        state = options.cloneDraftBase(getCurrent(base, true));
+      }
+    }
     const mark = Array.isArray(options.mark)
       ? (((value: unknown, types: typeof dataTypes) => {
           for (const mark of options.mark as Mark<any, any>[]) {

@@ -88,11 +88,14 @@ export function handleReturnValue(
   }
 }
 
-function getCurrent(target: any) {
+// `deep` also replaces the drafts that unchanged values hold, which a base
+// state holding drafts puts there.
+export function getCurrent(target: any, deep?: boolean): any {
   const proxyDraft = getProxyDraft(target);
   if (!isDraftable(target, proxyDraft?.options)) return target;
   const type = getType(target);
-  if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
+  if (proxyDraft && !proxyDraft.operated)
+    return deep ? getCurrent(proxyDraft.original, deep) : proxyDraft.original;
   // A changed array draft is copied from its current array, since a copy
   // through the proxy runs two traps per element. In strict mode, outside
   // `unsafe()`, the proxy checks each element it reads, so such arrays are
@@ -139,6 +142,7 @@ function getCurrent(target: any) {
     // an object that is neither assigned nor a draft is an element of the base
     // state, which holds no drafts, even after a native method moved it.
     if (
+      !deep &&
       proxyDraft &&
       (isEqual(get(proxyDraft.original, key), value) ||
         (array &&
@@ -148,7 +152,7 @@ function getCurrent(target: any) {
     ) {
       return;
     }
-    const newValue = getCurrent(value);
+    const newValue = getCurrent(value, deep);
     if (newValue !== value) {
       changed = true;
       if (currentValue === target) ensureShallowCopy();

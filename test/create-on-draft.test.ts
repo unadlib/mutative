@@ -82,6 +82,35 @@ describe('the cloneDraftBase option', () => {
     expect(base.item.meta.get('k')).toEqual({ v: 0 });
     expect([...base.item.tags]).toEqual(['a']);
   });
+
+  test('drafts of an outer call that the current state still holds are cloned as their current state', () => {
+    const createDetached = makeCreator({ cloneDraftBase: structuredClone });
+    const rename = <T extends { name: string }>(node: T) =>
+      createDetached(node, (draft) => {
+        draft.name = 'renamed';
+      });
+    const base = { node: { name: 'a', child: { name: 'c' } } };
+    const results: any[] = [];
+    createDetached(base, (draft) => {
+      // Objects passed to create() that hold drafts of this call, which
+      // `structuredClone` cannot copy: an unchanged child of a spread draft,
+      // and a changed object whose unchanged value is a draft.
+      createDetached({ ...draft.node }, (copy) => {
+        results.push(rename(copy.child));
+      });
+      createDetached({ name: 'pair', node: draft.node }, (pair) => {
+        pair.name = 'changed';
+        results.push(rename(pair));
+      });
+    });
+    expect(results).toEqual([
+      { name: 'renamed' },
+      { name: 'renamed', node: { name: 'a', child: { name: 'c' } } },
+    ]);
+    expect(isDraft(results[1].node)).toBe(false);
+    expect(results[1].node).not.toBe(base.node);
+    expect(base).toEqual({ node: { name: 'a', child: { name: 'c' } } });
+  });
 });
 
 describe('create() on a draft', () => {
