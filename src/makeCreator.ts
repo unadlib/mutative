@@ -130,7 +130,7 @@ export const makeCreator: MakeCreator = (arg) => {
     };
     const draftBase = isDraft(base);
     // A draft base is drafted as `current(draft)`, so the values that the
-    // recipe leaves unchanged are objects of the base state (#160).
+    // recipe leaves unchanged are objects of the base state.
     if (
       __DEV__ &&
       draftBase &&
@@ -139,7 +139,7 @@ export const makeCreator: MakeCreator = (arg) => {
     ) {
       draftBaseWarned = true;
       console.warn(
-        `create() received a draft as its base and drafts current(draft), unlike Immer's produce: the values that its recipe leaves unchanged are objects of the base state, so changing them after the result is assigned back changes the base state. Make such changes in the recipe or before calling create(); see https://github.com/unadlib/mutative/issues/160`
+        `create() received a draft as its base and drafts current(draft), unlike Immer's produce: the values that its recipe leaves unchanged are objects of the base state, so changing them after the result is assigned back changes the base state. Make such changes in the recipe or before calling create(); see https://mutative.js.org/docs/api-reference/create#create-on-a-draft`
       );
     }
     const state = draftBase ? current(base) : base;
