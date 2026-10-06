@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable consistent-return */
 /* eslint-disable no-param-reassign */
-import { create, current, isDraft } from '../src';
+import { create, current, isDraft, unsafe } from '../src';
 
 describe('current', () => {
   test('base', () => {
@@ -366,4 +366,19 @@ test('current() of a changed draft of a wide object', () => {
     );
     expect(Object.keys(value)).toEqual(Object.keys(base));
   });
+});
+
+test('current() of a changed array draft checks its elements in strict mode', () => {
+  const date = new Date(0);
+  create(
+    { list: [date, { v: 1 }] as any[] },
+    (draft) => {
+      draft.list.push(2);
+      expect(() => current(draft.list)).toThrow(/Strict mode/);
+      const value = unsafe(() => current(draft.list));
+      expect(value).toEqual([date, { v: 1 }, 2]);
+      expect(value[0]).toBe(date);
+    },
+    { strict: true }
+  );
 });

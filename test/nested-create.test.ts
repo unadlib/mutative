@@ -460,3 +460,66 @@ describe('create() with a draft as its base, like Immer', () => {
     });
   });
 });
+
+describe('array drafts of an outer create() call are copied from their current array', () => {
+  test('holes, undefined, primitives and non-draftable objects are kept as they are', () => {
+    const date = new Date(0);
+    const list: any[] = [1, undefined, { v: 1 }, date, 'a'];
+    list[6] = { v: 6 };
+    const base = { list };
+    const state = create(base, (draft) => {
+      const result = create(draft.list, (inner) => {
+        inner.push(7);
+        inner[2].v = 2;
+      });
+      expect(isDraft(result[6])).toBe(true);
+      expect(result[3]).toBe(date);
+      expect(1 in result).toBe(true);
+      expect(5 in result).toBe(false);
+      result[6].v = 7;
+      draft.list = result;
+    });
+    expect(state.list).toEqual([
+      1,
+      undefined,
+      { v: 2 },
+      date,
+      'a',
+      undefined,
+      { v: 7 },
+      7,
+    ]);
+    expect(5 in state.list).toBe(false);
+    expect(state.list[3]).toBe(date);
+    expect(base.list[2]).toEqual({ v: 1 });
+    expect(base.list[6]).toEqual({ v: 6 });
+    expect(base.list.length).toBe(7);
+  });
+
+  test('an array whose Symbol.isConcatSpreadable is false', () => {
+    const list: any = [{ v: 1 }, 2];
+    list[Symbol.isConcatSpreadable] = false;
+    const state = create({ list }, (draft) => {
+      draft.list = create(draft.list, (inner) => {
+        inner.push(3);
+        inner[0].v = 2;
+      });
+    });
+    expect([...state.list]).toEqual([{ v: 2 }, 2, 3]);
+    expect([...list]).toEqual([{ v: 1 }, 2]);
+  });
+
+  test('elements the outer recipe assigned are not drafted', () => {
+    const assigned = { v: 1 };
+    const state = create({ list: [{ v: 0 }] } as any, (draft) => {
+      draft.list[1] = assigned;
+      const result = create(draft.list, (inner) => {
+        inner.push({ v: 2 });
+      });
+      expect(result[1]).toBe(assigned);
+      expect(isDraft(result[0])).toBe(true);
+      draft.list = result;
+    });
+    expect(state.list[1]).toBe(assigned);
+  });
+});

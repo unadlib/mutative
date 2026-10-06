@@ -95,6 +95,24 @@ function copyDraft(original: any, draft: ProxyDraft) {
   return copy;
 }
 
+// An array draft is copied from its current array, and the objects it holds
+// are then read through it, which drafts them when it belongs to an outer
+// producer and keeps the strict-mode checks; primitives never pass through
+// the Proxy, whose `concat` runs two traps per element. The array of a frozen
+// state is copied like a locked array, since `concat` is slow on it.
+function copyDraftArray(draft: ProxyDraft) {
+  const source = latest(draft);
+  const copy = Object.isExtensible(source)
+    ? concatCopy(source)
+    : copyLockedArray(source);
+  const proxy = draft.proxy;
+  for (let index = 0; index < copy.length; index += 1) {
+    const value = copy[index];
+    if (typeof value === 'object' && value !== null) copy[index] = proxy[index];
+  }
+  return copy;
+}
+
 // Copies an array with `concat`, which keeps holes and creates the copy
 // through `Symbol.species`. `concat` puts an array whose
 // `Symbol.isConcatSpreadable` is false into the copy as one element instead,
@@ -134,6 +152,7 @@ export function shallowCopy(
 ) {
   let markResult: any;
   if (Array.isArray(original)) {
+    if (draft) return copyDraftArray(draft);
     // With auto-freeze, the arrays of a state are frozen; otherwise checking
     // for that would cost more than it saves.
     return options?.enableAutoFreeze && !Object.isExtensible(original)
