@@ -245,6 +245,10 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
   > `mark` supports multiple marks, and the marks are executed in order, and the first mark that returns a value will be used.
   > When a object tree node is marked by the `mark` function as `mutable`, all of its child nodes will also not be drafted by Mutative and will retain their original values.
 
+- cloneDraftBase - `<T>(state: T) => T`, the default is undefined.
+
+  > When the base state is a draft, `create()` passes its current state to this function, such as `structuredClone`, and drafts the deep copy that it returns, so that the result shares no objects with the base state. See [`create()` on a draft](#create-on-a-draft).
+
 #### `create()` - Currying
 
 - create `draft`
@@ -270,7 +274,7 @@ const state = produce(baseState);
 
 #### `create()` on a draft
 
-A recipe can pass a draft to a helper that calls `create()`. Unlike Immer's `produce`, which drafts the draft itself, `create()` drafts a copy of its current state, `current(draft)`: the values that the helper's recipe leaves unchanged are objects of the base state. Assigning the result back into the outer draft is safe, but changing one of those values afterwards changes the base state, because the outer draft returns an assigned value as it is ([#160](https://github.com/unadlib/mutative/issues/160)). Make such changes in the helper's recipe, or through the outer draft before calling the helper. Development builds warn once when `create()` receives a draft with a recipe. Enabling `enableAutoFreeze` in development, for example with `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })` for such helpers, freezes the helper's result together with the objects of the base state that it shares, so a write to them throws instead of changing the base state, as Immer's default auto-freeze does.
+A recipe can pass a draft to a helper that calls `create()`. Unlike Immer's `produce`, which drafts the draft itself, `create()` drafts a copy of its current state, `current(draft)`: the values that the helper's recipe leaves unchanged are objects of the base state. Assigning the result back into the outer draft is safe, but changing one of those values afterwards changes the base state, because the outer draft returns an assigned value as it is ([#160](https://github.com/unadlib/mutative/issues/160)). Development builds warn once when `create()` receives a draft with a recipe, unless the `cloneDraftBase` option below is set.
 
 ```ts
 const state = create(baseState, (draft) => {
@@ -281,6 +285,8 @@ const state = create(baseState, (draft) => {
   // object of `baseState`: writing to it here would change `baseState`.
 });
 ```
+
+To avoid it, make such changes in the helper's recipe, or through the outer draft before calling the helper, or set the `cloneDraftBase` option for such helpers, for example with `makeCreator({ cloneDraftBase: structuredClone })`: `create()` then drafts a deep copy of the draft's current state, so that the result shares no objects with the base state, at the cost of copying the draft on each call and of new references for the values that the recipe leaves unchanged. `structuredClone` turns class instances into plain objects and throws on functions, so pass a function that copies them if the state holds them. To catch such writes, enable `enableAutoFreeze` in development, for example with `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })`: it freezes the helper's result together with the objects of the base state that it shares, so a write to them throws instead of changing the base state, as Immer's default auto-freeze does.
 
 ### `apply()`
 
