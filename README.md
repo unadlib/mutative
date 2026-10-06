@@ -235,6 +235,8 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
   > If you need to set the shape of the generated patch in more detail, then you can set `pathAsArray` and `arrayLengthAssignment`。`pathAsArray` default value is `true`, if it's `true`, the path will be an array, otherwise it is a string; `arrayLengthAssignment` default value is `true`, if it's `true`, the array length will be included in the patches, otherwise no include array length(**NOTE**: If `arrayLengthAssignment` is `false`, it is fully compatible with JSON Patch spec, but it may have additional performance loss), [view related discussions](https://github.com/unadlib/mutative/issues/6).
 
+  > A string path is a JSON Pointer and holds only strings, so with `pathAsArray: false` a recipe that changes a Map entry whose key is not a string, or a property whose key is a symbol, throws instead of generating patches that would write another key.
+
 - enableAutoFreeze - `boolean`, the default is false.
 
   > Enable autoFreeze, and return frozen state, and enable circular reference checking only in `development` mode.

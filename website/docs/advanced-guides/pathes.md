@@ -96,6 +96,8 @@ In summary, the integration of JSON Patch into Mutative adds a layer of precisio
 
 ### pathAsArray - default: true
 
+A string path is a JSON Pointer and holds only strings, so with `pathAsArray: false` a recipe that changes a Map entry whose key is not a string, or a property whose key is a symbol, throws instead of generating patches that would write another key.
+
 ```ts
 const data = { list: [1, 2, 3] };
 const [state, patches, inversePatches] = create(
