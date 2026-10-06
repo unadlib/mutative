@@ -21,7 +21,6 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, no longer emits patches under its old path; the patches of its parent carry its value. In v1, the patches of such a recipe could fail to apply, for example the inverse patches once a primitive took the old key.
 - **Set items.** A changed item of a Set that also added or removed items is carried by the Set's `remove` and `add` patches. v1 also emitted patches under the item's position in the changed Set, which replay applied to whatever sat at that position in the base Set, or could not apply at all. A Set that only changed its items keeps the patches under each item's position.
 - **Original objects assigned over drafts.** Assigning the original object of a draft to the key that holds the draft is recorded like any other assignment: when the draft was read at that key, the key holds its original value again and emits no patch; when the draft was moved there from another key, the key emits the patch of that assignment. In v1, the first case emitted a `remove` patch for a key the state kept, and the second emitted none, so replaying the patches dropped the key or the element.
-- **String paths.** With `enablePatches: { pathAsArray: false }`, a change at a Map key that is not a string, or at a symbol key, throws error 21, because a string path cannot hold such a key. In v1, the key became a string in the path, so applying the patch wrote another key, for example `'1'` instead of `1`, or threw for a change below that key, and a symbol key threw a `TypeError` while the patches were generated. Keep the default array paths for such keys.
 
 ## Arrays
 
@@ -37,6 +36,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 - In strict mode, development builds warn once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does.
 - In strict mode, `rawReturn()` of a value without drafts no longer prints contradictory warnings.
+- With `enablePatches: { pathAsArray: false }`, development builds throw when a patch path would hold a Map key that is not a string, or a symbol key, as a string path cannot name such a key: applying the patch writes another key, for example `'1'` instead of `1`, or fails for a change below that key. Production builds still generate such patches, as v1 did, and still throw a `TypeError` for a symbol key. Keep the default array paths for such keys.
 
 ## Fixes that change results
 

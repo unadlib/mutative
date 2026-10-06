@@ -34,4 +34,3 @@ Numeric codes remain stable when an error is removed. Retired codes are reserved
 |   18 | `OriginalOnNonDraft`             | `original()` only accepts a draft.                                                                            |
 |   19 | `RawReturnWithoutValue`          | `rawReturn()` must be called with a value.                                                                    |
 |   20 | `RawReturnWithExtraArguments`    | `rawReturn()` takes exactly one argument.                                                                     |
-|   21 | `UnsupportedStringPathKey`       | Patches with string paths (`pathAsArray: false`) support only string Map keys and no symbol keys.             |

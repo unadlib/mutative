@@ -4,6 +4,7 @@ import {
   escapePath,
   get,
   getProxyDraft,
+  getType,
   has,
   isEqual,
 } from './utils';
@@ -115,13 +116,12 @@ function generateArrayPatches(
 }
 
 function generatePatchesFromAssigned(
-  proxyState: ProxyDraft<Record<string, any>>,
+  { original, copy, assignedMap }: ProxyDraft<Record<string, any>>,
   basePath: any[],
   patches: Patches,
   inversePatches: Patches,
   pathAsArray: boolean
 ) {
-  const { original, copy, assignedMap } = proxyState;
   assignedMap!.forEach((assignedValue, key) => {
     const originalValue = get(original, key);
     const value = cloneIfNeeded(get(copy, key));
@@ -131,7 +131,7 @@ function generatePatchesFromAssigned(
         ? Operation.Replace
         : Operation.Add;
     if (isEqual(originalValue, value) && op === Operation.Replace) return;
-    checkPathKey(proxyState, key);
+    if (__DEV__) checkPathKey(getType(original), key, pathAsArray);
     // A Map key can be an array, which stays one path segment.
     const _path = basePath.concat([key]);
     const path = escapePath(_path, pathAsArray);

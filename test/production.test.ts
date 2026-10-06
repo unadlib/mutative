@@ -49,15 +49,6 @@ test('patch, original() and rawReturn() errors carry their minified code', () =>
   expect(() => original({})).toThrow(minified(18));
   expect(() => (rawReturn as any)()).toThrow(minified(19));
   expect(() => (rawReturn as any)({}, {})).toThrow(minified(20));
-  expect(() =>
-    create(
-      new Map([[1, 1]]),
-      (draft) => {
-        draft.set(1, 2);
-      },
-      { enablePatches: { pathAsArray: false } }
-    )
-  ).toThrow(minified(21));
 });
 
 test('auto-freeze passes over primitives in Maps, Sets, and arrays', () => {
@@ -136,6 +127,27 @@ test('option and return value warnings are not printed', () => {
   rawReturn(1 as any);
   expect(warn).not.toHaveBeenCalled();
   warn.mockRestore();
+});
+
+test('string patch paths skip the check of Map keys that are not strings', () => {
+  const { create } = mutative;
+  const [, patches] = create(
+    {
+      map: new Map<number, any>([
+        [1, { v: 1 }],
+        [2, 1],
+      ]),
+    },
+    (draft) => {
+      draft.map.get(1).v = 2;
+      draft.map.set(2, 3);
+    },
+    { enablePatches: { pathAsArray: false } }
+  );
+  expect(patches).toStrictEqual([
+    { op: 'replace', path: '/map/1/v', value: 2 },
+    { op: 'replace', path: '/map/2', value: 3 },
+  ]);
 });
 
 test('with auto-freeze, returned values are not searched inside frozen objects', () => {
