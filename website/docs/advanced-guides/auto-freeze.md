@@ -22,6 +22,10 @@ Key aspects of the `enableAutoFreeze` option include:
 
 In summary, the `enableAutoFreeze` option is a useful feature for developers who want to enforce immutability in their application's state. It provides both a safeguard against unintended mutations and a tool for maintaining clean and predictable state management.
 
+## Nested `create()` calls
+
+A `create()` call inside a recipe or on a draft, for example in a helper that the recipe calls, never freezes its result, as Immer does not freeze the result of a nested `produce`: the result can hold drafts of the outer call, which that call still has to finalize. With `enableAutoFreeze`, the outer call freezes the whole state that it returns. See [`create()` on a draft](/docs/api-reference/create#create-on-a-draft).
+
 :::tip
 In order to the security and protection of the updated data in development mode, and the performance in production mode, we recommend that you `enable` auto freeze in development and `disable` it in production.
 :::

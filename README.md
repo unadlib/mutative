@@ -270,6 +270,30 @@ const state = produce(baseState);
 
 > Also support set options such as `const produce = create((draft) => {}, { enableAutoFreeze: true });`
 
+#### `create()` on a draft
+
+A recipe can pass a draft to a helper that calls `create()`, as the one below passes each node. Like Immer's `produce`, `create()` then drafts that draft: the helper's recipe sees the changes that the outer recipe made, and the values that it leaves unchanged are drafts of the outer `create()` call. Changing them later in the outer recipe changes the outer state, never the base state, and the outer call finalizes them, so use the result inside the outer recipe: once the outer call ends, its drafts are revoked. A recipe that changes nothing returns the draft it received.
+
+```ts
+const rename = (node, name) =>
+  create(node, (draft) => {
+    draft.name = name;
+  });
+
+const state = create(baseState, (draft) => {
+  draft.nodes = draft.nodes.map((node) => {
+    const renamed = rename(node, "b");
+    // A draft of the outer call, not an object of baseState.
+    renamed.metadata.value = "changed";
+    return renamed;
+  });
+});
+```
+
+`create(draft)` without a recipe drafts a copy of the draft's current state instead, as Immer's `createDraft()` does. A `create()` call inside a recipe or on a draft never freezes its result, which can hold drafts of the outer call; with `enableAutoFreeze`, the outer call freezes the state that it returns. Only the synchronous part of an async recipe counts as inside it, so after an `await`, a call on a value that is not a draft freezes as usual. A call with `enableAutoFreeze` on the result of an earlier call on a draft freezes the drafts of the outer call that the result holds, which leaves revoked drafts in the outer state, so after an `await` or around a draft of `create(base)`, make such calls before the first `await` or without `enableAutoFreeze`.
+
+Each copy that such a call makes reads every object the copied value holds through the outer draft, which drafts them for the outer call: one draft per object value of an object, per object element of an array and per item of a Set or Map. A helper that only reads a large draft should receive `current(draft)` instead. In strict mode these reads are not checked; the drafts of the nested call check the reads of its recipe. With patches, a draft that ends up in a patch value of such a call is replaced by its current state, but a plain object in one can still hold drafts of the outer call, which throw once that call ends: apply or serialize such patches inside the outer recipe.
+
 ### `apply()`
 
 Use `apply()` for applying patches to get the new state.
@@ -607,6 +631,10 @@ Yes. Deleting the entry being visited and changing the values of other entries w
 
 Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](https://mutative.js.org/docs/extra-topics/shared-references).
 
+- Can a recipe call a helper that uses `create()`?
+
+Yes. When the helper receives a draft, `create()` drafts that draft, as Immer's `produce` does, so the values that it leaves unchanged stay drafts of the outer call and changing them never changes the base state. Use the helper's result inside the outer recipe; see [`create()` on a draft](#create-on-a-draft). A helper that only reads a large draft should receive `current(draft)` instead, since a nested call drafts every object that its copies hold.
+
 ## Migration from Immer to Mutative
 
 > [mutative-compat](https://github.com/exuanbo/mutative-compat) - Mutative wrapper with full Immer API compatibility, you can use it to quickly migrate from Immer to Mutative.
@@ -733,6 +761,13 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 ### Returned values
 
 - With `enableAutoFreeze`, production builds no longer search frozen objects in a value returned from a recipe, the returned value included, or the values they hold, for drafts, and leave a draft there unresolved. Development builds still search them and throw when they find one, also in an unfrozen object that a frozen one holds, where v1 replaced it. Never put a draft in a frozen object or in a value it holds. Without auto-freeze, returned values are searched as in v1.
+
+### Nested `create()` calls
+
+- `create()` with a recipe drafts a draft base itself, as Immer's `produce` does, instead of a snapshot of its current state. The values that the recipe leaves unchanged are drafts of the outer `create()` call, so changing them later in the outer recipe changes the outer state, where v1 changed the base state ([#160](https://github.com/unadlib/mutative/issues/160)). Use the result inside the outer recipe: once the outer call ends, reading its drafts throws, where v1 returned a snapshot. A recipe that changes nothing returns the draft itself instead of a snapshot, and `original()` of the new draft returns the outer draft. `create(draft)` without a recipe still drafts a copy of the current state.
+- A `create()` call inside a recipe or on a draft no longer freezes its result, as Immer does not freeze the result of a nested `produce`; with `enableAutoFreeze`, the outer call freezes the state that it returns. In v1, a frozen result that held drafts of the outer call left them unfinalized, so the outer state could hold revoked drafts. Only the synchronous part of an async recipe counts as inside it: after an `await`, or around a draft of `create(base)`, a call with `enableAutoFreeze` on the result of an earlier call on a draft still freezes the drafts of the outer call that the result holds, where v1's result held none; make such calls before the first `await` or without `enableAutoFreeze`.
+- A state that holds drafts of an outer `create()` call keeps them as drafts of that call: a Set draft among them can be copied and iterated, where v1 threw a `TypeError`; a value assigned in the recipe keeps them, where v1 replaced them with objects of the base state; and `current()` holds their current values instead of drafts that throw once the outer call ends. A plain object in a patch value of a nested call can still hold drafts of the outer call, where v1's nested call on a draft worked on a snapshot that held none; apply or serialize such patches inside the outer recipe.
+- In strict mode, the copies that a `create()` call on a draft makes read the outer draft unchecked, where v1 threw for a non-draftable value in a draft that the outer recipe had changed; the drafts of the nested call check the reads of its recipe as before.
 
 ### Development builds
 

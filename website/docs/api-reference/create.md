@@ -68,3 +68,27 @@ const [draft, finalize] = create(baseState, { enableAutoFreeze: true });
 :::
 
 More details about currying, please see [currying](/docs/advanced-guides/currying).
+
+## create() on a draft
+
+A recipe can pass a draft to a helper that calls `create()`, as the one below passes each node. Like Immer's `produce`, `create()` then drafts that draft: the helper's recipe sees the changes that the outer recipe made, and the values that it leaves unchanged are drafts of the outer `create()` call. Changing them later in the outer recipe changes the outer state, never the base state, and the outer call finalizes them, so use the result inside the outer recipe: once the outer call ends, its drafts are revoked. A recipe that changes nothing returns the draft it received.
+
+```ts
+const rename = (node, name) =>
+  create(node, (draft) => {
+    draft.name = name;
+  });
+
+const state = create(baseState, (draft) => {
+  draft.nodes = draft.nodes.map((node) => {
+    const renamed = rename(node, 'b');
+    // A draft of the outer call, not an object of baseState.
+    renamed.metadata.value = 'changed';
+    return renamed;
+  });
+});
+```
+
+`create(draft)` without a recipe drafts a copy of the draft's current state instead, as Immer's `createDraft()` does. A `create()` call inside a recipe or on a draft never freezes its result, which can hold drafts of the outer call; with [`enableAutoFreeze`](/docs/advanced-guides/auto-freeze), the outer call freezes the state that it returns. Only the synchronous part of an async recipe counts as inside it, so after an `await`, a call on a value that is not a draft freezes as usual. A call with `enableAutoFreeze` on the result of an earlier call on a draft freezes the drafts of the outer call that the result holds, which leaves revoked drafts in the outer state, so after an `await` or around a draft of `create(base)`, make such calls before the first `await` or without `enableAutoFreeze`.
+
+Each copy that such a call makes reads every object the copied value holds through the outer draft, which drafts them for the outer call: one draft per object value of an object, per object element of an array and per item of a Set or Map. A helper that only reads a large draft should receive `current(draft)` instead. In strict mode these reads are not checked; the drafts of the nested call check the reads of its recipe. With patches, a draft that ends up in a patch value of such a call is replaced by its current state, but a plain object in one can still hold drafts of the outer call, which throw once that call ends: apply or serialize such patches inside the outer recipe.

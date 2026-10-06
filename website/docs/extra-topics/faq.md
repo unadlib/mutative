@@ -29,3 +29,7 @@ Yes. Deleting the entry being visited and changing the values of other entries w
 - Does Mutative support shared references?
 
 Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](./shared-references.md).
+
+- Can a recipe call a helper that uses `create()`?
+
+Yes. When the helper receives a draft, `create()` drafts that draft, as Immer's `produce` does, so the values that it leaves unchanged stay drafts of the outer call and changing them never changes the base state. Use the helper's result inside the outer recipe; see [`create()` on a draft](/docs/api-reference/create#create-on-a-draft). A helper that only reads a large draft should receive `current(draft)` instead, since a nested call drafts every object that its copies hold.
