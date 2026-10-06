@@ -73,14 +73,18 @@ export type GeneratePatches = (
   inversePatches: Patches
 ) => void;
 
-export function finalizeSetValue(target: ProxyDraft) {
+export function finalizeSetValue(target: ProxyDraft, finalities?: Finalities) {
   // A Set draft whose items never changed may have no item mapping.
   if (target.type === DraftType.Set && target.copy && target.setMap) {
     target.copy.clear();
     target.setMap!.forEach((value) => {
-      // A draft of an outer create() call is left for that call to finalize.
+      // A draft of another create() call is left for that call to finalize,
+      // unless that call is finalizing its drafts now.
+      const proxyDraft = getProxyDraft(value);
       target.copy!.add(
-        getProxyDraft(value)?.finalities === target.finalities
+        proxyDraft &&
+          (proxyDraft.finalities === target.finalities ||
+            proxyDraft.finalities === finalities)
           ? getValue(value)
           : value
       );
@@ -182,7 +186,9 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         const updatedValue = proxyDraft.operated
           ? proxyDraft.copy
           : proxyDraft.original;
-        finalizeSetValue(target);
+        // The producer of the assigned draft is finalizing it now, so a Set
+        // target resolves its drafts along with its own.
+        finalizeSetValue(target, proxyDraft.finalities);
         if (__DEV__ && target.options.enableAutoFreeze) {
           target.options.updatedValues =
             target.options.updatedValues ?? new WeakMap();

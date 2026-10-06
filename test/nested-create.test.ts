@@ -556,3 +556,61 @@ describe('Set drafts whose original is a draft of an outer create() call', () =>
     ]);
   });
 });
+
+describe('Set drafts that hold drafts of another create() call', () => {
+  test('a draft of an unfinished manual create() call added to a Set draft', () => {
+    const [manual, finalize] = create({ item: { id: 9 } });
+    const state = create({ set: new Set([{ id: 1 }]) }, (draft) => {
+      draft.set.add(manual.item);
+    });
+    manual.item.id = 10;
+    const result = finalize();
+    expect([...state.set]).toEqual([{ id: 1 }, { id: 10 }]);
+    expect([...state.set][1]).toBe(result.item);
+  });
+
+  test('a draft of the outer create() call added in a nested recipe', () => {
+    const base = { set: new Set([{ id: 1 }]), other: { id: 3 } };
+    const state = create(base, (draft) => {
+      const result = create(draft.set, (inner) => {
+        inner.add(draft.other);
+      });
+      draft.other.id = 4;
+      draft.set = result;
+    });
+    expect([...state.set]).toEqual([{ id: 1 }, { id: 4 }]);
+    expect([...state.set][1]).toBe(state.other);
+    expect(base.other).toEqual({ id: 3 });
+  });
+
+  test('a result left outside the state is resolved when the outer call ends', () => {
+    let result: any;
+    create({ set: new Set([{ id: 1 }]), other: { id: 3 } }, (draft) => {
+      result = create(draft.set, (inner) => {
+        inner.add(draft.other);
+      });
+      draft.other.id = 4;
+    });
+    expect([...result]).toEqual([{ id: 1 }, { id: 4 }]);
+  });
+
+  test('an item deleted and added back through the draft of the outer create() call', () => {
+    const base = { set: new Set([{ id: 1 }, { id: 2 }]) };
+    let patches: any;
+    const state = create(base, (draft) => {
+      const [first] = draft.set;
+      let result: any;
+      [result, patches] = create(
+        draft.set,
+        (inner) => {
+          inner.delete(first);
+          inner.add(first);
+        },
+        { enablePatches: true }
+      );
+      draft.set = result;
+    });
+    expect([...state.set]).toEqual([{ id: 2 }, { id: 1 }]);
+    expect(patches).toEqual([]);
+  });
+});
