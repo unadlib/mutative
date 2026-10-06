@@ -62,6 +62,9 @@ type MakeCreator = <
   ): [Draft<T>, () => Result<T, O, F>];
 };
 
+// Development builds warn once about a draft base, see `makeCreator`.
+let draftBaseWarned = false;
+
 /**
  * `makeCreator(options)` to make a creator function.
  *
@@ -125,7 +128,21 @@ export const makeCreator: MakeCreator = (arg) => {
       ...arg,
       ...options,
     };
-    const state = isDraft(base) ? current(base) : base;
+    const draftBase = isDraft(base);
+    // A draft base is drafted as `current(draft)`, so the values that the
+    // recipe leaves unchanged are objects of the base state (#160).
+    if (
+      __DEV__ &&
+      draftBase &&
+      typeof arg1 === 'function' &&
+      !draftBaseWarned
+    ) {
+      draftBaseWarned = true;
+      console.warn(
+        `create() received a draft as its base and drafts current(draft), unlike Immer's produce: the values that its recipe leaves unchanged are objects of the base state, so changing them after the result is assigned back changes the base state. Make such changes in the recipe or before calling create(); see https://github.com/unadlib/mutative/issues/160`
+      );
+    }
+    const state = draftBase ? current(base) : base;
     const mark = Array.isArray(options.mark)
       ? (((value: unknown, types: typeof dataTypes) => {
           for (const mark of options.mark as Mark<any, any>[]) {
