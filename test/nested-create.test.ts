@@ -509,6 +509,26 @@ describe('array drafts of an outer create() call are copied from their current a
     expect([...list]).toEqual([{ v: 1 }, 2]);
   });
 
+  test('the array of a frozen state is copied like a locked array', () => {
+    const base = create({ list: [{ v: 0 }, 1] as any[] }, () => {}, {
+      enableAutoFreeze: true,
+    });
+    expect(Object.isFrozen(base.list)).toBe(true);
+    const state = create(
+      base,
+      (draft) => {
+        draft.list = create(draft.list, (inner) => {
+          inner.push(2);
+          inner[0].v = 1;
+        });
+      },
+      { enableAutoFreeze: true }
+    );
+    expect(state.list).toEqual([{ v: 1 }, 1, 2]);
+    expect(Object.isFrozen(state.list)).toBe(true);
+    expect(base.list).toEqual([{ v: 0 }, 1]);
+  });
+
   test('elements the outer recipe assigned are not drafted', () => {
     const assigned = { v: 1 };
     const state = create({ list: [{ v: 0 }] } as any, (draft) => {
