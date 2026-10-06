@@ -82,11 +82,12 @@ export function getPath(
       // by another draft of a shared object. The parent's patches carry its
       // value wherever it is now, so patches under this path would be stale.
       return null;
-    } else {
-      checkPathKey(parent, key);
     }
     path.push(key);
-    return getPath(parent, path);
+    const resolved = getPath(parent, path);
+    // Checked once the path resolves, as a stale path emits no patches.
+    if (resolved) checkPathKey(parent, key);
+    return resolved;
   }
   // `target` is the root draft. Every level above found its child at its
   // key, so the path resolves in the root's copy.

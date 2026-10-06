@@ -135,6 +135,60 @@ describe('string patch paths', () => {
     expect(next[key]).toBe(2);
   });
 
+  test('accept changes under such keys once their container left its key', () => {
+    const key = Symbol('s');
+    // The patches of the container's parent carry its value, so no patch
+    // path holds the key.
+    const recipes: [any, (draft: any) => void][] = [
+      [
+        { a: new Map([[1, { v: 1 }]]) },
+        (draft) => {
+          draft.a.get(1).v = 2;
+          draft.b = draft.a;
+          delete draft.a;
+        },
+      ],
+      [
+        { a: new Map([[1, { v: 1 }]]) },
+        (draft) => {
+          draft.a.get(1).v = 2;
+          delete draft.a;
+        },
+      ],
+      [
+        { a: new Map([[1, { v: 1 }]]) },
+        (draft) => {
+          draft.a.get(1).v = 2;
+          draft.a = new Map();
+        },
+      ],
+      [
+        { list: [new Map([[1, { v: 1 }]]), new Map()] },
+        (draft) => {
+          draft.list[0].get(1).v = 2;
+          draft.list.reverse();
+        },
+      ],
+      [
+        { a: { [key]: { v: 1 } } },
+        (draft) => {
+          draft.a[key].v = 2;
+          draft.b = draft.a;
+          delete draft.a;
+        },
+      ],
+    ];
+    for (const [base, recipe] of recipes) {
+      const [state, patches, inversePatches] = create(
+        base,
+        recipe,
+        stringPaths
+      );
+      expect(apply(base, patches)).toStrictEqual(state);
+      expect(apply(state, inversePatches)).toStrictEqual(base);
+    }
+  });
+
   test('array paths keep keys of every type', () => {
     const key = Symbol('s');
     const objectKey = { id: 1 };
