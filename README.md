@@ -270,7 +270,7 @@ const state = produce(baseState);
 
 #### `create()` on a draft
 
-A recipe can pass a draft to a helper that calls `create()`. Unlike Immer's `produce`, which drafts the draft itself, `create()` drafts a copy of its current state, `current(draft)`: the values that the helper's recipe leaves unchanged are objects of the base state. Assigning the result back into the outer draft is safe, but changing one of those values afterwards changes the base state, because the outer draft returns an assigned value as it is ([#160](https://github.com/unadlib/mutative/issues/160)). Make such changes in the helper's recipe, or through the outer draft before calling the helper. Development builds warn once when `create()` receives a draft with a recipe. Enabling `enableAutoFreeze` in development, for example with `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })` for such helpers, freezes the helper's result together with the objects of the base state that it shares, so a write to them throws instead of changing the base state, as Immer's default auto-freeze does.
+A recipe can pass a draft to a helper that calls `create()`. Unlike Immer's `produce`, which drafts the draft itself, `create()` drafts a copy of its current state, `current(draft)`: the values that the helper's recipe leaves unchanged are objects of the base state. Assigning the result back into the outer draft is safe, but changing one of those values afterwards changes the base state, because the outer draft returns an assigned value as it is ([#160](https://github.com/unadlib/mutative/issues/160)). Development builds warn once when `create()` receives a draft with a recipe.
 
 ```ts
 const state = create(baseState, (draft) => {
@@ -281,6 +281,26 @@ const state = create(baseState, (draft) => {
   // object of `baseState`: writing to it here would change `baseState`.
 });
 ```
+
+To avoid it, let such a helper change a draft in place, and call `create()` only on other values:
+
+```ts
+type Item = { name: string; metadata: { value: string } };
+
+function rename(item: Item, name: string): Item {
+  if (isDraft(item)) {
+    item.name = name;
+    return item;
+  }
+  return create(item, (draft) => {
+    draft.name = name;
+  });
+}
+```
+
+On a draft, `rename()` returns the draft itself, so the outer recipe changes its result through the outer draft, and the values that it leaves unchanged keep their references. Unlike a call to `create()`, it changes the outer draft even if the caller discards the result.
+
+Where that does not fit, make such changes in the helper's recipe, or through the outer draft before calling the helper. If the helper's result must not share objects with the base state, give `create()` a deep copy, as in `create(structuredClone(current(draft)), recipe)`, at the cost of copying the draft on each call and of new references for the values that the recipe leaves unchanged; `structuredClone` turns class instances into plain objects and throws on functions. To catch such writes, enable `enableAutoFreeze` in development, for example with `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })` for such helpers: it freezes the helper's result together with the objects of the base state that it shares, so a write to them throws instead of changing the base state, as Immer's default auto-freeze does.
 
 ### `apply()`
 
