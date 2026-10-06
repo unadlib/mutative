@@ -20,7 +20,7 @@ describe('create() on a draft', () => {
     expect(base).toEqual({ x: { name: 'a', child: { v: 0 } } });
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toContain(
-      'https://github.com/unadlib/mutative/issues/160'
+      'https://mutative.js.org/docs/api-reference/create#create-on-a-draft'
     );
     warn.mockRestore();
   });
