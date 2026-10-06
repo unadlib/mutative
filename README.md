@@ -8,7 +8,7 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/mutative)](https://npmtrends.com/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-**Mutative** - A JavaScript library for efficient immutable updates. In the [October 3–4 benchmark](./perf-testing/reports/SUMMARY.md#historical-cross-library-comparison), it was about 3x faster than Immer with the same settings and 6x faster with each library's defaults across 90 workloads.
+**Mutative** - A JavaScript library for efficient immutable updates. In the [benchmark](./perf-testing/reports/SUMMARY.md#historical-cross-library-comparison), it was about 3x faster than Immer with the same settings and 6x faster with each library's defaults across 90 workloads.
 
 In that benchmark the gap widened on large arrays, where Mutative moved elements up to 1,125x faster than Immer. When copying dominates, such as updating objects with thousands of keys or inserting at the front of a large array, Mutative is even faster than hand-written spread reducers.
 
@@ -34,8 +34,6 @@ This is why Mutative was created.
 > Mutative passed all of Immer's test cases.
 
 The [benchmark suite](./perf-testing/README.md) times 93 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
-
-The cross-library figures below were measured on October 3–4, 2026, at source `e6b6563`. The [PR #184 comparison](./perf-testing/reports/SUMMARY.md#pr-184-review-fixes) separately measures the subsequent correctness fixes against their main baseline.
 
 With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 508 of 530 measured cases, 3.1x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 133 of 136 cases, 6.0x on geometric mean.
 
@@ -100,7 +98,7 @@ Immer's optional `enableArrayMethods()` plugin also runs array methods on the dr
 
 ### Bundle size
 
-Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from the ESM entry that bundlers resolve for each library (Immer 11.1.21 `dist/immer.mjs`; Mutative `dist/mutative.esm.mjs` at source `4662915`), with `process.env.NODE_ENV` defined as `production`, bundled for the browser with `--minify --target=es2018 --format=esm`. The first row imports only `produce` or `create`. The second adds `applyPatches`, `current` and `original` with Immer's `enablePatches`, `enableMapSet` and `enableArrayMethods`, and `apply`, `current` and `original` for Mutative.
+Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from the ESM entry that bundlers resolve for each library (Immer 11.1.21 `dist/immer.mjs`; Mutative 2.0), with `process.env.NODE_ENV` defined as `production`, bundled for the browser with `--minify --target=es2018 --format=esm`. The first row imports only `produce` or `create`. The second adds `applyPatches`, `current` and `original` with Immer's `enablePatches`, `enableMapSet` and `enableArrayMethods`, and `apply`, `current` and `original` for Mutative.
 
 | Bundle                                      |  Immer | Mutative |
 | ------------------------------------------- | -----: | -------: |
@@ -112,7 +110,7 @@ Mutative's `create` includes patches, `Map`/`Set` support and the native array m
 ## Features and Benefits
 
 - **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
-- **High performance** - About 6x faster than Immer with each library's defaults in the October 3–4 benchmark, and faster than hand-written spreads in measured wide-object and large-array insertion workloads.
+- **High performance** - About 6x faster than Immer with each library's defaults, and faster than hand-written spreads in measured wide-object and large-array insertion workloads.
 - **Optional freezing state** - No freezing of immutable data by default.
 - **Support for JSON Patch** - Full compliance with JSON Patch specification.
 - **Custom shallow copy** - Support for more types of immutable data.
@@ -277,7 +275,7 @@ A recipe can pass a draft to a helper that calls `create()`. Unlike Immer's `pro
 ```ts
 const state = create(baseState, (draft) => {
   draft.node = create(draft.node, (node) => {
-    node.name = 'renamed';
+    node.name = "renamed";
   });
   // `draft.node` is now the helper's result, and `draft.node.metadata` is an
   // object of `baseState`: writing to it here would change `baseState`.
