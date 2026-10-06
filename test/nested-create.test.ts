@@ -700,3 +700,45 @@ describe('strict mode and create() on a draft', () => {
     });
   });
 });
+
+describe('auto-freeze and create() calls on drafts', () => {
+  test('a create() call on a draft never freezes its result, also after an await', async () => {
+    const state = await create(
+      { items: [{ id: 1, meta: { v: 1 } }] },
+      async (draft) => {
+        await Promise.resolve();
+        draft.items = draft.items.map((item) =>
+          create(
+            item,
+            (itemDraft) => {
+              itemDraft.id += 10;
+            },
+            { enableAutoFreeze: true }
+          )
+        );
+      },
+      { enableAutoFreeze: true }
+    );
+    expect(state).toEqual({ items: [{ id: 11, meta: { v: 1 } }] });
+    expect(Object.isFrozen(state.items[0])).toBe(true);
+    expect(Object.isFrozen(state.items[0].meta)).toBe(true);
+  });
+
+  test('create(draft) without a recipe after an await freezes like a top-level call', async () => {
+    let copy: any;
+    await create(
+      { node: { v: 1 } },
+      async (draft) => {
+        await Promise.resolve();
+        const [manual, finalize] = create(draft.node, {
+          enableAutoFreeze: true,
+        });
+        manual.v = 2;
+        copy = finalize();
+      },
+      { enableAutoFreeze: true }
+    );
+    expect(copy).toEqual({ v: 2 });
+    expect(Object.isFrozen(copy)).toBe(true);
+  });
+});

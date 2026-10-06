@@ -135,8 +135,8 @@ export const makeCreator: MakeCreator = (arg) => {
     // which finalizes them, rather than objects of the base state. Without a
     // recipe, a draft base is copied, as Immer's `createDraft` does.
     const draftBase = isDraft(base);
-    const state =
-      draftBase && typeof arg1 !== 'function' ? current(base) : base;
+    const onDraft = draftBase && typeof arg1 === 'function';
+    const state = draftBase && !onDraft ? current(base) : base;
     const mark = Array.isArray(options.mark)
       ? (((value: unknown, types: typeof dataTypes) => {
           for (const mark of options.mark as Mark<any, any>[]) {
@@ -155,7 +155,11 @@ export const makeCreator: MakeCreator = (arg) => {
       : options.mark;
     const enablePatches = options.enablePatches ?? false;
     const strict = options.strict ?? false;
-    const enableAutoFreeze = !depth && (options.enableAutoFreeze ?? false);
+    // A call on a draft never freezes its result either, also after an
+    // `await`: the result holds drafts of the outer call for what the recipe
+    // left unchanged, and a frozen result would hide them from that call.
+    const enableAutoFreeze =
+      !depth && !onDraft && (options.enableAutoFreeze ?? false);
     const _options: Options<any, any> = {
       enableAutoFreeze,
       mark,
@@ -170,7 +174,7 @@ export const makeCreator: MakeCreator = (arg) => {
       die(ErrorCode.InvalidBaseState);
     }
     const [draft, finalize, finalities] = draftify(state, _options);
-    finalities.nested = draftBase && state === base;
+    finalities.nested = onDraft;
     if (typeof arg1 !== 'function') {
       if (!isDraftable(state, _options)) {
         die(ErrorCode.InvalidBaseState);
