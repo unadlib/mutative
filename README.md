@@ -270,6 +270,20 @@ const state = produce(baseState);
 
 > Also support set options such as `const produce = create((draft) => {}, { enableAutoFreeze: true });`
 
+#### `create()` on a draft
+
+A recipe can pass a draft to a helper that calls `create()`. Unlike Immer's `produce`, which drafts the draft itself, `create()` drafts a copy of its current state, `current(draft)`: the values that the helper's recipe leaves unchanged are objects of the base state. Assigning the result back into the outer draft is safe, but changing one of those values afterwards changes the base state, because the outer draft returns an assigned value as it is ([#160](https://github.com/unadlib/mutative/issues/160)). Make such changes in the helper's recipe, or through the outer draft before calling the helper. Development builds warn once when `create()` receives a draft with a recipe.
+
+```ts
+const state = create(baseState, (draft) => {
+  draft.node = create(draft.node, (node) => {
+    node.name = 'renamed';
+  });
+  // `draft.node` is now the helper's result, and `draft.node.metadata` is an
+  // object of `baseState`: writing to it here would change `baseState`.
+});
+```
+
 ### `apply()`
 
 Use `apply()` for applying patches to get the new state.
