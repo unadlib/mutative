@@ -182,6 +182,12 @@ export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
    * And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
    */
   mark?: Mark<O, F>[] | Mark<O, F>;
+  /**
+   * When the base state is a draft, this function receives its current state
+   * and returns a deep copy to draft instead, such as `structuredClone`, so
+   * that the result shares no objects with the base state.
+   */
+  cloneDraftBase?: <T>(state: T) => T;
 }
 
 // Exclude `symbol`

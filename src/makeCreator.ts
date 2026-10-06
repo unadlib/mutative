@@ -130,19 +130,25 @@ export const makeCreator: MakeCreator = (arg) => {
     };
     const draftBase = isDraft(base);
     // A draft base is drafted as `current(draft)`, so the values that the
-    // recipe leaves unchanged are objects of the base state.
+    // recipe leaves unchanged are objects of the base state, unless the
+    // `cloneDraftBase` option clones them.
     if (
       __DEV__ &&
       draftBase &&
       typeof arg1 === 'function' &&
+      !options.cloneDraftBase &&
       !draftBaseWarned
     ) {
       draftBaseWarned = true;
       console.warn(
-        `create() received a draft as its base and drafts current(draft), unlike Immer's produce: the values that its recipe leaves unchanged are objects of the base state, so changing them after the result is assigned back changes the base state. Make such changes in the recipe or before calling create(); see https://mutative.js.org/docs/api-reference/create#create-on-a-draft`
+        `create() received a draft as its base and drafts current(draft), unlike Immer's produce: the values that its recipe leaves unchanged are objects of the base state, so changing them after the result is assigned back changes the base state. Make such changes in the recipe or before calling create(), or set the cloneDraftBase option; see https://mutative.js.org/docs/api-reference/create#create-on-a-draft`
       );
     }
-    const state = draftBase ? current(base) : base;
+    const state = draftBase
+      ? options.cloneDraftBase
+        ? options.cloneDraftBase(current(base))
+        : current(base)
+      : base;
     const mark = Array.isArray(options.mark)
       ? (((value: unknown, types: typeof dataTypes) => {
           for (const mark of options.mark as Mark<any, any>[]) {
