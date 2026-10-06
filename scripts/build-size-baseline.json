@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "68cea3ea5823975ce44e49879ca56650116d8cba",
-    "description": "Set drafts whose original is a draft of an outer create() call are copied through its values, and development builds warn once that create() on a draft drafts a copy of it",
+    "revision": "0f57aa5611f6fae0f8fc7d711c6e3ffa736e9fe9",
+    "description": "Development builds throw for string patch paths that would hold Map keys that are not strings or symbol keys; production builds are unchanged",
     "node": "v24.16.0",
     "commands": [
       "pnpm install --frozen-lockfile",
@@ -30,39 +30,39 @@
       "brotli": 8158
     },
     "artifact/mutative.cjs.development.js": {
-      "raw": 70346,
-      "gzip": 16574,
-      "brotli": 14436
+      "raw": 70872,
+      "gzip": 16761,
+      "brotli": 14593
     },
     "artifact/mutative.umd.development.js": {
-      "raw": 72567,
-      "gzip": 16792,
-      "brotli": 14606
+      "raw": 73099,
+      "gzip": 16974,
+      "brotli": 14751
     },
     "artifact/mutative.esm.js": {
-      "raw": 71114,
-      "gzip": 16686,
-      "brotli": 14515
+      "raw": 71724,
+      "gzip": 16880,
+      "brotli": 14656
     },
     "artifact/mutative.esm.mjs": {
-      "raw": 71115,
-      "gzip": 16687,
-      "brotli": 14501
+      "raw": 71725,
+      "gzip": 16882,
+      "brotli": 14660
     },
     "consumer/import/create": {
       "raw": 23876,
-      "gzip": 8302,
-      "brotli": 7634
+      "gzip": 8301,
+      "brotli": 7645
     },
     "consumer/import/patches": {
       "raw": 25779,
-      "gzip": 8922,
-      "brotli": 8177
+      "gzip": 8920,
+      "brotli": 8173
     },
     "consumer/import/all": {
       "raw": 26564,
-      "gzip": 9181,
-      "brotli": 8420
+      "gzip": 9179,
+      "brotli": 8418
     },
     "consumer/require/create": {
       "raw": 26063,

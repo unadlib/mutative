@@ -48,6 +48,25 @@ export function isDraftable(value: any, options?: { mark?: Mark<any, any> }) {
   );
 }
 
+// A string path holds only strings, so a Map key of another type or a symbol
+// key would name a different key when the patch is applied. Development
+// builds check the keys of the patch paths they generate.
+export function checkPathKey(
+  type: DraftType,
+  key: unknown,
+  pathAsArray: boolean | undefined
+) {
+  if (
+    pathAsArray === false &&
+    typeof key !== 'string' &&
+    (type === DraftType.Map || typeof key === 'symbol')
+  ) {
+    throw new Error(
+      `Patches with string paths only support string Map keys and no symbol keys, got a key of type '${typeof key}'. Set 'pathAsArray' to true to keep keys of other types.`
+    );
+  }
+}
+
 export function getPath(
   target: ProxyDraft,
   path: any[] = []
@@ -71,7 +90,12 @@ export function getPath(
       return null;
     }
     path.push(key);
-    return getPath(parent, path);
+    const resolved = getPath(parent, path);
+    // Checked once the path resolves, as a stale path emits no patches.
+    if (__DEV__ && resolved) {
+      checkPathKey(parent.type, key, parent.options.enablePatches.pathAsArray);
+    }
+    return resolved;
   }
   // `target` is the root draft. Every level above found its child at its
   // key, so the path resolves in the root's copy.

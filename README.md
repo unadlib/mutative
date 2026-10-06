@@ -235,6 +235,8 @@ In this basic example, the changes to the draft are 'mutative' within the draft 
 
   > If you need to set the shape of the generated patch in more detail, then you can set `pathAsArray` and `arrayLengthAssignment`。`pathAsArray` default value is `true`, if it's `true`, the path will be an array, otherwise it is a string; `arrayLengthAssignment` default value is `true`, if it's `true`, the array length will be included in the patches, otherwise no include array length(**NOTE**: If `arrayLengthAssignment` is `false`, it is fully compatible with JSON Patch spec, but it may have additional performance loss), [view related discussions](https://github.com/unadlib/mutative/issues/6).
 
+  > A string path is a JSON Pointer and holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
+
 - enableAutoFreeze - `boolean`, the default is false.
 
   > Enable autoFreeze, and return frozen state, and enable circular reference checking only in `development` mode.
@@ -770,6 +772,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 - In strict mode, development builds warn once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does.
 - In strict mode, `rawReturn()` of a value without drafts no longer prints contradictory warnings.
+- With `enablePatches: { pathAsArray: false }`, development builds throw when a patch path would hold a Map key that is not a string, or a symbol key, as a string path cannot name such a key: applying the patch writes another key, for example `'1'` instead of `1`, or fails for a change below that key. Production builds still generate such patches, as v1 did, and still throw a `TypeError` for a symbol key. Keep the default array paths for such keys.
 
 ### Fixes that change results
 

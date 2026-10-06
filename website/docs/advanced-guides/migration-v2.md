@@ -36,6 +36,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 - In strict mode, development builds warn once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does.
 - In strict mode, `rawReturn()` of a value without drafts no longer prints contradictory warnings.
+- With `enablePatches: { pathAsArray: false }`, development builds throw when a patch path would hold a Map key that is not a string, or a symbol key, as a string path cannot name such a key: applying the patch writes another key, for example `'1'` instead of `1`, or fails for a change below that key. Production builds still generate such patches, as v1 did, and still throw a `TypeError` for a symbol key. Keep the default array paths for such keys.
 
 ## Fixes that change results
 

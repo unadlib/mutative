@@ -1,5 +1,13 @@
 import { DraftType, Operation, Patches, ProxyDraft } from './interface';
-import { escapePath, get, getProxyDraft, has, isEqual } from './utils';
+import {
+  checkPathKey,
+  escapePath,
+  get,
+  getProxyDraft,
+  getType,
+  has,
+  isEqual,
+} from './utils';
 import { current } from './current';
 
 /**
@@ -123,6 +131,7 @@ function generatePatchesFromAssigned(
         ? Operation.Replace
         : Operation.Add;
     if (isEqual(originalValue, value) && op === Operation.Replace) return;
+    if (__DEV__) checkPathKey(getType(original), key, pathAsArray);
     // A Map key can be an array, which stays one path segment.
     const _path = basePath.concat([key]);
     const path = escapePath(_path, pathAsArray);

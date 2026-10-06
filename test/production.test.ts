@@ -129,6 +129,27 @@ test('option and return value warnings are not printed', () => {
   warn.mockRestore();
 });
 
+test('string patch paths skip the check of Map keys that are not strings', () => {
+  const { create } = mutative;
+  const [, patches] = create(
+    {
+      map: new Map<number, any>([
+        [1, { v: 1 }],
+        [2, 1],
+      ]),
+    },
+    (draft) => {
+      draft.map.get(1).v = 2;
+      draft.map.set(2, 3);
+    },
+    { enablePatches: { pathAsArray: false } }
+  );
+  expect(patches).toStrictEqual([
+    { op: 'replace', path: '/map/1/v', value: 2 },
+    { op: 'replace', path: '/map/2', value: 3 },
+  ]);
+});
+
 test('with auto-freeze, returned values are not searched inside frozen objects', () => {
   const { create, isDraft } = mutative;
   let reads = 0;
