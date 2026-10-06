@@ -42,7 +42,7 @@ Then options is optional.
 
   > If you need to set the shape of the generated patch in more detail, then you can set `pathAsArray` and `arrayLengthAssignment`。`pathAsArray` default value is `true`, if it's `true`, the path will be an array, otherwise it is a string; `arrayLengthAssignment` default value is `true`, if it's `true`, the array length will be included in the patches, otherwise no include array length(**NOTE**: If `arrayLengthAssignment` is `false`, it is fully compatible with JSON Patch spec, but it may have additional performance loss), [view related discussions](https://github.com/unadlib/mutative/issues/6).
 
-  > A string path is a JSON Pointer and holds only strings, so with `pathAsArray: false` a recipe that changes a Map entry whose key is not a string, or a property whose key is a symbol, throws instead of generating patches that would write another key.
+  > A string path is a JSON Pointer and holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
 
 - [enableAutoFreeze](/docs/advanced-guides/auto-freeze) - `boolean`, the default is false.
 

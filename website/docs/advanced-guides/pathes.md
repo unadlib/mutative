@@ -96,7 +96,7 @@ In summary, the integration of JSON Patch into Mutative adds a layer of precisio
 
 ### pathAsArray - default: true
 
-A string path is a JSON Pointer and holds only strings, so with `pathAsArray: false` a recipe that changes a Map entry whose key is not a string, or a property whose key is a symbol, throws instead of generating patches that would write another key.
+A string path is a JSON Pointer and holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
 
 ```ts
 const data = { list: [1, 2, 3] };
