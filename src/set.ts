@@ -108,7 +108,10 @@ export const setHandler = {
       target.assignedMap!.set(valueProxyDraft.original, false);
       return setMap.delete(valueProxyDraft.original);
     }
-    if (!valueProxyDraft && setMap.has(value)) {
+    // The items of a Set draft whose original is a draft of an outer
+    // create() call are drafts of that call, and are deleted like original
+    // items.
+    if (setMap.has(value) && (!valueProxyDraft || target.original.has(value))) {
       // non-draftable values
       target.assignedMap!.set(value, false);
     } else {

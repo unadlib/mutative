@@ -523,3 +523,36 @@ describe('array drafts of an outer create() call are copied from their current a
     expect(state.list[1]).toBe(assigned);
   });
 });
+
+describe('Set drafts whose original is a draft of an outer create() call', () => {
+  test('deleting an item through the draft of the outer create() call is recorded', () => {
+    const base = { set: new Set([{ id: 1 }, { id: 2 }]) };
+    let patches: any;
+    let inversePatches: any;
+    const state = create(base, (draft) => {
+      const [first] = draft.set;
+      let result: any;
+      [result, patches, inversePatches] = create(
+        draft.set,
+        (inner) => {
+          expect(inner.delete(first)).toBe(true);
+          expect(inner.delete(first)).toBe(false);
+          expect(inner.has(first)).toBe(false);
+          expect(inner.size).toBe(1);
+        },
+        { enablePatches: true }
+      );
+      draft.set = result;
+    });
+    expect([...state.set]).toEqual([{ id: 2 }]);
+    const [item] = base.set;
+    expect(patches).toEqual([{ op: 'remove', path: [0], value: item }]);
+    expect(patches[0].value).toBe(item);
+    expect(inversePatches).toEqual([{ op: 'add', path: [0], value: item }]);
+    expect([...apply(new Set(base.set), patches)]).toEqual([{ id: 2 }]);
+    expect([...apply(state.set, inversePatches)]).toEqual([
+      { id: 2 },
+      { id: 1 },
+    ]);
+  });
+});
