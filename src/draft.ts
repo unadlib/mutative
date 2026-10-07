@@ -9,7 +9,13 @@ import {
 import { dataTypes, PROXY_DRAFT } from './constant';
 import { mapHandler, mapHandlerKeys } from './map';
 import { setHandler, setHandlerKeys } from './set';
-import { arrayMethods, baseIndexOf, trackArrayMethod } from './array';
+import {
+  arrayMethods,
+  baseIndex,
+  isMovedElement,
+  resized,
+  trackArrayMethod,
+} from './array';
 import { internal } from './internal';
 import {
   deepFreeze,
@@ -158,14 +164,12 @@ function getTrap(
   // Reassigned values, and fresh objects produced by an accessor on the
   // original, differ from the original at this key and are not drafted. After
   // a native array operation moved elements, an original element may sit at
-  // any index, so membership in the original array decides instead.
+  // any index, so membership in the original array decides instead, except
+  // for a value the recipe assigned at this index; see `baseIndex`.
   let draftKey: any = key;
   if (value !== target.original[key]) {
-    const state = target.arrayState;
-    if (state === null || !state.relocated) return value;
-    const index = baseIndexOf(target, value);
-    if (index === undefined) return value;
-    draftKey = index;
+    draftKey = baseIndex(target, value, key as number);
+    if (draftKey === -1) return value;
   }
   ensureShallowCopy(target);
   const draft = createDraft(
@@ -248,23 +252,19 @@ function setTrap(
   // assignment even when the original still has it.
   if (
     isEqual(value, current) &&
-    (value !== undefined || hasOwn.call(source, key))
+    (value !== undefined || hasOwn.call(source, key)) &&
+    (target.arrayState === null || !isMovedElement(target, value, key))
   )
     return true;
   ensureShallowCopy(target);
   markChanged(target);
   const arrayState = target.arrayState;
-  if (arrayState !== null) {
-    if (
-      (typeof value === 'object' && value !== null) ||
-      typeof value === 'function'
-    ) {
-      arrayState.inert = null;
-    }
-    // A length change or an index past the end can leave holes behind.
-    if (key === 'length' || (key as number) > source.length) {
-      arrayState.dense = null;
-    }
+  if (
+    arrayState !== null &&
+    ((typeof value === 'object' && value !== null) ||
+      typeof value === 'function')
+  ) {
+    arrayState.inert = null;
   }
   if (hasOwn.call(original, key) && isEqual(value, original[key])) {
     // !case: handle the case of assigning the original non-draftable value to a draft
@@ -272,7 +272,15 @@ function setTrap(
   } else {
     target.assignedMap!.set(key, true);
   }
+  // A longer length, or an index past the end, leaves holes behind.
+  const length = target.type === DraftType.Array ? target.copy!.length : -1;
   target.copy![key] = value;
+  if (
+    length !== -1 &&
+    target.copy!.length > length + (key === 'length' ? 0 : 1)
+  ) {
+    resized(target, length);
+  }
   markFinalization(target, key, value);
   return true;
 }
