@@ -1274,6 +1274,31 @@ test('unexpected - patches', () => {
   );
 });
 
+test('a patch cannot set a prototype through the last segment of its path', () => {
+  const paths = [['__proto__'], '/__proto__', ['user', '__proto__']];
+  for (const options of [undefined, { mutable: true }]) {
+    for (const path of paths) {
+      const target: any = { role: 'reader', user: { role: 'reader' } };
+      expect(() =>
+        apply(
+          target,
+          [{ op: 'add', path, value: { admin: true } }] as Patches,
+          options
+        )
+      ).toThrow(
+        `Patching reserved attributes like __proto__ and constructor is not allowed.`
+      );
+      expect(Object.getPrototypeOf(target)).toBe(Object.prototype);
+      expect(Object.getPrototypeOf(target.user)).toBe(Object.prototype);
+      expect(target.admin).toBeUndefined();
+      expect(target.user.admin).toBeUndefined();
+    }
+  }
+  // A Map key named `__proto__` is an ordinary key.
+  const map = apply(new Map(), [{ op: 'add', path: ['__proto__'], value: 1 }]);
+  expect(map.get('__proto__')).toBe(1);
+});
+
 test('type check', () => {
   let state: Record<string, unknown>;
   let patches: Patches | undefined;

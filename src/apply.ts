@@ -95,6 +95,14 @@ export function apply<
       // ensure the original patch is not modified.
       const value = deepClone(patch.value);
       const key = path[path.length - 1];
+      // The last segment is assigned, and an assignment to `__proto__` sets
+      // the prototype of an object or array instead of a property.
+      if (
+        key === '__proto__' &&
+        (type === DraftType.Object || type === DraftType.Array)
+      ) {
+        die(ErrorCode.ReservedPatchAttribute);
+      }
       switch (op) {
         case Operation.Replace:
           switch (type) {
