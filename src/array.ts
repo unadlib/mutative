@@ -254,6 +254,21 @@ function markRange(target: ProxyDraft, from: number, to: number) {
 }
 
 /**
+ * After the proxy lengthened an array draft, by its length or by an assignment
+ * past its end, holes follow. An index that the array exposes again below the
+ * original length lost its element to a shorter length earlier; no assignment
+ * records such an index, and a native move may have dropped one, so patches
+ * compare it. Marking the range as moved leaves reads as they are: an exposed
+ * index holds a hole, and an assigned value is handed out as it is.
+ */
+export function resized(target: ProxyDraft, previous: number) {
+  const state = target.arrayState;
+  if (state !== null) state.dense = null;
+  const end = Math.min(target.copy!.length, target.original.length);
+  if (previous < end) markRange(target, previous, end);
+}
+
+/**
  * After a native operation moved elements: drafts created here take their
  * new keys, assigned values are registered again at their new indices, and
  * the array remembers that identity against the original index can no longer

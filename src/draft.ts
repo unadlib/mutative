@@ -13,6 +13,7 @@ import {
   arrayMethods,
   baseIndex,
   isMovedElement,
+  resized,
   trackArrayMethod,
 } from './array';
 import { internal } from './internal';
@@ -258,17 +259,12 @@ function setTrap(
   ensureShallowCopy(target);
   markChanged(target);
   const arrayState = target.arrayState;
-  if (arrayState !== null) {
-    if (
-      (typeof value === 'object' && value !== null) ||
-      typeof value === 'function'
-    ) {
-      arrayState.inert = null;
-    }
-    // A length change or an index past the end can leave holes behind.
-    if (key === 'length' || (key as number) > source.length) {
-      arrayState.dense = null;
-    }
+  if (
+    arrayState !== null &&
+    ((typeof value === 'object' && value !== null) ||
+      typeof value === 'function')
+  ) {
+    arrayState.inert = null;
   }
   if (hasOwn.call(original, key) && isEqual(value, original[key])) {
     // !case: handle the case of assigning the original non-draftable value to a draft
@@ -276,7 +272,15 @@ function setTrap(
   } else {
     target.assignedMap!.set(key, true);
   }
+  // A longer length, or an index past the end, leaves holes behind.
+  const length = target.type === DraftType.Array ? target.copy!.length : -1;
   target.copy![key] = value;
+  if (
+    length !== -1 &&
+    target.copy!.length > length + (key === 'length' ? 0 : 1)
+  ) {
+    resized(target, length);
+  }
   markFinalization(target, key, value);
   return true;
 }

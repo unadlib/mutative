@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { apply, create, isDraft, original } from '../src';
 
-// Array drafts record the values the recipe assigned, which a read hands out
-// as they are wherever native array methods moved them. A no-op `mark` sends
+// Two kinds of bookkeeping of array drafts must survive the native array
+// methods: the indices whose contents may differ from the original array,
+// which patches compare, and the values the recipe assigned, which a read hands
+// out as they are wherever native methods moved them. A no-op `mark` sends
 // every array method through the proxy path, the reference for identity.
 
 const deepFreeze = <T>(value: T): T => {
@@ -12,6 +14,10 @@ const deepFreeze = <T>(value: T): T => {
   }
   return value;
 };
+
+// Holes replay as `undefined`, a limitation shared with Mutative 1.3.0.
+const replayed = (value: unknown) =>
+  Array.isArray(value) ? Array.from(value) : value;
 
 const configurations = [false, true].flatMap((enableAutoFreeze) =>
   [false, true].flatMap((strict) =>
@@ -49,6 +55,38 @@ describe.each(configurations)(
       expect(value).toEqual(before);
       return { state: state as any, patches, inversePatches, base: value };
     };
+
+    test('patches remove an element that a shorter array exposes again after a move', () => {
+      const { state, patches, inversePatches, base } = run(
+        [1, 2, 3],
+        (draft) => {
+          draft.pop();
+          draft.reverse();
+          draft.length = 3;
+        }
+      );
+      expect(Array.from(state)).toEqual([2, 1, undefined]);
+      expect(2 in state).toBe(false);
+      expect(replayed(apply(base, patches))).toEqual([2, 1, undefined]);
+      expect(replayed(apply(state, inversePatches))).toEqual([1, 2, 3]);
+    });
+
+    test('patches restore elements that the length removed and exposed again', () => {
+      const { state, patches, inversePatches, base } = run(
+        ['a', 'b', 'c', 'd'],
+        (draft) => {
+          draft.length = 1;
+          draft.length = 3;
+        }
+      );
+      expect(Array.from(state)).toEqual(['a', undefined, undefined]);
+      expect(replayed(apply(base, patches))).toEqual([
+        'a',
+        undefined,
+        undefined,
+      ]);
+      expect(apply(state, inversePatches)).toEqual(['a', 'b', 'c', 'd']);
+    });
 
     test('an inserted element of the base state keeps its identity after the array moved', () => {
       const base = [{ id: 1 }, { id: 2 }];
