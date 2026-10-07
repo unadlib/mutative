@@ -33,6 +33,9 @@ const [draft, finalize] = create(baseState);
 draft.foobar.bar = 'baz';
 const state = finalize();
 ```
+
+Call `finalize()` only once. When it throws, for example because a development build rejects a patch path, the drafts are not revoked as they are when a recipe fails: they stay writable, and a second `finalize()` returns a state that can hold a revoked draft, with patches that miss changes. Create a new draft from the base state instead.
+
 ### create producer
 
 Also support set options such as `const produce = create((draft) => {}, { enableAutoFreeze: true })`.
