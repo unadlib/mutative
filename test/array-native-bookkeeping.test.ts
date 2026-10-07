@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isDeepStrictEqual } from 'node:util';
-import { apply, create, isDraft, original } from '../src';
+import { apply, create, isDraft, original, unsafe } from '../src';
 
 // Two kinds of bookkeeping of array drafts must survive the native array
 // methods: the indices whose contents may differ from the original array,
@@ -89,27 +89,39 @@ describe.each(configurations)(
       expect(apply(state, inversePatches)).toEqual(['a', 'b', 'c', 'd']);
     });
 
-    test('an inserted element of the base state keeps its identity after the array moved', () => {
+    const insertBaseElement = (wrap: (callback: () => void) => void) => {
       const base = [{ id: 1 }, { id: 2 }];
       const item = base[1];
       const seen: unknown[] = [];
-      const { state, patches, inversePatches } = run(base, (draft) => {
-        draft.unshift(item);
-        seen.push(
-          draft[0] === item,
-          isDraft(draft[0]),
-          draft.indexOf(item),
-          draft.lastIndexOf(item),
-          draft.includes(item),
-          draft.shift() === item
-        );
-      });
+      const { state, patches, inversePatches } = run(base, (draft) =>
+        wrap(() => {
+          draft.unshift(item);
+          seen.push(
+            draft[0] === item,
+            isDraft(draft[0]),
+            draft.indexOf(item),
+            draft.lastIndexOf(item),
+            draft.includes(item),
+            draft.shift() === item
+          );
+        })
+      );
       expect(seen).toEqual([true, false, 0, 0, true, true]);
       expect(state).toEqual([{ id: 1 }, { id: 2 }]);
       expect(state[0]).toBe(base[0]);
       expect(state[1]).toBe(base[1]);
       expect(apply(base, patches)).toEqual(state);
       expect(apply(state, inversePatches)).toEqual([{ id: 1 }, { id: 2 }]);
+    };
+
+    test('an inserted element of the base state keeps its identity after the array moved', () => {
+      insertBaseElement((callback) => callback());
+    });
+
+    // In strict mode, `unsafe()` runs the native methods on arrays of objects
+    // as well.
+    test('an inserted element of the base state keeps its identity after the array moved inside unsafe()', () => {
+      insertBaseElement(unsafe);
     });
   }
 );
