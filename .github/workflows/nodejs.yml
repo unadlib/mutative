@@ -37,3 +37,27 @@ jobs:
         pnpm test
       env:
         CI: true
+
+  minimum-node:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v7
+    - uses: pnpm/action-setup@v6
+    - name: Use Node.js 24.x to build the package
+      uses: actions/setup-node@v7
+      with:
+        node-version: 24.x
+        cache: pnpm
+    - name: pnpm install, build, and pack
+      run: |
+        pnpm install --frozen-lockfile
+        pnpm build
+        pnpm pack --pack-destination "$RUNNER_TEMP"
+    - name: Use Node.js 14.0.0, the oldest version that engines allows
+      uses: actions/setup-node@v7
+      with:
+        node-version: 14.0.0
+    - name: Check the packed package on Node.js 14.0.0
+      run: node scripts/check-minimum-node.mjs "$RUNNER_TEMP"/mutative-*.tgz
