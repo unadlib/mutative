@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { isDeepStrictEqual } from 'node:util';
 import { apply, create, isDraft, original } from '../src';
 
 // Two kinds of bookkeeping of array drafts must survive the native array
@@ -318,3 +319,213 @@ describe('elements of the base state inserted into a moved array', () => {
     ]);
   });
 });
+
+// Every sequence of three of these operations runs natively and on the proxy
+// path. Shrinking, growing again, moving, inserting elements of the base
+// state, reading, searching and editing drafts must give the same reads,
+// search results, removed values and final state, by value and by identity,
+// leave the base state unchanged, and produce patches that replay in both
+// directions.
+type Operation = [
+  name: string,
+  run: (list: any[], context: Context, step: number) => unknown,
+];
+interface Context {
+  base: any[];
+  make: (label: string) => unknown;
+  seen: string[];
+  describe: (value: unknown) => string;
+}
+
+const sequenceOperations: Operation[] = [
+  ['pop', (list) => list.pop()],
+  ['shift', (list) => list.shift()],
+  ['splice out', (list) => list.splice(1, 2)],
+  ['shrink', (list) => (list.length = Math.max(list.length - 2, 0))],
+  ['grow', (list) => (list.length += 2)],
+  [
+    'assign past the end',
+    (list, { make }, step) => (list[list.length + 1] = make(`past${step}`)),
+  ],
+  ['delete', (list) => delete list[1]],
+  ['push', (list, { make }, step) => list.push(make(`push${step}`))],
+  ['unshift', (list, { make }, step) => list.unshift(make(`unshift${step}`))],
+  ['splice in', (list, { make }, step) => list.splice(1, 0, make(`in${step}`))],
+  [
+    'splice over',
+    (list, { make }, step) => list.splice(0, 1, make(`over${step}`)),
+  ],
+  ['reverse', (list) => list.reverse()],
+  [
+    'sort',
+    (list) =>
+      list.sort(
+        (a, b) =>
+          (typeof b === 'object' ? b.id : b) -
+          (typeof a === 'object' ? a.id : a)
+      ),
+  ],
+  ['unshift base', (list, { base }) => list.unshift(base[1])],
+  ['splice in base', (list, { base }) => list.splice(1, 0, base[3])],
+  ['splice over base', (list, { base }) => list.splice(0, 1, base[3])],
+  ['push base', (list, { base }) => list.push(base[0])],
+  ['assign base', (list, { base }) => (list[0] = base[2])],
+  [
+    'edit',
+    (list) => {
+      for (const index of [0, list.length - 1]) {
+        const value = list[index];
+        if (isDraft(value)) value.value += 1;
+      }
+    },
+  ],
+  [
+    'read and search',
+    (list, { base, seen, describe }) => {
+      seen.push(Array.from(list, describe).join());
+      for (const value of base) {
+        seen.push(
+          `${list.indexOf(value)} ${list.lastIndexOf(value)} ${list.includes(value)}`
+        );
+      }
+    },
+  ],
+];
+const readAndSearch = sequenceOperations[sequenceOperations.length - 1][1];
+
+const sequenceConfigurations = [
+  { fixture: 'objects', enableAutoFreeze: false, nested: false, frozen: false },
+  { fixture: 'objects', enableAutoFreeze: true, nested: false, frozen: true },
+  { fixture: 'objects', enableAutoFreeze: false, nested: true, frozen: false },
+  {
+    fixture: 'primitives',
+    enableAutoFreeze: false,
+    nested: false,
+    frozen: false,
+  },
+] as const;
+
+describe.each(sequenceConfigurations)(
+  'sequences of three operations on $fixture, enableAutoFreeze=$enableAutoFreeze, nested=$nested, frozen=$frozen',
+  ({ fixture, enableAutoFreeze, nested, frozen }) => {
+    const runSequence = (
+      operations: Operation[],
+      mark: (() => undefined) | undefined
+    ) => {
+      const elements: any[] =
+        fixture === 'objects'
+          ? Array.from({ length: 4 }, (_, id) => ({ id, value: 0 }))
+          : [0, 1, 2, 3];
+      const base: any = nested
+        ? { list: elements, other: { id: -1 } }
+        : elements;
+      const before = structuredClone(base);
+      if (frozen) deepFreeze(base);
+      const listOf = (value: any): any[] => (nested ? value.list : value);
+      const made = new Map<unknown, string>();
+      let next = 100;
+      const describeRaw = (value: unknown): string => {
+        if (typeof value !== 'object' || value === null) return String(value);
+        const index = elements.indexOf(value);
+        if (index !== -1) return `base${index}`;
+        return made.get(value) ?? `copy${JSON.stringify(value)}`;
+      };
+      const seen: string[] = [];
+      const context: Context = {
+        base: elements,
+        seen,
+        make: (label) => {
+          if (fixture === 'primitives') return (next += 1);
+          const value = { id: (next += 1), value: 0 };
+          made.set(value, label);
+          return value;
+        },
+        describe: (value) =>
+          isDraft(value)
+            ? `draft(${describeRaw(original(value))})`
+            : describeRaw(value),
+      };
+      const recipe = (draft: any) => {
+        const list = listOf(draft);
+        operations.forEach(([, operation], step) => {
+          const result = operation(list, context, step);
+          // Describing the array itself would read, and draft, every element.
+          seen.push(
+            result === list
+              ? 'self'
+              : Array.isArray(result)
+                ? `[${result.map(context.describe).join()}]`
+                : context.describe(result)
+          );
+        });
+        readAndSearch(list, context, operations.length);
+      };
+      const [state, patches, inversePatches] = create(base, recipe, {
+        enablePatches: true,
+        enableAutoFreeze,
+        mark,
+      });
+      const list = listOf(state);
+      const observed = {
+        seen: [...seen],
+        identity: Array.from(list, describeRaw),
+      };
+      const failures: string[] = [];
+      if (!isDeepStrictEqual(base, before)) failures.push('base changed');
+      if (
+        !isDeepStrictEqual(
+          replayed(listOf(apply(base, patches))),
+          Array.from(list)
+        )
+      )
+        failures.push('forward patches');
+      if (
+        !isDeepStrictEqual(
+          replayed(listOf(apply(state, inversePatches))),
+          listOf(before)
+        )
+      )
+        failures.push('inverse patches');
+      if (nested && state.other !== base.other) failures.push('sharing');
+      // Enabling patches must not change the result.
+      next = 100;
+      seen.length = 0;
+      if (
+        !isDeepStrictEqual(
+          create(base, recipe, { enableAutoFreeze, mark }),
+          state
+        )
+      )
+        failures.push('result without patches');
+      return { failures, ...observed, state: list };
+    };
+
+    test.each(sequenceOperations.map(([name]) => name))(
+      'starting with %s, match the proxy path and replay their patches',
+      (firstName) => {
+        const first = sequenceOperations.find(([name]) => name === firstName)!;
+        const failures: string[] = [];
+        for (const second of sequenceOperations) {
+          for (const third of sequenceOperations) {
+            const operations = [first, second, third];
+            const name = operations.map(([name]) => name).join(' -> ');
+            const native = runSequence(operations, undefined);
+            const proxy = runSequence(operations, () => undefined);
+            const problems = [
+              ...native.failures.map((failure) => `native ${failure}`),
+              ...proxy.failures.map((failure) => `proxy ${failure}`),
+            ];
+            if (!isDeepStrictEqual(native.seen, proxy.seen))
+              problems.push('reads, searches or removed values');
+            if (!isDeepStrictEqual(native.state, proxy.state))
+              problems.push('state');
+            if (!isDeepStrictEqual(native.identity, proxy.identity))
+              problems.push('identity');
+            if (problems.length) failures.push(`${name}: ${problems.join()}`);
+          }
+        }
+        expect(failures.length, failures.slice(0, 5).join('\n')).toBe(0);
+      }
+    );
+  }
+);
