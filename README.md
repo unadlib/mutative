@@ -638,6 +638,10 @@ Draftable base elements removed or moved by these methods are drafted before the
 
 Yes. Deleting the entry being visited and changing the values of other entries work as on a Map, and Set drafts iterate like Sets. One difference remains: an iteration over a Map draft that starts before the recipe has changed that Map, or read an object value from it, walks the entries of the base Map. An entry that the recipe deletes later in such an iteration is still visited, with `undefined` as its value, and an entry that it adds is not visited. To delete other entries while iterating, iterate over `Array.from(draft.keys())` and skip the keys for which `draft.has()` returns false.
 
+- Do the Set methods such as `union()` and `isSubsetOf()` work on Set drafts?
+
+Yes, but they compare elements as iterating the draft returns them. An object of the base state is a draft there, so these methods do not match it with the original object, although `has()` accepts the original object. To compare a Set draft with objects of the base state, call the method on `current(draft)`, in which unchanged objects keep their identity, or on `original(draft)` for the base state, or compare ids, for example `[...draft].filter((item) => ids.has(item.id))`. This applies to `union()`, `intersection()`, `difference()`, `symmetricDifference()`, `isSubsetOf()`, `isSupersetOf()` and `isDisjointFrom()`.
+
 - Does Mutative support shared references?
 
 Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](https://mutative.js.org/docs/extra-topics/shared-references).
