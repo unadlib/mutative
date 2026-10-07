@@ -24,7 +24,7 @@ const FeatureList = [
     title: 'High Performance',
     description: (
       <>
-        Mutative is about 3x faster than Immer with matched settings, and 6x
+        Mutative is about 3.4x faster than Immer with matched settings, and 6x
         faster when both use their default settings.
       </>
     ),
