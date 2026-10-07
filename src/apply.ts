@@ -58,8 +58,12 @@ export function apply<
       for (let index = 0; index < path.length - 1; index += 1) {
         const parentType = getType(base);
         let key = path[index];
+        // Map keys and Set positions are used as they are: converting an
+        // object key would throw for one without a prototype.
         const keyForCheck =
-          typeof key === 'symbol' ? undefined : String(key as any);
+          typeof key === 'symbol' || parentType > DraftType.Array
+            ? undefined
+            : String(key as any);
         if (
           ((parentType === DraftType.Object ||
             parentType === DraftType.Array) &&

@@ -2081,6 +2081,35 @@ test('a Map key that is an array stays one path segment', () => {
   expect(previous.get(gone)).toBe(3);
 });
 
+test('a patch path keeps Map keys that are objects as they are', () => {
+  let conversions = 0;
+  const keys = [
+    Object.create(null),
+    {
+      [Symbol.toPrimitive]: () => {
+        conversions += 1;
+        return 'key';
+      },
+    },
+  ];
+  for (const key of keys) {
+    const base = new Map<object, { value: number }>([[key, { value: 0 }]]);
+    const [state, patches, inversePatches] = create(
+      base,
+      (draft) => {
+        draft.get(key)!.value = 1;
+      },
+      { enablePatches: true }
+    );
+    expect(patches).toStrictEqual([
+      { op: 'replace', path: [key, 'value'], value: 1 },
+    ]);
+    expect(apply(base, patches).get(key)).toEqual({ value: 1 });
+    expect(apply(state, inversePatches).get(key)).toEqual({ value: 0 });
+  }
+  expect(conversions).toBe(0);
+});
+
 // The limit that the patches guide describes for Sets of objects.
 test('Set patches remove object elements by identity', () => {
   const base = new Set<any>();

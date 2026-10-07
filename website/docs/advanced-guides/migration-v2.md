@@ -52,6 +52,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - `apply()` rejects a patch whose path ends in `__proto__` on an object or array, as it rejects `__proto__` earlier in a path. With `mutable: true`, v1 assigned the value and so replaced the prototype of the object.
 - An object that `mark` makes draftable, such as a plain object under `markSimpleObject`, keeps an own `__proto__` key, as `JSON.parse()` creates one, as a property of its copy; v1 assigned it, which replaced the prototype of the copy.
 - A patch for a Map key that is an array holds the key as one path segment; v1 spread the array into the path, so applying the patch wrote to other keys.
+- `apply()` uses a Map key of a patch path as it is. v1 converted it to a string first, which threw for an object without a prototype.
 - Array patches record a change between `0` and `-0`, which the state already kept; in v1, applying the patches lost the sign. An element that stays `NaN` no longer yields a replace patch.
 - When a recipe shortens an array and lengthens it again, as `draft.length = 1; draft.length = 3` does, the patches replace the indices that the longer length exposes again. In v1, applying the patches kept the removed elements at those indices, and applying the inverse patches left holes there.
 - In strict mode, a nested `unsafe()` call no longer ends the access of the outer call; in v1, reading mutable data after it in the outer callback threw.
