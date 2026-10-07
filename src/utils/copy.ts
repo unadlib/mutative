@@ -8,7 +8,14 @@ function strictCopy(target: any) {
   const copy = Object.create(Object.getPrototypeOf(target));
   Reflect.ownKeys(target).forEach((key: any) => {
     let desc = Reflect.getOwnPropertyDescriptor(target, key)!;
-    if (desc.enumerable && desc.configurable && desc.writable) {
+    // An assignment to `__proto__` would set the prototype of the copy, so an
+    // own `__proto__` key, as `JSON.parse()` creates one, is defined instead.
+    if (
+      key !== '__proto__' &&
+      desc.enumerable &&
+      desc.configurable &&
+      desc.writable
+    ) {
       copy[key] = target[key];
       return;
     }
