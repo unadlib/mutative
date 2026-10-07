@@ -214,6 +214,8 @@ const state = create(baseState, (draft) => {
 
 In this basic example, the changes to the draft are 'mutative' within the draft callback, and `create()` is finally executed with a new immutable state.
 
+The recipe can be an async function: `create()` then returns a Promise of the result, and the draft stays usable until that Promise settles. `create()` recognizes the Promises of the current JavaScript realm only, so an async function from another realm, such as a `vm` context or an iframe, needs a wrapper from this realm: `create(baseState, async (draft) => { return await recipe(draft); })`.
+
 #### `create(state, fn, options)`
 
 > Then options is optional.
