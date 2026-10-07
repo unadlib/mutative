@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
@@ -18,12 +19,16 @@ if (process.env.NODE_ENV === 'production') {
 
 // Node.js imports the CJS entry, which reads `process.env.NODE_ENV` once,
 // instead of the bundler ESM artifacts, which check it at every use. The
-// exports are named because `export *` from CommonJS also re-exports the
-// `module.exports` name that Node.js adds.
-const names = Object.keys(require('../dist/mutative.cjs.development'));
+// entry takes the CJS exports object as its default import and names the
+// exports itself: Node.js before 14.13, which `engines` allows, cannot name
+// the exports of a CommonJS module.
+const api = require('../dist/mutative.cjs.development');
+// A bundler that resolves this entry and follows the `__esModule` convention
+// would import `exports.default` instead of the exports object.
+assert.ok(!('__esModule' in api), 'The CJS bundle must not set __esModule');
 writeFileSync(
   'dist/index.mjs',
-  `export { ${names.sort().join(', ')} } from './index.js';\n`
+  `import mutative from './index.js';\n\nexport const { ${Object.keys(api).sort().join(', ')} } = mutative;\n`
 );
 
 // The ESM facade gives NodeNext a declaration with the same module kind as

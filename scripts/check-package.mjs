@@ -305,6 +305,35 @@ try {
       mode === 'development',
       `${mode} bundle of the ESM entry`
     );
+
+    // Bundlers that target Node.js resolve the Node.js ESM entry, which takes
+    // the exports object of the CJS entry as its default import.
+    const nodeBundle = await build({
+      stdin: {
+        contents: `import * as api from 'mutative';
+import { create } from 'mutative';
+if (api.create !== create || Object.keys(api).length !== ${expectedExports.length}) throw new Error('exports');
+console.log(create({ count: 1 }, (draft) => { draft.count = 2; }).count);`,
+        resolveDir: consumer,
+      },
+      bundle: true,
+      write: false,
+      format: 'esm',
+      platform: 'node',
+    });
+    writeFileSync(
+      join(consumer, 'node-bundle.mjs'),
+      nodeBundle.outputFiles[0].text
+    );
+    assert.equal(
+      execFileSync(process.execPath, ['node-bundle.mjs'], {
+        cwd: consumer,
+        encoding: 'utf8',
+        env: { ...process.env, NODE_ENV: mode },
+      }).trim(),
+      '2',
+      `${mode} Node.js bundle of the ESM entry`
+    );
   }
 
   const example = `import { create, type Draft, type Patch } from 'mutative';
