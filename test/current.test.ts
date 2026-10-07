@@ -345,3 +345,29 @@ test('current() for Custom Set/Map draft', () => {
     expect(f).toMatchSnapshot();
   });
 });
+
+test('current() snapshots an assigned object that a mark makes draftable', () => {
+  class Box {
+    constructor(public value: { count: number }) {}
+  }
+  let snapshot: any;
+  const state = create(
+    { child: { count: 0 }, box: null as Box | null },
+    (draft) => {
+      draft.child.count = 1;
+      draft.box = new Box(draft.child);
+      snapshot = current(draft);
+      draft.child.count = 2;
+    },
+    {
+      mark: (target, { immutable }) =>
+        target instanceof Box ? immutable : undefined,
+    }
+  );
+  expect(snapshot.child.count).toBe(1);
+  expect(snapshot.box).toBeInstanceOf(Box);
+  expect(isDraft(snapshot.box.value)).toBe(false);
+  expect(snapshot.box.value).toEqual({ count: 1 });
+  expect(state.child.count).toBe(2);
+  expect(state.box!.value.count).toBe(2);
+});
