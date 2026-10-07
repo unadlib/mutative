@@ -1,6 +1,6 @@
 # Performance evidence and archives
 
-This directory contains two maintained documents: this archive index and the [current performance summary](./SUMMARY.md). The [PR #184 review section](./SUMMARY.md#pr-184-review-fixes) records the October 5 base/head matrix, focused diagnostics and source identities separately from the historical cross-library measurements. Its paired CI measurements are uploaded by the [PR checks](https://github.com/unadlib/mutative/pull/184/checks). Benchmark source, tests, pinned versions, [`budgets.json`](../budgets.json), and the [build-size baseline](../../scripts/build-size-baseline.json) remain versioned. Historical measurements are not inputs to CI: the performance job measures its actual base/head checkouts and uploads its own results.
+This directory contains two maintained documents: this archive index and the [current performance summary](./SUMMARY.md). The summary records the October 6 and 7 cross-library measurements of `main`, and its [history](./SUMMARY.md#history) summarizes earlier batches, including the October 5 base/head matrix of PR #184, whose paired CI measurements are uploaded by the [PR checks](https://github.com/unadlib/mutative/pull/184/checks). Benchmark source, tests, pinned versions, [`budgets.json`](../budgets.json), and the [build-size baseline](../../scripts/build-size-baseline.json) remain versioned. Historical measurements are not inputs to CI: the performance job measures its actual base/head checkouts and uploads its own results.
 
 ## Retention policy
 
