@@ -15,6 +15,7 @@ import { checksReads } from './unsafe';
 
 const arrayProto = Array.prototype;
 const arrayIncludes = arrayProto.includes;
+const hasOwn = Object.prototype.hasOwnProperty;
 
 // Receivers are recognized by identity only, so a borrowed method never reads
 // a property of an object that is not one of these drafts. The array whose
@@ -155,7 +156,7 @@ function baseIndices(target: ProxyDraft) {
  * map of original indices holds for a repeated element, so a few reads after
  * a move do not index a large array; later lookups build the map.
  */
-export function baseIndexOf(target: ProxyDraft, value: any) {
+function baseIndexOf(target: ProxyDraft, value: any) {
   const state = arrayState(target);
   if (state.baseRefs === null && state.lookups < 8) {
     state.lookups += 1;
@@ -165,12 +166,22 @@ export function baseIndexOf(target: ProxyDraft, value: any) {
   return baseIndices(target).get(value);
 }
 
-// The original index of `value`, found at `index` before an operation, or -1
-// when it did not come from the original array.
-function baseIndex(target: ProxyDraft, value: any, index: number) {
+/**
+ * The original index under which a read of `value` at `index` drafts it, or
+ * -1 when the read hands it out as is: an element at its original index, or,
+ * once native operations moved elements, any element of the original array
+ * except a value the recipe assigned at `index`, whose record moves along
+ * with it. Reads, searches and removals all decide by it.
+ */
+export function baseIndex(target: ProxyDraft, value: any, index: number) {
+  if (target.original[index] === value) return index;
   const state = target.arrayState;
-  if (state === null || !state.relocated) {
-    return target.original[index] === value ? index : -1;
+  if (
+    state === null ||
+    !state.relocated ||
+    target.assignedMap!.get(String(index))
+  ) {
+    return -1;
   }
   const found = baseIndexOf(target, value);
   return found === undefined ? -1 : found;
@@ -193,12 +204,16 @@ function registerChild(target: ProxyDraft, index: number, draft: any) {
   }
 }
 
-// Bookkeeping for a value placed at `index` natively, like the set trap does.
+// Bookkeeping for a value placed at `index` natively, like the set trap does:
+// the original element of `index` is not recorded as assigned there, so a read
+// drafts it, there and wherever it moves next, as on the proxy path.
 function registerAssigned(target: ProxyDraft, index: number, value: any) {
   const key = String(index);
-  target.assignedMap!.set(key, true);
   const state = target.arrayState;
   if (state !== null && canExecute(value)) state.inert = null;
+  const original = target.original;
+  if (hasOwn.call(original, index) && isEqual(value, original[index])) return;
+  target.assignedMap!.set(key, true);
   if (typeof value === 'object' && value !== null) {
     markFinalization(target, key, value);
   }
@@ -280,22 +295,17 @@ function relocate(
   for (let position = 0; position < assigned.length; position += 1) {
     assignedMap.delete(assigned[position][0]);
   }
-  // An assigned object that moved is registered for finalization at its new
-  // index, as an assignment through the proxy would do; one that stayed keeps
-  // the registration it has.
+  // An assigned value that moved is registered again at its new index, as an
+  // assignment through the proxy would do: an object for finalization, and
+  // not at all where it meets the original element of that index; one that
+  // stayed keeps the registration it has.
   for (let position = 0; position < assigned.length; position += 1) {
     const [key, flag] = assigned[position];
     const index = Number(key);
     const next = map(index);
     if (next >= 0) {
-      const value = copy[next];
-      if (
-        flag &&
-        next !== index &&
-        typeof value === 'object' &&
-        value !== null
-      ) {
-        registerAssigned(target, next, value);
+      if (flag && next !== index) {
+        registerAssigned(target, next, copy[next]);
       } else {
         assignedMap.set(String(next), flag);
       }
@@ -369,25 +379,36 @@ function native(
 // identity alone. A read through the proxy drafts such an element when it is
 // draftable.
 function isBaseElement(target: ProxyDraft, value: object, index: number) {
-  if (value === target.original[index]) return true;
-  const state = target.arrayState;
   return (
-    state !== null &&
-    state.relocated &&
-    childAt(target, index) !== value &&
-    baseIndexOf(target, value) !== undefined
+    childAt(target, index) !== value && baseIndex(target, value, index) !== -1
+  );
+}
+
+/**
+ * Whether `value`, which the array already holds at `index`, is an element of
+ * the base state that native methods moved there. The proxy path moves
+ * elements by reading them, so it holds a draft there, and assigning the raw
+ * element replaces the draft and records an assignment; the set trap records
+ * one as well instead of ignoring the assignment.
+ */
+export function isMovedElement(target: ProxyDraft, value: any, index: any) {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    value !== target.original[index] &&
+    baseIndex(target, value, index) !== -1
   );
 }
 
 // Identity searches run natively on the current array and return what the
 // proxy path returns, where every element is compared as a read hands it out.
-// An object of the base state is drafted on read and so never found; a native
-// hit on one is skipped and the search continues past it, so the result does
-// not depend on which elements were read before. A primitive index argument
-// converts without side effects, so the native method may convert it; an index
-// that can run user code is converted on the proxy path, which keeps the
-// length it read first. The search never reads a property of the value it is
-// given.
+// An object of the base state is drafted on read and so never found, unless
+// the recipe assigned it at that index; a native hit on a drafted one is
+// skipped and the search continues past it, so the result does not depend on
+// which elements were read before. A primitive index argument converts without
+// side effects, so the native method may convert it; an index that can run
+// user code is converted on the proxy path, which keeps the length it read
+// first. The search never reads a property of the value it is given.
 function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
   const nativeSearch: Native = arrayProto[method] as any;
   const backwards = method === 'lastIndexOf';
@@ -410,7 +431,7 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
       // An inherited element is handed out as it is until the proxy path's
       // first drafting read copies it into an own element; the proxy path
       // decides such a search.
-      if (!Object.prototype.hasOwnProperty.call(source, index)) {
+      if (!hasOwn.call(source, index)) {
         return original.apply(self, args);
       }
       // This array's own drafts, values assigned in the recipe and other
@@ -505,8 +526,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
             if (
               typeof value !== 'object' ||
               value === null ||
-              (Object.prototype.hasOwnProperty.call(source, at) &&
-                isBaseElement(target, value, at))
+              (hasOwn.call(source, at) && isBaseElement(target, value, at))
             ) {
               same = false;
             } else if (childAt(target, at) === value) {
@@ -597,13 +617,17 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       const length = source.length;
       if (length < 2) return self;
       if (!isDense(target)) return original.apply(self, args);
-      // A palindrome by identity stays untouched, as through the proxy.
-      let changed = false;
-      for (let low = 0, high = length - 1; low < high; low += 1, high -= 1) {
-        if (!isEqual(source[low], source[high])) {
-          changed = true;
-          break;
-        }
+      // A palindrome by identity stays untouched, as through the proxy, while
+      // no assignment is recorded: the proxy path swaps an assigned value and
+      // the element that a read drafts, so the move must carry their records.
+      const assigned = target.assignedMap;
+      let changed = assigned !== undefined && assigned.size > 0;
+      for (
+        let low = 0, high = length - 1;
+        !changed && low < high;
+        low += 1, high -= 1
+      ) {
+        changed = !isEqual(source[low], source[high]);
       }
       if (changed) {
         arrayProto.reverse.call(prepare(target));
