@@ -1,9 +1,10 @@
 import { getMDXComponents } from '@/components/mdx';
 import { blog, getAuthors, getReadingTime } from '@/lib/blog';
 import { createMetadata } from '@/lib/metadata';
-import { formatDate } from '@/lib/shared';
+import { formatDate, gitConfig, githubUrl } from '@/lib/shared';
 import { getPageDescription } from '@/lib/source';
 import { InlineTOC } from 'fumadocs-ui/components/inline-toc';
+import { EditOnGitHub } from 'fumadocs-ui/layouts/docs/page';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -61,19 +62,25 @@ export default async function Page(props: PageProps<'/blog/[...slug]'>) {
       <article className="prose mt-8 min-w-0">
         <MDX components={getMDXComponents()} />
       </article>
-      {post.data.tags.length > 0 && (
-        <div className="mt-10 flex flex-wrap items-center gap-2 border-t pt-6 text-sm">
-          <span className="font-medium">Tags:</span>
-          {post.data.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border bg-fd-secondary px-3 py-0.5 text-fd-secondary-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
+      <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+        {post.data.tags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="font-medium">Tags:</span>
+            {post.data.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border bg-fd-secondary px-3 py-0.5 text-fd-secondary-foreground"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        <EditOnGitHub
+          href={`${githubUrl}/blob/${gitConfig.branch}/website/content/blog/${post.path}`}
+          className="ms-auto"
+        />
+      </div>
     </div>
   );
 }
