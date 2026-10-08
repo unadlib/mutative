@@ -1,0 +1,15 @@
+{
+  "title": "Advanced Guides",
+  "defaultOpen": true,
+  "collapsible": false,
+  "pages": [
+    "auto-freeze",
+    "currying",
+    "mark",
+    "pathes",
+    "strict-mode",
+    "typescript",
+    "migration",
+    "migration-v2"
+  ]
+}

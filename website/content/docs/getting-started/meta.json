@@ -1,0 +1,12 @@
+{
+  "title": "Getting Started",
+  "defaultOpen": true,
+  "collapsible": false,
+  "pages": [
+    "installation",
+    "usages",
+    "concepts",
+    "mutative-with-react",
+    "performance"
+  ]
+}

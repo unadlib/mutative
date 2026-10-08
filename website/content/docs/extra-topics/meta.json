@@ -1,0 +1,13 @@
+{
+  "title": "Extra Topics",
+  "defaultOpen": true,
+  "collapsible": false,
+  "pages": [
+    "comparison-with-immer",
+    "faq",
+    "contributing",
+    "mutative-ecosystem",
+    "shared-references",
+    "errors"
+  ]
+}
