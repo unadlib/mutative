@@ -1,3 +1,4 @@
+import { Benchmarks } from '@/components/home/benchmarks';
 import { CodeComparison } from '@/components/home/code-comparison';
 import { Hero } from '@/components/home/hero';
 import { feedTypes } from '@/lib/metadata';
@@ -48,6 +49,7 @@ export default function HomePage() {
     <div className="flex flex-1 flex-col">
       <Hero />
       <CodeComparison />
+      <Benchmarks />
       <section className="mx-auto grid w-full max-w-[1140px] gap-10 px-4 py-16 md:grid-cols-3">
         {features.map(({ title, description }) => (
           <div key={title} className="px-4 text-center">
