@@ -387,6 +387,25 @@ void [sync, asyncVoid, asyncReplacement, curriedResult, primitive, resetResult, 
     ],
     consumer
   );
+  // Overload resolution and contextual typing change between TypeScript
+  // versions, so the consumer also compiles with the oldest version checked.
+  run(
+    process.execPath,
+    [
+      join(root, 'node_modules', 'typescript-5.0', 'bin', 'tsc'),
+      '--noEmit',
+      '--strict',
+      '--target',
+      'es2018',
+      '--module',
+      'NodeNext',
+      '--moduleResolution',
+      'NodeNext',
+      'consumer.mts',
+      'consumer.cts',
+    ],
+    consumer
+  );
   // Without strictNullChecks, null and undefined leave every union. Check
   // that async recipes with an explicit state type still return a Promise.
   run(
