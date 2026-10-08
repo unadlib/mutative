@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { median } from './report.mjs';
+import { createScenarios, supportsMode } from './scenarios.mjs';
+import { DEFAULT_CONFIG } from './workloads.mjs';
 
 const keyOf = (trial) =>
   JSON.stringify([trial.scenario, trial.autoFreeze, trial.enablePatches]);
@@ -38,15 +40,52 @@ function validateBuild(report, policy) {
   assert.equal(report.config.arraySize, policy.arraySize);
 }
 
-function trialMap(reports, kind, policy) {
+// Every budgeted scenario exists and belongs to one group per metric kind.
+function validateGroups(policy, registry) {
+  const names = Object.keys(policy.groups ?? {});
+  assert.ok(names.length, 'Budgets require at least one group');
+  for (const field of ['latencyScenarios', 'memoryScenarios']) {
+    const scenarios = names.flatMap((name) => {
+      assert.ok(
+        Array.isArray(policy.groups[name][field]),
+        `Invalid ${field} of group ${name}`
+      );
+      return policy.groups[name][field];
+    });
+    assert.equal(
+      new Set(scenarios).size,
+      scenarios.length,
+      `Duplicate ${field}`
+    );
+    for (const scenario of scenarios)
+      assert.ok(registry.has(scenario), `Unknown scenario ${scenario}`);
+  }
+  for (const name of names)
+    assert.ok(
+      policy.groups[name].latencyScenarios.length,
+      `Group ${name} has no latency scenarios`
+    );
+}
+
+function trialMap(reports, kind, policy, group, registry) {
   const scenarios =
-    kind === 'latency' ? policy.latencyScenarios : policy.memoryScenarios;
+    kind === 'latency' ? group.latencyScenarios : group.memoryScenarios;
+  // Patch application scenarios run with patches off only.
   const expected = new Set(
     scenarios.flatMap((scenario) =>
       policy.freezes.flatMap((autoFreeze) =>
-        policy.patches.map((enablePatches) =>
-          keyOf({ scenario, autoFreeze, enablePatches })
-        )
+        policy.patches
+          .filter((enablePatches) =>
+            supportsMode(
+              registry.get(scenario),
+              'mutative',
+              autoFreeze,
+              enablePatches
+            )
+          )
+          .map((enablePatches) =>
+            keyOf({ scenario, autoFreeze, enablePatches })
+          )
       )
     )
   );
@@ -56,7 +95,10 @@ function trialMap(reports, kind, policy) {
     assert.equal(report.methodology.arrayMethodsEnabled, false);
     if (kind === 'latency') {
       assert.equal(report.methodology.heapSampling, false);
-      assert.equal(report.methodology.patchApplicationTimed, false);
+      assert.equal(
+        report.methodology.patchApplicationTimed,
+        scenarios.some((scenario) => registry.get(scenario).kind === 'apply')
+      );
       assert.equal(report.methodology.patchSerializationTimed, false);
     } else {
       assert.equal(report.kind, 'memory');
@@ -153,20 +195,22 @@ function compareValues(values, budget, label, statistic) {
 
 export function evaluateBudgets(report) {
   const policy = report.policy;
-  assert.equal(policy.schemaVersion, 1);
+  assert.equal(policy.schemaVersion, 2);
   assert.ok(
     policy.latencyRuns >= 5 && policy.memoryRuns >= 3,
     'Budgets require at least five timing and three memory pairs'
   );
-  for (const field of [
-    'latencyScenarios',
-    'memoryScenarios',
-    'freezes',
-    'patches',
-  ])
-    assert.ok(Array.isArray(policy[field]) && policy[field].length);
-  for (const field of ['latencyScenarios', 'memoryScenarios'])
-    assert.equal(new Set(policy[field]).size, policy[field].length);
+  const registry = new Map(
+    createScenarios({ ...DEFAULT_CONFIG, arraySize: policy.arraySize }).map(
+      (scenario) => [scenario.name, scenario]
+    )
+  );
+  validateGroups(policy, registry);
+  assert.ok(
+    Object.hasOwn(policy.groups, report.group),
+    `Unknown budget group ${report.group}`
+  );
+  const group = policy.groups[report.group];
   assert.deepEqual(policy.freezes, [false, true]);
   assert.ok(
     Number.isSafeInteger(policy.minimumRetainedSamples) &&
@@ -192,7 +236,9 @@ export function evaluateBudgets(report) {
           trialMap(
             kind === 'latency' ? [pair[role]] : pair[role],
             kind,
-            policy
+            policy,
+            group,
+            registry
           ),
         ])
       );
@@ -281,6 +327,7 @@ export function evaluateBudgets(report) {
     }
   }
   return {
+    group: report.group,
     status: results.some((result) => result.status === 'regressed')
       ? 'failed'
       : 'passed',
@@ -290,7 +337,7 @@ export function evaluateBudgets(report) {
 
 export function formatBudgetReport(evaluation) {
   return [
-    '# Performance regression budgets',
+    `# Performance regression budgets: ${evaluation.group}`,
     '',
     `Status: **${evaluation.status}**. Latency rows compare the fastest base and candidate processes; memory rows use the medians of paired candidate/base ratios and deltas. A regression exceeds both the relative budget and the absolute noise floor.`,
     '',

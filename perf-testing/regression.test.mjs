@@ -6,9 +6,11 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { evaluateBudgets } from './regression.mjs';
 
-function fixture() {
+function fixture(scenario = 'small-object-update') {
+  // Patch application scenarios run with patches off only.
+  const apply = scenario.startsWith('apply-');
   const policy = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     immerVersion: '11.1.18',
     v1Version: '1.3.0',
     mitataVersion: '1.0.34',
@@ -20,8 +22,9 @@ function fixture() {
     samplingInterval: 1024,
     freezes: [false, true],
     patches: [false, true],
-    latencyScenarios: ['example'],
-    memoryScenarios: ['example'],
+    groups: {
+      example: { latencyScenarios: [scenario], memoryScenarios: [scenario] },
+    },
     latency: { maxRatio: 1.3, minimumDeltaNs: 500 },
     allocation: { maxRatio: 1.35, minimumDeltaBytes: 8192 },
     retainedHeap: { maxRatio: 1.35, minimumDeltaBytes: 1024 },
@@ -46,21 +49,23 @@ function fixture() {
   };
   const config = { arraySize: 1000 };
   const trials = policy.freezes.flatMap((autoFreeze) =>
-    policy.patches.map((enablePatches) => ({
-      scenario: 'example',
-      library: 'mutative',
-      autoFreeze,
-      enablePatches,
-      operations: 1,
-      ...(enablePatches && { patchCounts: { forward: 1, inverse: 1 } }),
-      stats: { avg: 10000, sampleCount: 100 },
-      memory: {
-        iterations: 16,
-        samplingInterval: 1024,
-        sampledAllocatedBytesPerIteration: 100000,
-        retainedHeapBytesPerIteration: 20000,
-      },
-    }))
+    policy.patches
+      .filter((enablePatches) => !apply || !enablePatches)
+      .map((enablePatches) => ({
+        scenario,
+        library: 'mutative',
+        autoFreeze,
+        enablePatches,
+        operations: 1,
+        ...(enablePatches && { patchCounts: { forward: 1, inverse: 1 } }),
+        stats: { avg: 10000, sampleCount: 100 },
+        memory: {
+          iterations: 16,
+          samplingInterval: 1024,
+          sampledAllocatedBytesPerIteration: 100000,
+          retainedHeapBytesPerIteration: 20000,
+        },
+      }))
   );
   const latency = {
     build,
@@ -69,7 +74,7 @@ function fixture() {
     methodology: {
       arrayMethodsEnabled: false,
       heapSampling: false,
-      patchApplicationTimed: false,
+      patchApplicationTimed: apply,
       patchSerializationTimed: false,
     },
     trials,
@@ -88,6 +93,7 @@ function fixture() {
     trial,
   }));
   return structuredClone({
+    group: 'example',
     policy,
     latencyPairs: Array.from({ length: 5 }, (_, index) => ({
       index,
@@ -125,6 +131,23 @@ test('latency regressions fail while sub-floor absolute changes remain tolerated
     pair.candidate.trials[0].stats.avg = 200;
   }
   assert.equal(evaluateBudgets(report).status, 'passed');
+});
+
+test('patch application scenarios are budgeted with patches off only', () => {
+  const report = fixture('apply-array-ops');
+  assert.equal(evaluateBudgets(report).results.length, 6);
+  for (const pair of report.latencyPairs)
+    pair.candidate.trials[0].stats.avg *= 1.6;
+  assert.equal(evaluateBudgets(report).status, 'failed');
+  const withPatches = fixture('apply-array-ops');
+  for (const pair of withPatches.latencyPairs)
+    for (const role of ['base', 'candidate'])
+      pair[role].trials.push({
+        ...pair[role].trials[0],
+        enablePatches: true,
+        patchCounts: { forward: 1, inverse: 1 },
+      });
+  assert.throws(() => evaluateBudgets(withPatches), /Unexpected latency/);
 });
 
 test('allocation and retained-heap regressions independently fail', () => {
@@ -224,6 +247,33 @@ for (const [name, corrupt] of [
     (report) => {
       delete report.memoryPairs[0].candidate[0].methodology
         .retainedHeapBaseline;
+    },
+  ],
+  [
+    'unknown group',
+    (report) => {
+      report.group = 'missing';
+    },
+  ],
+  [
+    'unknown scenario',
+    (report) => {
+      report.policy.groups.example.memoryScenarios = ['missing'];
+    },
+  ],
+  [
+    'scenario budgeted in two groups',
+    (report) => {
+      report.policy.groups.other = {
+        latencyScenarios: ['small-object-update'],
+        memoryScenarios: [],
+      };
+    },
+  ],
+  [
+    'patch application timed in a producer group',
+    (report) => {
+      report.latencyPairs[0].candidate.methodology.patchApplicationTimed = true;
     },
   ],
   [
