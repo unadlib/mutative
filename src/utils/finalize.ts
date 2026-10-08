@@ -129,6 +129,9 @@ export function finalizeNode(
     // Fast path: the node is still at its own key. Otherwise another draft
     // may have been moved here, e.g. by `reverse()`, and is finalized instead.
     const proxyDraft = draft === node.proxy ? node : getProxyDraft(draft);
+    // A draft that left its key reaches its new place as a value, through a
+    // callback or a value assigned there, so a Set finalizes its items here.
+    if (proxyDraft !== node) finalizeSetValue(node);
     if (proxyDraft) {
       // assign the updated value to the copy object
       const updatedValue = proxyDraft.operated
