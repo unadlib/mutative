@@ -21,9 +21,9 @@ Key aspects of the `rawReturn()` API include:
 
 In essence, `rawReturn()` expands the versatility of state management in Mutative, enabling developers to return immediate values from within draft operations, thereby enhancing the control they have over state transitions and outcomes.
 
-:::tip
+<Callout type="idea">
 If using Redux, you can use `rawReturn()` to return the default state directly.
-:::
+</Callout>
 
 ```ts
 const baseState = { id: 'test' };
@@ -72,11 +72,11 @@ expect(state).toEqual({ a: 2, b: { c: 1 } });
 expect(isDraft(state.b)).toBeFalsy();
 ```
 
-:::warning
+<Callout type="warn">
 In strict mode, if the return value contains drafts, it will warn:
 ```
 The return value contains drafts, please don't use 'rawReturn()' to wrap the return value
 ```
 
 If the return value may contain a draft, then please do NOT use `rawReturn()` to wrap the return value.
-:::
+</Callout>

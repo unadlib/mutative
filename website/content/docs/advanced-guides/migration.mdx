@@ -4,9 +4,9 @@ title: Migration from Immer to Mutative
 
 Mutative is a drop-in replacement for Immer, so you can use it with a few changes.
 
-:::tip
+<Callout type="idea">
 [mutative-compat](https://github.com/exuanbo/mutative-compat) - Mutative wrapper with full Immer API compatibility, you can use it to quickly migrate from Immer to Mutative.
-:::
+</Callout>
 
 ## `produce()` -> `create()`
 
@@ -115,6 +115,6 @@ const nextState = create(baseState, (draft) => {
 });
 ```
 
-:::tip
+<Callout type="idea">
 For more on how Mutative differs from Immer, visit [Mutative vs Immer](/docs/extra-topics/comparison-with-immer).
-:::
+</Callout>
