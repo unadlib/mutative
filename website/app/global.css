@@ -2,6 +2,18 @@
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
 
+/* Mutative orange, the primary color of the former Docusaurus theme. */
+@theme {
+  --color-fd-primary: #ff8800;
+  --color-fd-primary-foreground: hsl(0, 0%, 9%);
+}
+
+/* For readability, the dark mode uses a lighter orange. */
+.dark {
+  --color-fd-primary: #fb931f;
+  --color-fd-primary-foreground: hsl(0, 0%, 9%);
+}
+
 html {
   scrollbar-gutter: stable;
 }
