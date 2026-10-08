@@ -1,3 +1,4 @@
+import { Adopters } from '@/components/home/adopters';
 import { Benchmarks } from '@/components/home/benchmarks';
 import { CallToAction } from '@/components/home/call-to-action';
 import { CodeComparison } from '@/components/home/code-comparison';
@@ -20,6 +21,7 @@ export default function HomePage() {
       <Hero />
       <CodeComparison />
       <Benchmarks />
+      <Adopters />
       <Features />
       <Ecosystem />
       <CallToAction />
