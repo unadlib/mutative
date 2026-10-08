@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [core]
+        group: [core, collections]
     steps:
       - uses: actions/checkout@v7
         with:

@@ -27,6 +27,20 @@
         "array-reverse-primitive"
       ],
       "memoryScenarios": ["mutation-density-100pct", "array-reverse-nested"]
+    },
+    "collections": {
+      "latencyScenarios": [
+        "map-update",
+        "map-update-10pct",
+        "map-insert",
+        "map-delete",
+        "map-read",
+        "set-add",
+        "set-delete",
+        "set-update",
+        "set-update-10pct"
+      ],
+      "memoryScenarios": ["map-update-10pct", "set-update-10pct"]
     }
   }
 }
