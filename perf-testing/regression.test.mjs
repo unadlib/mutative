@@ -102,9 +102,11 @@ function fixture() {
   });
 }
 
-test('complete paired controls pass and one slow process does not set the median', () => {
+test('complete paired controls pass while one candidate process stays fast', () => {
   const report = fixture();
   report.latencyPairs[0].candidate.trials[0].stats.avg = 1000000;
+  for (const pair of report.latencyPairs.slice(2))
+    pair.candidate.trials[0].stats.avg *= 1.4;
   const evaluation = evaluateBudgets(report);
   assert.equal(evaluation.status, 'passed');
   assert.equal(evaluation.results.length, 12);
@@ -114,6 +116,9 @@ test('latency regressions fail while sub-floor absolute changes remain tolerated
   const report = fixture();
   for (const pair of report.latencyPairs)
     pair.candidate.trials[0].stats.avg *= 1.6;
+  assert.equal(evaluateBudgets(report).status, 'failed');
+  for (const pair of report.latencyPairs.slice(1))
+    pair.base.trials[0].stats.avg *= 1.6;
   assert.equal(evaluateBudgets(report).status, 'failed');
   for (const pair of report.latencyPairs) {
     pair.base.trials[0].stats.avg = 100;

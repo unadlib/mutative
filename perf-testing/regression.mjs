@@ -110,27 +110,41 @@ function trialMap(reports, kind, policy) {
   return map;
 }
 
-function compareValues(values, budget, label) {
+// Latency compares the fastest process of each build. On GitHub runners about
+// one process in six runs the array moves 20-38% slower throughout, for base
+// and candidate builds alike, so the median of five pairs failed whenever
+// three slow processes fell to the candidate. Memory estimates show no such
+// states and compare the medians of paired ratios and deltas.
+function compareValues(values, budget, label, statistic) {
   const ratios = values.map(({ base, candidate }) =>
     base > 0 ? candidate / base : null
   );
-  const validRatios = ratios.filter((value) => value !== null);
-  const medianRatio = validRatios.length ? median(validRatios) : null;
-  const medianDelta = median(
-    values.map((value) => value.candidate - value.base)
-  );
-  const baseMedian = median(values.map((value) => value.base));
-  const candidateMedian = median(values.map((value) => value.candidate));
+  let base;
+  let candidate;
+  let ratio;
+  let delta;
+  if (statistic === 'fastest') {
+    base = Math.min(...values.map((value) => value.base));
+    candidate = Math.min(...values.map((value) => value.candidate));
+    ratio = base > 0 ? candidate / base : null;
+    delta = candidate - base;
+  } else {
+    const validRatios = ratios.filter((value) => value !== null);
+    base = median(values.map((value) => value.base));
+    candidate = median(values.map((value) => value.candidate));
+    ratio = validRatios.length ? median(validRatios) : null;
+    delta = median(values.map((value) => value.candidate - value.base));
+  }
   const failed =
-    medianDelta > budget.minimumDelta &&
-    (medianRatio === null || medianRatio > budget.maxRatio);
+    delta > budget.minimumDelta && (ratio === null || ratio > budget.maxRatio);
   return {
     label,
     status: failed ? 'regressed' : 'passed',
-    baseMedian,
-    candidateMedian,
-    medianRatio,
-    medianDelta,
+    statistic,
+    base,
+    candidate,
+    ratio,
+    delta,
     maxRatio: budget.maxRatio,
     minimumDelta: budget.minimumDelta,
     pairs: values.map((value, i) => ({ ...value, ratio: ratios[i] })),
@@ -233,7 +247,8 @@ export function evaluateBudgets(report) {
               maxRatio: policy.latency.maxRatio,
               minimumDelta: policy.latency.minimumDeltaNs,
             },
-            `latency/${key}`
+            `latency/${key}`,
+            'fastest'
           )
         );
       else
@@ -259,7 +274,8 @@ export function evaluateBudgets(report) {
                 maxRatio: budget.maxRatio,
                 minimumDelta: budget.minimumDeltaBytes,
               },
-              `${metric}/${key}`
+              `${metric}/${key}`,
+              'median'
             )
           );
     }
@@ -276,13 +292,13 @@ export function formatBudgetReport(evaluation) {
   return [
     '# Performance regression budgets',
     '',
-    `Status: **${evaluation.status}**. Each row uses paired candidate/base ratios and deltas; a regression exceeds both the relative budget and the absolute noise floor.`,
+    `Status: **${evaluation.status}**. Latency rows compare the fastest base and candidate processes; memory rows use the medians of paired candidate/base ratios and deltas. A regression exceeds both the relative budget and the absolute noise floor.`,
     '',
-    '| Metric / scenario / freeze / patches | Base median | Candidate median | Paired median ratio | Allowed ratio | Median delta | Noise floor | Status |',
+    '| Metric / scenario / freeze / patches | Base | Candidate | Ratio | Allowed ratio | Delta | Noise floor | Status |',
     '| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
     ...evaluation.results.map(
       (row) =>
-        `| ${row.label} | ${row.baseMedian.toFixed(2)} | ${row.candidateMedian.toFixed(2)} | ${row.medianRatio?.toFixed(3) ?? '—'} | ${row.maxRatio.toFixed(2)} | ${row.medianDelta.toFixed(2)} | ${row.minimumDelta} | ${row.status} |`
+        `| ${row.label} | ${row.base.toFixed(2)} | ${row.candidate.toFixed(2)} | ${row.ratio?.toFixed(3) ?? '—'} | ${row.maxRatio.toFixed(2)} | ${row.delta.toFixed(2)} | ${row.minimumDelta} | ${row.status} |`
     ),
     '',
     'Latency values are ns per scenario. Allocation and retained-heap values are bytes per scenario output. JSON retains all individual pairs. Signed retained-heap estimates near zero require the absolute floor; RSS snapshots are recorded but not gated.',
