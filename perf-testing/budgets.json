@@ -41,6 +41,23 @@
         "set-update-10pct"
       ],
       "memoryScenarios": ["map-update-10pct", "set-update-10pct"]
+    },
+    "objects": {
+      "latencyScenarios": [
+        "object-update",
+        "object-update-10pct",
+        "object-delete",
+        "class-update",
+        "class-wide-update",
+        "deep-update",
+        "push-and-insert",
+        "push-and-insert-reuse"
+      ],
+      "memoryScenarios": [
+        "object-update-10pct",
+        "class-wide-update",
+        "push-and-insert-reuse"
+      ]
     }
   }
 }
