@@ -2,6 +2,7 @@ import { Operation, DraftType } from './interface';
 import type {
   Draft,
   Patches,
+  ApplyImmutableOptions,
   ApplyMutableOptions,
   ApplyOptions,
   ApplyResult,
@@ -34,7 +35,44 @@ import { die, ErrorCode } from './error';
 export function apply<
   T extends object,
   F extends boolean = false,
-  A extends ApplyOptions<F> = ApplyOptions<F>,
+  _A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
+>(
+  state: T,
+  patches: Patches,
+  applyOptions?: undefined
+): ApplyResult<T, F, undefined>;
+export function apply<
+  T extends object,
+  F extends boolean = false,
+  A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
+>(state: T, patches: Patches, applyOptions: A): ApplyResult<T, F, A>;
+// A wrapper may supply A explicitly while forwarding optional options. Keep
+// undefined in its result, but prefer the exact overload above when present.
+export function apply<
+  T extends object,
+  F extends boolean = false,
+  A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
+>(
+  state: T,
+  patches: Patches,
+  applyOptions?: A
+): ApplyResult<T, F, A | undefined>;
+// With an explicit T, A takes its default instead of being inferred. Keep
+// mutable options available without making calls with no options return void.
+export function apply<T extends object, F extends boolean = false>(
+  state: T,
+  patches: Patches,
+  applyOptions: { mutable: true }
+): ApplyResult<T, F, { mutable: true }>;
+export function apply<T extends object, F extends boolean = false>(
+  state: T,
+  patches: Patches,
+  applyOptions: ApplyMutableOptions | undefined
+): ApplyResult<T, F, ApplyMutableOptions | undefined>;
+export function apply<
+  T extends object,
+  F extends boolean = false,
+  A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
 >(state: T, patches: Patches, applyOptions?: A): ApplyResult<T, F, A> {
   let i: number;
   for (i = patches.length - 1; i >= 0; i -= 1) {
@@ -170,7 +208,7 @@ export function apply<
     return state as ApplyResult<T, F, A>;
   }
   return create<T, F>(state, mutate, {
-    ...applyOptions,
+    ...(applyOptions as ApplyOptions<F>),
     enablePatches: false,
   }) as T as ApplyResult<T, F, A>;
 }

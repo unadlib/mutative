@@ -20,12 +20,50 @@ import { current, handleReturnValue } from './current';
 import { RAW_RETURN_SYMBOL, dataTypes } from './constant';
 import { die, ErrorCode } from './error';
 
+// TypeScript infers no type parameter from this deferred indexed access, so T
+// keeps its default, never, unless the call supplies the state type.
+type ExplicitState<T> = [T][T extends any ? 0 : never];
+
+type ExplicitReturn<T> = void | ExplicitState<T> | Draft<ExplicitState<T>>;
+
+// An async recipe widens the literals it returns unless a Promise is among
+// the return types of the first overload that checks it, and a literal that
+// it returns directly needs a Promise as the whole return type. Actual
+// Promises lack the impossible field and still select the async overload.
+type AsyncRecipeContext<T> = Promise<ExplicitReturn<T>> & {
+  readonly __mutativeAsyncContext: never;
+};
+
+type ExplicitSyncReturn<T> = [ExplicitState<T>] extends [
+  string | number | bigint | boolean | symbol | null | undefined,
+]
+  ? AsyncRecipeContext<T>
+  : ExplicitReturn<T> | AsyncRecipeContext<T>;
+
+type ExplicitRecipe<T, P extends any[], R> = [T] extends [never]
+  ? never
+  : (draft: Draft<ExplicitState<T>>, ...args: P) => R;
+
 type MakeCreator = <
   _F extends boolean = false,
   _O extends PatchesOptions = false,
 >(
   options?: ExternalOptions<_O, _F>
 ) => {
+  // With an explicit state type, TypeScript infers no other type argument, and
+  // the default return type `void` of the overloads below also accepts an
+  // async recipe. These overloads tell async recipes apart by their return
+  // type; an inferred call leaves T at never and skips them.
+  <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
+    base: ExplicitState<T>,
+    mutate: ExplicitRecipe<T, [], ExplicitSyncReturn<T>>,
+    options?: ExternalOptions<O, F>
+  ): Result<ExplicitState<T>, O, F>;
+  <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
+    base: ExplicitState<T>,
+    mutate: ExplicitRecipe<T, [], Promise<ExplicitReturn<T>>>,
+    options?: ExternalOptions<O, F>
+  ): Promise<Result<ExplicitState<T>, O, F>>;
   <
     T extends any,
     F extends boolean = _F,
@@ -46,6 +84,27 @@ type MakeCreator = <
     mutate: (draft: T) => R,
     options?: ExternalOptions<O, F>
   ): CreateResult<T, O, F, R>;
+  <
+    T = never,
+    P extends any[] = [],
+    F extends boolean = _F,
+    O extends PatchesOptions = _O,
+  >(
+    mutate: ExplicitRecipe<T, P, ExplicitSyncReturn<T>>,
+    options?: ExternalOptions<O, F>
+  ): (base: ExplicitState<T>, ...args: P) => Result<ExplicitState<T>, O, F>;
+  <
+    T = never,
+    P extends any[] = [],
+    F extends boolean = _F,
+    O extends PatchesOptions = _O,
+  >(
+    mutate: ExplicitRecipe<T, P, Promise<ExplicitReturn<T>>>,
+    options?: ExternalOptions<O, F>
+  ): (
+    base: ExplicitState<T>,
+    ...args: P
+  ) => Promise<Result<ExplicitState<T>, O, F>>;
   <
     T extends any,
     P extends any[] = [],

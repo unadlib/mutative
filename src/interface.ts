@@ -233,15 +233,36 @@ export type Draft<T> = T extends Primitive | AtomicObject
           ? DraftedObject<T>
           : T;
 
+export type ApplyImmutableOptions<F extends boolean> = Pick<
+  Options<boolean, F>,
+  Exclude<keyof Options<boolean, F>, 'enablePatches'>
+> & { mutable?: false };
+
 export type ApplyOptions<F extends boolean> =
-  | Pick<
-      Options<boolean, F>,
-      Exclude<keyof Options<boolean, F>, 'enablePatches'>
-    >
+  | ApplyImmutableOptions<F>
   | ApplyMutableOptions;
 
+// Distribute over boolean and undefined so optional or widened freeze flags
+// keep both possible states instead of silently promising a writable result.
+type ApplyFrozenState<T, F> = F extends true ? Immutable<T> : T;
+
+type ApplyState<T, F extends boolean, A> = F extends true
+  ? Immutable<T>
+  : 'enableAutoFreeze' extends keyof A
+    ? ApplyFrozenState<T, A['enableAutoFreeze']>
+    : T;
+
+// `apply()` changes the state in place and returns nothing with `mutable`,
+// and returns a frozen state with `enableAutoFreeze`, as `create()` does.
+// A boolean or optional `mutable` flag can also select the void result.
 export type ApplyResult<
   T extends object,
   F extends boolean = false,
-  A extends ApplyOptions<F> = ApplyOptions<F>,
-> = A extends { mutable: true } ? void : T;
+  A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
+> = A extends { mutable: true }
+  ? void
+  : 'mutable' extends keyof A
+    ? true extends A['mutable']
+      ? ApplyState<T, F, A> | void
+      : ApplyState<T, F, A>
+    : ApplyState<T, F, A>;

@@ -38,6 +38,11 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - In strict mode, `rawReturn()` of a value without drafts no longer prints contradictory warnings.
 - With `enablePatches: { pathAsArray: false }`, development builds throw when a patch path would hold a Map key that is not a string, or a symbol key, as a string path cannot name such a key: applying the patch writes another key, for example `'1'` instead of `1`, or fails for a change below that key. Production builds still generate such patches, as v1 did, and still throw a `TypeError` for a symbol key. Keep the default array paths for such keys.
 
+## TypeScript
+
+- `create()` with an explicit state type and an async recipe, such as `create<State>(base, async (draft) => { … })`, returns `Promise<State>`, and so do curried producers; v1 typed the result as `State`.
+- `apply()` accepts `enableAutoFreeze: true` and then returns `Immutable<State>`, as `apply<State, true>()` does; v1 rejected the option and typed the frozen result as mutable. With `enableAutoFreeze` typed as `boolean` or optional `true`, the result is `State | Immutable<State>`. With `mutable` typed as `boolean`, optional `boolean`, or optional `true`, `apply()` returns `State | void`.
+
 ## Fixes that change results
 
 - With `enablePatches`, every changed item of a Set keeps its changes. In v1, when two or more items of a Set that was not the root changed below their first level, the state kept the change of only one of them.
