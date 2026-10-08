@@ -2,7 +2,12 @@ import { DocsCategory } from '@/components/docs-category';
 import { getMDXComponents } from '@/components/mdx';
 import { getLastUpdate } from '@/lib/git';
 import { createMetadata } from '@/lib/metadata';
-import { formatDate, gitConfig, githubUrl } from '@/lib/shared';
+import {
+  formatDate,
+  getPageMarkdownUrl,
+  gitConfig,
+  githubUrl,
+} from '@/lib/shared';
 import { getPageDescription, source } from '@/lib/source';
 import {
   DocsBody,
@@ -10,6 +15,8 @@ import {
   DocsPage,
   DocsTitle,
   EditOnGitHub,
+  MarkdownCopyButton,
+  ViewOptionsPopover,
 } from 'fumadocs-ui/layouts/docs/page';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import type { Metadata } from 'next';
@@ -23,11 +30,22 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const MDX = page.data.body;
   const file = `content/docs/${page.path}`;
   const lastUpdate = getLastUpdate(file);
+  const githubFileUrl = `${githubUrl}/blob/${gitConfig.branch}/website/${file}`;
+  const markdownUrl = getPageMarkdownUrl(page).url;
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription>{page.data.description}</DocsDescription>
+      <DocsDescription className="mb-0">
+        {page.data.description}
+      </DocsDescription>
+      <div className="flex flex-row items-center gap-2 border-b pb-6">
+        <MarkdownCopyButton markdownUrl={markdownUrl} />
+        <ViewOptionsPopover
+          markdownUrl={markdownUrl}
+          githubUrl={githubFileUrl}
+        />
+      </div>
       <DocsBody>
         <MDX
           components={getMDXComponents({
@@ -38,9 +56,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
         />
       </DocsBody>
       <div className="flex flex-row flex-wrap items-center justify-between gap-4">
-        <EditOnGitHub
-          href={`${githubUrl}/blob/${gitConfig.branch}/website/${file}`}
-        />
+        <EditOnGitHub href={githubFileUrl} />
         {lastUpdate && (
           <p className="text-sm text-fd-muted-foreground">
             Last updated on{' '}
