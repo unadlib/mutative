@@ -1,3 +1,4 @@
+import { DocsCategory } from '@/components/docs-category';
 import { getMDXComponents } from '@/components/mdx';
 import { getLastUpdate } from '@/lib/git';
 import { createMetadata } from '@/lib/metadata';
@@ -32,6 +33,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
           components={getMDXComponents({
             // this allows you to link to other pages with relative file paths
             a: createRelativeLink(source, page),
+            DocsCategory: () => <DocsCategory url={page.url} />,
           })}
         />
       </DocsBody>
