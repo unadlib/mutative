@@ -326,6 +326,35 @@ describe('draft fast paths keep the original semantics', () => {
     }
   );
 
+  test('arrays reject symbol keys like other non-index keys and still read them', () => {
+    const message =
+      "Only supports setting array indices and the 'length' property.";
+    const tag = Symbol('tag');
+    const list: any = [1];
+    list[tag] = 'kept';
+    const base = { list };
+    expect(() =>
+      create(base, (draft: any) => {
+        draft.list[tag] = 'changed';
+      })
+    ).toThrow(message);
+    expect(() =>
+      create(base, (draft: any) => {
+        draft.list[Symbol('new')] = 1;
+      })
+    ).toThrow(message);
+    expect(() =>
+      create(base, (draft: any) => {
+        delete draft.list[tag];
+      })
+    ).toThrow(message);
+    const state = create(base, (draft: any) => {
+      expect(draft.list[tag]).toBe('kept');
+    });
+    expect(state).toBe(base);
+    expect(Object.getOwnPropertySymbols(base.list)).toStrictEqual([tag]);
+  });
+
   test('an unmodified draft added to a container created later is patched as its original', () => {
     const base = { a: { x: { v: 1 } }, b: [] as { v: number }[] };
     const [state, patches, inverse] = create(
