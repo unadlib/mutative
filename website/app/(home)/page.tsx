@@ -1,5 +1,6 @@
 import { Benchmarks } from '@/components/home/benchmarks';
 import { CodeComparison } from '@/components/home/code-comparison';
+import { Ecosystem } from '@/components/home/ecosystem';
 import { Features } from '@/components/home/features';
 import { Hero } from '@/components/home/hero';
 import { feedTypes } from '@/lib/metadata';
@@ -19,6 +20,7 @@ export default function HomePage() {
       <CodeComparison />
       <Benchmarks />
       <Features />
+      <Ecosystem />
     </div>
   );
 }
