@@ -1,3 +1,4 @@
+import { feedTypes } from '@/lib/metadata';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -6,6 +7,7 @@ import type { ReactNode } from 'react';
 export const metadata: Metadata = {
   alternates: {
     canonical: '/',
+    types: feedTypes,
   },
 };
 
