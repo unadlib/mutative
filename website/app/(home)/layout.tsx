@@ -10,6 +10,11 @@ export default function Layout({ children }: LayoutProps<'/'>) {
           text: 'Docs',
           url: '/docs/intro',
         },
+        {
+          text: 'Blog',
+          url: '/blog',
+          active: 'nested-url',
+        },
       ]}
     >
       {children}
