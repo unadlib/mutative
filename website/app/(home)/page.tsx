@@ -1,4 +1,5 @@
 import { Benchmarks } from '@/components/home/benchmarks';
+import { CallToAction } from '@/components/home/call-to-action';
 import { CodeComparison } from '@/components/home/code-comparison';
 import { Ecosystem } from '@/components/home/ecosystem';
 import { Features } from '@/components/home/features';
@@ -21,6 +22,7 @@ export default function HomePage() {
       <Benchmarks />
       <Features />
       <Ecosystem />
+      <CallToAction />
     </div>
   );
 }
