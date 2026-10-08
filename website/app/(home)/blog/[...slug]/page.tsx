@@ -1,6 +1,7 @@
 import { getMDXComponents } from '@/components/mdx';
-import { blog, formatDate, getAuthors, getReadingTime } from '@/lib/blog';
+import { blog, getAuthors, getReadingTime } from '@/lib/blog';
 import { createMetadata } from '@/lib/metadata';
+import { formatDate } from '@/lib/shared';
 import { getPageDescription } from '@/lib/source';
 import { InlineTOC } from 'fumadocs-ui/components/inline-toc';
 import type { Metadata } from 'next';

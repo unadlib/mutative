@@ -1,5 +1,6 @@
-import { formatDate, getPosts, getReadingTime } from '@/lib/blog';
+import { getPosts, getReadingTime } from '@/lib/blog';
 import { createMetadata } from '@/lib/metadata';
+import { formatDate } from '@/lib/shared';
 import { getPageDescription } from '@/lib/source';
 import type { Metadata } from 'next';
 import Link from 'next/link';

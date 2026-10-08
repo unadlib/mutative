@@ -9,3 +9,12 @@ export const gitConfig = {
 };
 
 export const githubUrl = `https://github.com/${gitConfig.user}/${gitConfig.repo}`;
+
+export function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+}
