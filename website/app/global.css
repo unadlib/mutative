@@ -14,6 +14,17 @@
   --color-fd-primary-foreground: hsl(0, 0%, 9%);
 }
 
+/* Blockquotes in the docs hold notes, not quotations. */
+.prose blockquote {
+  font-style: normal;
+  font-weight: inherit;
+}
+
+.prose blockquote p:first-of-type::before,
+.prose blockquote p:last-of-type::after {
+  content: none;
+}
+
 html {
   scrollbar-gutter: stable;
 }
