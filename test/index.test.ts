@@ -3835,6 +3835,45 @@ test(`'markSimpleObject' add null check`, () => {
   expect(state).toEqual(obj);
 });
 
+test('a copy for a mark keeps an own __proto__ key as a property', () => {
+  const ownProto = {
+    value: { inherited: 42 },
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  };
+  const base = JSON.parse('{"__proto__":{"inherited":42},"count":0}');
+  const state = create(
+    base,
+    (draft: any) => {
+      draft.count = 1;
+    },
+    { mark: markSimpleObject }
+  );
+  expect(Object.getPrototypeOf(state)).toBe(Object.prototype);
+  expect(Object.getOwnPropertyDescriptor(state, '__proto__')).toEqual(ownProto);
+  expect(state.inherited).toBeUndefined();
+  expect(state.count).toBe(1);
+
+  class Point {
+    x = 0;
+  }
+  const point = new Point();
+  Object.defineProperty(point, '__proto__', ownProto);
+  const next = create(
+    { point },
+    (draft) => {
+      draft.point.x = 1;
+    },
+    { mark: (target) => (target instanceof Point ? 'immutable' : undefined) }
+  );
+  expect(Object.getPrototypeOf(next.point)).toBe(Point.prototype);
+  expect(Object.getOwnPropertyDescriptor(next.point, '__proto__')).toEqual(
+    ownProto
+  );
+  expect(next.point.x).toBe(1);
+});
+
 test('object with Symbol key at root - 0', () => {
   const a = Symbol('a');
   const data: Record<PropertyKey, any> = {

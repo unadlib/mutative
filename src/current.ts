@@ -1,4 +1,9 @@
-import { type Draft, DraftType, type ProxyDraft } from './interface';
+import {
+  type Draft,
+  DraftType,
+  type Options,
+  type ProxyDraft,
+} from './interface';
 import {
   forEach,
   get,
@@ -88,9 +93,12 @@ export function handleReturnValue(
   }
 }
 
-function getCurrent(target: any) {
+function getCurrent(target: any, rootOptions?: Options<any, any>) {
   const proxyDraft = getProxyDraft(target);
-  if (!isDraftable(target, proxyDraft?.options)) return target;
+  // Values assigned in the recipe are no drafts; the options of the draft
+  // above them decide whether a mark makes them draftable.
+  const options = proxyDraft ? proxyDraft.options : rootOptions;
+  if (!isDraftable(target, options)) return target;
   const type = getType(target);
   if (proxyDraft && !proxyDraft.operated) return proxyDraft.original;
   // A changed array draft is copied from its current array, since a copy
@@ -113,7 +121,7 @@ function getCurrent(target: any) {
           ? proxyDraft
             ? Array.from(getSetMap(proxyDraft).values())
             : Array.from(target as Set<any>)
-          : shallowCopy(array ? latest(array) : target, proxyDraft?.options);
+          : shallowCopy(array ? latest(array) : target, options);
   }
 
   if (proxyDraft) {
@@ -148,7 +156,7 @@ function getCurrent(target: any) {
     ) {
       return;
     }
-    const newValue = getCurrent(value);
+    const newValue = getCurrent(value, options);
     if (newValue !== value) {
       changed = true;
       if (currentValue === target) ensureShallowCopy();

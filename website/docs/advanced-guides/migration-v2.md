@@ -38,6 +38,11 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - In strict mode, `rawReturn()` of a value without drafts no longer prints contradictory warnings.
 - With `enablePatches: { pathAsArray: false }`, development builds throw when a patch path would hold a Map key that is not a string, or a symbol key, as a string path cannot name such a key: applying the patch writes another key, for example `'1'` instead of `1`, or fails for a change below that key. Production builds still generate such patches, as v1 did, and still throw a `TypeError` for a symbol key. Keep the default array paths for such keys.
 
+## TypeScript
+
+- `create()` with an explicit state type and an async recipe, such as `create<State>(base, async (draft) => { … })`, returns `Promise<State>`, and so do curried producers; v1 typed the result as `State`.
+- `apply()` accepts `enableAutoFreeze: true` and then returns `Immutable<State>`, as `apply<State, true>()` does; v1 rejected the option and typed the frozen result as mutable. With `enableAutoFreeze` typed as `boolean` or optional `true`, the result is `State | Immutable<State>`. With `mutable` typed as `boolean`, optional `boolean`, or optional `true`, `apply()` returns `State | void`.
+
 ## Fixes that change results
 
 - With `enablePatches`, every changed item of a Set keeps its changes. In v1, when two or more items of a Set that was not the root changed below their first level, the state kept the change of only one of them.
@@ -45,11 +50,15 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - Assigning `undefined` to a key that `delete`, `shift`, `unshift` or a shrinking `splice` removed from a draft adds the key back; v1 left a hole or kept the shorter length.
 - Under a `mark` that returns `mutable`, a value that the recipe assigned or moved is read back as assigned, through the draft and in `current()`; v1 returned the original value.
 - `current()` of a draft whose state holds a plain Set with drafts returns a snapshot; v1 threw.
+- `current()` snapshots an object that the recipe assigned and that `mark` makes draftable, such as a class instance, together with the drafts it holds; v1 returned the object as it was, so a later change to those drafts showed through the snapshot.
 - With `enableAutoFreeze`, Map and Set instances are frozen too, so adding a property or replacing a method fails as on any frozen object; v1 only replaced their mutators. Later producers skip a frozen Map or Set instead of walking its entries again, and a Map or Set that holds itself no longer overflows the stack in production builds.
 - The iterators that Map and Set drafts return behave like built-in iterators: iterating one that was partly consumed continues where it stopped, and iterator helpers such as `toArray()` are available where the engine has them. In v1, iterating such an iterator started over, and only a Map's `keys()` had the helpers.
 - Consume Map value and entry iterators, and all Set iterators, while their draft is active. After the producer finishes or fails, or a manual draft is finalized, an iterator cannot yield another value and throws a `TypeError`. Lazy iterator helpers follow the same lifetime; an exhausted iterator stays exhausted. Map keys are not drafted, and `keys()` continues to return a native iterator.
 - `apply()` copies the own symbol keys of patch values, and an own `__proto__` key, as `JSON.parse()` creates one, stays a data property. v1 dropped symbol keys there and turned an own `__proto__` key into the prototype of the copy.
+- `apply()` rejects a patch whose path ends in `__proto__` on an object or array, as it rejects `__proto__` earlier in a path. Coercible property keys, such as a boxed string, are checked after conversion too. With `mutable: true`, v1 assigned the value and so replaced the prototype of the object.
+- An object that `mark` makes draftable, such as a plain object under `markSimpleObject`, keeps an own `__proto__` key, as `JSON.parse()` creates one, as a property of its copy; v1 assigned it, which replaced the prototype of the copy.
 - A patch for a Map key that is an array holds the key as one path segment; v1 spread the array into the path, so applying the patch wrote to other keys.
+- `apply()` uses a Map key of a patch path as it is. v1 converted it to a string first, which threw for an object without a prototype.
 - Array patches record a change between `0` and `-0`, which the state already kept; in v1, applying the patches lost the sign. An element that stays `NaN` no longer yields a replace patch.
 - When a recipe shortens an array and lengthens it again, as `draft.length = 1; draft.length = 3` does, the patches replace the indices that the longer length exposes again. In v1, applying the patches kept the removed elements at those indices, and applying the inverse patches left holes there.
 - In strict mode, a nested `unsafe()` call no longer ends the access of the outer call; in v1, reading mutable data after it in the outer callback threw.

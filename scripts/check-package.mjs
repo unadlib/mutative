@@ -336,7 +336,7 @@ console.log(create({ count: 1 }, (draft) => { draft.count = 2; }).count);`,
     );
   }
 
-  const example = `import { create, type Draft, type Patch } from 'mutative';
+  const example = `import { create, makeCreator, type Draft, type Immutable, type Patch, type Patches } from 'mutative';
 const next = create({ count: 1 }, (draft: Draft<{ count: number }>) => {
   draft.count = 2;
 });
@@ -344,6 +344,27 @@ const count: number = next.count;
 declare const patch: Patch;
 void count;
 void patch;
+
+type State = { count: number; list: number[] };
+const base: State = { count: 0, list: [] };
+const sync: State = create<State>(base, (draft) => { draft.count++; });
+const asyncVoid: Promise<State> = create<State>(base, async (draft) => { draft.count++; });
+const asyncReplacement: Promise<State> = create<State>(base, async (draft) => ({ ...draft, count: 2 }));
+const curried = create<State>(async (draft) => { draft.count++; });
+const curriedResult: Promise<State> = curried(base);
+const primitive: Promise<'idle' | 'done'> = create<'idle' | 'done'>('idle', async () => 'done');
+const reset = create<State, [number]>((_draft, count) => ({ count, list: [] }));
+const resetResult: State = reset(base, 1);
+const creator = makeCreator({ enablePatches: true, enableAutoFreeze: true });
+const [inferred]: [Immutable<State>, Patches<true>, Patches<true>] = creator(base, (draft) => { draft.list.push(1); });
+const configured: Promise<[Immutable<State>, Patches<true>, Patches<true>]> = creator<State>(base, async (draft) => { draft.list.push(1); });
+const frozen: Promise<Immutable<State>> = create<State, true>(base, async (draft) => draft, { enableAutoFreeze: true });
+const anyReturn: State = create<State>(base, (draft) => draft as any);
+function update<T>(state: T, recipe: (draft: Draft<T>) => void): T {
+  return create<T>(state, recipe);
+}
+const updated: State = update(base, (draft) => { draft.count++; });
+void [sync, asyncVoid, asyncReplacement, curriedResult, primitive, resetResult, inferred, configured, frozen, anyReturn, updated];
 `;
   writeFileSync(join(consumer, 'consumer.mts'), example);
   writeFileSync(join(consumer, 'consumer.cts'), example);
@@ -355,6 +376,46 @@ void patch;
       compiler,
       '--noEmit',
       '--strict',
+      '--target',
+      'es2018',
+      '--module',
+      'NodeNext',
+      '--moduleResolution',
+      'NodeNext',
+      'consumer.mts',
+      'consumer.cts',
+    ],
+    consumer
+  );
+  // Overload resolution and contextual typing change between TypeScript
+  // versions, so the consumer also compiles with the oldest version checked.
+  run(
+    process.execPath,
+    [
+      join(root, 'node_modules', 'typescript-5.0', 'bin', 'tsc'),
+      '--noEmit',
+      '--strict',
+      '--target',
+      'es2018',
+      '--module',
+      'NodeNext',
+      '--moduleResolution',
+      'NodeNext',
+      'consumer.mts',
+      'consumer.cts',
+    ],
+    consumer
+  );
+  // Without strictNullChecks, null and undefined leave every union. Check
+  // that async recipes with an explicit state type still return a Promise.
+  run(
+    process.execPath,
+    [
+      compiler,
+      '--noEmit',
+      '--strict',
+      '--strictNullChecks',
+      'false',
       '--target',
       'es2018',
       '--module',

@@ -2,6 +2,7 @@ import { Operation, DraftType } from './interface';
 import type {
   Draft,
   Patches,
+  ApplyImmutableOptions,
   ApplyMutableOptions,
   ApplyOptions,
   ApplyResult,
@@ -9,6 +10,14 @@ import type {
 import { deepClone, get, getType, isDraft, unescapePath } from './utils';
 import { create } from './create';
 import { die, ErrorCode } from './error';
+
+function normalizePatchKey(key: any) {
+  // Let JavaScript perform ToPropertyKey once, including a Symbol result.
+  // Primitive keys cannot disguise a reserved name and need no conversion here.
+  return typeof key === 'object' || typeof key === 'function'
+    ? Reflect.ownKeys({ [key]: 0 })[0]
+    : key;
+}
 
 /**
  * `apply(state, patches)` to apply patches to state
@@ -34,7 +43,44 @@ import { die, ErrorCode } from './error';
 export function apply<
   T extends object,
   F extends boolean = false,
-  A extends ApplyOptions<F> = ApplyOptions<F>,
+  _A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
+>(
+  state: T,
+  patches: Patches,
+  applyOptions?: undefined
+): ApplyResult<T, F, undefined>;
+export function apply<
+  T extends object,
+  F extends boolean = false,
+  A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
+>(state: T, patches: Patches, applyOptions: A): ApplyResult<T, F, A>;
+// A wrapper may supply A explicitly while forwarding optional options. Keep
+// undefined in its result, but prefer the exact overload above when present.
+export function apply<
+  T extends object,
+  F extends boolean = false,
+  A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
+>(
+  state: T,
+  patches: Patches,
+  applyOptions?: A
+): ApplyResult<T, F, A | undefined>;
+// With an explicit T, A takes its default instead of being inferred. Keep
+// mutable options available without making calls with no options return void.
+export function apply<T extends object, F extends boolean = false>(
+  state: T,
+  patches: Patches,
+  applyOptions: { mutable: true }
+): ApplyResult<T, F, { mutable: true }>;
+export function apply<T extends object, F extends boolean = false>(
+  state: T,
+  patches: Patches,
+  applyOptions: ApplyMutableOptions | undefined
+): ApplyResult<T, F, ApplyMutableOptions | undefined>;
+export function apply<
+  T extends object,
+  F extends boolean = false,
+  A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
 >(state: T, patches: Patches, applyOptions?: A): ApplyResult<T, F, A> {
   let i: number;
   for (i = patches.length - 1; i >= 0; i -= 1) {
@@ -58,31 +104,16 @@ export function apply<
       for (let index = 0; index < path.length - 1; index += 1) {
         const parentType = getType(base);
         let key = path[index];
-        const keyForCheck =
-          typeof key === 'symbol' ? undefined : String(key as any);
-        if (
-          ((parentType === DraftType.Object ||
-            parentType === DraftType.Array) &&
-            keyForCheck !== undefined &&
-            (keyForCheck === '__proto__' || keyForCheck === 'constructor')) ||
-          (typeof base === 'function' &&
-            keyForCheck !== undefined &&
-            keyForCheck === 'prototype')
-        ) {
-          die(ErrorCode.ReservedPatchAttribute);
-        }
-        if (
-          (parentType === DraftType.Object ||
-            parentType === DraftType.Array ||
-            typeof base === 'function') &&
-          typeof key !== 'string' &&
-          typeof key !== 'number' &&
-          typeof key !== 'symbol'
-        ) {
-          // keyForCheck cannot be undefined here, because:
-          // - If key is a symbol, this conditional block will not be entered
-          // - All other types will be converted to String(key)
-          key = keyForCheck!;
+        // Map keys and Set positions retain their native identity/semantics.
+        if (parentType <= DraftType.Array) {
+          key = normalizePatchKey(key);
+          if (
+            key === '__proto__' ||
+            key === 'constructor' ||
+            (typeof base === 'function' && key === 'prototype')
+          ) {
+            die(ErrorCode.ReservedPatchAttribute);
+          }
         }
         // use `index` in Set draft
         base = get(parentType === DraftType.Set ? Array.from(base) : base, key);
@@ -94,7 +125,16 @@ export function apply<
       const type = getType(base);
       // ensure the original patch is not modified.
       const value = deepClone(patch.value);
-      const key = path[path.length - 1];
+      let key = path[path.length - 1];
+      // The last segment is assigned, and an assignment to `__proto__` sets
+      // the prototype of an object or array instead of a property.
+      if (type <= DraftType.Array) {
+        // Array add/remove use splice indices, which follow ToNumber instead.
+        if (type === DraftType.Object || op === Operation.Replace) {
+          key = normalizePatchKey(key);
+        }
+        if (key === '__proto__') die(ErrorCode.ReservedPatchAttribute);
+      }
       switch (op) {
         case Operation.Replace:
           switch (type) {
@@ -158,7 +198,7 @@ export function apply<
     return state as ApplyResult<T, F, A>;
   }
   return create<T, F>(state, mutate, {
-    ...applyOptions,
+    ...(applyOptions as ApplyOptions<F>),
     enablePatches: false,
   }) as T as ApplyResult<T, F, A>;
 }

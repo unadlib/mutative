@@ -1274,6 +1274,143 @@ test('unexpected - patches', () => {
   );
 });
 
+test('a patch cannot set a prototype through the last segment of its path', () => {
+  const paths = [['__proto__'], '/__proto__', ['user', '__proto__']];
+  for (const options of [undefined, { mutable: true }]) {
+    for (const path of paths) {
+      const target: any = { role: 'reader', user: { role: 'reader' } };
+      expect(() =>
+        apply(
+          target,
+          [{ op: 'add', path, value: { admin: true } }] as Patches,
+          options
+        )
+      ).toThrow(
+        `Patching reserved attributes like __proto__ and constructor is not allowed.`
+      );
+      expect(Object.getPrototypeOf(target)).toBe(Object.prototype);
+      expect(Object.getPrototypeOf(target.user)).toBe(Object.prototype);
+      expect(target.admin).toBeUndefined();
+      expect(target.user.admin).toBeUndefined();
+    }
+  }
+  // A Map key named `__proto__` is an ordinary key.
+  const map = apply(new Map(), [{ op: 'add', path: ['__proto__'], value: 1 }]);
+  expect(map.get('__proto__')).toBe(1);
+});
+
+test.each([false, true])(
+  'coercible terminal keys cannot set a prototype (mutable: %s)',
+  (mutable) => {
+    const keys = [
+      ['__proto__'],
+      Object('__proto__'),
+      { [Symbol.toPrimitive]: () => '__proto__' },
+      Object.assign(() => {}, { toString: () => '__proto__' }),
+    ];
+    for (const key of keys) {
+      for (const child of [{ count: 0 }, [0]]) {
+        const target = { child };
+        const prototype = Object.getPrototypeOf(child);
+        const patches = [
+          { op: 'replace', path: ['child', key], value: { injected: true } },
+        ] as unknown as Patches;
+        expect(() => apply(target, patches, { mutable })).toThrow(
+          'Patching reserved attributes like __proto__ and constructor is not allowed.'
+        );
+        expect(Object.getPrototypeOf(child)).toBe(prototype);
+        expect((child as any).injected).toBeUndefined();
+        expect(patches[0].path[1]).toBe(key);
+      }
+    }
+  }
+);
+
+test.each([false, true])(
+  'property keys are converted once before checking and writing (mutable: %s)',
+  (mutable) => {
+    const calls: string[] = [];
+    const key = {
+      [Symbol.toPrimitive](hint: string) {
+        calls.push(hint);
+        return calls.length === 1 ? 'value' : '__proto__';
+      },
+    };
+    const target = { value: 0 };
+    const patches = [
+      { op: 'replace', path: [key], value: 2 },
+    ] as unknown as Patches;
+    const result = apply(target, patches, { mutable });
+    expect(calls).toEqual(['string']);
+    const state = mutable ? target : result;
+    expect(state).toEqual({ value: 2 });
+    expect(Object.getPrototypeOf(state)).toBe(Object.prototype);
+    expect(patches[0].path[0]).toBe(key);
+  }
+);
+
+test.each([false, true])(
+  'coercible symbol keys work at intermediate and terminal positions (mutable: %s)',
+  (mutable) => {
+    const symbol = Symbol('key');
+    const key = Object(symbol);
+    const target = { [symbol]: { [symbol]: 0 } };
+    const patches = [
+      { op: 'replace', path: [key, key], value: 1 },
+    ] as unknown as Patches;
+    const result = apply(target, patches, { mutable });
+    expect(mutable ? target : result).toEqual({ [symbol]: { [symbol]: 1 } });
+    expect(patches[0].path).toEqual([key, key]);
+  }
+);
+
+test.each([false, true])(
+  'terminal Map keys and array splice indices keep their native semantics (mutable: %s)',
+  (mutable) => {
+    const key = {
+      [Symbol.toPrimitive]() {
+        throw new Error('Map key must not be converted');
+      },
+    };
+    const map = new Map([[key, 0]]);
+    const mapped = apply(
+      map,
+      [{ op: 'replace', path: [key], value: 1 }] as unknown as Patches,
+      {
+        mutable,
+      }
+    );
+    expect((mutable ? map : mapped)!.get(key)).toBe(1);
+
+    const hints: string[] = [];
+    const index = {
+      [Symbol.toPrimitive](hint: string) {
+        hints.push(hint);
+        return hint === 'number' ? 1 : '__proto__';
+      },
+    };
+    const array = [0, 1];
+    const added = apply(
+      array,
+      [{ op: 'add', path: [index], value: 2 }] as unknown as Patches,
+      {
+        mutable,
+      }
+    );
+    const state = mutable ? array : added!;
+    expect(state).toEqual([0, 2, 1]);
+    const removed = apply(
+      state,
+      [{ op: 'remove', path: [index] }] as unknown as Patches,
+      {
+        mutable,
+      }
+    );
+    expect(mutable ? state : removed).toEqual([0, 1]);
+    expect(hints).toEqual(['number', 'number']);
+  }
+);
+
 test('type check', () => {
   let state: Record<string, unknown>;
   let patches: Patches | undefined;
@@ -2054,6 +2191,35 @@ test('a Map key that is an array stays one path segment', () => {
   expect([...previous]).toStrictEqual([...base]);
   expect(previous.get(key)).toBe(1);
   expect(previous.get(gone)).toBe(3);
+});
+
+test('a patch path keeps Map keys that are objects as they are', () => {
+  let conversions = 0;
+  const keys = [
+    Object.create(null),
+    {
+      [Symbol.toPrimitive]: () => {
+        conversions += 1;
+        return 'key';
+      },
+    },
+  ];
+  for (const key of keys) {
+    const base = new Map<object, { value: number }>([[key, { value: 0 }]]);
+    const [state, patches, inversePatches] = create(
+      base,
+      (draft) => {
+        draft.get(key)!.value = 1;
+      },
+      { enablePatches: true }
+    );
+    expect(patches).toStrictEqual([
+      { op: 'replace', path: [key, 'value'], value: 1 },
+    ]);
+    expect(apply(base, patches).get(key)).toEqual({ value: 1 });
+    expect(apply(state, inversePatches).get(key)).toEqual({ value: 0 });
+  }
+  expect(conversions).toBe(0);
 });
 
 // The limit that the patches guide describes for Sets of objects.

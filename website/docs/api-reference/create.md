@@ -24,6 +24,8 @@ const state = create(baseState, (draft) => {
 
 In this basic example, the changes to the draft are 'mutative' within the draft callback, and `create()` is finally executed with a new immutable state.
 
+The recipe can be an async function: `create()` then returns a Promise of the result, and the draft stays usable until that Promise settles. `create()` recognizes the Promises of the current JavaScript realm only, so an async function from another realm, such as a `vm` context or an iframe, needs a wrapper from this realm: `create(baseState, async (draft) => { return await recipe(draft); })`.
+
 ## create(state, fn, options) - options
 
 Then options is optional.
@@ -67,6 +69,10 @@ Support set options:
 const [draft, finalize] = create(baseState, { enableAutoFreeze: true });
 ```
 
+:::
+
+:::caution
+Call `finalize()` only once. When it throws, for example because a development build rejects a patch path, the drafts are not revoked as they are when a recipe fails: they stay writable, and a second `finalize()` returns a state that can hold a revoked draft, with patches that miss changes. Create a new draft from the base state instead.
 :::
 
 More details about currying, please see [currying](/docs/advanced-guides/currying).
