@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { median } from './report.mjs';
+import { createScenarios, supportsMode } from './scenarios.mjs';
+import { DEFAULT_CONFIG } from './workloads.mjs';
 
 const keyOf = (trial) =>
   JSON.stringify([trial.scenario, trial.autoFreeze, trial.enablePatches]);
@@ -38,15 +40,52 @@ function validateBuild(report, policy) {
   assert.equal(report.config.arraySize, policy.arraySize);
 }
 
-function trialMap(reports, kind, policy) {
+// Every budgeted scenario exists and belongs to one group per metric kind.
+function validateGroups(policy, registry) {
+  const names = Object.keys(policy.groups ?? {});
+  assert.ok(names.length, 'Budgets require at least one group');
+  for (const field of ['latencyScenarios', 'memoryScenarios']) {
+    const scenarios = names.flatMap((name) => {
+      assert.ok(
+        Array.isArray(policy.groups[name][field]),
+        `Invalid ${field} of group ${name}`
+      );
+      return policy.groups[name][field];
+    });
+    assert.equal(
+      new Set(scenarios).size,
+      scenarios.length,
+      `Duplicate ${field}`
+    );
+    for (const scenario of scenarios)
+      assert.ok(registry.has(scenario), `Unknown scenario ${scenario}`);
+  }
+  for (const name of names)
+    assert.ok(
+      policy.groups[name].latencyScenarios.length,
+      `Group ${name} has no latency scenarios`
+    );
+}
+
+function trialMap(reports, kind, policy, group, registry) {
   const scenarios =
-    kind === 'latency' ? policy.latencyScenarios : policy.memoryScenarios;
+    kind === 'latency' ? group.latencyScenarios : group.memoryScenarios;
+  // Patch application scenarios run with patches off only.
   const expected = new Set(
     scenarios.flatMap((scenario) =>
       policy.freezes.flatMap((autoFreeze) =>
-        policy.patches.map((enablePatches) =>
-          keyOf({ scenario, autoFreeze, enablePatches })
-        )
+        policy.patches
+          .filter((enablePatches) =>
+            supportsMode(
+              registry.get(scenario),
+              'mutative',
+              autoFreeze,
+              enablePatches
+            )
+          )
+          .map((enablePatches) =>
+            keyOf({ scenario, autoFreeze, enablePatches })
+          )
       )
     )
   );
@@ -56,7 +95,10 @@ function trialMap(reports, kind, policy) {
     assert.equal(report.methodology.arrayMethodsEnabled, false);
     if (kind === 'latency') {
       assert.equal(report.methodology.heapSampling, false);
-      assert.equal(report.methodology.patchApplicationTimed, false);
+      assert.equal(
+        report.methodology.patchApplicationTimed,
+        scenarios.some((scenario) => registry.get(scenario).kind === 'apply')
+      );
       assert.equal(report.methodology.patchSerializationTimed, false);
     } else {
       assert.equal(report.kind, 'memory');
@@ -110,27 +152,41 @@ function trialMap(reports, kind, policy) {
   return map;
 }
 
-function compareValues(values, budget, label) {
+// Latency compares the fastest process of each build. On GitHub runners about
+// one process in six runs the array moves 20-38% slower throughout, for base
+// and candidate builds alike, so the median of five pairs failed whenever
+// three slow processes fell to the candidate. Memory estimates show no such
+// states and compare the medians of paired ratios and deltas.
+function compareValues(values, budget, label, statistic) {
   const ratios = values.map(({ base, candidate }) =>
     base > 0 ? candidate / base : null
   );
-  const validRatios = ratios.filter((value) => value !== null);
-  const medianRatio = validRatios.length ? median(validRatios) : null;
-  const medianDelta = median(
-    values.map((value) => value.candidate - value.base)
-  );
-  const baseMedian = median(values.map((value) => value.base));
-  const candidateMedian = median(values.map((value) => value.candidate));
+  let base;
+  let candidate;
+  let ratio;
+  let delta;
+  if (statistic === 'fastest') {
+    base = Math.min(...values.map((value) => value.base));
+    candidate = Math.min(...values.map((value) => value.candidate));
+    ratio = base > 0 ? candidate / base : null;
+    delta = candidate - base;
+  } else {
+    const validRatios = ratios.filter((value) => value !== null);
+    base = median(values.map((value) => value.base));
+    candidate = median(values.map((value) => value.candidate));
+    ratio = validRatios.length ? median(validRatios) : null;
+    delta = median(values.map((value) => value.candidate - value.base));
+  }
   const failed =
-    medianDelta > budget.minimumDelta &&
-    (medianRatio === null || medianRatio > budget.maxRatio);
+    delta > budget.minimumDelta && (ratio === null || ratio > budget.maxRatio);
   return {
     label,
     status: failed ? 'regressed' : 'passed',
-    baseMedian,
-    candidateMedian,
-    medianRatio,
-    medianDelta,
+    statistic,
+    base,
+    candidate,
+    ratio,
+    delta,
     maxRatio: budget.maxRatio,
     minimumDelta: budget.minimumDelta,
     pairs: values.map((value, i) => ({ ...value, ratio: ratios[i] })),
@@ -139,20 +195,22 @@ function compareValues(values, budget, label) {
 
 export function evaluateBudgets(report) {
   const policy = report.policy;
-  assert.equal(policy.schemaVersion, 1);
+  assert.equal(policy.schemaVersion, 2);
   assert.ok(
     policy.latencyRuns >= 5 && policy.memoryRuns >= 3,
     'Budgets require at least five timing and three memory pairs'
   );
-  for (const field of [
-    'latencyScenarios',
-    'memoryScenarios',
-    'freezes',
-    'patches',
-  ])
-    assert.ok(Array.isArray(policy[field]) && policy[field].length);
-  for (const field of ['latencyScenarios', 'memoryScenarios'])
-    assert.equal(new Set(policy[field]).size, policy[field].length);
+  const registry = new Map(
+    createScenarios({ ...DEFAULT_CONFIG, arraySize: policy.arraySize }).map(
+      (scenario) => [scenario.name, scenario]
+    )
+  );
+  validateGroups(policy, registry);
+  assert.ok(
+    Object.hasOwn(policy.groups, report.group),
+    `Unknown budget group ${report.group}`
+  );
+  const group = policy.groups[report.group];
   assert.deepEqual(policy.freezes, [false, true]);
   assert.ok(
     Number.isSafeInteger(policy.minimumRetainedSamples) &&
@@ -178,7 +236,9 @@ export function evaluateBudgets(report) {
           trialMap(
             kind === 'latency' ? [pair[role]] : pair[role],
             kind,
-            policy
+            policy,
+            group,
+            registry
           ),
         ])
       );
@@ -233,7 +293,8 @@ export function evaluateBudgets(report) {
               maxRatio: policy.latency.maxRatio,
               minimumDelta: policy.latency.minimumDeltaNs,
             },
-            `latency/${key}`
+            `latency/${key}`,
+            'fastest'
           )
         );
       else
@@ -259,12 +320,14 @@ export function evaluateBudgets(report) {
                 maxRatio: budget.maxRatio,
                 minimumDelta: budget.minimumDeltaBytes,
               },
-              `${metric}/${key}`
+              `${metric}/${key}`,
+              'median'
             )
           );
     }
   }
   return {
+    group: report.group,
     status: results.some((result) => result.status === 'regressed')
       ? 'failed'
       : 'passed',
@@ -274,15 +337,15 @@ export function evaluateBudgets(report) {
 
 export function formatBudgetReport(evaluation) {
   return [
-    '# Performance regression budgets',
+    `# Performance regression budgets: ${evaluation.group}`,
     '',
-    `Status: **${evaluation.status}**. Each row uses paired candidate/base ratios and deltas; a regression exceeds both the relative budget and the absolute noise floor.`,
+    `Status: **${evaluation.status}**. Latency rows compare the fastest base and candidate processes; memory rows use the medians of paired candidate/base ratios and deltas. A regression exceeds both the relative budget and the absolute noise floor.`,
     '',
-    '| Metric / scenario / freeze / patches | Base median | Candidate median | Paired median ratio | Allowed ratio | Median delta | Noise floor | Status |',
+    '| Metric / scenario / freeze / patches | Base | Candidate | Ratio | Allowed ratio | Delta | Noise floor | Status |',
     '| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |',
     ...evaluation.results.map(
       (row) =>
-        `| ${row.label} | ${row.baseMedian.toFixed(2)} | ${row.candidateMedian.toFixed(2)} | ${row.medianRatio?.toFixed(3) ?? '—'} | ${row.maxRatio.toFixed(2)} | ${row.medianDelta.toFixed(2)} | ${row.minimumDelta} | ${row.status} |`
+        `| ${row.label} | ${row.base.toFixed(2)} | ${row.candidate.toFixed(2)} | ${row.ratio?.toFixed(3) ?? '—'} | ${row.maxRatio.toFixed(2)} | ${row.delta.toFixed(2)} | ${row.minimumDelta} | ${row.status} |`
     ),
     '',
     'Latency values are ns per scenario. Allocation and retained-heap values are bytes per scenario output. JSON retains all individual pairs. Signed retained-heap estimates near zero require the absolute floor; RSS snapshots are recorded but not gated.',

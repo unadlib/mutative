@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "immerVersion": "11.1.18",
   "v1Version": "1.3.0",
   "mitataVersion": "1.0.34",
@@ -14,15 +14,64 @@
   "latency": { "maxRatio": 1.3, "minimumDeltaNs": 500 },
   "allocation": { "maxRatio": 1.35, "minimumDeltaBytes": 8192 },
   "retainedHeap": { "maxRatio": 1.35, "minimumDeltaBytes": 1024 },
-  "latencyScenarios": [
-    "small-object-update",
-    "read-index",
-    "mutation-density-100pct",
-    "array-shift-nested",
-    "array-unshift-nested",
-    "array-splice-insert-nested",
-    "array-reverse-nested",
-    "array-reverse-primitive"
-  ],
-  "memoryScenarios": ["mutation-density-100pct", "array-reverse-nested"]
+  "groups": {
+    "core": {
+      "latencyScenarios": [
+        "small-object-update",
+        "read-index",
+        "mutation-density-100pct",
+        "array-shift-nested",
+        "array-unshift-nested",
+        "array-splice-insert-nested",
+        "array-reverse-nested",
+        "array-reverse-primitive"
+      ],
+      "memoryScenarios": ["mutation-density-100pct", "array-reverse-nested"]
+    },
+    "collections": {
+      "latencyScenarios": [
+        "map-update",
+        "map-update-10pct",
+        "map-insert",
+        "map-delete",
+        "map-read",
+        "set-add",
+        "set-delete",
+        "set-update",
+        "set-update-10pct"
+      ],
+      "memoryScenarios": ["map-update-10pct", "set-update-10pct"]
+    },
+    "objects": {
+      "latencyScenarios": [
+        "object-update",
+        "object-update-10pct",
+        "object-delete",
+        "class-update",
+        "class-wide-update",
+        "deep-update",
+        "push-and-insert",
+        "push-and-insert-reuse"
+      ],
+      "memoryScenarios": [
+        "object-update-10pct",
+        "class-wide-update",
+        "push-and-insert-reuse"
+      ]
+    },
+    "apply-return-search": {
+      "latencyScenarios": [
+        "apply-update-10pct",
+        "apply-array-ops",
+        "apply-reverse",
+        "return-replace",
+        "return-replace-raw",
+        "return-filter",
+        "search-draft",
+        "search-current",
+        "search-current-shifted"
+      ],
+      "memoryScenarios": ["apply-reverse", "return-replace", "search-draft"]
+    }
+  }
 }
