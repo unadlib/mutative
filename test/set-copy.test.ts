@@ -1,0 +1,123 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { apply, create } from '../src';
+
+// Calls of a spied Set method made on the given Set.
+const callsOn = (spy: { mock: { contexts: unknown[] } }, set: Set<unknown>) =>
+  spy.mock.contexts.filter((context) => context === set).length;
+
+describe('Set drafts change their copy', () => {
+  test('adding and deleting items neither indexes nor rebuilds the Set', () => {
+    const base = { ids: new Set([1, 2, 3]) };
+    // A rebuild clears the copy first; the item mapping was built from entries.
+    const clear = vi.spyOn(Set.prototype, 'clear');
+    const entries = vi.spyOn(Set.prototype, 'entries');
+    try {
+      const state = create(base, (draft) => {
+        draft.ids.add(4);
+        draft.ids.delete(1);
+        expect(draft.ids.has(4)).toBe(true);
+        expect(draft.ids.has(1)).toBe(false);
+        expect([...draft.ids]).toEqual([2, 3, 4]);
+      });
+      expect([...state.ids]).toEqual([2, 3, 4]);
+      expect(callsOn(clear, state.ids)).toBe(0);
+      expect(entries).not.toHaveBeenCalled();
+    } finally {
+      clear.mockRestore();
+      entries.mockRestore();
+    }
+    expect([...base.ids]).toEqual([1, 2, 3]);
+  });
+
+  test('items read through an iterator rebuild the Set only once one changed', () => {
+    const first = { id: 1, value: 0 };
+    const second = { id: 2, value: 0 };
+    const base = { items: new Set<any>([first, second]) };
+    const clear = vi.spyOn(Set.prototype, 'clear');
+    try {
+      const state = create(base, (draft) => {
+        for (const item of draft.items) expect(item.value).toBe(0);
+        draft.items.add(3);
+      });
+      expect([...state.items]).toEqual([first, second, 3]);
+      expect([...state.items][0]).toBe(first);
+      expect(callsOn(clear, state.items)).toBe(0);
+
+      const changed = create(base, (draft) => {
+        for (const item of draft.items) if (item.id === 1) item.value = 1;
+        draft.items.add(3);
+      });
+      expect([...changed.items]).toEqual([{ id: 1, value: 1 }, second, 3]);
+      expect([...changed.items][1]).toBe(second);
+      expect(callsOn(clear, changed.items)).toBe(1);
+    } finally {
+      clear.mockRestore();
+    }
+    expect(first.value).toBe(0);
+  });
+
+  test('a changed item keeps its position among added and deleted items', () => {
+    const items = [{ id: 1 }, { id: 2 }, { id: 3 }].map((item) => ({
+      ...item,
+      value: 0,
+    }));
+    const base = { items: new Set<any>(items) };
+    const [state, patches, inversePatches] = create(
+      base,
+      (draft) => {
+        draft.items.add('a');
+        const second = [...draft.items].find(
+          (item) => typeof item === 'object' && item.id === 2
+        );
+        second.value = 1;
+        // Moved to the end, as a native Set does.
+        draft.items.delete(second);
+        draft.items.add(second);
+        draft.items.delete(items[0]);
+        draft.items.add('b');
+      },
+      { enablePatches: true }
+    );
+    expect([...state.items]).toEqual([items[2], 'a', { id: 2, value: 1 }, 'b']);
+    expect(apply(base, patches)).toEqual(state);
+    expect(apply(state, inversePatches)).toEqual(base);
+  });
+});
+
+test('a Set holds the final value of a draft that an outer producer finalizes later', () => {
+  const outerBase = { item: { value: 1 } };
+  const innerBase = { set: new Set<any>([{ value: 0 }]) };
+  let inner: typeof innerBase | undefined;
+  const outer = create(outerBase, (draft) => {
+    inner = create(innerBase, (innerDraft) => {
+      for (const item of innerDraft.set) item.value = 1;
+      innerDraft.set.add(draft.item);
+    });
+    draft.item.value = 2;
+  });
+  expect([...inner!.set]).toEqual([{ value: 1 }, { value: 2 }]);
+  expect([...inner!.set][1]).toBe(outer.item);
+});
+
+test('patches of a Set item keep its position after another draft rebuilt the Set', () => {
+  const base = { list: [new Set<any>([{ value: 1 }, 'x']), new Set<any>([2])] };
+  const [state, patches, inversePatches] = create(
+    base,
+    (draft) => {
+      const [item] = draft.list[0];
+      item.value = 2;
+      expect(draft.list[1].size).toBe(1);
+      draft.list[1] = draft.list[0];
+    },
+    { enablePatches: true }
+  );
+  expect([...state.list[0]]).toEqual([{ value: 2 }, 'x']);
+  expect(state.list[1]).toBe(state.list[0]);
+  expect(patches).toContainEqual({
+    op: 'replace',
+    path: ['list', 0, 0, 'value'],
+    value: 2,
+  });
+  expect(apply(base, patches)).toEqual(state);
+  expect(apply(state, inversePatches)).toEqual(base);
+});

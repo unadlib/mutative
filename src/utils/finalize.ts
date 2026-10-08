@@ -8,6 +8,7 @@ import {
   isDraftable,
   isEqual,
   set,
+  setItemValue,
 } from './draft';
 import { forEach } from './forEach';
 
@@ -74,14 +75,23 @@ export type GeneratePatches = (
   inversePatches: Patches
 ) => void;
 
+// The copy of a Set draft holds its items in order, so only items that a draft
+// stands for may need their final value: the Set is rebuilt in order once one
+// of them differs from the item itself. The items are kept, as a draft of an
+// outer producer that a nested producer's Set holds is finalized later and
+// rebuilds the Set again.
 export function finalizeSetValue(target: ProxyDraft) {
-  // A Set draft whose items never changed may have no item mapping.
-  if (target.type === DraftType.Set && target.copy && target.setMap) {
-    target.copy.clear();
-    target.setMap!.forEach((value) => {
-      target.copy!.add(getValue(value));
-    });
-  }
+  // Only Set drafts have `setMap`.
+  const setMap = target.setMap;
+  const items =
+    setMap &&
+    (target.setItems ||
+      (Array.from(setMap).some(([item, value]) => getValue(value) !== item) &&
+        (target.setItems = Array.from(target.copy as Set<any>))));
+  if (!items) return;
+  const copy: Set<any> = target.copy;
+  copy.clear();
+  items.forEach((item) => copy.add(getValue(setItemValue(target, item))));
 }
 
 export function finalizePatches(

@@ -16,10 +16,10 @@ import {
   isEqual,
   latest,
   set,
+  setItemValue,
   shallowCopy,
 } from './utils';
 import { checksReads } from './unsafe';
-import { getSetMap } from './set';
 import { die, ErrorCode } from './error';
 
 // Only development builds read `containsDraft`, so production builds keep no
@@ -119,7 +119,10 @@ function getCurrent(target: any, rootOptions?: Options<any, any>) {
           : new Map(target)
         : type === DraftType.Set
           ? proxyDraft
-            ? Array.from(getSetMap(proxyDraft).values())
+            ? // The items in order, with the drafts that stand for some.
+              Array.from(latest(proxyDraft) as Set<any>, (item) =>
+                setItemValue(proxyDraft, item)
+              )
             : Array.from(target as Set<any>)
           : shallowCopy(array ? latest(array) : target, options);
   }

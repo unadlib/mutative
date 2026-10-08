@@ -5,6 +5,17 @@ export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
 }
 
+// The drafts of a Set draft's items and the objects it added; see `src/set.ts`.
+export function getSetMap(target: ProxyDraft): Map<any, any> {
+  return target.setMap || (target.setMap = new Map());
+}
+
+// The value that an item of a Set draft stands for.
+export function setItemValue(target: ProxyDraft, item: any) {
+  const setMap = target.setMap;
+  return setMap && setMap.has(item) ? setMap.get(item) : item;
+}
+
 /**
  * Check if the value is a draft
  */
@@ -80,9 +91,10 @@ export function getPath(
       // which patches can follow only while the Set itself is unchanged.
       // Once the recipe added or removed items, the Set's own patches carry
       // every changed item by value, so patches under this path would be
-      // applied to whatever sits at the position in the base Set.
+      // applied to whatever sits at the position in the base Set. An
+      // unchanged Set holds its items in their original order.
       if (parent.assignedMap!.size > 0) return null;
-      key = Array.from(parent.setMap!.keys()).indexOf(key);
+      key = Array.from(parent.original as Set<any>).indexOf(key);
     } else if (get(parentCopy, key) !== target.proxy) {
       // The child left its key: it was moved, deleted or replaced, possibly
       // by another draft of a shared object. The parent's patches carry its
