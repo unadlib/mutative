@@ -1,8 +1,8 @@
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { SectionHeading } from './section-heading';
 
-// The libraries of the ecosystem page in the docs.
+// The libraries of the ecosystem page in the docs, which describes each one.
 const libraries = [
   {
     name: 'use-mutative',
@@ -84,32 +84,27 @@ const libraries = [
 export function Ecosystem() {
   return (
     <section className="border-y bg-fd-card/50">
-      <div className="mx-auto w-full max-w-[1100px] px-4 py-20 md:py-28">
+      <div className="mx-auto w-full max-w-[1100px] px-4 py-16 md:py-24">
         <SectionHeading eyebrow="Ecosystem" title="Works with your stack">
           Libraries built on Mutative for React, Zustand, Jotai, XState, Yjs and
           more.
         </SectionHeading>
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto mt-10 flex max-w-[860px] flex-wrap justify-center gap-3">
           {libraries.map((library) => (
             <a
               key={library.name}
               href={library.url}
+              title={library.description}
               target="_blank"
               rel="noreferrer noopener"
-              className="group flex flex-col rounded-2xl border bg-fd-background p-5 transition-colors hover:border-fd-primary/50"
+              className="inline-flex items-center gap-2 rounded-full border bg-fd-background px-4 py-2 transition-colors hover:border-fd-primary/50"
             >
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-semibold">
-                  {library.name}
-                </span>
-                <span className="rounded-full border px-2 py-0.5 text-xs text-fd-muted-foreground">
-                  {library.tag}
-                </span>
-                <ArrowUpRight className="ms-auto size-4 text-fd-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-fd-primary" />
-              </div>
-              <p className="mt-3 text-sm text-fd-muted-foreground">
-                {library.description}
-              </p>
+              <span className="font-mono text-sm font-semibold">
+                {library.name}
+              </span>
+              <span className="text-xs text-fd-muted-foreground">
+                {library.tag}
+              </span>
             </a>
           ))}
         </div>
