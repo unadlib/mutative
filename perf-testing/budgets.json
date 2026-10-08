@@ -58,6 +58,20 @@
         "class-wide-update",
         "push-and-insert-reuse"
       ]
+    },
+    "apply-return-search": {
+      "latencyScenarios": [
+        "apply-update-10pct",
+        "apply-array-ops",
+        "apply-reverse",
+        "return-replace",
+        "return-replace-raw",
+        "return-filter",
+        "search-draft",
+        "search-current",
+        "search-current-shifted"
+      ],
+      "memoryScenarios": ["apply-reverse", "return-replace", "search-draft"]
     }
   }
 }
