@@ -1,0 +1,9 @@
+{
+  "pages": [
+    "intro",
+    "getting-started",
+    "advanced-guides",
+    "api-reference",
+    "extra-topics"
+  ]
+}

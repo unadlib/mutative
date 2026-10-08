@@ -1,0 +1,44 @@
+---
+title: Who Uses Mutative
+description: Open-source projects that replaced Immer with Mutative, and what they reported.
+---
+
+These open-source projects depend on Mutative directly. The quotes come from the pull requests and release notes in which they adopted it, and each describes that project at that time, not every workload. The projects were checked against their default branches on October 9, 2026.
+
+## Appsmith
+
+[Appsmith](https://github.com/appsmithorg/appsmith), a platform to build admin panels, internal tools and dashboards, replaced Immer with Mutative in its client:
+
+> Using mutative instead of immer, this has reduced the main thread scripting by about 1 second.
+
+From [appsmithorg/appsmith#38993](https://github.com/appsmithorg/appsmith/pull/38993), merged on February 6, 2025. The same pull request also removed a deep clone and skipped Mutative for the first evaluation of its tree.
+
+## InstantDB
+
+[InstantDB](https://github.com/instantdb/instant), a backend with auth, permissions, storage and presence, replaced Immer with Mutative, which does not rely on auto-freeze. In its performance tester, a single transaction took about 8 ms with Immer, and about 40 ms as pending transactions were added:
+
+> Mutative is about 3ms on a single transaction. As I add more pending transactions, the size _seems to stay_ at 3ms!
+
+From [instantdb/instant#243](https://github.com/instantdb/instant/pull/243), merged on September 19, 2024.
+
+## Notesnook
+
+[Notesnook](https://github.com/streetwriters/notesnook), an end-to-end encrypted note-taking app, replaced Immer with Mutative in version 3.0.11:
+
+> we have gotten rid of immer and replaced it with mutative for immutable state management inside the app. mutative is almost 10x faster so you'll notice slight improvements in app responsiveness.
+
+From the [Notesnook v3.0.11 release notes](https://notesnook.com/blog/notesnook-v3.0.11), July 18, 2024. The 10x figure describes the library; for the app, the release notes speak of slight improvements in responsiveness.
+
+## Plate
+
+[Plate](https://github.com/udecode/plate), a rich-text editor for React, moved its plugin stores to [zustand-mutative](https://github.com/mutativejs/zustand-mutative) in version 42, and its core package depends on Mutative:
+
+> All plugin stores now use zustand-mutative for immutable state updates, which is faster than `immer`.
+
+From the [release of version 42](https://github.com/udecode/plate/pull/3945), merged on January 9, 2025.
+
+## Also used by
+
+- [Mol\*](https://github.com/molstar/molstar), a comprehensive macromolecular library, replaced Immer with Mutative in [molstar/molstar#1618](https://github.com/molstar/molstar/pull/1618), together with other optimizations of its animation loading.
+- [OpenRewrite](https://github.com/openrewrite/rewrite), for automated mass refactoring of source code, replaced Immer with Mutative in its JavaScript support in [openrewrite/rewrite#6460](https://github.com/openrewrite/rewrite/pull/6460).
+- [MSW Data](https://github.com/mswjs/data), a data querying library for testing JavaScript applications.

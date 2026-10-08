@@ -53,8 +53,8 @@
     "size:compare": "node scripts/check-build-size.mjs",
     "analyze": "size-limit --why",
     "format": "oxfmt \"src/**/*.ts\" \"test/**/*.ts\"",
-    "publish:docs": "pnpm run clean && cd website && GIT_USER=unadlib USE_SSH=true pnpm run deploy",
-    "start:docs": "cd website && pnpm run start"
+    "publish:docs": "pnpm run clean && cd website && pnpm run deploy",
+    "start:docs": "cd website && pnpm run dev"
   },
   "size-limit": [
     {

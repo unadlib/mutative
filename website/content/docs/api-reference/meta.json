@@ -1,0 +1,17 @@
+{
+  "title": "API Reference",
+  "defaultOpen": true,
+  "collapsible": false,
+  "pages": [
+    "create",
+    "apply",
+    "makecreator",
+    "current",
+    "original",
+    "rawreturn",
+    "unsafe",
+    "isdraftable",
+    "isdraft",
+    "marksimplebject"
+  ]
+}

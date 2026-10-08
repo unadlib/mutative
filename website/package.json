@@ -3,45 +3,36 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "docusaurus": "docusaurus",
-    "start": "docusaurus start",
-    "build": "docusaurus build",
-    "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy",
-    "clear": "docusaurus clear",
-    "serve": "docusaurus serve",
-    "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids"
+    "dev": "next dev",
+    "build": "next build && node scripts/write-redirects.mjs && node scripts/check-links.mjs",
+    "start": "serve out",
+    "deploy": "pnpm build && gh-pages --dist out --nojekyll --repo git@github.com:unadlib/mutative.git --message \"Deploy website - based on $(git rev-parse HEAD)\"",
+    "types:check": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.3.2",
-    "@docusaurus/preset-classic": "^3.3.2",
-    "@docusaurus/remark-plugin-npm2yarn": "^3.3.2",
-    "@docusaurus/theme-live-codeblock": "^3.3.2",
-    "@docusaurus/theme-mermaid": "^3.3.2",
-    "@mdx-js/react": "^3.0.0",
-    "clsx": "^1.2.1",
-    "prism-react-renderer": "^2.1.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "feed": "^6.0.0",
+    "fumadocs-core": "16.16.2",
+    "fumadocs-mdx": "15.4.6",
+    "fumadocs-ui": "npm:@fumadocs/base-ui@16.16.2",
+    "lucide-react": "^1.52.0",
+    "next": "16.3.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.2.1",
-    "@docusaurus/types": "^3.2.1"
-  },
-  "browserslist": {
-    "production": [
-      ">0.5%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 3 chrome version",
-      "last 3 firefox version",
-      "last 5 safari version"
-    ]
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^24.0.13",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "gh-pages": "^6.3.0",
+    "postcss": "^8.5.28",
+    "serve": "^14.2.6",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
   },
   "engines": {
-    "node": ">=18.0"
+    "node": ">=20.9.0"
   }
 }
