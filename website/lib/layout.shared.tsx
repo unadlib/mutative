@@ -1,4 +1,4 @@
-import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
+import type { BaseLayoutProps, LinkItemType } from 'fumadocs-ui/layouts/shared';
 import Image from 'next/image';
 import { appName, githubUrl } from './shared';
 
@@ -21,3 +21,18 @@ export function baseOptions(): BaseLayoutProps {
     githubUrl,
   };
 }
+
+/**
+ * The navbar links of the pages outside the docs.
+ */
+export const homeLinks: LinkItemType[] = [
+  {
+    text: 'Docs',
+    url: '/docs/intro',
+  },
+  {
+    text: 'Blog',
+    url: '/blog',
+    active: 'nested-url',
+  },
+];
