@@ -10,9 +10,13 @@ permissions:
 
 jobs:
   regression:
-    name: Paired performance budgets
+    name: Paired performance budgets (${{ matrix.group }})
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [core]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -33,13 +37,13 @@ jobs:
       - name: Install candidate dependencies and validate budget tooling
         run: |
           pnpm install --frozen-lockfile
-          pnpm test:benchmarks
+          node --test perf-testing/regression.test.mjs
       - name: Compare base and candidate sequentially on this runner
-        run: pnpm benchmark:ci --base-dir benchmark-base
+        run: pnpm benchmark:ci --base-dir benchmark-base --group ${{ matrix.group }}
       - name: Upload every measurement and budget decision
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: performance-budget-results
+          name: performance-budget-results-${{ matrix.group }}
           path: perf-testing/results/ci/
           if-no-files-found: warn

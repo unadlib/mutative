@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -288,6 +288,21 @@ for (const [name, corrupt] of [
     corrupt(report);
     assert.throws(() => evaluateBudgets(report));
   });
+
+test('the performance workflow runs every budget group', () => {
+  const workflow = readFileSync(
+    new URL('../.github/workflows/performance.yml', import.meta.url),
+    'utf8'
+  );
+  const policy = JSON.parse(
+    readFileSync(new URL('budgets.json', import.meta.url), 'utf8')
+  );
+  const groups = workflow
+    .match(/^ +group: \[(.+)\]$/m)?.[1]
+    .split(',')
+    .map((group) => group.trim());
+  assert.deepEqual(groups, Object.keys(policy.groups));
+});
 
 test('budget CLI exits nonzero for a real regression', () => {
   const directory = mkdtempSync(join(tmpdir(), 'mutative-budget-'));
