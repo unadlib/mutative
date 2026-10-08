@@ -1,6 +1,6 @@
 import { getMDXComponents } from '@/components/mdx';
 import { createMetadata } from '@/lib/metadata';
-import { source } from '@/lib/source';
+import { getPageDescription, source } from '@/lib/source';
 import {
   DocsBody,
   DocsDescription,
@@ -47,7 +47,7 @@ export async function generateMetadata(
 
   return createMetadata({
     title: page.data.title,
-    description: page.data.description,
+    description: getPageDescription(page.data),
     alternates: {
       canonical: page.url,
     },
