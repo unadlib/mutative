@@ -2248,3 +2248,38 @@ test('Set patches remove object elements by identity', () => {
   const replayed = apply(new Set([1]), numbers[1]);
   expect([...apply(replayed, numbers[2])]).toStrictEqual([1]);
 });
+
+describe('objects of the application on a patch path', () => {
+  // A proxy of the application that rejects reading symbol keys.
+  const rejectSymbols = <T extends object>(value: T) =>
+    new Proxy(value, {
+      get(target, key, receiver) {
+        if (typeof key === 'symbol') throw new Error('Unsupported symbol');
+        return Reflect.get(target, key, receiver);
+      },
+    });
+
+  test('are changed in place by a mutable application', () => {
+    const root = rejectSymbols({ value: 1 });
+    apply(root, [{ op: 'replace', path: ['value'], value: 2 }], {
+      mutable: true,
+    });
+    expect(root.value).toBe(2);
+    const item = rejectSymbols({ value: 1 });
+    apply({ item }, [{ op: 'replace', path: ['item', 'value'], value: 2 }], {
+      mutable: true,
+    });
+    expect(item.value).toBe(2);
+  });
+
+  test('are changed in place under a mutable mark', () => {
+    const item = rejectSymbols({ value: 1 });
+    const state = apply(
+      { item },
+      [{ op: 'replace', path: ['item', 'value'], value: 2 }],
+      { mark: (value, { mutable }) => (value === item ? mutable : undefined) }
+    );
+    expect(state.item).toBe(item);
+    expect(item.value).toBe(2);
+  });
+});

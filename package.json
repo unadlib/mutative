@@ -73,7 +73,7 @@
       "name": "ESM, all exports",
       "path": "dist/mutative.esm.mjs",
       "import": "*",
-      "limit": "8.4 KB"
+      "limit": "8.5 KB"
     }
   ],
   "repository": {

@@ -7,9 +7,28 @@ import type {
   ApplyOptions,
   ApplyResult,
 } from './interface';
-import { deepClone, get, getType, isDraft, unescapePath } from './utils';
+import {
+  deepClone,
+  getProxyDraft,
+  getType,
+  isDraft,
+  unescapePath,
+} from './utils';
 import { create } from './create';
 import { die, ErrorCode } from './error';
+
+// A draft knows its type, which `getType` would find only through the traps of
+// its proxy. Any other value is typed as before, also a proxy of the
+// application that rejects reading the symbol of drafts.
+function getPatchTargetType(value: any) {
+  try {
+    const proxyDraft = getProxyDraft(value);
+    if (proxyDraft) return proxyDraft.type;
+  } catch {
+    // Not a draft.
+  }
+  return getType(value);
+}
 
 function normalizePatchKey(key: any) {
   // Let JavaScript perform ToPropertyKey once, including a Symbol result.
@@ -96,13 +115,16 @@ export function apply<
   if (i > -1) {
     patches = patches.slice(i + 1);
   }
+  const mutable = (applyOptions as ApplyMutableOptions)?.mutable;
+  // The objects that a mutable application changes in place are not drafts.
+  const getTargetType = mutable ? getType : getPatchTargetType;
   const mutate = (draft: Draft<T> | T) => {
     patches.forEach((patch) => {
       const { path: _path, op } = patch;
       const path = unescapePath(_path);
       let base: any = draft;
       for (let index = 0; index < path.length - 1; index += 1) {
-        const parentType = getType(base);
+        const parentType = getTargetType(base);
         let key = path[index];
         // Map keys and Set positions retain their native identity/semantics.
         if (parentType <= DraftType.Array) {
@@ -115,14 +137,17 @@ export function apply<
             die(ErrorCode.ReservedPatchAttribute);
           }
         }
-        // use `index` in Set draft
-        base = get(parentType === DraftType.Set ? Array.from(base) : base, key);
+        base =
+          parentType === DraftType.Map
+            ? base.get(key)
+            : // use `index` in Set draft
+              (parentType === DraftType.Set ? Array.from(base) : base)[key];
         if (typeof base !== 'object') {
           die(ErrorCode.CannotApplyPatch, path);
         }
       }
 
-      const type = getType(base);
+      const type = getTargetType(base);
       // ensure the original patch is not modified.
       const value = deepClone(patch.value);
       let key = path[path.length - 1];
@@ -177,7 +202,7 @@ export function apply<
       }
     });
   };
-  if ((applyOptions as ApplyMutableOptions)?.mutable) {
+  if (mutable) {
     if (__DEV__) {
       if (
         Object.keys(applyOptions!).filter((key) => key !== 'mutable').length
