@@ -79,7 +79,7 @@ Immer time over candidate time for the moves at 10,000 rows, by freeze and patch
 | array-reverse-nested | 551 | 8.8 | 40.5 | 8.1 |
 | array-reverse-primitive | 302 | 5.0 | 53.0 | 5.1 |
 
-The gap widens with size. With freeze and patches off, the moves were 211 times faster at 1,000 rows and 442 times at 10,000 on geometric mean: the candidate moves elements natively on its copy, while Immer moves each element through its draft proxy. Removing the first of 10,000 rows took 7.10 µs against 8,605 µs. With patches, both libraries emit one patch per moved index, which bounds the gain to 5–10 times. At these sizes Immer was faster in `apply-update-10pct` and in `class-wide-update` with freeze on at 1,000 rows, and within 5% in Map updates without freezing and `class-wide-update` with freeze on at 10,000 rows; the limits below discuss each.
+The gap widens with size. With freeze and patches off, the moves were 211 times faster at 1,000 rows and 442 times at 10,000 on geometric mean: the candidate moves elements natively on its copy, while Immer moves each element through its draft proxy. Removing the first of 10,000 rows took 7.10 µs against 8,605 µs. With patches, both libraries emit one patch per moved index, which bounds the gain to 5–10 times. At these sizes Immer was faster only in `class-wide-update` with freeze on at 1,000 rows, and within 5% in Map updates without freezing and `class-wide-update` with freeze on at 10,000 rows; the limits below discuss each.
 
 ### Freeze off, patches on
 
