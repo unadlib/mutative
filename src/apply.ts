@@ -7,9 +7,21 @@ import type {
   ApplyOptions,
   ApplyResult,
 } from './interface';
-import { deepClone, get, getType, isDraft, unescapePath } from './utils';
+import {
+  deepClone,
+  getProxyDraft,
+  getType,
+  isDraft,
+  unescapePath,
+} from './utils';
 import { create } from './create';
 import { die, ErrorCode } from './error';
+
+// `getType` finds the type of a draft through the traps of its proxy.
+function getPatchTargetType(value: any) {
+  const proxyDraft = getProxyDraft(value);
+  return proxyDraft ? proxyDraft.type : getType(value);
+}
 
 function normalizePatchKey(key: any) {
   // Let JavaScript perform ToPropertyKey once, including a Symbol result.
@@ -102,7 +114,7 @@ export function apply<
       const path = unescapePath(_path);
       let base: any = draft;
       for (let index = 0; index < path.length - 1; index += 1) {
-        const parentType = getType(base);
+        const parentType = getPatchTargetType(base);
         let key = path[index];
         // Map keys and Set positions retain their native identity/semantics.
         if (parentType <= DraftType.Array) {
@@ -115,14 +127,17 @@ export function apply<
             die(ErrorCode.ReservedPatchAttribute);
           }
         }
-        // use `index` in Set draft
-        base = get(parentType === DraftType.Set ? Array.from(base) : base, key);
+        base =
+          parentType === DraftType.Map
+            ? base.get(key)
+            : // use `index` in Set draft
+              (parentType === DraftType.Set ? Array.from(base) : base)[key];
         if (typeof base !== 'object') {
           die(ErrorCode.CannotApplyPatch, path);
         }
       }
 
-      const type = getType(base);
+      const type = getPatchTargetType(base);
       // ensure the original patch is not modified.
       const value = deepClone(patch.value);
       let key = path[path.length - 1];
