@@ -77,18 +77,22 @@ export type GeneratePatches = (
 
 // The copy of a Set draft holds its items in order, so only items that a draft
 // stands for may need their final value: the Set is rebuilt in order once one
-// of them differs from the item itself. The items are kept, as a draft of an
-// outer producer that a nested producer's Set holds is finalized later and
-// rebuilds the Set again.
+// of them differs from the item itself. The first rebuild keeps the items on
+// `setMap`, as a draft of an outer producer that a nested producer's Set holds
+// is finalized later and rebuilds the Set again.
 export function finalizeSetValue(target: ProxyDraft) {
   // Only Set drafts have `setMap`.
   const setMap = target.setMap;
-  const items =
-    setMap &&
-    (target.setItems ||
-      (Array.from(setMap).some(([item, value]) => getValue(value) !== item) &&
-        (target.setItems = Array.from(target.copy as Set<any>))));
-  if (!items) return;
+  let items = setMap && setMap.items;
+  if (!items) {
+    let differs = false;
+    if (setMap)
+      setMap.forEach((value, item) => {
+        if (getValue(value) !== item) differs = true;
+      });
+    if (!differs) return;
+    items = setMap!.items = Array.from(target.copy as Set<any>);
+  }
   const copy: Set<any> = target.copy;
   copy.clear();
   items.forEach((item) => copy.add(getValue(setItemValue(target, item))));
