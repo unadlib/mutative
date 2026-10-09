@@ -1,6 +1,6 @@
 import type { Options, ProxyDraft } from '../interface';
 import { dataTypes } from '../constant';
-import { getValue, isDraft, isDraftable } from './draft';
+import { getValue, isDraft, isDraftable, iterateSet } from './draft';
 import { isBaseMapInstance, isBaseSetInstance, isPlainArray } from './proto';
 import { die, ErrorCode } from '../error';
 
@@ -128,7 +128,13 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
   } else if (original instanceof Set) {
     if (!isBaseSetInstance(original)) {
       const SubClass = Object.getPrototypeOf(original).constructor;
-      return new SubClass(original.values());
+      const copy = new SubClass(original.values());
+      // The copy of a Set draft holds the original items in their order,
+      // whatever the subclass's constructor or `add` does with them.
+      Set.prototype.clear.call(copy);
+      for (const item of iterateSet(original))
+        Set.prototype.add.call(copy, item);
+      return copy;
     }
     // The Set draft of an outer create() call has no Set internals.
     return !isDraft(original) && Set.prototype.difference

@@ -7,6 +7,7 @@ import {
   getProxyDraft,
   getSetMap,
   isDraftable,
+  iterateSet,
   latest,
   markChanged,
   markFinalization,
@@ -134,7 +135,7 @@ export const setHandler = {
   values(): IterableIterator<any> {
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
-    const iterator = target.copy!.values();
+    const iterator = iterateSet(target.copy!);
     return {
       __proto__: iteratorPrototype,
       next: getNextIterator(target, iterator, true),
@@ -143,7 +144,7 @@ export const setHandler = {
   entries(): IterableIterator<[any, any]> {
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
-    const iterator = target.copy!.values();
+    const iterator = iterateSet(target.copy!);
     return {
       __proto__: iteratorPrototype,
       next: getNextIterator(

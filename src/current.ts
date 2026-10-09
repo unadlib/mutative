@@ -14,6 +14,7 @@ import {
   isDraft,
   isDraftable,
   isEqual,
+  iterateSet,
   latest,
   set,
   setItemValue,
@@ -120,7 +121,7 @@ function getCurrent(target: any, rootOptions?: Options<any, any>) {
         : type === DraftType.Set
           ? proxyDraft
             ? // The items in order, with the drafts that stand for some.
-              Array.from(latest(proxyDraft) as Set<any>, (item) =>
+              Array.from(iterateSet(latest(proxyDraft)), (item) =>
                 setItemValue(proxyDraft, item)
               )
             : Array.from(target as Set<any>)

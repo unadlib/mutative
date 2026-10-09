@@ -16,6 +16,16 @@ export function setItemValue(target: ProxyDraft, item: any) {
   return setMap && setMap.has(item) ? setMap.get(item) : item;
 }
 
+const setValues = Set.prototype.values;
+
+// The items of a Set in the order in which it holds them, also for a subclass
+// that iterates them otherwise, so that the positions in patch paths are those
+// that the draft iterates. A draft of an outer producer iterates them so
+// itself.
+export function iterateSet(set: Set<any>): IterableIterator<any> {
+  return isDraft(set) ? set.values() : setValues.call(set);
+}
+
 /**
  * Check if the value is a draft
  */
@@ -94,7 +104,7 @@ export function getPath(
       // applied to whatever sits at the position in the base Set. An
       // unchanged Set holds its items in their original order.
       if (parent.assignedMap!.size > 0) return null;
-      key = Array.from(parent.original as Set<any>).indexOf(key);
+      key = Array.from(iterateSet(parent.original)).indexOf(key);
     } else if (get(parentCopy, key) !== target.proxy) {
       // The child left its key: it was moved, deleted or replaced, possibly
       // by another draft of a shared object. The parent's patches carry its

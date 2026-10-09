@@ -225,3 +225,35 @@ test('a Set draft finds an item that is a draft of a finished nested producer', 
   });
   expect([...state]).toEqual([{ value: 2 }]);
 });
+
+test('patch paths keep the positions of the items of a Set subclass that orders them otherwise', () => {
+  class ReverseSet extends Set<any> {
+    constructor(items: Iterable<any> = []) {
+      super([...items].reverse());
+    }
+  }
+  class ReverseValuesSet extends Set<any> {
+    values() {
+      return [...super.values()].reverse().values();
+    }
+  }
+  for (const Subclass of [ReverseSet, ReverseValuesSet]) {
+    const base = new Subclass([
+      { id: 'a', value: 1 },
+      { id: 'b', value: 2 },
+    ]);
+    const [state, patches, inversePatches] = create(
+      base,
+      (draft) => {
+        for (const item of draft) if (item.id === 'a') item.value = 3;
+      },
+      { enablePatches: true }
+    );
+    expect(state).toBeInstanceOf(Subclass);
+    expect([...state].map((item) => item.id)).toEqual(
+      [...base].map((item) => item.id)
+    );
+    expect([...apply(base, patches)]).toEqual([...state]);
+    expect([...apply(state, inversePatches)]).toEqual([...base]);
+  }
+});

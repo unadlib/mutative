@@ -7,6 +7,7 @@ import {
   isDraft,
   isDraftable,
   isEqual,
+  iterateSet,
   set,
   setItemValue,
 } from './draft';
@@ -92,7 +93,7 @@ export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
         if (getValue(value) !== item) differs = true;
       });
     if (!differs) return;
-    items = setMap!.items = Array.from(target.copy as Set<any>);
+    items = setMap!.items = Array.from(iterateSet(target.copy));
   }
   const copy: Set<any> = target.copy;
   copy.clear();
