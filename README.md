@@ -50,7 +50,7 @@ Times are microseconds per update, medians of three runs on an Apple M1 Max with
 | Update one of 10,000 records        | 10,000 |    1,175 |  2,109 |              3,135 |        2,113 |
 | Insert into a 1,000-property object |      — |     51.0 |    146 |                231 |          129 |
 | Update a Map value                  | 10,000 |      517 |    521 |                730 |          518 |
-| Add a number to a Set               | 10,000 |     32.0 |    916 |                987 |         64.3 |
+| Add a number to a Set               | 10,000 |     34.5 |    938 |              1,006 |         66.8 |
 | Update a class instance             | 10,000 |     2.92 |   3.43 |                668 |         1.43 |
 | Update a value ten levels deep      |      — |     3.47 |   4.46 |               7.83 |         0.75 |
 | Apply patches to 10% of rows        | 10,000 |    1,440 |  1,182 |              2,110 |            — |
@@ -69,9 +69,9 @@ At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method p
 
 | Auto-freeze | Patches | All workloads, 1,000 rows | All workloads, 10,000 rows | Moves, 1,000 rows | Moves, 10,000 rows |
 | ----------- | ------- | ------------------------: | -------------------------: | ----------------: | -----------------: |
-| off         | off     |                      8.7x |                      10.9x |              211x |               442x |
+| off         | off     |                      8.8x |                      10.9x |              211x |               442x |
 | off         | on      |                      4.5x |                       5.2x |              7.1x |               7.5x |
-| on          | off     |                      3.8x |                       4.2x |               32x |                40x |
+| on          | off     |                      3.9x |                       4.2x |               32x |                40x |
 | on          | on      |                      2.8x |                       3.0x |              6.6x |               7.1x |
 
 Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.10 µs against 8,605 µs, 1,213x. With patches, both libraries emit one patch per moved index, which bounds the gain to 5-10x. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
