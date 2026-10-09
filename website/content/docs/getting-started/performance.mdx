@@ -2,17 +2,17 @@
 title: Performance
 ---
 
-Mutative is about 3.7x faster than Immer with matched settings and 6.8x faster with each library's defaults, across 93 benchmarked workloads. A hand-written reducer that copies only what it changes is faster still in most of them.
+Mutative is about 3.6x faster than Immer with matched settings and 6.7x faster with each library's defaults, across 97 benchmarked workloads. A hand-written reducer that copies only what it changes is faster still in most of them.
 
 ## Benchmark suite
 
-The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 93 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 97 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
 ## Mutative vs Immer
 
 > Mutative passed all of Immer's test cases.
 
-With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 551 of 566 measured cases, 3.7x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 142 of 145 cases, 6.8x on geometric mean.
+With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 153 of 157 cases, 6.7x on geometric mean.
 
 Times are microseconds per update, medians of three runs on an Apple M1 Max with Node.js 24.16.0, each library in a process of its own; lower is better. Mutative, the first Immer column, and the hand-written reducers run without auto-freeze; the second Immer column shows Immer's default.
 
@@ -36,24 +36,24 @@ Times are microseconds per update, medians of three runs on an Apple M1 Max with
 | Return a new state | 10,000 | 2,594 | 5,628 | 0.79 | 0.02 |
 | Return it with rawReturn() | 10,000 | 0.26 | 5,699 | 0.79 | 0.02 |
 
-Each library ran each workload in a process of its own. With all of them in one process every library ran slower, and not by the same amount: Mutative and Immer took 1.1 times as long on geometric mean, and the hand-written reducers 1.7 times. The search removes the first row with `shift()`, then finds the last row in a snapshot of the array and updates it. Immer has no `rawReturn()` and returns the same plain value in the last two rows; with auto-freeze, Mutative skips a returned state that is already frozen, as Immer does, taking 0.53 µs. Immer was faster in 3 of the 566 matched cases: with auto-freeze, when updating a class instance with 1,000 fields; and in one concatenation with auto-freeze and patches, by 8%. The Set workloads were measured again after Set drafts began to change their copy directly; adding or deleting a Set item became 3-50x faster. The patch application workloads were measured again after `apply()` began to read the type of each draft from its state; applying patches that replace nested values became 1.6-2x faster.
+Each library ran each workload in a process of its own. With all of them in one process every library ran slower, and not by the same amount: Mutative and Immer took 1.1 times as long on geometric mean, and the hand-written reducers 1.7 times. The search removes the first row with `shift()`, then finds the last row in a snapshot of the array and updates it. Immer has no `rawReturn()` and returns the same plain value in the last two rows; with auto-freeze, Mutative skips a returned state that is already frozen, as Immer does, taking 0.53 µs. Immer was faster in 3 of the 614 matched cases: with auto-freeze, when updating a class instance with 1,000 fields; and in one concatenation with auto-freeze and patches, by 8%. The Set workloads were measured again after Set drafts began to change their copy directly; adding or deleting a Set item became 3-50x faster. The patch application workloads were measured again after `apply()` began to read the type of each draft from its state; applying patches that replace nested values became 1.6-2x faster. Four workloads were added later and measured the same way: reading a Set, iterating a Map, updating a row that `shift()` moved, and updating a value beside a Map and a Set that stay unchanged.
 
 ## Large arrays
 
-At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method plugin, Mutative was faster in 192 of 200 cases at these sizes, 5.0x on geometric mean, and faster in every case that moves elements:
+At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method plugin, Mutative was faster in 221 of 232 cases at these sizes, 4.7x on geometric mean, and faster in every case that moves elements:
 
 | Auto-freeze | Patches | All workloads, 1,000 rows | All workloads, 10,000 rows | Moves, 1,000 rows | Moves, 10,000 rows |
 | --- | --- | ---: | ---: | ---: | ---: |
-| off | off | 9.2x | 11.3x | 211x | 442x |
-| off | on | 4.6x | 5.2x | 7.1x | 7.5x |
-| on | off | 4.0x | 4.4x | 32x | 40x |
-| on | on | 2.8x | 3.0x | 6.6x | 7.1x |
+| off | off | 8.6x | 10.6x | 211x | 442x |
+| off | on | 4.1x | 4.6x | 7.1x | 7.5x |
+| on | off | 3.8x | 4.2x | 32x | 40x |
+| on | on | 2.7x | 2.9x | 6.6x | 7.1x |
 
 Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.10 µs against 8,605 µs, 1,213x. With patches, both libraries emit one patch per moved index, which bounds the gain to 5-10x. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
 
 ## With patches
 
-With patches on and auto-freeze off, Mutative was faster than Immer in 136 of 138 cases and within 5% in the other 2, 3.4x on geometric mean, and faster than Mutative 1.3.0 in 120 and within 5% in the rest, 4.2x. In every array case measured it was faster than both: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.3 µs with patches against 62.8 µs without. Moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches.
+With patches on and auto-freeze off, Mutative was faster than Immer in 148 of 150 cases and within 5% in the other 2, 3.3x on geometric mean, and faster than Mutative 1.3.0 in 132 and within 5% in the rest, 4.6x. In every array case measured it was faster than both: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.3 µs with patches against 62.8 µs without. Moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches.
 
 Times are microseconds per update with patches on and auto-freeze off:
 
@@ -74,7 +74,7 @@ Immer's optional `enableArrayMethods()` plugin also runs array methods on the dr
 
 ## Mutative vs hand-written reducers
 
-A hand-written reducer that copies only what it changes is faster than any library that drafts state, and it was faster than Mutative in 118 of the suite's 138 cases. Mutative was faster when copying wide objects, such as records with 1,000 keys or class instances with 100 fields, by 1.5-2.7x, when inserting at the front of 10,000 rows: 16 µs instead of 28 µs, and when adding a number to a Set of 1,000 or 10,000 numbers, which it copies faster than `new Set()` does: 33 µs instead of 66 µs at 10,000.
+A hand-written reducer that copies only what it changes is faster than any library that drafts state, and it was faster than Mutative in 129 of the suite's 150 cases. Mutative was faster when copying wide objects, such as records with 1,000 keys or class instances with 100 fields, by 1.5-2.7x, when inserting at the front of 10,000 rows: 16 µs instead of 28 µs, and when adding a number to a Set of 1,000 or 10,000 numbers, which it copies faster than `new Set()` does: 33 µs instead of 66 µs at 10,000.
 
 Spreads also become slow when code copies the same structure again and again. Mutative copies each object at most once per update, however many changes a recipe makes.
 

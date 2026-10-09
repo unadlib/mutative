@@ -60,10 +60,19 @@ export function createExtendedScenarios(config) {
     map: new Map(range(size).map((id) => [id, row(id)])),
     stable: stable(),
   });
+  const numberMapState = () => ({
+    map: new Map(range(size).map((id) => [id, id])),
+    stable: stable(),
+  });
   const idSetState = () => ({ ids: new Set(range(size)), stable: stable() });
   const objectSetState = () => ({
     objects: new Set(range(size).map((id) => ({ id, value: id }))),
     stable: stable(),
+  });
+  const collectionsState = () => ({
+    ...mapState(),
+    ids: new Set(range(size)),
+    value: 0,
   });
   const recordState = () => {
     const entities = {};
@@ -110,6 +119,31 @@ export function createExtendedScenarios(config) {
     ),
     entry('map-read', mapState, [{ type: 'bench/read-map' }], collection),
     entry(
+      'map-forEach',
+      numberMapState,
+      [{ type: 'bench/read-map-forEach' }],
+      collection
+    ),
+    // One producer changes a Map and a Set, which copies them, and the next
+    // ones update a value beside them. With auto-freeze, the first producer
+    // freezes the copies, which the others then find frozen.
+    entry(
+      'map-set-beside',
+      collectionsState,
+      [
+        {
+          type: 'bench/map-set-insert',
+          key: size,
+          payload: row(size),
+          value: size,
+        },
+        ...Array.from({ length: config.reuseStateIterations - 1 }, () => ({
+          type: 'bench/value-update',
+        })),
+      ],
+      collection
+    ),
+    entry(
       'set-add',
       idSetState,
       [{ type: 'bench/set-add', value: size }],
@@ -119,6 +153,12 @@ export function createExtendedScenarios(config) {
       'set-delete',
       idSetState,
       [{ type: 'bench/set-delete', value: middle }],
+      collection
+    ),
+    entry(
+      'set-read',
+      idSetState,
+      [{ type: 'bench/read-set', present: middle, missing: size }],
       collection
     ),
     entry(
@@ -216,14 +256,36 @@ export function createExtendedScenarios(config) {
     entry('search-current-shifted', rowsState, [
       { type: 'bench/search', via: 'current', shift: true, id: size - 1 },
     ]),
+    // Update a row that shift() moved: drafting it needs its original index.
+    entry('shift-and-update', rowsState, [
+      { type: 'bench/shift-and-update', index: middle },
+    ]),
   ];
 }
 
 export function expectedExtendedReads(state, action) {
-  if (action.type !== 'bench/read-map') return [];
-  let sum = 0;
-  for (const value of state.map.values()) sum += value.nested.value;
-  return [sum];
+  switch (action.type) {
+    case 'bench/read-map': {
+      let sum = 0;
+      for (const value of state.map.values()) sum += value.nested.value;
+      return [sum];
+    }
+    case 'bench/read-map-forEach': {
+      let sum = 0;
+      state.map.forEach((value) => {
+        sum += value;
+      });
+      return [sum];
+    }
+    case 'bench/read-set':
+      return [
+        state.ids.has(action.present),
+        state.ids.has(action.missing),
+        state.ids.size,
+      ];
+    default:
+      return [];
+  }
 }
 
 export function applyExtendedRecipe(
@@ -254,11 +316,31 @@ export function applyExtendedRecipe(
       consumeRead(sum);
       break;
     }
+    case 'bench/read-map-forEach': {
+      let sum = 0;
+      draft.map.forEach((value) => {
+        sum += value;
+      });
+      consumeRead(sum);
+      break;
+    }
+    case 'bench/map-set-insert':
+      draft.map.set(action.key, action.payload);
+      draft.ids.add(action.value);
+      break;
+    case 'bench/value-update':
+      draft.value += 1;
+      break;
     case 'bench/set-add':
       draft.ids.add(action.value);
       break;
     case 'bench/set-delete':
       draft.ids.delete(action.value);
+      break;
+    case 'bench/read-set':
+      consumeRead(draft.ids.has(action.present));
+      consumeRead(draft.ids.has(action.missing));
+      consumeRead(draft.ids.size);
       break;
     case 'bench/set-update': {
       const values = draft.objects.values();
@@ -304,6 +386,10 @@ export function applyExtendedRecipe(
       if (index !== -1) draft.rows[index].nested.value += 1;
       break;
     }
+    case 'bench/shift-and-update':
+      draft.rows.shift();
+      draft.rows[action.index].nested.value += 1;
+      break;
     default:
       throw new Error(`Unknown extended recipe: ${action.type}`);
   }
@@ -369,6 +455,14 @@ export function reduceExtended(state, action) {
       map.delete(action.key);
       return { ...state, map };
     }
+    case 'bench/map-set-insert':
+      return {
+        ...state,
+        map: new Map(state.map).set(action.key, action.payload),
+        ids: new Set(state.ids).add(action.value),
+      };
+    case 'bench/value-update':
+      return { ...state, value: state.value + 1 };
     case 'bench/set-add':
       return { ...state, ids: new Set(state.ids).add(action.value) };
     case 'bench/set-delete': {
@@ -440,6 +534,11 @@ export function reduceExtended(state, action) {
       if (!action.shift) rows[0] = incrementNested(rows[0]);
       const index = rows.findIndex((item) => item.id === action.id);
       if (index !== -1) rows[index] = incrementNested(rows[index]);
+      return { ...state, rows };
+    }
+    case 'bench/shift-and-update': {
+      const rows = state.rows.slice(1);
+      rows[action.index] = incrementNested(rows[action.index]);
       return { ...state, rows };
     }
     default:

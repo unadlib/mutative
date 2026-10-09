@@ -24,23 +24,32 @@
         "array-unshift-nested",
         "array-splice-insert-nested",
         "array-reverse-nested",
-        "array-reverse-primitive"
+        "array-reverse-primitive",
+        "shift-and-update"
       ],
       "memoryScenarios": ["mutation-density-100pct", "array-reverse-nested"]
     },
-    "collections": {
+    "maps": {
       "latencyScenarios": [
         "map-update",
         "map-update-10pct",
         "map-insert",
         "map-delete",
         "map-read",
+        "map-forEach",
+        "map-set-beside"
+      ],
+      "memoryScenarios": ["map-update-10pct"]
+    },
+    "sets": {
+      "latencyScenarios": [
         "set-add",
         "set-delete",
+        "set-read",
         "set-update",
         "set-update-10pct"
       ],
-      "memoryScenarios": ["map-update-10pct", "set-update-10pct"]
+      "memoryScenarios": ["set-update-10pct"]
     },
     "objects": {
       "latencyScenarios": [
