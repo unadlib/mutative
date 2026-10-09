@@ -78,15 +78,16 @@ export type GeneratePatches = (
 // The copy of a Set draft holds its items in order, so only items that a draft
 // stands for may need their final value: the Set is rebuilt in order once one
 // of them differs from the item itself. The first rebuild keeps the items on
-// `setMap`, as a draft of an outer producer that a nested producer's Set holds
-// is finalized later and rebuilds the Set again.
-export function finalizeSetValue(target: ProxyDraft) {
+// `setMap`. With `again`, only a Set rebuilt before is rebuilt, for a draft of
+// an outer producer that a nested producer's Set holds; other Sets may still
+// be changing, and are rebuilt when their own producer finalizes them.
+export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
   // Only Set drafts have `setMap`.
   const setMap = target.setMap;
   let items = setMap && setMap.items;
   if (!items) {
     let differs = false;
-    if (setMap)
+    if (setMap && !again)
       setMap.forEach((value, item) => {
         if (getValue(value) !== item) differs = true;
       });
@@ -151,7 +152,10 @@ export function finalizeNode(
       const updatedValue = proxyDraft.operated
         ? proxyDraft.copy
         : proxyDraft.original;
-      finalizeSetValue(proxyDraft);
+      // A draft of another producer, which a recipe placed here, is
+      // finalized by that producer.
+      if (proxyDraft.finalities === node.finalities)
+        finalizeSetValue(proxyDraft);
       finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
       if (__DEV__ && parent.options.enableAutoFreeze) {
         parent.options.updatedValues =
@@ -194,7 +198,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         const updatedValue = proxyDraft.operated
           ? proxyDraft.copy
           : proxyDraft.original;
-        finalizeSetValue(target);
+        finalizeSetValue(target, true);
         if (__DEV__ && target.options.enableAutoFreeze) {
           target.options.updatedValues =
             target.options.updatedValues ?? new WeakMap();

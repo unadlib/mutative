@@ -121,3 +121,37 @@ test('patches of a Set item keep its position after another draft rebuilt the Se
   expect(apply(base, patches)).toEqual(state);
   expect(apply(state, inversePatches)).toEqual(base);
 });
+
+describe('a Set draft and drafts of a nested producer', () => {
+  test('keeps the changes made after a nested producer finalized a draft that the Set holds', () => {
+    const first = { value: 0 };
+    const base = { set: new Set<any>([first, 7]) };
+    const innerBase = { item: { value: 1 } };
+    const state = create(base, (draft) => {
+      for (const item of draft.set)
+        if (typeof item === 'object') item.value = 1;
+      create(innerBase, (innerDraft) => {
+        innerDraft.item.value = 2;
+        draft.set.add(innerDraft.item);
+      });
+      expect(draft.set.has(first)).toBe(true);
+      draft.set.delete(7);
+      draft.set.add(5);
+    });
+    expect([...state.set]).toEqual([{ value: 1 }, { value: 2 }, 5]);
+  });
+
+  test('keeps the changes made after a nested producer held the Set draft', () => {
+    const base = { set: new Set<any>([{ value: 0 }]) };
+    const innerBase = { holder: { set: new Set<any>([1]) } };
+    const state = create(base, (draft) => {
+      for (const item of draft.set) item.value = 1;
+      create(innerBase, (innerDraft) => {
+        innerDraft.holder.set.add(2);
+        innerDraft.holder.set = draft.set;
+      });
+      draft.set.add(5);
+    });
+    expect([...state.set]).toEqual([{ value: 1 }, 5]);
+  });
+});
