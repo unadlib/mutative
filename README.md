@@ -121,19 +121,21 @@ Mutative's `create` includes patches, `Map`/`Set` support and the native array m
 
 ## Difference between Mutative and Immer
 
-|                                       | Mutative | Immer |
-| :------------------------------------ | -------: | :---: |
-| Custom shallow copy                   |       ✅ |  ❌   |
-| Strict mode                           |       ✅ |  ❌   |
-| No data freeze by default             |       ✅ |  ❌   |
-| Non-invasive marking                  |       ✅ |  ❌   |
-| Complete freeze data                  |       ✅ |  ❌   |
-| Non-global config                     |       ✅ |  ❌   |
-| async draft function                  |       ✅ |  ❌   |
-| Fully compatible with JSON Patch spec |       ✅ |  ❌   |
-| new Set methods(Mutative v1.1.0+)     |       ✅ |  ❌   |
+|                                                       | Mutative |     Immer     |
+| :---------------------------------------------------- | :------: | :-----------: |
+| Auto-freeze off by default                            |    ✅    |      ❌       |
+| Options per call, without global settings or plugins  |    ✅    |      ❌       |
+| Drafts of class instances without changing the class  |    ✅    |      ❌       |
+| Custom shallow copies                                 |    ✅    |      ❌       |
+| Strict mode                                           |    ✅    |      ❌       |
+| Async recipes                                         |    ✅    |      ❌       |
+| Map and Set subclasses keep their class               |    ✅    |      ❌       |
+| ES2025 Set methods on Set drafts                      |    ✅    |      ❌       |
+| Freezing reaches the objects used as Map keys         |    ✅    |      ❌       |
+| Array methods that run natively on drafts             |    ✅    | Opt-in plugin |
+| JSON Patch paths and array removals                   |    ✅    |      ❌       |
 
-Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
+[Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) lists every difference, checked against Immer 11.1.18: the APIs that replace Immer's, defaults and configuration, drafts, patches, and the Immer failures that Mutative's tests pin.
 
 ## Installation
 
@@ -620,7 +622,7 @@ expect(state.simpleObject).not.toBe(baseState.simpleObject);
 
 - I'm already using Immer, can I migrate smoothly to Mutative?
 
-Yes. Unless you have to be compatible with Internet Explorer, Mutative supports almost all of Immer features, and you can easily migrate from Immer to Mutative.
+Yes. Unless you have to be compatible with Internet Explorer, Mutative supports almost all of Immer features, and you can easily migrate from Immer to Mutative. [Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) lists the APIs that replace Immer's and every behavior that differs.
 
 > Migration is also not possible for React Native that does not support Proxy. React Native uses a new JS engine during refactoring - Hermes, and it (if < v0.59 or when using the Hermes engine on React Native < v0.64) does [not support Proxy on Android](https://github.com/facebook/hermes/issues/33), but [React Native v0.64 with the Hermes engine support Proxy](https://reactnative.dev/blog/2021/03/12/version-0.64#hermes-with-proxy-support).
 
@@ -651,6 +653,8 @@ Yes, but they compare elements as iterating the draft returns them. An object of
 Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](https://mutative.js.org/docs/extra-topics/shared-references).
 
 ## Migration from Immer to Mutative
+
+[Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) maps every Immer API to Mutative and lists the behaviors that differ.
 
 > [mutative-compat](https://github.com/exuanbo/mutative-compat) - Mutative wrapper with full Immer API compatibility, you can use it to quickly migrate from Immer to Mutative.
 

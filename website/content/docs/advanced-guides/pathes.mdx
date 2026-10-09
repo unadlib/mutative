@@ -75,6 +75,20 @@ expect(inversePatches).toMatchInlineSnapshot(`
   `);
 ```
 
+## Patch behavior
+
+- **Operations and paths.** Patches use `add`, `remove` and `replace`. A path leads from the root to the changed value through object keys, array indices, Map keys as they are, objects and arrays included, and the positions of Set items. A recipe that returns a new state gets one `replace` patch with an empty path.
+- **Order.** The patches of a nested draft come before those of its parents, as in Immer.
+- **Values.** A patch value is the object that the next state holds, frozen with it when `enableAutoFreeze` is on, so copy a patch value before changing it. `apply()` copies patch values before applying them.
+- **Arrays.** `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. An array that a recipe shortens and lengthens again also gets patches for the indices that the longer length exposes again.
+- **Maps.** `set()` emits an `add` patch for a new key and a `replace` patch for an existing one, and `delete()` a `remove` patch.
+- **Sets.** Patches add an item by its value and remove one by the value it holds; see [Sets of objects](#sets-of-objects).
+- **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, emits no patches under its old path; the patches of its parent carry its value.
+- **Applying patches.** `apply()` applies `add`, `remove` and `replace` patches and accepts `-` as the index that appends to an array. It throws for other operations and for paths through `__proto__` or `constructor`. It takes the `enableAutoFreeze`, `strict` and `mark` options, or `mutable: true` to change the state in place, and it changes a draft in place.
+- **JSON Patch.** With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations. Maps and Sets have no JSON Patch counterpart.
+
+[Comparison with Immer](/docs/extra-topics/comparison-with-immer#patches) lists where these patches differ from Immer's.
+
 ## Sets of objects
 
 Patches add a Set element by its value and remove one by the value it holds, so a `remove` patch removes an object only from a Set that holds that same object. A Set whose elements changed in place, without any element added or removed, gets patches under the position of each changed element, and they replay in both directions. Once a recipe adds or removes elements of a Set, the Set's `remove` and `add` patches carry every changed element by value instead. `apply()` copies the value of each patch before applying it, so a Set that `apply()` changes holds copies of the objects that patches add, and the inverse patches cannot remove those copies: an undo after a redo leaves the object in the Set. Patches for Sets of primitives are not affected. When patches are replayed on states that `apply()` returned, as undo and redo do, keep such objects in a Map keyed by an id or in an array instead.
