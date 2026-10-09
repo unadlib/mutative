@@ -5,17 +5,17 @@ import { SectionHeading } from './section-heading';
 // The results of the performance page in the docs.
 const stats = [
   {
-    value: '3.7x',
+    value: '3.6x',
     label: 'Faster than Immer with matched settings',
-    detail: 'Faster in 551 of 566 measured cases',
+    detail: 'Faster in 595 of 614 measured cases',
   },
   {
-    value: '6.8x',
+    value: '6.7x',
     label: "Faster than Immer with each library's defaults",
-    detail: 'Faster in 142 of 145 measured cases',
+    detail: 'Faster in 153 of 157 measured cases',
   },
   {
-    value: '93',
+    value: '97',
     label: 'Benchmarked workloads',
     detail: 'Every result checked against hand-written reducers',
   },

@@ -74,9 +74,9 @@ Mutative passes the test suite of Immer, adapted to its API. The [non-support te
 
 ## Mutative vs Immer Performance
 
-With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer 11.1.18 in 551 of 566 measured cases, 3.7x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 142 of 145 cases, 6.8x on geometric mean. Immer was faster with auto-freeze when updating class instances with 1,000 fields, and in one concatenation with auto-freeze and patches.
+With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer 11.1.18 in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 153 of 157 cases, 6.7x on geometric mean. Immer was faster with auto-freeze when updating class instances with 1,000 fields, and in one concatenation with auto-freeze and patches.
 
-With patches on and auto-freeze off, Mutative was faster in 136 of 138 cases and never slower, and faster in every array case: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. The comparisons run Immer without its `enableArrayMethods()` plugin. In Immer 11.1.18 the plugin returns raw base objects from `shift`, `pop` and `splice`, so editing them changes the previous state, and its patches can fail to replay; the audit above reproduces these failures.
+With patches on and auto-freeze off, Mutative was faster in 148 of 150 cases and never slower, and faster in every array case: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. The comparisons run Immer without its `enableArrayMethods()` plugin. In Immer 11.1.18 the plugin returns raw base objects from `shift`, `pop` and `splice`, so editing them changes the previous state, and its patches can fail to replay; the audit above reproduces these failures.
 
 Immer 11.0.0 ported the finalization callbacks of Mutative, which replace a recursive traversal of the draft tree, in [immerjs/immer#1183](https://github.com/immerjs/immer/pull/1183). Immer 11.1.18, which these measurements use, includes them.
 
