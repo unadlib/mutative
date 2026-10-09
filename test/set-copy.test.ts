@@ -82,6 +82,26 @@ describe('Set drafts change their copy', () => {
     expect(apply(base, patches)).toEqual(state);
     expect(apply(state, inversePatches)).toEqual(base);
   });
+
+  test('a draft of a Set subclass uses the methods that the subclass overrides', () => {
+    class LowerCaseSet extends Set<string> {
+      add(value: string) {
+        return super.add(value.toLowerCase());
+      }
+      has(value: string) {
+        return super.has(value.toLowerCase());
+      }
+    }
+    const base = { tags: new LowerCaseSet(['a']) };
+    const state = create(base, (draft) => {
+      draft.tags.add('B');
+      expect(draft.tags.has('b')).toBe(true);
+      draft.tags.add('A');
+      expect([...draft.tags]).toEqual(['a', 'b']);
+    });
+    expect(state.tags).toBeInstanceOf(LowerCaseSet);
+    expect([...state.tags]).toEqual(['a', 'b']);
+  });
 });
 
 test('a Set holds the final value of a draft that an outer producer finalizes later', () => {
