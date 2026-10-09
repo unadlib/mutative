@@ -28,19 +28,24 @@
       ],
       "memoryScenarios": ["mutation-density-100pct", "array-reverse-nested"]
     },
-    "collections": {
+    "maps": {
       "latencyScenarios": [
         "map-update",
         "map-update-10pct",
         "map-insert",
         "map-delete",
-        "map-read",
+        "map-read"
+      ],
+      "memoryScenarios": ["map-update-10pct"]
+    },
+    "sets": {
+      "latencyScenarios": [
         "set-add",
         "set-delete",
         "set-update",
         "set-update-10pct"
       ],
-      "memoryScenarios": ["map-update-10pct", "set-update-10pct"]
+      "memoryScenarios": ["set-update-10pct"]
     },
     "objects": {
       "latencyScenarios": [
