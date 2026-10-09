@@ -155,3 +155,38 @@ describe('a Set draft and drafts of a nested producer', () => {
     expect([...state.set]).toEqual([{ value: 1 }, 5]);
   });
 });
+
+test('drafts added to a Set rebuild it once', () => {
+  const base = {
+    ids: new Set<any>([1, 2]),
+    list: [{ value: 0 }, { value: 1 }, { value: 2 }],
+  };
+  // Drafts are finalized in reverse order of creation, so the Set draft is
+  // finalized after the drafts it holds in the first recipe and before them
+  // in the second.
+  const recipes = [
+    (draft: typeof base) => {
+      const { ids } = draft;
+      for (const item of draft.list) {
+        item.value += 1;
+        ids.add(item);
+      }
+    },
+    (draft: typeof base) => {
+      for (const item of draft.list) item.value += 1;
+      for (const item of draft.list) draft.ids.add(item);
+    },
+  ];
+  const clear = vi.spyOn(Set.prototype, 'clear');
+  try {
+    for (const recipe of recipes) {
+      const state = create(base, recipe);
+      expect([...state.ids]).toEqual([1, 2, ...state.list]);
+      expect([...state.ids][2]).toBe(state.list[0]);
+      expect(state.list).toEqual([{ value: 1 }, { value: 2 }, { value: 3 }]);
+      expect(callsOn(clear, state.ids)).toBe(1);
+    }
+  } finally {
+    clear.mockRestore();
+  }
+});

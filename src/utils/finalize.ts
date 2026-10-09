@@ -198,7 +198,10 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         const updatedValue = proxyDraft.operated
           ? proxyDraft.copy
           : proxyDraft.original;
-        finalizeSetValue(target, true);
+        // The drafts of a Set's own producer are done changing when it rebuilds
+        // the Set; a draft of another producer may change after that.
+        if (proxyDraft.finalities !== target.finalities)
+          finalizeSetValue(target, true);
         if (__DEV__ && target.options.enableAutoFreeze) {
           target.options.updatedValues =
             target.options.updatedValues ?? new WeakMap();
