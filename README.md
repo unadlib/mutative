@@ -121,19 +121,21 @@ Mutative's `create` includes patches, `Map`/`Set` support and the native array m
 
 ## Difference between Mutative and Immer
 
-|                                       | Mutative | Immer |
-| :------------------------------------ | -------: | :---: |
-| Custom shallow copy                   |       ✅ |  ❌   |
-| Strict mode                           |       ✅ |  ❌   |
-| No data freeze by default             |       ✅ |  ❌   |
-| Non-invasive marking                  |       ✅ |  ❌   |
-| Complete freeze data                  |       ✅ |  ❌   |
-| Non-global config                     |       ✅ |  ❌   |
-| async draft function                  |       ✅ |  ❌   |
-| Fully compatible with JSON Patch spec |       ✅ |  ❌   |
-| new Set methods(Mutative v1.1.0+)     |       ✅ |  ❌   |
+|                                                       | Mutative |     Immer     |
+| :---------------------------------------------------- | :------: | :-----------: |
+| Auto-freeze off by default                            |    ✅    |      ❌       |
+| Options per call, without global settings or plugins  |    ✅    |      ❌       |
+| Drafts of class instances without changing the class  |    ✅    |      ❌       |
+| Custom shallow copies                                 |    ✅    |      ❌       |
+| Strict mode                                           |    ✅    |      ❌       |
+| Async recipes                                         |    ✅    |      ❌       |
+| Map and Set subclasses keep their class               |    ✅    |      ❌       |
+| ES2025 Set methods on Set drafts                      |    ✅    |      ❌       |
+| Freezing reaches the objects used as Map keys         |    ✅    |      ❌       |
+| Array methods that run natively on drafts             |    ✅    | Opt-in plugin |
+| JSON Patch paths and array removals                   |    ✅    |      ❌       |
 
-Mutative has fewer bugs such as accidental draft escapes than Immer, [view details](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts).
+[Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) lists every difference, checked against Immer 11.1.18: the APIs that replace Immer's, defaults and configuration, drafts, patches, and the Immer failures that Mutative's tests pin.
 
 ## Installation
 
