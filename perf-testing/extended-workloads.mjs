@@ -122,6 +122,12 @@ export function createExtendedScenarios(config) {
       collection
     ),
     entry(
+      'set-read',
+      idSetState,
+      [{ type: 'bench/read-set', present: middle, missing: size }],
+      collection
+    ),
+    entry(
       'set-update',
       objectSetState,
       [{ type: 'bench/set-update', count: 1 }],
@@ -220,10 +226,21 @@ export function createExtendedScenarios(config) {
 }
 
 export function expectedExtendedReads(state, action) {
-  if (action.type !== 'bench/read-map') return [];
-  let sum = 0;
-  for (const value of state.map.values()) sum += value.nested.value;
-  return [sum];
+  switch (action.type) {
+    case 'bench/read-map': {
+      let sum = 0;
+      for (const value of state.map.values()) sum += value.nested.value;
+      return [sum];
+    }
+    case 'bench/read-set':
+      return [
+        state.ids.has(action.present),
+        state.ids.has(action.missing),
+        state.ids.size,
+      ];
+    default:
+      return [];
+  }
 }
 
 export function applyExtendedRecipe(
@@ -259,6 +276,11 @@ export function applyExtendedRecipe(
       break;
     case 'bench/set-delete':
       draft.ids.delete(action.value);
+      break;
+    case 'bench/read-set':
+      consumeRead(draft.ids.has(action.present));
+      consumeRead(draft.ids.has(action.missing));
+      consumeRead(draft.ids.size);
       break;
     case 'bench/set-update': {
       const values = draft.objects.values();

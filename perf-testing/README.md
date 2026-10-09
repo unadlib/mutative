@@ -60,26 +60,26 @@ The runner never upgrades dependencies implicitly. Reports record the actual ins
 
 ## Workloads and units
 
-| Group                         | Scenarios                                                                                                                  |      Reducer calls per iteration |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------: |
-| Single array operations       | add, remove, filter, update, concat, mapNested, update-high, update-multiple, remove-high, sortById-reverse, reverse-array |                                1 |
-| Single wide-object operations | update-largeObject1, update-largeObject2                                                                                   |                                1 |
-| State reuse                   | update-reuse, update-high-reuse, remove-reuse, remove-high-reuse, update-largeObject1-reuse, update-largeObject2-reuse     |                               10 |
-| Mixed workflow                | mixed-sequence                                                                                                             |                                5 |
-| Simulated RTK Query workflow  | rtkq-sequence                                                                                                              | 200 (100 pending + 100 resolved) |
-| Pure draft reads              | read-index, read-forEach, read-iterator, read-missing, read-length                                                         |                                1 |
-| No-op producers               | noop-empty, noop-same-value                                                                                                |                                1 |
-| Small state                   | small-object-update, small-array-1-update, small-array-10-update                                                           |                                1 |
-| Common array operations       | 11 operations × primitive, shallow-object, and nested-object elements                                                      |                                1 |
-| Mutation density              | mutation-density-1pct, mutation-density-10pct, mutation-density-100pct                                                     |                                1 |
-| Map and Set values            | map-update, map-update-10pct, map-insert, map-delete, map-read, set-add, set-delete, set-update, set-update-10pct          |                                1 |
-| Object records                | object-update, object-update-10pct, object-delete                                                                          |                                1 |
-| Class instances               | class-update, class-wide-update                                                                                            |                                1 |
-| Deep path                     | deep-update                                                                                                                |                                1 |
-| Large-state push and insert   | push-and-insert, push-and-insert-reuse                                                                                     |                         1 and 10 |
-| Patch application             | apply-update-10pct, apply-array-ops, apply-reverse                                                                         |                   1 `apply` call |
-| Returned values               | return-replace, return-replace-raw, return-filter                                                                          |                                1 |
-| Searches                      | search-draft, search-current, search-current-shifted                                                                       |                                1 |
+| Group                         | Scenarios                                                                                                                   |      Reducer calls per iteration |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------: |
+| Single array operations       | add, remove, filter, update, concat, mapNested, update-high, update-multiple, remove-high, sortById-reverse, reverse-array  |                                1 |
+| Single wide-object operations | update-largeObject1, update-largeObject2                                                                                    |                                1 |
+| State reuse                   | update-reuse, update-high-reuse, remove-reuse, remove-high-reuse, update-largeObject1-reuse, update-largeObject2-reuse      |                               10 |
+| Mixed workflow                | mixed-sequence                                                                                                              |                                5 |
+| Simulated RTK Query workflow  | rtkq-sequence                                                                                                               | 200 (100 pending + 100 resolved) |
+| Pure draft reads              | read-index, read-forEach, read-iterator, read-missing, read-length                                                          |                                1 |
+| No-op producers               | noop-empty, noop-same-value                                                                                                 |                                1 |
+| Small state                   | small-object-update, small-array-1-update, small-array-10-update                                                            |                                1 |
+| Common array operations       | 11 operations × primitive, shallow-object, and nested-object elements                                                       |                                1 |
+| Mutation density              | mutation-density-1pct, mutation-density-10pct, mutation-density-100pct                                                      |                                1 |
+| Map and Set values            | map-update, map-update-10pct, map-insert, map-delete, map-read, set-add, set-delete, set-read, set-update, set-update-10pct |                                1 |
+| Object records                | object-update, object-update-10pct, object-delete                                                                           |                                1 |
+| Class instances               | class-update, class-wide-update                                                                                             |                                1 |
+| Deep path                     | deep-update                                                                                                                 |                                1 |
+| Large-state push and insert   | push-and-insert, push-and-insert-reuse                                                                                      |                         1 and 10 |
+| Patch application             | apply-update-10pct, apply-array-ops, apply-reverse                                                                          |                   1 `apply` call |
+| Returned values               | return-replace, return-replace-raw, return-filter                                                                           |                                1 |
+| Searches                      | search-draft, search-current, search-current-shifted                                                                        |                                1 |
 
 Defaults retain upstream's 100-row array, 10 nested items per row, 1,000/3,000 property objects, five updates in `update-multiple`, and ten state-reuse calls. The RTKQ scenario is a simulated reducer pattern, not Redux Toolkit execution. `--reuse-iterations` must not exceed `--array-size` so reused updates always target existing items.
 
@@ -89,7 +89,7 @@ Additional `array-{operation}-{shape}` cases cover push, pop, shift, unshift, mi
 
 `update` uses `find` at index 0; `update-high` searches around 80% of the array. `remove` uses `splice(0, 1)`; `remove-high` searches by ID before splicing. The wide-object scenarios **insert properties**, rather than edit existing ones. `concat` retains upstream's prepend-500-then-truncate behavior: at array size 100 it replaces all rows. `filter` retains 50% of the rows; upstream's single `filter(0)` produced an empty array and its unused percentage calculation was removed. Fixtures are deterministic instead of using `Math.random()`.
 
-Map and Set scenarios use a `Map` of `--array-size` rows keyed by number, a `Set` of as many numbers, or a `Set` of as many objects. They update the nested value of the middle row or of the first 10% of rows, insert a key, delete the middle key, or sum every nested value through `values()`; or they add a number, delete the middle number, or update the first object or the first 10% of objects through the Set's iterator. Object records hold the same rows under string keys (`id0`, `id1`, ...) and update the middle row or the first 10% of rows, or delete the middle key. Class scenarios update the middle instance of an array of class instances, or one field of an instance with `--array-size` fields. `deep-update` increments a value ten levels down a tree with ten keys per level; it does not scale with `--array-size`.
+Map and Set scenarios use a `Map` of `--array-size` rows keyed by number, a `Set` of as many numbers, or a `Set` of as many objects. They update the nested value of the middle row or of the first 10% of rows, insert a key, delete the middle key, or sum every nested value through `values()`; or they add a number, delete the middle number, look up the middle number and a missing one and read the size without changing the Set, or update the first object or the first 10% of objects through the Set's iterator. Object records hold the same rows under string keys (`id0`, `id1`, ...) and update the middle row or the first 10% of rows, or delete the middle key. Class scenarios update the middle instance of an array of class instances, or one field of an instance with `--array-size` fields. `deep-update` increments a value ten levels down a tree with ten keys per level; it does not scale with `--array-size`.
 
 `push-and-insert` pushes a row onto the upstream fixture's array and inserts a property into its 1,000-property object in one producer call, the workload of the former `pnpm benchmark` script; `push-and-insert-reuse` repeats it on the evolving state ten times.
 
