@@ -232,6 +232,10 @@ export function createExtendedScenarios(config) {
     entry('search-current-shifted', rowsState, [
       { type: 'bench/search', via: 'current', shift: true, id: size - 1 },
     ]),
+    // Update a row that shift() moved: drafting it needs its original index.
+    entry('shift-and-update', rowsState, [
+      { type: 'bench/shift-and-update', index: middle },
+    ]),
   ];
 }
 
@@ -351,6 +355,10 @@ export function applyExtendedRecipe(
       if (index !== -1) draft.rows[index].nested.value += 1;
       break;
     }
+    case 'bench/shift-and-update':
+      draft.rows.shift();
+      draft.rows[action.index].nested.value += 1;
+      break;
     default:
       throw new Error(`Unknown extended recipe: ${action.type}`);
   }
@@ -487,6 +495,11 @@ export function reduceExtended(state, action) {
       if (!action.shift) rows[0] = incrementNested(rows[0]);
       const index = rows.findIndex((item) => item.id === action.id);
       if (index !== -1) rows[index] = incrementNested(rows[index]);
+      return { ...state, rows };
+    }
+    case 'bench/shift-and-update': {
+      const rows = state.rows.slice(1);
+      rows[action.index] = incrementNested(rows[action.index]);
       return { ...state, rows };
     }
     default:
