@@ -10,10 +10,11 @@ export function getSetMap(target: ProxyDraft): Map<any, any> {
   return target.setMap || (target.setMap = new Map());
 }
 
-// The value that an item of a Set draft stands for.
+// The value that an item of a Set draft stands for; `setMap` holds no
+// `undefined` value.
 export function setItemValue(target: ProxyDraft, item: any) {
-  const setMap = target.setMap;
-  return setMap && setMap.has(item) ? setMap.get(item) : item;
+  const value = target.setMap && target.setMap.get(item);
+  return value === undefined ? item : value;
 }
 
 const setValues = Set.prototype.values;

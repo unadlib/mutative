@@ -9,7 +9,6 @@ import {
   isEqual,
   iterateSet,
   set,
-  setItemValue,
 } from './draft';
 import { forEach } from './forEach';
 
@@ -83,21 +82,34 @@ export type GeneratePatches = (
 // an outer producer that a nested producer's Set holds; other Sets may still
 // be changing, and are rebuilt when their own producer finalizes them.
 export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
-  // Only Set drafts have `setMap`.
+  // Only Set drafts have `setMap`, and an unchanged draft stands for its
+  // original.
   const setMap = target.setMap;
-  let items = setMap && setMap.items;
+  if (!setMap || !target.operated) return;
+  let items = setMap.items;
   if (!items) {
-    let differs = false;
-    if (setMap && !again)
-      setMap.forEach((value, item) => {
-        if (getValue(value) !== item) differs = true;
-      });
+    if (again) return;
+    // Without added or deleted items, an item that the Set drafted changed,
+    // unless the recipe added and deleted a draft; rebuilding then changes
+    // nothing.
+    let differs = target.assignedMap!.size === 0;
+    if (!differs) {
+      for (const [item, value] of setMap) {
+        if (getValue(value) !== item) {
+          differs = true;
+          break;
+        }
+      }
+    }
     if (!differs) return;
-    items = setMap!.items = Array.from(iterateSet(target.copy));
+    items = setMap.items = Array.from(iterateSet(target.copy));
   }
   const copy: Set<any> = target.copy;
   copy.clear();
-  items.forEach((item) => copy.add(getValue(setItemValue(target, item))));
+  items.forEach((item) => {
+    const value = setMap.get(item);
+    copy.add(value === undefined ? item : getValue(value));
+  });
 }
 
 export function finalizePatches(
