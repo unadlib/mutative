@@ -14,6 +14,21 @@ describe('drafts whose original is a draft of an outer create() call', () => {
     expect(state).toBe(base);
   });
 
+  test('a draft of a Set subclass is copied through the outer draft', () => {
+    class TagSet extends Set<string> {}
+    const base = { tags: new TagSet(['a', 'b']) };
+    const state = create(base, (draft) => {
+      const result = create({ tags: draft.tags }, (innerDraft) => {
+        innerDraft.tags.add('c');
+        innerDraft.tags.delete('a');
+      });
+      expect(result.tags).toBeInstanceOf(TagSet);
+      expect([...result.tags]).toEqual(['b', 'c']);
+      expect([...draft.tags]).toEqual(['a', 'b']);
+    });
+    expect(state).toBe(base);
+  });
+
   test('a Map draft is copied through the outer draft', () => {
     const base = { map: new Map([['a', 1]]) };
     const state = create(base, (draft) => {
