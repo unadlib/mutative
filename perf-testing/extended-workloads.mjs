@@ -69,6 +69,11 @@ export function createExtendedScenarios(config) {
     objects: new Set(range(size).map((id) => ({ id, value: id }))),
     stable: stable(),
   });
+  const collectionsState = () => ({
+    ...mapState(),
+    ids: new Set(range(size)),
+    value: 0,
+  });
   const recordState = () => {
     const entities = {};
     for (const id of range(size)) entities[`id${id}`] = row(id);
@@ -117,6 +122,25 @@ export function createExtendedScenarios(config) {
       'map-forEach',
       numberMapState,
       [{ type: 'bench/read-map-forEach' }],
+      collection
+    ),
+    // One producer changes a Map and a Set, which copies them, and the next
+    // ones update a value beside them. With auto-freeze, the first producer
+    // freezes the copies, which the others then find frozen.
+    entry(
+      'map-set-beside',
+      collectionsState,
+      [
+        {
+          type: 'bench/map-set-insert',
+          key: size,
+          payload: row(size),
+          value: size,
+        },
+        ...Array.from({ length: config.reuseStateIterations - 1 }, () => ({
+          type: 'bench/value-update',
+        })),
+      ],
       collection
     ),
     entry(
@@ -300,6 +324,13 @@ export function applyExtendedRecipe(
       consumeRead(sum);
       break;
     }
+    case 'bench/map-set-insert':
+      draft.map.set(action.key, action.payload);
+      draft.ids.add(action.value);
+      break;
+    case 'bench/value-update':
+      draft.value += 1;
+      break;
     case 'bench/set-add':
       draft.ids.add(action.value);
       break;
@@ -424,6 +455,14 @@ export function reduceExtended(state, action) {
       map.delete(action.key);
       return { ...state, map };
     }
+    case 'bench/map-set-insert':
+      return {
+        ...state,
+        map: new Map(state.map).set(action.key, action.payload),
+        ids: new Set(state.ids).add(action.value),
+      };
+    case 'bench/value-update':
+      return { ...state, value: state.value + 1 };
     case 'bench/set-add':
       return { ...state, ids: new Set(state.ids).add(action.value) };
     case 'bench/set-delete': {
