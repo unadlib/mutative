@@ -105,7 +105,13 @@ export function getPath(
       // applied to whatever sits at the position in the base Set. An
       // unchanged Set holds its items in their original order.
       if (parent.assignedMap!.size > 0) return null;
-      key = Array.from(iterateSet(parent.original)).indexOf(key);
+      // Counted without copying the Set, as each changed item searches it.
+      let index = 0;
+      for (const item of iterateSet(parent.original)) {
+        if (item === key) break;
+        index += 1;
+      }
+      key = index;
     } else if (get(parentCopy, key) !== target.proxy) {
       // The child left its key: it was moved, deleted or replaced, possibly
       // by another draft of a shared object. The parent's patches carry its
