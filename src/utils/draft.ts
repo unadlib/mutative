@@ -5,6 +5,28 @@ export function latest<T = any>(proxyDraft: ProxyDraft): T {
   return proxyDraft.copy ?? proxyDraft.original;
 }
 
+// The drafts of a Set draft's items and the objects it added; see `src/set.ts`.
+export function getSetMap(target: ProxyDraft): Map<any, any> {
+  return target.setMap || (target.setMap = new Map());
+}
+
+// The value that an item of a Set draft stands for; `setMap` holds no
+// `undefined` value.
+export function setItemValue(target: ProxyDraft, item: any) {
+  const value = target.setMap && target.setMap.get(item);
+  return value === undefined ? item : value;
+}
+
+const setValues = Set.prototype.values;
+
+// The items of a Set in the order in which it holds them, also for a subclass
+// that iterates them otherwise, so that the positions in patch paths are those
+// that the draft iterates. A draft of an outer producer iterates them so
+// itself.
+export function iterateSet(set: Set<any>): IterableIterator<any> {
+  return isDraft(set) ? set.values() : setValues.call(set);
+}
+
 /**
  * Check if the value is a draft
  */
@@ -80,9 +102,16 @@ export function getPath(
       // which patches can follow only while the Set itself is unchanged.
       // Once the recipe added or removed items, the Set's own patches carry
       // every changed item by value, so patches under this path would be
-      // applied to whatever sits at the position in the base Set.
+      // applied to whatever sits at the position in the base Set. An
+      // unchanged Set holds its items in their original order.
       if (parent.assignedMap!.size > 0) return null;
-      key = Array.from(parent.setMap!.keys()).indexOf(key);
+      // Counted without copying the Set, as each changed item searches it.
+      let index = 0;
+      for (const item of iterateSet(parent.original)) {
+        if (item === key) break;
+        index += 1;
+      }
+      key = index;
     } else if (get(parentCopy, key) !== target.proxy) {
       // The child left its key: it was moved, deleted or replaced, possibly
       // by another draft of a shared object. The parent's patches carry its

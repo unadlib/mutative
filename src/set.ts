@@ -5,19 +5,20 @@ import {
   assertDraftActive,
   ensureShallowCopy,
   getProxyDraft,
+  getSetMap,
   isDraftable,
+  iterateSet,
+  latest,
   markChanged,
   markFinalization,
+  setItemValue,
 } from './utils';
 import { checkReadable } from './unsafe';
 
-/**
- * The item mapping of a Set draft. Reads that leave the Set unchanged, such
- * as `has` and `size`, answer from the original instead of building it.
- */
-export function getSetMap(target: ProxyDraft<any>): Map<any, any> {
-  return (target.setMap ??= new Map(target.original.entries()));
-}
+// A Set draft adds and deletes items in its copy, which holds the items in
+// order. `setMap` maps the original items that an iterator drafted to their
+// drafts, and the objects that the recipe added, drafts among them, to
+// themselves. Finalization replaces the drafts with their final values.
 
 const getNextIterator =
   (
@@ -30,7 +31,7 @@ const getNextIterator =
     if (result.done) return result;
     assertDraftActive(target);
     const key = result.value as any;
-    let value = target.setMap!.get(key);
+    let value = setItemValue(target, key);
     const currentDraft = getProxyDraft(value);
     const mutable =
       target.options.mark?.(value, dataTypes) === dataTypes.mutable;
@@ -55,7 +56,7 @@ const getNextIterator =
         target.finalities,
         target.options
       );
-      target.setMap!.set(key, proxy);
+      getSetMap(target).set(key, proxy);
       value = proxy;
     } else if (currentDraft) {
       // drafted
@@ -69,18 +70,18 @@ const getNextIterator =
 
 export const setHandler = {
   get size() {
-    const target: ProxyDraft<any> = getProxyDraft(this)!;
-    return (target.setMap ?? target.original).size;
+    return latest(getProxyDraft(this)!).size;
   },
   has(value: any) {
-    const target = getProxyDraft(this)!;
-    const items: Map<any, any> | Set<any> = target.setMap ?? target.original;
-    // reassigned or non-draftable values
-    if (items.has(value)) return true;
-    const valueProxyDraft = getProxyDraft(value)!;
-    // drafted
-    if (valueProxyDraft && items.has(valueProxyDraft.original)) return true;
-    return false;
+    const items: Set<any> = latest(getProxyDraft(this)!);
+    let valueProxyDraft: ProxyDraft | null;
+    // The value itself, which may be a draft that its producer revoked, or the
+    // item that a draft of it stands for.
+    return (
+      items.has(value) ||
+      (!!(valueProxyDraft = getProxyDraft(value)) &&
+        items.has(valueProxyDraft.original))
+    );
   },
   add(value: any) {
     const target = getProxyDraft(this)!;
@@ -88,7 +89,11 @@ export const setHandler = {
       ensureShallowCopy(target);
       markChanged(target);
       target.assignedMap!.set(value, true);
-      getSetMap(target).set(value, value);
+      target.copy!.add(value);
+      // An added draft is replaced by its final value when finalizing, and an
+      // added object is finalized for the drafts it may hold.
+      if (value && typeof value === 'object')
+        getSetMap(target).set(value, value);
       markFinalization(target, value, value);
     }
     return this;
@@ -100,22 +105,21 @@ export const setHandler = {
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
     markChanged(target);
-    const setMap = getSetMap(target);
-    const valueProxyDraft = getProxyDraft(value)!;
-    if (valueProxyDraft && setMap.has(valueProxyDraft.original)) {
-      // delete drafted
-      target.assignedMap!.set(valueProxyDraft.original, false);
-      return setMap.delete(valueProxyDraft.original);
-    }
-    if (!valueProxyDraft && setMap.has(value)) {
-      // non-draftable values
-      target.assignedMap!.set(value, false);
-    } else {
+    const copy: Set<any> = target.copy!;
+    const valueProxyDraft = getProxyDraft(value);
+    // A draft of an item stands for the item; an added draft is an item.
+    const item =
+      valueProxyDraft && copy.has(valueProxyDraft.original)
+        ? valueProxyDraft.original
+        : value;
+    if (valueProxyDraft && item === value) {
       // reassigned
       target.assignedMap!.delete(value);
+    } else {
+      target.assignedMap!.set(item, false);
     }
-    // delete reassigned or non-draftable values
-    return setMap.delete(value);
+    if (target.setMap) target.setMap.delete(item);
+    return copy.delete(item);
   },
   clear() {
     if (!this.size) return;
@@ -125,12 +129,13 @@ export const setHandler = {
     for (const value of target.original) {
       target.assignedMap!.set(value, false);
     }
-    getSetMap(target).clear();
+    if (target.setMap) target.setMap.clear();
+    target.copy!.clear();
   },
   values(): IterableIterator<any> {
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
-    const iterator = getSetMap(target).keys();
+    const iterator = iterateSet(target.copy!);
     return {
       __proto__: iteratorPrototype,
       next: getNextIterator(target, iterator, true),
@@ -139,7 +144,7 @@ export const setHandler = {
   entries(): IterableIterator<[any, any]> {
     const target = getProxyDraft(this)!;
     ensureShallowCopy(target);
-    const iterator = getSetMap(target).keys();
+    const iterator = iterateSet(target.copy!);
     return {
       __proto__: iteratorPrototype,
       next: getNextIterator(

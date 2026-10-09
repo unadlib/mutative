@@ -7,6 +7,7 @@ import {
   isDraft,
   isDraftable,
   isEqual,
+  iterateSet,
   set,
 } from './draft';
 import { forEach } from './forEach';
@@ -74,14 +75,41 @@ export type GeneratePatches = (
   inversePatches: Patches
 ) => void;
 
-export function finalizeSetValue(target: ProxyDraft) {
-  // A Set draft whose items never changed may have no item mapping.
-  if (target.type === DraftType.Set && target.copy && target.setMap) {
-    target.copy.clear();
-    target.setMap!.forEach((value) => {
-      target.copy!.add(getValue(value));
-    });
+// The copy of a Set draft holds its items in order, so only items that a draft
+// stands for may need their final value: the Set is rebuilt in order once one
+// of them differs from the item itself. The first rebuild keeps the items on
+// `setMap`. With `again`, only a Set rebuilt before is rebuilt, for a draft of
+// an outer producer that a nested producer's Set holds; other Sets may still
+// be changing, and are rebuilt when their own producer finalizes them.
+export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
+  // Only Set drafts have `setMap`, and an unchanged draft stands for its
+  // original.
+  const setMap = target.setMap;
+  if (!setMap || !target.operated) return;
+  let items = setMap.items;
+  if (!items) {
+    if (again) return;
+    // Without added or deleted items, an item that the Set drafted changed,
+    // unless the recipe added and deleted a draft; rebuilding then changes
+    // nothing.
+    let differs = target.assignedMap!.size === 0;
+    if (!differs) {
+      for (const [item, value] of setMap) {
+        if (getValue(value) !== item) {
+          differs = true;
+          break;
+        }
+      }
+    }
+    if (!differs) return;
+    items = setMap.items = Array.from(iterateSet(target.copy));
   }
+  const copy: Set<any> = target.copy;
+  copy.clear();
+  items.forEach((item) => {
+    const value = setMap.get(item);
+    copy.add(value === undefined ? item : getValue(value));
+  });
 }
 
 export function finalizePatches(
@@ -129,12 +157,18 @@ export function finalizeNode(
     // Fast path: the node is still at its own key. Otherwise another draft
     // may have been moved here, e.g. by `reverse()`, and is finalized instead.
     const proxyDraft = draft === node.proxy ? node : getProxyDraft(draft);
+    // A draft that left its key reaches its new place as a value, through a
+    // callback or a value assigned there, so a Set finalizes its items here.
+    if (proxyDraft !== node) finalizeSetValue(node);
     if (proxyDraft) {
       // assign the updated value to the copy object
       const updatedValue = proxyDraft.operated
         ? proxyDraft.copy
         : proxyDraft.original;
-      finalizeSetValue(proxyDraft);
+      // A draft of another producer, which a recipe placed here, is
+      // finalized by that producer.
+      if (proxyDraft.finalities === node.finalities)
+        finalizeSetValue(proxyDraft);
       finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
       if (__DEV__ && parent.options.enableAutoFreeze) {
         parent.options.updatedValues =
@@ -177,7 +211,10 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         const updatedValue = proxyDraft.operated
           ? proxyDraft.copy
           : proxyDraft.original;
-        finalizeSetValue(target);
+        // The drafts of a Set's own producer are done changing when it rebuilds
+        // the Set; a draft of another producer may change after that.
+        if (proxyDraft.finalities !== target.finalities)
+          finalizeSetValue(target, true);
         if (__DEV__ && target.options.enableAutoFreeze) {
           target.options.updatedValues =
             target.options.updatedValues ?? new WeakMap();

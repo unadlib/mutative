@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "068192438cb329e8a9fce1f8faba0ea0fed9f03f",
-    "description": "Native array methods keep the identity of base elements that a recipe inserts into a moved array, and array patches compare indices that a length change exposes again",
+    "revision": "b8f009e2b1a82b57fdd0bb919bac3f6f6ae6de88",
+    "description": "Set drafts add and delete items in their copy, map only the items that drafts stand for and are rebuilt once, by their own producer, a Set subclass draft keeps its items in their order, and a Set draft that left its key keeps its changes",
     "node": "v24.16.0",
     "commands": [
       "pnpm install --frozen-lockfile",
@@ -15,69 +15,69 @@
   "esbuild": "0.24.0",
   "measurements": {
     "artifact/mutative.cjs.production.min.js": {
-      "raw": 26722,
-      "gzip": 8929,
-      "brotli": 8184
+      "raw": 27109,
+      "gzip": 9083,
+      "brotli": 8334
     },
     "artifact/mutative.umd.production.min.js": {
-      "raw": 26877,
-      "gzip": 8989,
-      "brotli": 8247
+      "raw": 27266,
+      "gzip": 9150,
+      "brotli": 8389
     },
     "artifact/mutative.esm.production.min.mjs": {
-      "raw": 26701,
-      "gzip": 8949,
-      "brotli": 8223
+      "raw": 27084,
+      "gzip": 9110,
+      "brotli": 8358
     },
     "artifact/mutative.cjs.development.js": {
-      "raw": 72560,
-      "gzip": 17343,
-      "brotli": 15076
+      "raw": 72711,
+      "gzip": 17489,
+      "brotli": 15219
     },
     "artifact/mutative.umd.development.js": {
-      "raw": 74813,
-      "gzip": 17548,
-      "brotli": 15238
+      "raw": 74975,
+      "gzip": 17688,
+      "brotli": 15367
     },
     "artifact/mutative.esm.js": {
-      "raw": 73412,
-      "gzip": 17462,
-      "brotli": 15145
+      "raw": 73563,
+      "gzip": 17603,
+      "brotli": 15302
     },
     "artifact/mutative.esm.mjs": {
-      "raw": 73413,
-      "gzip": 17463,
-      "brotli": 15137
+      "raw": 73564,
+      "gzip": 17604,
+      "brotli": 15296
     },
     "consumer/import/create": {
-      "raw": 24068,
-      "gzip": 8365,
-      "brotli": 7679
+      "raw": 24439,
+      "gzip": 8529,
+      "brotli": 7838
     },
     "consumer/import/patches": {
-      "raw": 25971,
-      "gzip": 8985,
-      "brotli": 8247
+      "raw": 26332,
+      "gzip": 9153,
+      "brotli": 8393
     },
     "consumer/import/all": {
-      "raw": 26756,
-      "gzip": 9242,
-      "brotli": 8467
+      "raw": 27117,
+      "gzip": 9407,
+      "brotli": 8621
     },
     "consumer/require/create": {
-      "raw": 26245,
-      "gzip": 9233,
-      "brotli": 8462
+      "raw": 26619,
+      "gzip": 9403,
+      "brotli": 8627
     },
     "consumer/require/patches": {
-      "raw": 26313,
-      "gzip": 9269,
-      "brotli": 8528
+      "raw": 26687,
+      "gzip": 9442,
+      "brotli": 8660
     },
     "consumer/require/all": {
-      "raw": 26210,
-      "gzip": 9213,
-      "brotli": 8441
+      "raw": 26584,
+      "gzip": 9382,
+      "brotli": 8603
     }
   }
 }

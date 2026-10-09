@@ -42,7 +42,7 @@ export function Hero() {
         >
           <Zap className="size-3.5 fill-fd-primary text-fd-primary" />
           <span>
-            About 3.4x faster than Immer
+            About 3.6x faster than Immer
             <span className="hidden sm:inline"> across 93 workloads</span>
           </span>
           <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />

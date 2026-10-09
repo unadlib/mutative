@@ -381,8 +381,8 @@ export function createDraft<T extends object>(
     proxy: null,
     finalities,
     options,
-    // Mapping of draft Set items to their corresponding draft values, built
-    // once a Set draft is changed or iterated; see `getSetMap`.
+    // The drafts of a Set draft's items and the objects it added; see
+    // `src/set.ts`.
     setMap: undefined,
     assignedMap: undefined,
     callbacks: undefined,

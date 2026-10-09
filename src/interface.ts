@@ -55,7 +55,9 @@ export interface ProxyDraft<T = any> {
   options: Options<any, any> & { updatedValues?: WeakMap<any, any> };
   parent: ProxyDraft | null;
   key: string | number | symbol | undefined;
-  setMap: Map<any, ProxyDraft> | undefined;
+  // The drafts of a Set draft's items and the objects it added, with its items
+  // in order once finalization rebuilt it.
+  setMap: (Map<any, any> & { items?: any[] }) | undefined;
   assignedMap: Map<any, boolean> | undefined;
   callbacks: FinalizeCallback[] | undefined;
   // Child drafts created by this draft, by key.
