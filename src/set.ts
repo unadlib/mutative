@@ -73,11 +73,13 @@ export const setHandler = {
   },
   has(value: any) {
     const items: Set<any> = latest(getProxyDraft(this)!);
-    const valueProxyDraft = getProxyDraft(value);
-    // The value itself, or the item that a draft of it stands for.
+    let valueProxyDraft: ProxyDraft | null;
+    // The value itself, which may be a draft that its producer revoked, or the
+    // item that a draft of it stands for.
     return (
       items.has(value) ||
-      (!!valueProxyDraft && items.has(valueProxyDraft.original))
+      (!!(valueProxyDraft = getProxyDraft(value)) &&
+        items.has(valueProxyDraft.original))
     );
   },
   add(value: any) {

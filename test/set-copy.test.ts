@@ -210,3 +210,18 @@ test('drafts added to a Set rebuild it once', () => {
     clear.mockRestore();
   }
 });
+
+test('a Set draft finds an item that is a draft of a finished nested producer', () => {
+  const state = create(new Set<any>(), (draft) => {
+    let item: any;
+    create({ item: { value: 1 } }, (innerDraft) => {
+      item = innerDraft.item;
+      innerDraft.item.value = 2;
+      draft.add(item);
+    });
+    expect(draft.has(item)).toBe(true);
+    draft.add(item);
+    expect(draft.size).toBe(1);
+  });
+  expect([...state]).toEqual([{ value: 2 }]);
+});
