@@ -60,6 +60,10 @@ export function createExtendedScenarios(config) {
     map: new Map(range(size).map((id) => [id, row(id)])),
     stable: stable(),
   });
+  const numberMapState = () => ({
+    map: new Map(range(size).map((id) => [id, id])),
+    stable: stable(),
+  });
   const idSetState = () => ({ ids: new Set(range(size)), stable: stable() });
   const objectSetState = () => ({
     objects: new Set(range(size).map((id) => ({ id, value: id }))),
@@ -109,6 +113,12 @@ export function createExtendedScenarios(config) {
       collection
     ),
     entry('map-read', mapState, [{ type: 'bench/read-map' }], collection),
+    entry(
+      'map-forEach',
+      numberMapState,
+      [{ type: 'bench/read-map-forEach' }],
+      collection
+    ),
     entry(
       'set-add',
       idSetState,
@@ -232,6 +242,13 @@ export function expectedExtendedReads(state, action) {
       for (const value of state.map.values()) sum += value.nested.value;
       return [sum];
     }
+    case 'bench/read-map-forEach': {
+      let sum = 0;
+      state.map.forEach((value) => {
+        sum += value;
+      });
+      return [sum];
+    }
     case 'bench/read-set':
       return [
         state.ids.has(action.present),
@@ -268,6 +285,14 @@ export function applyExtendedRecipe(
     case 'bench/read-map': {
       let sum = 0;
       for (const value of draft.map.values()) sum += value.nested.value;
+      consumeRead(sum);
+      break;
+    }
+    case 'bench/read-map-forEach': {
+      let sum = 0;
+      draft.map.forEach((value) => {
+        sum += value;
+      });
       consumeRead(sum);
       break;
     }
