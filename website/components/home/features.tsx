@@ -30,7 +30,7 @@ const features: {
     icon: Zap,
     title: 'High performance',
     description:
-      'About 6.6x faster than Immer out of the box, and faster than hand-written spreads for objects with thousands of keys.',
+      'About 6.7x faster than Immer out of the box, and faster than hand-written spreads for objects with thousands of keys.',
     href: '/docs/getting-started/performance',
   },
   {
