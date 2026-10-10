@@ -58,6 +58,23 @@ The runner never upgrades dependencies implicitly. Reports record the actual ins
 
 `--patches off|on|both` defaults to `off`, preserving the original plain-update benchmark. `benchmark:immer:check` checks both patch modes and both freeze modes (all selected scenarios with all four libraries, each in the modes it supports). `--library all` (the default) measures candidate, pinned v1, Immer, and the hand-written reducer; `--library both` retains the original candidate/Immer comparison. `--patches on` measures patch generation with automatic freezing off and on; `--patches both` additionally measures the plain-update baseline in the same processes. The JSON schema is version 2, with `enablePatches` on each trial and summary; the summarizer still reads the original version 1 archives as patches off.
 
+### Replacement returns with default freeze settings
+
+The [replacement-return comparison](./reports/SUMMARY.md#replacement-returns-with-rawreturn-and-default-freeze-settings) pairs Mutative's `return-replace-raw` with auto-freeze off and Immer's `return-replace` with auto-freeze on, both with patches off. `rawReturn()` explicitly promises that the whole returned value contains no drafts. Immer receives an ordinary replacement value and pre-frozen inputs and payloads; the first freeze of external data is outside timing.
+
+To reproduce this comparison and its ordinary-return controls, build once and run the three sizes sequentially:
+
+```sh
+pnpm build
+pnpm benchmark:immer:build
+for rows in 100 1000 10000; do
+  node --expose-gc --enable-source-maps perf-testing/dist/immutability-benchmarks.mjs --check --library both --freeze both --patches off --filter '^return-replace(-raw)?$' --array-size "$rows"
+  node perf-testing/run-benchmarks.mjs --isolate --runs 3 --library both --freeze both --patches off --filter '^return-replace(-raw)?$' --array-size "$rows" --output "perf-testing/results/return-defaults-$rows.json"
+done
+```
+
+Each generated report includes both scenarios with matched freeze modes. For the comparison across default settings, select `summary`'s `return-replace-raw` entry with `autoFreeze: false` and `enablePatches: false`, then read `libraries.mutative.medianMeanNs`; select `return-replace` with `autoFreeze: true` and `enablePatches: false`, then read `libraries.immer.medianMeanNs`. Divide Immer's time by Mutative's for the speed ratio, and calculate `100 * (1 - Mutative / Immer)` for the percentage of time saved. The reports' existing `immerOverMutative` fields compare the same scenario and freeze mode and therefore describe a different comparison.
+
 ## Workloads and units
 
 | Group                                  | Scenarios                                                                                                                                |      Reducer calls per iteration |

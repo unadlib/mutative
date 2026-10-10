@@ -51,6 +51,22 @@ Against Immer by workload group, faster / within 5% / slower and geometric mean:
 
 The 2 cells slower than Immer are `class-wide-update` with freeze on at 1,000 rows (415 µs and 410 µs against 237 µs and 241 µs); see the limits below. With each library's defaults, the candidate is slower only in `return-replace`, at every size: without auto-freeze it searches the returned state for drafts, which Immer's auto-freeze skips because the state is frozen (26.2 µs, 257 µs and 2.61 ms against 0.78–0.79 µs). The 3 cells slower than Mutative 1.3.0, by 7–16%, are `add` and `update-largeObject1` with freeze on at 100 rows (19.5 µs against 18.3 µs, and 141 µs and 148 µs against 129 µs and 128 µs), cells in which the three processes of each library overlapped: 1.3.0 measured 17.4–21.8 µs and 117–152 µs.
 
+### Replacement returns with `rawReturn()` and default freeze settings
+
+For a replacement value that contains no drafts, Mutative's `rawReturn()` skips the search through that value. The following comparison uses each library's default freeze setting: candidate `return-replace-raw` with auto-freeze off, and Immer `return-replace` with auto-freeze on. Both have patches off, and Immer's array-method plugin is off. Both recipes return a new root with replaced rows; only the Mutative recipe wraps it in `rawReturn()`.
+
+Microseconds per call, using the same batch's medians of three independent-process means. The source cells are in `isolated-rest-default.json`, `isolated-1000.json`, and `isolated-10000.json`. Ratios and time reductions are calculated from the unrounded values.
+
+| Rows | Mutative `rawReturn()`, freeze off | Immer ordinary return, freeze on | Immer/Mutative | Mutative time reduction |
+| ---: | ---: | ---: | ---: | ---: |
+| 100 | 0.258 | 0.777 | 3.01 | 66.7% |
+| 1,000 | 0.259 | 0.781 | 3.02 | 66.9% |
+| 10,000 | 0.259 | 0.786 | 3.03 | 67.0% |
+
+The candidate's time stays approximately constant as the payload grows because it skips the draft search. Ordinary `return-replace` with auto-freeze off takes 26.2 µs, 257 µs, and 2.61 ms at these sizes. `rawReturn()` requires the entire returned value to contain no drafts; it cannot replace ordinary returns that include draft references. Immer's inputs and payloads are pre-frozen, so its times exclude the first freeze of external data. The candidate's inputs and payloads are unfrozen.
+
+This comparison reuses existing cells and keeps the ordinary-return results and aggregate counts above unchanged. The [focused reproduction commands](../README.md#replacement-returns-with-default-freeze-settings) measure both return scenarios and freeze modes at all three sizes.
+
 ### Large arrays
 
 Against Immer without its array-method plugin, by size and mode, over the 30 scaling scenarios: cells faster / within 5% / slower, and geometric means of Immer time over candidate time. The moves are `array-shift-nested`, `array-unshift-nested`, `array-splice-insert-nested`, `array-reverse-nested` and `array-reverse-primitive`.
