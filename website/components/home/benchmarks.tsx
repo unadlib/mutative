@@ -7,12 +7,12 @@ const stats = [
   {
     value: '3.6x',
     label: 'Faster than Immer with matched settings',
-    detail: 'Faster in 595 of 614 measured cases',
+    detail: 'Faster in 596 of 614 measured cases',
   },
   {
-    value: '6.7x',
+    value: '6.6x',
     label: "Faster than Immer with each library's defaults",
-    detail: 'Faster in 153 of 157 measured cases',
+    detail: 'Faster in 154 of 157 measured cases',
   },
   {
     value: '97',
