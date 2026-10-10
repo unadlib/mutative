@@ -15,7 +15,7 @@ export const metadata: Metadata = {
       template: '%s | Mutative',
     },
     description:
-      "Efficient immutable updates, about 3.6x faster than Immer with matched settings and 6.7x faster with each library's defaults.",
+      "Efficient immutable updates, about 3.6x faster than Immer with matched settings and 6.6x faster with each library's defaults.",
   }),
 };
 
