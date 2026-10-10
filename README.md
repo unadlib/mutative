@@ -103,8 +103,8 @@ Mutative ships patches, `Map`/`Set` support and native array methods built in; I
 
 | Bundle                                      |  Immer | Mutative |
 | ------------------------------------------- | -----: | -------: |
-| `produce` / `create` only                   | 3.6 kB |   7.7 kB |
-| With patches, `Map`/`Set` and array methods | 6.4 kB |   8.2 kB |
+| `produce` / `create` only                   | 3.6 kB |   7.8 kB |
+| With patches, `Map`/`Set` and array methods | 6.4 kB |   8.4 kB |
 
 Mutative's `create` includes patches, `Map`/`Set` support and the native array methods even when a recipe does not use them: they are part of `create`, not separate imports, so bundlers cannot drop them. The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
 
