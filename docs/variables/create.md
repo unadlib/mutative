@@ -6,9 +6,9 @@
 
 # Variable: create()
 
-> `const` **create**: \{\<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `O`, `F`\>(`base`, `options?`): \[[`Draft`](../type-aliases/Draft.md)\<`T`\>, () => `Result`\<`T`, `O`, `F`\>\]; \}
+> `const` **create**: \{\<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `O`, `F`\>(`base`, `options?`): \[[`Draft`](../type-aliases/Draft.md)\<`T`\>, () => `Result`\<`T`, `O`, `F`\>\]; \}
 
-Defined in: [create.ts:25](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/create.ts#L25)
+Defined in: [create.ts:25](https://github.com/unadlib/mutative/blob/c2e96282fb77355d4c5f83d86c6d201dee734d45/src/create.ts#L25)
 
 `create(baseState, callback, options)` to create the next state
 
@@ -105,6 +105,42 @@ expect(state.arr).toBe(baseState.arr);
 
 ## Call Signature
 
+> \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>
+
+### Type Parameters
+
+#### T
+
+`T` = `never`
+
+#### F
+
+`F` *extends* `boolean` = `false`
+
+#### O
+
+`O` *extends* [`PatchesOptions`](../type-aliases/PatchesOptions.md) = `false`
+
+### Parameters
+
+#### base
+
+`ExplicitState`\<`T`\>
+
+#### mutate
+
+`ExplicitPrimitiveRecipe`\<`T`, \[\]\>
+
+#### options?
+
+[`Options`](../interfaces/Options.md)\<`O`, `F`\>
+
+### Returns
+
+`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>
+
+## Call Signature
+
 > \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>
 
 ### Type Parameters
@@ -129,7 +165,7 @@ expect(state.arr).toBe(baseState.arr);
 
 #### mutate
 
-`ExplicitMaybeAsyncRecipe`\<`T`, \[\]\>
+`ExplicitRecipe`\<`T`, \[\], `ExplicitReturn`\<`T`\> \| `Promise`\<`ExplicitReturn`\<`T`\>\>\>
 
 #### options?
 
@@ -321,6 +357,56 @@ expect(state.arr).toBe(baseState.arr);
 
 ## Call Signature
 
+> \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>
+
+### Type Parameters
+
+#### T
+
+`T` = `never`
+
+#### P
+
+`P` *extends* `any`[] = \[\]
+
+#### F
+
+`F` *extends* `boolean` = `false`
+
+#### O
+
+`O` *extends* [`PatchesOptions`](../type-aliases/PatchesOptions.md) = `false`
+
+### Parameters
+
+#### mutate
+
+`ExplicitPrimitiveRecipe`\<`T`, `P`\>
+
+#### options?
+
+[`Options`](../interfaces/Options.md)\<`O`, `F`\>
+
+### Returns
+
+> (`base`, ...`args`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>
+
+#### Parameters
+
+##### base
+
+`ExplicitState`\<`T`\>
+
+##### args
+
+...`P`
+
+#### Returns
+
+`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>
+
+## Call Signature
+
 > \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>
 
 ### Type Parameters
@@ -345,7 +431,7 @@ expect(state.arr).toBe(baseState.arr);
 
 #### mutate
 
-`ExplicitMaybeAsyncRecipe`\<`T`, `P`\>
+`ExplicitRecipe`\<`T`, `P`, `ExplicitReturn`\<`T`\> \| `Promise`\<`ExplicitReturn`\<`T`\>\>\>
 
 #### options?
 
