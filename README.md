@@ -606,6 +606,8 @@ expect(state.simpleObject).not.toBe(baseState.simpleObject);
 
 ## Using TypeScript
 
+Mutative's types support TypeScript 5.0 and later; the package checks compile them with TypeScript 5.0.
+
 - `castDraft()`
 - `castImmutable()`
 - `castMutable()`
