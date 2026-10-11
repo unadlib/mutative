@@ -10,7 +10,7 @@
 
 > **current**\<`T`\>(`target`): `T`
 
-Defined in: [current.ts:198](https://github.com/unadlib/mutative/blob/c2e96282fb77355d4c5f83d86c6d201dee734d45/src/current.ts#L198)
+Defined in: [current.ts:198](https://github.com/unadlib/mutative/blob/cbcd06102ce38252b6fa8b2c9f28a18ba9d9fbe9/src/current.ts#L198)
 
 `current(draft)` to get current state in the draft mutation function.
 
@@ -49,7 +49,7 @@ const state = create(
 
 > **current**\<`T`\>(`target`): `T`
 
-Defined in: [current.ts:200](https://github.com/unadlib/mutative/blob/c2e96282fb77355d4c5f83d86c6d201dee734d45/src/current.ts#L200)
+Defined in: [current.ts:200](https://github.com/unadlib/mutative/blob/cbcd06102ce38252b6fa8b2c9f28a18ba9d9fbe9/src/current.ts#L200)
 
 ### Type Parameters
 

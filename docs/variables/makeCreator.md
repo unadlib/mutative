@@ -6,9 +6,9 @@
 
 # Variable: makeCreator()
 
-> `const` **makeCreator**: \<`_F`, `_O`\>(`options?`) => \{\<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `O`, `F`\>(`base`, `options?`): \[[`Draft`](../type-aliases/Draft.md)\<`T`\>, () => `Result`\<`T`, `O`, `F`\>\]; \}
+> `const` **makeCreator**: \<`_F`, `_O`\>(`options?`) => \{\<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `O`, `F`\>(`base`, `options?`): \[[`Draft`](../type-aliases/Draft.md)\<`T`\>, () => `Result`\<`T`, `O`, `F`\>\]; \}
 
-Defined in: [makeCreator.ts:205](https://github.com/unadlib/mutative/blob/c2e96282fb77355d4c5f83d86c6d201dee734d45/src/makeCreator.ts#L205)
+Defined in: [makeCreator.ts:217](https://github.com/unadlib/mutative/blob/cbcd06102ce38252b6fa8b2c9f28a18ba9d9fbe9/src/makeCreator.ts#L217)
 
 `makeCreator(options)` to make a creator function.
 
@@ -454,6 +454,58 @@ expect(Object.isFrozen(state)).toBeTruthy();
 #### Returns
 
 `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>
+
+> \<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>
+
+### Type Parameters
+
+#### T
+
+`T` *extends* `unknown`
+
+#### P
+
+`P` *extends* `any`[] = \[\]
+
+#### F
+
+`F` *extends* `boolean` = `_F`
+
+#### O
+
+`O` *extends* [`PatchesOptions`](../type-aliases/PatchesOptions.md) = `_O`
+
+#### R
+
+`R` *extends* `unknown` = `void`
+
+### Parameters
+
+#### mutate
+
+(`draft`, ...`args`) => `R`
+
+#### options?
+
+[`Options`](../interfaces/Options.md)\<`O`, `F`\>
+
+### Returns
+
+> (`base`, ...`args`): `CreateResult`\<`T`, `O`, `F`, `R`\>
+
+#### Parameters
+
+##### base
+
+`T`
+
+##### args
+
+...`P`
+
+#### Returns
+
+`CreateResult`\<`T`, `O`, `F`, `R`\>
 
 > \<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>
 
