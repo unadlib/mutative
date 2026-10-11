@@ -140,8 +140,12 @@ export function apply<
         base =
           parentType === DraftType.Map
             ? base.get(key)
-            : // use `index` in Set draft
-              (parentType === DraftType.Set ? Array.from(base) : base)[key];
+            : parentType === DraftType.Set
+              ? // A Set item is found by its position, a number, so that no
+                // other key, such as `__proto__`, reads a property of the
+                // array of its items.
+                Array.from(base)[+key]
+              : base[key];
         if (typeof base !== 'object') {
           die(ErrorCode.CannotApplyPatch, path);
         }

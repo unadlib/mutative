@@ -1299,6 +1299,58 @@ test('a patch cannot set a prototype through the last segment of its path', () =
   expect(map.get('__proto__')).toBe(1);
 });
 
+test('a patch cannot reach a prototype through a Set position', () => {
+  const constructor = Array.prototype.constructor;
+  const cases: [string, string | number, unknown][] = [
+    ['replace', 'injected', { admin: true }],
+    ['add', 0, { admin: true }],
+    ['replace', 'constructor', 'x'],
+  ];
+  for (const [op, last, value] of cases) {
+    for (const nested of [false, true]) {
+      for (const asString of [false, true]) {
+        for (const options of [undefined, { mutable: true }]) {
+          const state: any = nested
+            ? { set: new Set([{ v: 1 }]) }
+            : new Set([{ v: 1 }]);
+          const keys = [...(nested ? ['set'] : []), '__proto__', last];
+          const path = asString ? `/${keys.join('/')}` : keys;
+          try {
+            expect(() =>
+              apply(state, [{ op, path, value }] as Patches, options)
+            ).toThrow(`Cannot apply patch at '${keys.join('/')}'.`);
+          } finally {
+            // Undo a change of the prototype, so that other tests still work
+            // if the check fails.
+            delete (Array.prototype as any).injected;
+            // eslint-disable-next-line no-extend-native
+            Array.prototype.length = 0;
+            // eslint-disable-next-line no-extend-native
+            Array.prototype.constructor = constructor;
+          }
+          expect(([] as any).injected).toBeUndefined();
+          expect(([] as any)[0]).toBeUndefined();
+          expect(Array.prototype.length).toBe(0);
+          expect([1].map((item) => item + 1)).toEqual([2]);
+        }
+      }
+    }
+  }
+  // A position, also given as a string, still finds its item.
+  for (const options of [undefined, { mutable: true }]) {
+    const state = { set: new Set([{ v: 1 }, { v: 2 }]) };
+    const result = apply(
+      state,
+      [
+        { op: 'replace', path: ['set', 1, 'v'], value: 3 },
+        { op: 'replace', path: '/set/0/v', value: 4 },
+      ] as Patches,
+      options
+    );
+    expect([...(result ?? state).set]).toEqual([{ v: 4 }, { v: 3 }]);
+  }
+});
+
 test.each([false, true])(
   'coercible terminal keys cannot set a prototype (mutable: %s)',
   (mutable) => {
