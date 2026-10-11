@@ -8,7 +8,7 @@
 
 > **DraftedObject**\<`T`\> = `{ -readonly [K in keyof T]: Draft<T[K]> }`
 
-Defined in: [interface.ts:225](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/interface.ts#L225)
+Defined in: [interface.ts:225](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/interface.ts#L225)
 
 ## Type Parameters
 

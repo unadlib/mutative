@@ -8,7 +8,7 @@
 
 > `const` **create**: \{\<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`\>(`base`, `mutate`, `options?`): `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `F`, `O`, `R`\>(`base`, `mutate`, `options?`): `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`\>(`mutate`, `options?`): (`base`, ...`args`) => `Result`\<`ExplicitState`\<`T`\>, `O`, `F`\> \| `Promise`\<`Result`\<`ExplicitState`\<`T`\>, `O`, `F`\>\>; \<`T`, `P`, `F`, `O`, `R`\>(`mutate`, `options?`): (`base`, ...`args`) => `CreateResult`\<`T`, `O`, `F`, `R`\>; \<`T`, `O`, `F`\>(`base`, `options?`): \[[`Draft`](../type-aliases/Draft.md)\<`T`\>, () => `Result`\<`T`, `O`, `F`\>\]; \}
 
-Defined in: [create.ts:25](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/create.ts#L25)
+Defined in: [create.ts:25](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/create.ts#L25)
 
 `create(baseState, callback, options)` to create the next state
 
@@ -129,7 +129,7 @@ expect(state.arr).toBe(baseState.arr);
 
 #### mutate
 
-`ExplicitRecipe`\<`T`, \[\], `ExplicitMaybeAsyncReturn`\<`T`\>\>
+`ExplicitMaybeAsyncRecipe`\<`T`, \[\]\>
 
 #### options?
 
@@ -345,7 +345,7 @@ expect(state.arr).toBe(baseState.arr);
 
 #### mutate
 
-`ExplicitRecipe`\<`T`, `P`, `ExplicitMaybeAsyncReturn`\<`T`\>\>
+`ExplicitMaybeAsyncRecipe`\<`T`, `P`\>
 
 #### options?
 

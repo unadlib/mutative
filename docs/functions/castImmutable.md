@@ -8,7 +8,7 @@
 
 > **castImmutable**\<`T`\>(`value`): [`Immutable`](../type-aliases/Immutable.md)\<`T`\>
 
-Defined in: [utils/cast.ts:13](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/utils/cast.ts#L13)
+Defined in: [utils/cast.ts:13](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/utils/cast.ts#L13)
 
 Cast a value to an Immutable type value.
 

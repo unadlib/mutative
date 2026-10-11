@@ -8,7 +8,7 @@
 
 > **unsafe**\<`T`\>(`callback`): `T`
 
-Defined in: [unsafe.ts:57](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/unsafe.ts#L57)
+Defined in: [unsafe.ts:57](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/unsafe.ts#L57)
 
 `unsafe(callback)` to access mutable data directly in strict mode.
 

@@ -59,7 +59,7 @@ type ExplicitMaybeAsyncRecipe<T, P extends any[]> =
     ? never
     : ExplicitRecipe<T, P, ExplicitReturn<T> | Promise<ExplicitReturn<T>>>;
 
-type MakeCreator = <
+/** @inline */ type MakeCreator = <
   _F extends boolean = false,
   _O extends PatchesOptions = false,
 >(

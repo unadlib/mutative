@@ -8,7 +8,7 @@
 
 > **PatchesOptions** = `boolean` \| \{ `arrayLengthAssignment?`: `boolean`; `pathAsArray?`: `boolean`; \}
 
-Defined in: [interface.ts:18](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/interface.ts#L18)
+Defined in: [interface.ts:18](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/interface.ts#L18)
 
 ## Type Declaration
 

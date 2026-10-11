@@ -8,7 +8,7 @@
 
 > **original**\<`T`\>(`target`): `T`
 
-Defined in: [original.ts:22](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/original.ts#L22)
+Defined in: [original.ts:22](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/original.ts#L22)
 
 `original(draft)` to get original state in the draft mutation function.
 

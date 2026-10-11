@@ -8,7 +8,7 @@
 
 > **markSimpleObject**(`value`): `undefined` \| `"immutable"`
 
-Defined in: [utils/marker.ts:26](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/utils/marker.ts#L26)
+Defined in: [utils/marker.ts:26](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/utils/marker.ts#L26)
 
 ## Parameters
 
