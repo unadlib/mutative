@@ -396,7 +396,7 @@ expect(baseState).toEqual({ foo: { bar: "test2" } });
 
 > ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state. As it changes the state in place, it throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state.
 
-> `apply()` throws for a patch path through `__proto__` or `constructor`, or through the `prototype` of a function, so that patches cannot change the prototypes of objects. It reads the other path segments as properties, as Immer does, and does not guard against prototypes that other code has already changed.
+> `apply()` throws for a patch path through the `__proto__` or `constructor` of an object or array, or through the `prototype` of a function, so that patches cannot change the prototypes of objects; Map keys of these names are ordinary keys. It reads the other path segments as properties, as Immer does, and does not guard against prototypes that other code has already changed.
 
 > Patches add and remove Set elements by value, also a changed element of a Set that added or removed elements, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. `apply()` also appends the elements that it adds, so such a Set can hold its elements in another order, and the patches of a later recipe, which find Set elements by position, can then change another element. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/pathes#sets-of-objects).
 
