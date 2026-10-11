@@ -30,6 +30,12 @@ const layouts: Record<string, () => { id: number; value: number }[]> = {
     const [a, b] = rows(2);
     return Array.from({ length: 40 }, (_, index) => (index % 2 ? b : a));
   },
+  'two alternating elements, then unique ones': () => {
+    const [a, b] = rows(2);
+    return rows(60).map((item, index) =>
+      index < 40 ? (index % 2 ? b : a) : item
+    );
+  },
 };
 
 describe.each(
@@ -128,12 +134,42 @@ test('a moved element repeated many times is not searched for once per copy', ()
     expect(state.list.slice(0, 9).map((item) => item.value)).toEqual([
       1, 2, 3, 4, 5, 6, 7, 8, 0,
     ]);
-    // Each of the eight reads searches forward at most 17 times instead of
-    // once per later copy, up to 499 of them, then backward once.
-    expect(searches(indexOf)).toBe(8 * 17);
+    // Each of the eight reads searches forward 17 times one copy after
+    // another, then about once per doubling of its step up to 1,000, instead
+    // of once per later copy, up to 499 of them, then backward once.
+    expect(searches(indexOf)).toBeLessThanOrEqual(8 * (17 + 11));
     expect(searches(lastIndexOf)).toBe(8);
   } finally {
     indexOf.mockRestore();
+    lastIndexOf.mockRestore();
+  }
+});
+
+test('a moved element repeated at the start is not searched for from the end', () => {
+  const [a, b] = rows(2);
+  const list = rows(1000).map((item, index) =>
+    index < 100 ? (index % 2 ? b : a) : item
+  );
+  const base = { list };
+  const lastIndexOf = vi.spyOn(Array.prototype, 'lastIndexOf');
+  try {
+    const state = create(base, (draft) => {
+      draft.list.shift();
+      for (let index = 0; index < 8; index += 1) {
+        draft.list[index].value = index + 1;
+      }
+    });
+    expect(state.list.slice(0, 9).map((item) => item.value)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 0,
+    ]);
+    // Each backward search starts within twice the length of the repeated
+    // rows instead of at the end of the array.
+    const starts = lastIndexOf.mock.calls
+      .filter((_, call) => lastIndexOf.mock.contexts[call] === list)
+      .map(([, from]) => from);
+    expect(starts).toHaveLength(8);
+    for (const from of starts) expect(from).toBeLessThan(200);
+  } finally {
     lastIndexOf.mockRestore();
   }
 });

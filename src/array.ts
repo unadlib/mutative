@@ -167,18 +167,22 @@ function baseIndexOf(target: ProxyDraft, value: any, index: number) {
       found = arrayProto.lastIndexOf.call(original, value);
       return found === -1 ? undefined : found;
     }
-    // A few later copies of the element are found by searching forward, which
-    // V8 runs on its fast path for frozen arrays too, unlike `lastIndexOf`. An
-    // element repeated more often is searched for backward once, instead of
-    // once per copy.
+    // Later copies of the element are found by searching forward, which V8
+    // runs on its fast path for frozen arrays too, unlike `lastIndexOf`. After
+    // 16 copies, each search starts twice as far ahead as the one before; the
+    // last copy then lies before the start of the first search that finds
+    // none, and is searched for backward from there, not from the end.
+    let step = 1;
     for (
       let next, copies = 0;
-      (next = arrayProto.indexOf.call(original, value, found + 1)) !== -1;
+      (next = arrayProto.indexOf.call(original, value, found + step)) !== -1;
     ) {
-      if (++copies > 16) return arrayProto.lastIndexOf.call(original, value);
       found = next;
+      if (++copies > 16) step *= 2;
     }
-    return found;
+    return step > 1
+      ? arrayProto.lastIndexOf.call(original, value, found + step - 1)
+      : found;
   }
   return baseIndices(target).get(value);
 }
