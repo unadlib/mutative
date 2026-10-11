@@ -126,11 +126,38 @@ test('synchronous recipes of a primitive state keep their result type', () => {
   );
   expectTypeOf(frozen).toEqualTypeOf<number>();
   expect(frozen).toBe(1);
+});
 
-  // A recipe that may return a Promise keeps the synchronous type here.
+test('a recipe that may return a Promise gives either result for a primitive state', async () => {
   const maybe = (value: number): number | Promise<number> =>
-    value > 0 ? Promise.resolve(value) : value + 1;
-  expectTypeOf(create<number>(0, maybe)).toEqualTypeOf<number>();
+    value > 0 ? Promise.resolve(value + 1) : value + 1;
+  const now = create<number>(0, maybe);
+  expectTypeOf(now).toEqualTypeOf<number | Promise<number>>();
+  expect(now).toBe(1);
+  const later = create<number>(1, maybe);
+  expect(later).toBeInstanceOf(Promise);
+  expect(await later).toBe(2);
+
+  const produce = create<number>(maybe);
+  expectTypeOf(produce).toEqualTypeOf<
+    (base: number) => number | Promise<number>
+  >();
+  expect(await produce(1)).toBe(2);
+
+  const withPatches = create<number, false, true>(1, maybe, {
+    enablePatches: true,
+  });
+  expectTypeOf(withPatches).toEqualTypeOf<
+    | [number, Patches<true>, Patches<true>]
+    | Promise<[number, Patches<true>, Patches<true>]>
+  >();
+  const [next, patches] = await withPatches;
+  expect(next).toBe(2);
+  expect(patches).toEqual([{ op: 'replace', path: [], value: 2 }]);
+
+  const frozen = makeCreator({ enableAutoFreeze: true })<number>(0, maybe);
+  expectTypeOf(frozen).toEqualTypeOf<number | Promise<number>>();
+  expect(frozen).toBe(1);
 });
 
 test('explicit state types contextualize literal replacement values', async () => {

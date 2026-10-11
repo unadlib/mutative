@@ -10,7 +10,7 @@
 
 > **apply**\<`T`, `F`, `_A`\>(`state`, `patches`, `applyOptions?`): `ApplyState`\<`T`, `F`, `undefined`\>
 
-Defined in: [apply.ts:62](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L62)
+Defined in: [apply.ts:63](https://github.com/unadlib/mutative/blob/c2e96282fb77355d4c5f83d86c6d201dee734d45/src/apply.ts#L63)
 
 `apply(state, patches)` to apply patches to state
 
@@ -68,7 +68,7 @@ expect(state).toEqual(apply(baseState, patches));
 
 > **apply**\<`T`, `F`, `A`\>(`state`, `patches`, `applyOptions`): `ApplyResult`\<`T`, `F`, `A`\>
 
-Defined in: [apply.ts:71](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L71)
+Defined in: [apply.ts:72](https://github.com/unadlib/mutative/blob/c2e96282fb77355d4c5f83d86c6d201dee734d45/src/apply.ts#L72)
 
 `apply(state, patches)` to apply patches to state
 
@@ -126,7 +126,7 @@ expect(state).toEqual(apply(baseState, patches));
 
 > **apply**\<`T`, `F`, `A`\>(`state`, `patches`, `applyOptions?`): `ApplyResult`\<`T`, `F`, `undefined` \| `A`\>
 
-Defined in: [apply.ts:78](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L78)
+Defined in: [apply.ts:79](https://github.com/unadlib/mutative/blob/c2e96282fb77355d4c5f83d86c6d201dee734d45/src/apply.ts#L79)
 
 `apply(state, patches)` to apply patches to state
 
@@ -184,7 +184,7 @@ expect(state).toEqual(apply(baseState, patches));
 
 > **apply**\<`T`, `F`\>(`state`, `patches`, `applyOptions`): `void`
 
-Defined in: [apply.ts:89](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L89)
+Defined in: [apply.ts:90](https://github.com/unadlib/mutative/blob/c2e96282fb77355d4c5f83d86c6d201dee734d45/src/apply.ts#L90)
 
 `apply(state, patches)` to apply patches to state
 
@@ -240,7 +240,7 @@ expect(state).toEqual(apply(baseState, patches));
 
 > **apply**\<`T`, `F`\>(`state`, `patches`, `applyOptions`): `ApplyResult`\<`T`, `F`, `undefined` \| `ApplyMutableOptions`\>
 
-Defined in: [apply.ts:94](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L94)
+Defined in: [apply.ts:95](https://github.com/unadlib/mutative/blob/c2e96282fb77355d4c5f83d86c6d201dee734d45/src/apply.ts#L95)
 
 `apply(state, patches)` to apply patches to state
 

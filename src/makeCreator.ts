@@ -49,15 +49,13 @@ type ExplicitRecipe<T, P extends any[], R> = [T] extends [never]
   ? never
   : (draft: Draft<ExplicitState<T>>, ...args: P) => R;
 
-// A recipe that may or may not return a Promise. The synchronous recipes of a
-// primitive state skip the first overload, which only gives async recipes
-// their context, so this one would take them too: they keep the overloads
-// that infer the return type, and a primitive state keeps its synchronous
-// result type for such a recipe.
-type ExplicitMaybeAsyncRecipe<T, P extends any[]> =
+// The first overload only gives the async recipes of a primitive state their
+// context, so its synchronous recipes take this one, which comes before the
+// overload of a recipe that may or may not return a Promise.
+type ExplicitPrimitiveRecipe<T, P extends any[]> =
   IsExplicitPrimitive<T> extends true
-    ? never
-    : ExplicitRecipe<T, P, ExplicitReturn<T> | Promise<ExplicitReturn<T>>>;
+    ? ExplicitRecipe<T, P, ExplicitReturn<T>>
+    : never;
 
 /** @inline */ type MakeCreator = <
   _F extends boolean = false,
@@ -79,10 +77,20 @@ type ExplicitMaybeAsyncRecipe<T, P extends any[]> =
     mutate: ExplicitRecipe<T, [], Promise<ExplicitReturn<T>>>,
     options?: ExternalOptions<O, F>
   ): Promise<Result<ExplicitState<T>, O, F>>;
+  // A synchronous recipe of a primitive state.
+  <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
+    base: ExplicitState<T>,
+    mutate: ExplicitPrimitiveRecipe<T, []>,
+    options?: ExternalOptions<O, F>
+  ): Result<ExplicitState<T>, O, F>;
   // A recipe that may or may not return a Promise gives either result.
   <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
     base: ExplicitState<T>,
-    mutate: ExplicitMaybeAsyncRecipe<T, []>,
+    mutate: ExplicitRecipe<
+      T,
+      [],
+      ExplicitReturn<T> | Promise<ExplicitReturn<T>>
+    >,
     options?: ExternalOptions<O, F>
   ): Result<ExplicitState<T>, O, F> | Promise<Result<ExplicitState<T>, O, F>>;
   <
@@ -132,7 +140,20 @@ type ExplicitMaybeAsyncRecipe<T, P extends any[]> =
     F extends boolean = _F,
     O extends PatchesOptions = _O,
   >(
-    mutate: ExplicitMaybeAsyncRecipe<T, P>,
+    mutate: ExplicitPrimitiveRecipe<T, P>,
+    options?: ExternalOptions<O, F>
+  ): (base: ExplicitState<T>, ...args: P) => Result<ExplicitState<T>, O, F>;
+  <
+    T = never,
+    P extends any[] = [],
+    F extends boolean = _F,
+    O extends PatchesOptions = _O,
+  >(
+    mutate: ExplicitRecipe<
+      T,
+      P,
+      ExplicitReturn<T> | Promise<ExplicitReturn<T>>
+    >,
     options?: ExternalOptions<O, F>
   ): (
     base: ExplicitState<T>,

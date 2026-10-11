@@ -103,8 +103,8 @@ Mutative ships patches, `Map`/`Set` support and native array methods built in; I
 
 | Bundle                                      |  Immer | Mutative |
 | ------------------------------------------- | -----: | -------: |
-| `produce` / `create` only                   | 3.6 kB |   7.8 kB |
-| With patches, `Map`/`Set` and array methods | 6.4 kB |   8.4 kB |
+| `produce` / `create` only                   | 3.6 kB |   7.9 kB |
+| With patches, `Map`/`Set` and array methods | 6.4 kB |   8.5 kB |
 
 Mutative's `create` includes patches, `Map`/`Set` support and the native array methods even when a recipe does not use them: they are part of `create`, not separate imports, so bundlers cannot drop them. The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
 
@@ -241,6 +241,8 @@ The recipe can be an async function: `create()` then returns a Promise of the re
   > If you need to set the shape of the generated patch in more detail, then you can set `pathAsArray` and `arrayLengthAssignment`。`pathAsArray` default value is `true`, if it's `true`, the path will be an array, otherwise it is a string; `arrayLengthAssignment` default value is `true`, if it's `true`, the array length will be included in the patches, otherwise no include array length(**NOTE**: If `arrayLengthAssignment` is `false`, it is fully compatible with JSON Patch spec, but it may have additional performance loss), [view related discussions](https://github.com/unadlib/mutative/issues/6).
 
   > A string path is a JSON Pointer and holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
+
+  > TypeScript types the result from the type of `enablePatches` in the options passed to `create()` or `makeCreator()`: `true` or an object gives `[state, patches, inversePatches]`, and `boolean` gives either. Options typed `{ enablePatches: true }` that may be `undefined`, such as an optional parameter of a wrapper, or typed `{ enablePatches?: true }` still give the tuple, although `create()` returns the state alone when patches are off; type the flag as `boolean` there. With an explicit state type, TypeScript infers no other type argument, so pass `boolean` as the type argument for `enablePatches` as well, as in `create<State, false, boolean>(base, recipe, options)` or `create<State, [], false, boolean>(recipe, options)`.
 
 - enableAutoFreeze - `boolean`, the default is false.
 
@@ -393,6 +395,8 @@ expect(baseState).toEqual({ foo: { bar: "test2" } });
 ```
 
 > ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state. As it changes the state in place, it throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state.
+
+> `apply()` throws for a patch path through the `__proto__` or `constructor` of an object or array, or through the `prototype` of a function, so that patches cannot change the prototypes of objects; Map keys of these names are ordinary keys. It reads the other path segments as properties, as Immer does, and does not guard against prototypes that other code has already changed.
 
 > Patches add and remove Set elements by value, also a changed element of a Set that added or removed elements, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. `apply()` also appends the elements that it adds, so such a Set can hold its elements in another order, and the patches of a later recipe, which find Set elements by position, can then change another element. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/pathes#sets-of-objects).
 
@@ -801,7 +805,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - `create()` with an explicit state type and an async recipe, such as `create<State>(base, async (draft) => { … })`, returns `Promise<State>`, and so do curried producers; v1 typed the result as `State`.
 - `apply()` accepts `enableAutoFreeze: true` and then returns `Immutable<State>`, as `apply<State, true>()` does; v1 rejected the option and typed the frozen result as mutable. With `enableAutoFreeze` typed as `boolean` or optional `true`, the result is `State | Immutable<State>`. With `mutable` typed as `boolean`, optional `boolean`, or optional `true`, `apply()` returns `State | void`.
 - A curried producer whose recipe annotates its draft and returns a new state, such as `create((draft: State) => ({ ...draft, count: 0 }))`, returns `State`, or `Promise<State>` for an async recipe. v1 typed such a call as a manual draft, so calling the producer did not compile.
-- With an explicit state type, a recipe that may or may not return a Promise, such as one typed `(draft: State) => void | Promise<void>`, gives `State | Promise<State>`, also in curried producers and creators from `makeCreator()`. v1 typed the result as `State`, as this version still does for a primitive state type, such as `number`.
+- With an explicit state type, a recipe that may or may not return a Promise, such as one typed `(draft: State) => void | Promise<void>`, gives `State | Promise<State>`, also for a primitive state type, such as `number`, and in curried producers and creators from `makeCreator()`. v1 typed the result as `State`.
 
 ### Fixes that change results
 
