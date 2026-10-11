@@ -648,6 +648,10 @@ Yes. Deleting the entry being visited and changing the values of other entries w
 
 Yes, but they compare elements as iterating the draft returns them. An object of the base state is a draft there, so these methods do not match it with the original object, although `has()` accepts the original object. To compare a Set draft with objects of the base state, call the method on `current(draft)`, in which unchanged objects keep their identity, or on `original(draft)` for the base state, or compare ids, for example `[...draft].filter((item) => ids.has(item.id))`. This applies to `union()`, `intersection()`, `difference()`, `symmetricDifference()`, `isSubsetOf()`, `isSupersetOf()` and `isDisjointFrom()`.
 
+- Can a draft be a Map key?
+
+No. Map keys are used as they are, and a draft is revoked when its producer ends, so a Map that kept a draft as a key would hold a key that throws when it is read, and so would the patches that name it. Use `original(draft)`, `current(draft)` or an id as the key. Development builds throw when a recipe passes a draft to the `set()` method of a Map draft.
+
 - Does Mutative support shared references?
 
 Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](https://mutative.js.org/docs/extra-topics/shared-references).
@@ -787,6 +791,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - In strict mode, `rawReturn()` of a value without drafts no longer prints contradictory warnings.
 - With `enablePatches: { pathAsArray: false }`, development builds throw when a patch path would hold a Map key that is not a string, or a symbol key, as a string path cannot name such a key: applying the patch writes another key, for example `'1'` instead of `1`, or fails for a change below that key. Production builds still generate such patches, as v1 did, and still throw a `TypeError` for a symbol key. Keep the default array paths for such keys.
 - With `enableAutoFreeze`, development builds report a circular reference only for an object that holds itself. A changed draft that holds its original, as `draft.prev = original(draft)` makes it, or that links to a shared object through another path no longer throws; production builds always froze such states. For a real cycle, the error names the path of the object that repeats, which can be one key longer than in v1.
+- Development builds throw when a recipe passes a draft to the `set()` method of a Map draft, as in `draft.map.set(draft.key, value)`: Map keys are used as they are, so the next state would keep the draft as a key, revoked, and reading it would throw. Production builds still keep such a key, as v1 did. Use `original(draft)`, `current(draft)` or an id as the key.
 
 ### TypeScript
 
