@@ -55,3 +55,7 @@ expect(nextState.fooBar).not.toBe(baseState.fooBar);
 <Callout type="idea">
 Set a mark to determine if the value is mutable or if an instance is an immutable, and it can also return a shallow copy function(AutoFreeze and Patches should both be disabled, Some patches operation might not be equivalent). When the mark function is (target) => 'immutable', it means all the objects in the state structure are immutable. In this specific case, you can totally turn on AutoFreeze and Patches. mark supports multiple marks, and the marks are executed in order, and the first mark that returns a value will be used.
 </Callout>
+
+## Copying marked instances
+
+Mutative copies an instance that `mark` makes `immutable` with all its own properties, non-enumerable ones included, and reads its own accessors as values, as Immer's `setUseStrictShallowCopy('class_only')` does. To copy quickly, it assigns the own properties that are enumerable, writable and configurable instead of defining them, as Immer's default copy does. An own property that shadows a setter of its class, such as a class field over an accessor of a base class, therefore runs that setter on the copy, which can change objects that the copy shares with the base state, and one that shadows a getter without a setter or a read-only property makes the copy throw. Keep such values in accessors of the class or under other keys.

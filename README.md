@@ -251,6 +251,7 @@ The recipe can be an async function: `create()` then returns a Promise of the re
   > When the mark function is (target) => 'immutable', it means all the objects in the state structure are immutable. In this specific case, you can totally turn on `AutoFreeze` and `Patches`.
   > `mark` supports multiple marks, and the marks are executed in order, and the first mark that returns a value will be used.
   > When a object tree node is marked by the `mark` function as `mutable`, all of its child nodes will also not be drafted by Mutative and will retain their original values.
+  > An instance that `mark` makes `immutable` is copied with all its own properties, and those that are enumerable and writable are assigned, so an own property that shadows a setter of its class runs it, and one that shadows a getter or a read-only property throws; see [Copying marked instances](https://mutative.js.org/docs/advanced-guides/mark#copying-marked-instances).
 
 #### `create()` - Currying
 
