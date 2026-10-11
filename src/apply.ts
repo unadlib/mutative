@@ -101,6 +101,7 @@ export function apply<
   F extends boolean = false,
   A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
 >(state: T, patches: Patches, applyOptions?: A): ApplyResult<T, F, A> {
+  const mutable = (applyOptions as ApplyMutableOptions)?.mutable;
   let i: number;
   for (i = patches.length - 1; i >= 0; i -= 1) {
     const { value, op, path } = patches[i];
@@ -108,6 +109,9 @@ export function apply<
       (!path.length && op === Operation.Replace) ||
       (path === '' && op === Operation.Add)
     ) {
+      // A mutable application changes the state in place and returns nothing,
+      // so it cannot replace the state with another value.
+      if (mutable && value !== state) die(ErrorCode.ReplaceMutableRoot);
       state = value;
       break;
     }
@@ -115,7 +119,6 @@ export function apply<
   if (i > -1) {
     patches = patches.slice(i + 1);
   }
-  const mutable = (applyOptions as ApplyMutableOptions)?.mutable;
   // The objects that a mutable application changes in place are not drafts.
   const getTargetType = mutable ? getType : getPatchTargetType;
   const mutate = (draft: Draft<T> | T) => {

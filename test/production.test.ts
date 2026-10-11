@@ -49,6 +49,11 @@ test('patch, original() and rawReturn() errors carry their minified code', () =>
   expect(() => original({})).toThrow(minified(18));
   expect(() => (rawReturn as any)()).toThrow(minified(19));
   expect(() => (rawReturn as any)({}, {})).toThrow(minified(20));
+  expect(() =>
+    apply({ a: 1 }, [{ op: 'replace', path: [], value: { b: 1 } }], {
+      mutable: true,
+    })
+  ).toThrow(minified(21));
 });
 
 test('auto-freeze passes over primitives in Maps, Sets, and arrays', () => {

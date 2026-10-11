@@ -84,7 +84,7 @@ expect(inversePatches).toMatchInlineSnapshot(`
 - **Maps.** `set()` emits an `add` patch for a new key and a `replace` patch for an existing one, and `delete()` a `remove` patch.
 - **Sets.** Patches add an item by its value and remove one by the value it holds; see [Sets of objects](#sets-of-objects).
 - **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, emits no patches under its old path; the patches of its parent carry its value.
-- **Applying patches.** `apply()` applies `add`, `remove` and `replace` patches and accepts `-` as the index that appends to an array. It throws for other operations and for paths through `__proto__` or `constructor`. It takes the `enableAutoFreeze`, `strict` and `mark` options, or `mutable: true` to change the state in place, and it changes a draft in place.
+- **Applying patches.** `apply()` applies `add`, `remove` and `replace` patches and accepts `-` as the index that appends to an array. It throws for other operations and for paths through `__proto__` or `constructor`. It takes the `enableAutoFreeze`, `strict` and `mark` options, or `mutable: true` to change the state in place, which throws for a patch that replaces the root state with another value, and it changes a draft in place.
 - **JSON Patch.** With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations. Maps and Sets have no JSON Patch counterpart.
 
 [Comparison with Immer](/docs/extra-topics/comparison-with-immer#patches) lists where these patches differ from Immer's.

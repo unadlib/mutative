@@ -1891,6 +1891,46 @@ test('base - mutate', () => {
   expect(result).toBeUndefined();
 });
 
+test('a mutable application cannot replace the root state', () => {
+  const [, patches] = create({ old: 1 } as any, () => ({ n: 2 }), {
+    enablePatches: true,
+  });
+  for (const root of [
+    patches[0],
+    { op: 'replace', path: '', value: { n: 2 } },
+    { op: 'add', path: '', value: { n: 2 } },
+  ] as Patches) {
+    const state = { old: 1 };
+    const value = root.value;
+    expect(() =>
+      apply(
+        state,
+        [root, { op: 'replace', path: ['n'], value: 3 }] as Patches,
+        { mutable: true }
+      )
+    ).toThrow(
+      'apply() with the mutable option changes the state in place, so a patch cannot replace the root state with another value.'
+    );
+    expect(state).toEqual({ old: 1 });
+    expect(value).toEqual({ n: 2 });
+  }
+  // A replacement with the state itself changes nothing, as the patch of a
+  // recipe that returns its base state, and the patches after it apply.
+  const state = { n: 1 };
+  const [, own] = create(state, () => state, { enablePatches: true });
+  apply(state, [...own, { op: 'replace', path: ['n'], value: 2 }], {
+    mutable: true,
+  });
+  expect(state).toEqual({ n: 2 });
+  // Without the option, the patches replace the root state.
+  expect(
+    apply({ old: 1 } as any, [
+      ...patches,
+      { op: 'replace', path: ['n'], value: 3 },
+    ])
+  ).toEqual({ n: 3 });
+});
+
 describe('array methods on the draft copy', () => {
   // Plain arrays run `shift`, `unshift`, `splice`, `reverse`, searches and
   // primitive sorts natively on the draft's copy: removed and moved elements
