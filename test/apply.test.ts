@@ -1351,6 +1351,42 @@ test('a patch cannot reach a prototype through a Set position', () => {
   }
 });
 
+test('a Set item of a patch path is found only at its index', () => {
+  // Keys that convert to a number but are no index of an item find nothing,
+  // as they do in an array.
+  const keys: unknown[] = [
+    '',
+    ' ',
+    '-0',
+    '01',
+    '1.0',
+    '1e0',
+    '0x1',
+    '+1',
+    null,
+    false,
+    true,
+    [],
+    'length',
+  ];
+  for (const key of keys) {
+    for (const options of [undefined, { mutable: true }]) {
+      const state = { set: new Set([{ v: 1 }, { v: 2 }]) };
+      const path = ['set', key, 'v'];
+      expect(() =>
+        apply(state, [{ op: 'replace', path, value: 3 }] as Patches, options)
+      ).toThrow(`Cannot apply patch at '${path.join('/')}'.`);
+      expect([...state.set]).toEqual([{ v: 1 }, { v: 2 }]);
+    }
+  }
+  // An empty segment of a string path is no index either.
+  expect(() =>
+    apply({ set: new Set([{ v: 1 }]) }, [
+      { op: 'replace', path: '/set//v', value: 3 },
+    ])
+  ).toThrow(`Cannot apply patch at 'set//v'.`);
+});
+
 test.each([false, true])(
   'coercible terminal keys cannot set a prototype (mutable: %s)',
   (mutable) => {

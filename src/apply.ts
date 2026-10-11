@@ -11,6 +11,7 @@ import {
   deepClone,
   getProxyDraft,
   getType,
+  has,
   isDraft,
   unescapePath,
 } from './utils';
@@ -140,15 +141,15 @@ export function apply<
             die(ErrorCode.ReservedPatchAttribute);
           }
         }
-        base =
-          parentType === DraftType.Map
-            ? base.get(key)
-            : parentType === DraftType.Set
-              ? // A Set item is found by its position, a number, so that no
-                // other key, such as `__proto__`, reads a property of the
-                // array of its items.
-                Array.from(base)[+key]
-              : base[key];
+        if (parentType === DraftType.Set) {
+          // A Set item is found at its index in the array of the Set's items,
+          // so that no other key, such as `__proto__`, reads a property that
+          // the array inherits. No number names such a property.
+          base = Array.from(base);
+          if (typeof key !== 'number' && !has(base, key))
+            die(ErrorCode.CannotApplyPatch, path);
+        }
+        base = parentType === DraftType.Map ? base.get(key) : base[key];
         if (typeof base !== 'object') {
           die(ErrorCode.CannotApplyPatch, path);
         }
