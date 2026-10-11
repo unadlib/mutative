@@ -1387,6 +1387,43 @@ test('a Set item of a patch path is found only at its index', () => {
   ).toThrow(`Cannot apply patch at 'set//v'.`);
 });
 
+test('a key of a Set step in a patch path is converted once', () => {
+  // A key that converts to another value on each call must not pass the check
+  // of an index as one key and then be read as another.
+  for (const second of ['__proto__', '1']) {
+    for (const options of [undefined, { mutable: true }]) {
+      let calls = 0;
+      const key = {
+        [Symbol.toPrimitive]() {
+          calls += 1;
+          return calls === 1 ? '0' : second;
+        },
+      };
+      const state = { set: new Set<any>([{ v: 1 }, { v: 2 }]) };
+      let polluted = false;
+      try {
+        const result = apply(
+          state,
+          [{ op: 'replace', path: ['set', key as any, 'probe'], value: true }],
+          options
+        );
+        expect([...(result ?? state).set]).toEqual([
+          { v: 1, probe: true },
+          { v: 2 },
+        ]);
+      } finally {
+        polluted = Object.prototype.hasOwnProperty.call(
+          Array.prototype,
+          'probe'
+        );
+        delete (Array.prototype as any).probe;
+      }
+      expect(polluted).toBe(false);
+      expect(calls).toBe(1);
+    }
+  }
+});
+
 test.each([false, true])(
   'coercible terminal keys cannot set a prototype (mutable: %s)',
   (mutable) => {

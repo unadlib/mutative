@@ -144,7 +144,9 @@ export function apply<
         if (parentType === DraftType.Set) {
           // A Set item is found at its index in the array of the Set's items,
           // so that no other key, such as `__proto__`, reads a property that
-          // the array inherits. No number names such a property.
+          // the array inherits. No number names such a property. The key is
+          // converted once, so that the check and the read use the same key.
+          key = normalizePatchKey(key);
           base = Array.from(base);
           if (typeof key !== 'number' && !has(base, key))
             die(ErrorCode.CannotApplyPatch, path);
