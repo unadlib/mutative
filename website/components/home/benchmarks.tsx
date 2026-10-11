@@ -10,7 +10,7 @@ const stats = [
     detail: 'Faster in 596 of 614 measured cases',
   },
   {
-    value: '6.6x',
+    value: '6.7x',
     label: "Faster than Immer with each library's defaults",
     detail: 'Faster in 154 of 157 measured cases',
   },

@@ -77,6 +77,9 @@ export interface ArrayState {
   diffEnd: number;
   // Original index by element of the original array, built lazily.
   baseRefs: Map<any, number> | null;
+  // How far the last native move shifted the elements it moved, when it
+  // shifted all of them alike.
+  delta: number | undefined;
   // Original indices looked up by searching before `baseRefs` is built.
   lookups: number;
   // Whether no element can be drafted; null until checked.

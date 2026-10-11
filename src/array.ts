@@ -104,6 +104,7 @@ function arrayState(target: ProxyDraft) {
     diffStart: 0,
     diffEnd: 0,
     baseRefs: null,
+    delta: 0,
     lookups: 0,
     inert: null,
     dense: null,
@@ -150,18 +151,31 @@ function baseIndices(target: ProxyDraft) {
 }
 
 /**
- * The original index of `value` once elements have moved natively, or
- * undefined when it is not an element of the original array. The first few
- * lookups search the original array from its end, which finds the index the
- * map of original indices holds for a repeated element, so a few reads after
- * a move do not index a large array; later lookups build the map.
+ * The original index of `value`, found at `index` once elements have moved
+ * natively, or undefined when it is not an element of the original array. The
+ * first few lookups find the index the map of original indices holds for a
+ * repeated element without indexing the array; later ones build the map.
  */
-function baseIndexOf(target: ProxyDraft, value: any) {
+function baseIndexOf(target: ProxyDraft, value: any, index: number) {
   const state = arrayState(target);
   if (state.baseRefs === null && state.lookups < 8) {
     state.lookups += 1;
-    const index = arrayProto.lastIndexOf.call(target.original, value);
-    return index === -1 ? undefined : index;
+    const original = target.original;
+    // The element is checked first where the last move took it from.
+    let found = +index + state.delta!;
+    if (!(found >= 0 && original[found] === value)) {
+      found = arrayProto.lastIndexOf.call(original, value);
+      return found === -1 ? undefined : found;
+    }
+    // A later copy of the element is found by searching forward, which V8
+    // runs on its fast path for frozen arrays too, unlike `lastIndexOf`.
+    for (
+      let next;
+      (next = arrayProto.indexOf.call(original, value, found + 1)) !== -1;
+    ) {
+      found = next;
+    }
+    return found;
   }
   return baseIndices(target).get(value);
 }
@@ -183,7 +197,7 @@ export function baseIndex(target: ProxyDraft, value: any, index: number) {
   ) {
     return -1;
   }
-  const found = baseIndexOf(target, value);
+  const found = baseIndexOf(target, value, index);
   return found === undefined ? -1 : found;
 }
 
@@ -278,9 +292,12 @@ function relocate(
   target: ProxyDraft,
   map: (index: number) => number,
   from: number,
-  to: number
+  to: number,
+  // How far the operation shifted the elements it moved, if all alike.
+  delta?: number
 ) {
   markRange(target, from, to);
+  target.arrayState!.delta = delta;
   const copy = target.copy!;
   const entries: [number, any][] = [];
   if (target.child !== null)
@@ -491,7 +508,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       const key = removalKey(target, 0);
       const copy = prepare(target);
       const value = arrayProto.shift.call(copy);
-      relocate(target, (index) => index - 1, 0, copy.length + 1);
+      relocate(target, (index) => index - 1, 0, copy.length + 1, 1);
       return removed(target, value, key);
     }),
     unshift: native('unshift', (target, self, items, original) => {
@@ -500,7 +517,7 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       if (!isDense(target)) return original.apply(self, items);
       const copy = prepare(target);
       arrayProto.unshift.apply(copy, items);
-      relocate(target, (index) => index + count, 0, copy.length);
+      relocate(target, (index) => index + count, 0, copy.length, -count);
       for (let index = 0; index < count; index += 1) {
         registerAssigned(target, index, items[index]);
       }
@@ -579,7 +596,8 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
         // Later indices keep their place when as many are inserted as deleted.
         deleteCount === insertCount
           ? start + deleteCount
-          : Math.max(length, copy.length)
+          : Math.max(length, copy.length),
+        deleteCount - insertCount
       );
       for (let index = 0; index < insertCount; index += 1) {
         registerAssigned(target, start + index, args[index + 2]);
