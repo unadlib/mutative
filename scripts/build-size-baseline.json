@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "df6131ced5215e29e206d3f435dbe80764394714",
-    "description": "A moved array element is first looked up where the offset of its move puts its original index",
+    "revision": "421150af0091e35a045ad9f5d928f8e580d86809",
+    "description": "Development builds throw for a draft used as a Map key, also for keys whose properties cannot be read, and freezing no longer records the originals of changed drafts",
     "node": "v24.16.0",
     "commands": [
       "pnpm install --frozen-lockfile",
@@ -15,69 +15,69 @@
   "esbuild": "0.24.0",
   "measurements": {
     "artifact/mutative.cjs.production.min.js": {
-      "raw": 27353,
-      "gzip": 9184,
-      "brotli": 8439
+      "raw": 27324,
+      "gzip": 9178,
+      "brotli": 8423
     },
     "artifact/mutative.umd.production.min.js": {
-      "raw": 27510,
-      "gzip": 9250,
-      "brotli": 8489
+      "raw": 27481,
+      "gzip": 9239,
+      "brotli": 8480
     },
     "artifact/mutative.esm.production.min.mjs": {
-      "raw": 27328,
-      "gzip": 9206,
-      "brotli": 8463
+      "raw": 27299,
+      "gzip": 9200,
+      "brotli": 8452
     },
     "artifact/mutative.cjs.development.js": {
-      "raw": 73292,
-      "gzip": 17656,
-      "brotli": 15344
+      "raw": 72847,
+      "gzip": 17743,
+      "brotli": 15413
     },
     "artifact/mutative.umd.development.js": {
-      "raw": 75572,
-      "gzip": 17860,
-      "brotli": 15504
+      "raw": 75122,
+      "gzip": 17940,
+      "brotli": 15569
     },
     "artifact/mutative.esm.js": {
-      "raw": 74144,
-      "gzip": 17772,
-      "brotli": 15439
+      "raw": 73682,
+      "gzip": 17833,
+      "brotli": 15458
     },
     "artifact/mutative.esm.mjs": {
-      "raw": 74145,
-      "gzip": 17774,
-      "brotli": 15422
+      "raw": 73683,
+      "gzip": 17834,
+      "brotli": 15477
     },
     "consumer/import/create": {
-      "raw": 24578,
-      "gzip": 8598,
-      "brotli": 7898
+      "raw": 24533,
+      "gzip": 8576,
+      "brotli": 7892
     },
     "consumer/import/patches": {
-      "raw": 26576,
-      "gzip": 9276,
+      "raw": 26549,
+      "gzip": 9267,
       "brotli": 8498
     },
     "consumer/import/all": {
-      "raw": 27361,
-      "gzip": 9533,
-      "brotli": 8742
+      "raw": 27334,
+      "gzip": 9525,
+      "brotli": 8738
     },
     "consumer/require/create": {
-      "raw": 26861,
-      "gzip": 9517,
-      "brotli": 8721
+      "raw": 26826,
+      "gzip": 9513,
+      "brotli": 8735
     },
     "consumer/require/patches": {
-      "raw": 26929,
-      "gzip": 9556,
-      "brotli": 8756
+      "raw": 26894,
+      "gzip": 9553,
+      "brotli": 8748
     },
     "consumer/require/all": {
-      "raw": 26826,
-      "gzip": 9496,
-      "brotli": 8704
+      "raw": 26791,
+      "gzip": 9492,
+      "brotli": 8700
     }
   }
 }
