@@ -110,7 +110,7 @@ type MakeCreator = <
     P extends any[] = [],
     F extends boolean = _F,
     O extends PatchesOptions = _O,
-    R extends void | Promise<void> = void,
+    R extends void | Promise<void> | T | Promise<T> = void,
   >(
     mutate: (draft: Draft<T>, ...args: P) => R,
     options?: ExternalOptions<O, F>

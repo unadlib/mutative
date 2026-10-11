@@ -3,6 +3,7 @@ import {
   apply,
   create,
   makeCreator,
+  type Draft,
   type Immutable,
   type Patches,
 } from '../src';
@@ -241,6 +242,32 @@ test('a sync curried recipe can return a new state or its draft', () => {
   });
   expectTypeOf(returnDraft).returns.toEqualTypeOf<State>();
   expect(returnDraft(base()).count).toBe(2);
+});
+
+test('a curried recipe with an annotated draft can return a new state', async () => {
+  const increment = create((draft: State) => ({
+    ...draft,
+    count: draft.count + 1,
+  }));
+  expectTypeOf(increment).toEqualTypeOf<(base: State) => State>();
+  expect(increment(base())).toEqual({ count: 2, list: [1] });
+
+  const add = create((draft: Draft<State>, by: number) => ({
+    ...draft,
+    count: draft.count + by,
+  }));
+  expectTypeOf(add).toEqualTypeOf<(base: State, by: number) => State>();
+  expect(add(base(), 2).count).toBe(3);
+
+  const reset = create(async (draft: State) => ({ ...draft, count: 0 }));
+  expectTypeOf(reset).toEqualTypeOf<(base: State) => Promise<State>>();
+  expect((await reset(base())).count).toBe(0);
+
+  const mutate = create((draft: State) => {
+    draft.count += 1;
+  });
+  expectTypeOf(mutate).toEqualTypeOf<(base: State) => State>();
+  expect(mutate(base()).count).toBe(2);
 });
 
 test('generic helpers keep synchronous replacement results', () => {
