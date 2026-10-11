@@ -373,6 +373,40 @@ test('a curried recipe with an annotated draft can return a new state', async ()
   expect(mutate(base()).count).toBe(2);
 });
 
+test('a curried recipe whose draft is a type parameter gives a producer', async () => {
+  function increment<T extends { count: number }>() {
+    return create((draft: T) => {
+      draft.count += 1;
+    });
+  }
+  function incrementLater<T extends { count: number }>() {
+    return create(async (draft: T) => {
+      draft.count += 1;
+    });
+  }
+  function incrementBy<T extends { count: number }>() {
+    return create((draft: T, by: number) => {
+      draft.count += by;
+    });
+  }
+  function reset<T extends { count: number }>() {
+    return create((draft: T) => ({ ...draft, count: 0 }));
+  }
+
+  expectTypeOf(increment<State>()).toEqualTypeOf<(base: State) => State>();
+  expect(increment<State>()(base()).count).toBe(2);
+  expectTypeOf(incrementLater<State>()).toEqualTypeOf<
+    (base: State) => Promise<State>
+  >();
+  expect((await incrementLater<State>()(base())).count).toBe(2);
+  expectTypeOf(incrementBy<State>()).toEqualTypeOf<
+    (base: State, by: number) => State
+  >();
+  expect(incrementBy<State>()(base(), 2).count).toBe(3);
+  expectTypeOf(reset<State>()).toEqualTypeOf<(base: State) => State>();
+  expect(reset<State>()(base())).toEqual({ count: 0, list: [1] });
+});
+
 test('generic helpers keep synchronous replacement results', () => {
   function update<T>(state: T, recipe: (draft: T) => T): T {
     return create<T>(state, recipe);

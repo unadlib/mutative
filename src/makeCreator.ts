@@ -169,6 +169,18 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
     mutate: (draft: Draft<T>, ...args: P) => R,
     options?: ExternalOptions<O, F>
   ): (base: T, ...args: P) => CreateResult<T, O, F, R>;
+  // A recipe that annotates its draft with the state type itself, such as a
+  // type parameter, which TypeScript cannot match against `Draft<T>`.
+  <
+    T extends any,
+    P extends any[] = [],
+    F extends boolean = _F,
+    O extends PatchesOptions = _O,
+    R extends void | Promise<void> | T | Promise<T> = void,
+  >(
+    mutate: (draft: T, ...args: P) => R,
+    options?: ExternalOptions<O, F>
+  ): (base: T, ...args: P) => CreateResult<T, O, F, R>;
   <T extends any, O extends PatchesOptions = _O, F extends boolean = _F>(
     base: T,
     options?: ExternalOptions<O, F>
