@@ -216,7 +216,7 @@ const state = create(baseState, (draft) => {
 
 In this basic example, the changes to the draft are 'mutative' within the draft callback, and `create()` is finally executed with a new immutable state.
 
-The recipe can be an async function: `create()` then returns a Promise of the result, and the draft stays usable until that Promise settles. `create()` recognizes the Promises of the current JavaScript realm only, so an async function from another realm, such as a `vm` context or an iframe, needs a wrapper from this realm: `create(baseState, async (draft) => { return await recipe(draft); })`.
+The recipe can be an async function: `create()` then returns a Promise of the result, and the draft stays usable until that Promise settles. `create()` recognizes the Promises of the current JavaScript realm only, so an async function from another realm, such as a `vm` context or an iframe, needs a wrapper from this realm: `create(baseState, async (draft) => { return await recipe(draft); })`. TypeScript types the result as a Promise as well, except with an explicit state type that is a type parameter, as in `create<T>(base, async (draft) => { … })` in a generic function, or that includes Promises, such as `object` or `unknown`, which gives the state type itself. In generic code, leave out the type argument: `create(base, async (draft) => { … })` gives `Promise<T>`.
 
 #### `create(state, fn, options)`
 
@@ -238,7 +238,7 @@ The recipe can be an async function: `create()` then returns a Promise of the re
 
   > Enable patch, and return the patches/inversePatches.
 
-  > If you need to set the shape of the generated patch in more detail, then you can set `pathAsArray` and `arrayLengthAssignment`。`pathAsArray` default value is `true`, if it's `true`, the path will be an array, otherwise it is a string; `arrayLengthAssignment` default value is `true`, if it's `true`, the array length will be included in the patches, otherwise no include array length(**NOTE**: If `arrayLengthAssignment` is `false`, it is fully compatible with JSON Patch spec, but it may have additional performance loss), [view related discussions](https://github.com/unadlib/mutative/issues/6).
+  > If you need to set the shape of the generated patch in more detail, then you can set `pathAsArray` and `arrayLengthAssignment`。`pathAsArray` default value is `true`, if it's `true`, the path will be an array, otherwise it is a string; `arrayLengthAssignment` default value is `true`, if it's `true`, the array length will be included in the patches, otherwise no include array length(**NOTE**: If `pathAsArray` and `arrayLengthAssignment` are both `false`, the patches of objects and arrays are fully compatible with JSON Patch spec, but `arrayLengthAssignment: false` may have additional performance loss), [view related discussions](https://github.com/unadlib/mutative/issues/6).
 
   > A string path is a JSON Pointer and holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
 
@@ -610,6 +610,8 @@ expect(state.simpleObject).not.toBe(baseState.simpleObject);
 
 ## Using TypeScript
 
+Mutative's types support TypeScript 5.0 and later; the package checks compile them with TypeScript 5.0.
+
 - `castDraft()`
 - `castImmutable()`
 - `castMutable()`
@@ -802,7 +804,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 ### TypeScript
 
-- `create()` with an explicit state type and an async recipe, such as `create<State>(base, async (draft) => { … })`, returns `Promise<State>`, and so do curried producers; v1 typed the result as `State`.
+- `create()` with an explicit state type and an async recipe, such as `create<State>(base, async (draft) => { … })`, returns `Promise<State>`, and so do curried producers; v1 typed the result as `State`. A state type that is a type parameter, as in a generic function, or that includes Promises, such as `object` or `unknown`, still gives the state type for async recipes and for recipes that may return a Promise, as in v1; leave out the type argument in generic code.
 - `apply()` accepts `enableAutoFreeze: true` and then returns `Immutable<State>`, as `apply<State, true>()` does; v1 rejected the option and typed the frozen result as mutable. With `enableAutoFreeze` typed as `boolean` or optional `true`, the result is `State | Immutable<State>`. With `mutable` typed as `boolean`, optional `boolean`, or optional `true`, `apply()` returns `State | void`.
 - A curried producer whose recipe annotates its draft and returns a new state, such as `create((draft: State) => ({ ...draft, count: 0 }))`, returns `State`, or `Promise<State>` for an async recipe. v1 typed such a call as a manual draft, so calling the producer did not compile.
 - With an explicit state type, a recipe that may or may not return a Promise, such as one typed `(draft: State) => void | Promise<void>`, gives `State | Promise<State>`, also for a primitive state type, such as `number`, and in curried producers and creators from `makeCreator()`. v1 typed the result as `State`.

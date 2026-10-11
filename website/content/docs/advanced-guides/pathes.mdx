@@ -236,5 +236,5 @@ expect(inversePatches).toMatchInlineSnapshot(`
 ```
 
 <Callout type="idea">
-If `arrayLengthAssignment` is `false`, it is fully compatible with JSON Patch spec, but it may have additional performance loss.
+If `pathAsArray` and `arrayLengthAssignment` are both `false`, the patches of objects and arrays are fully compatible with JSON Patch spec, but `arrayLengthAssignment: false` may have additional performance loss.
 </Callout>
