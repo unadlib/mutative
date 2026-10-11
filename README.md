@@ -242,7 +242,7 @@ The recipe can be an async function: `create()` then returns a Promise of the re
 
   > A string path is a JSON Pointer and holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
 
-  > TypeScript types the result from the type of `enablePatches` in the options passed to `create()` or `makeCreator()`: `true` or an object gives `[state, patches, inversePatches]`, and `boolean` gives either. Options typed `{ enablePatches: true }` that may be `undefined`, such as an optional parameter of a wrapper, or typed `{ enablePatches?: true }` still give the tuple, although `create()` returns the state alone when patches are off; type the flag as `boolean` there.
+  > TypeScript types the result from the type of `enablePatches` in the options passed to `create()` or `makeCreator()`: `true` or an object gives `[state, patches, inversePatches]`, and `boolean` gives either. Options typed `{ enablePatches: true }` that may be `undefined`, such as an optional parameter of a wrapper, or typed `{ enablePatches?: true }` still give the tuple, although `create()` returns the state alone when patches are off; type the flag as `boolean` there. With an explicit state type, TypeScript infers no other type argument, so pass `boolean` as the type argument for `enablePatches` as well, as in `create<State, false, boolean>(base, recipe, options)` or `create<State, [], false, boolean>(recipe, options)`.
 
 - enableAutoFreeze - `boolean`, the default is false.
 
