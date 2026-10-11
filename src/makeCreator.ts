@@ -34,19 +34,30 @@ type AsyncRecipeContext<T> = Promise<ExplicitReturn<T>> & {
   readonly __mutativeAsyncContext: never;
 };
 
-type ExplicitSyncReturn<T> = [ExplicitState<T>] extends [
+type IsExplicitPrimitive<T> = [ExplicitState<T>] extends [
   string | number | bigint | boolean | symbol | null | undefined,
 ]
-  ? AsyncRecipeContext<T>
-  : ExplicitReturn<T> | AsyncRecipeContext<T>;
+  ? true
+  : false;
 
-type ExplicitMaybeAsyncReturn<T> =
-  | ExplicitReturn<T>
-  | Promise<ExplicitReturn<T>>;
+type ExplicitSyncReturn<T> =
+  IsExplicitPrimitive<T> extends true
+    ? AsyncRecipeContext<T>
+    : ExplicitReturn<T> | AsyncRecipeContext<T>;
 
 type ExplicitRecipe<T, P extends any[], R> = [T] extends [never]
   ? never
   : (draft: Draft<ExplicitState<T>>, ...args: P) => R;
+
+// A recipe that may or may not return a Promise. The synchronous recipes of a
+// primitive state skip the first overload, which only gives async recipes
+// their context, so this one would take them too: they keep the overloads
+// that infer the return type, and a primitive state keeps its synchronous
+// result type for such a recipe.
+type ExplicitMaybeAsyncRecipe<T, P extends any[]> =
+  IsExplicitPrimitive<T> extends true
+    ? never
+    : ExplicitRecipe<T, P, ExplicitReturn<T> | Promise<ExplicitReturn<T>>>;
 
 type MakeCreator = <
   _F extends boolean = false,
@@ -71,7 +82,7 @@ type MakeCreator = <
   // A recipe that may or may not return a Promise gives either result.
   <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
     base: ExplicitState<T>,
-    mutate: ExplicitRecipe<T, [], ExplicitMaybeAsyncReturn<T>>,
+    mutate: ExplicitMaybeAsyncRecipe<T, []>,
     options?: ExternalOptions<O, F>
   ): Result<ExplicitState<T>, O, F> | Promise<Result<ExplicitState<T>, O, F>>;
   <
@@ -121,7 +132,7 @@ type MakeCreator = <
     F extends boolean = _F,
     O extends PatchesOptions = _O,
   >(
-    mutate: ExplicitRecipe<T, P, ExplicitMaybeAsyncReturn<T>>,
+    mutate: ExplicitMaybeAsyncRecipe<T, P>,
     options?: ExternalOptions<O, F>
   ): (
     base: ExplicitState<T>,
