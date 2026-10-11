@@ -49,6 +49,21 @@ test('patch, original() and rawReturn() errors carry their minified code', () =>
   expect(() => original({})).toThrow(minified(18));
   expect(() => (rawReturn as any)()).toThrow(minified(19));
   expect(() => (rawReturn as any)({}, {})).toThrow(minified(20));
+  expect(() =>
+    apply({ a: 1 }, [{ op: 'replace', path: [], value: { b: 1 } }], {
+      mutable: true,
+    })
+  ).toThrow(minified(21));
+});
+
+test('production builds skip the check of drafts used as Map keys', () => {
+  const { create } = mutative;
+  // Development builds throw here; production builds keep the key, as v1 did.
+  expect(() =>
+    create({ key: { id: 1 }, map: new Map<any, string>() }, (draft) => {
+      draft.map.set(draft.key, 'value');
+    })
+  ).not.toThrow();
 });
 
 test('auto-freeze passes over primitives in Maps, Sets, and arrays', () => {

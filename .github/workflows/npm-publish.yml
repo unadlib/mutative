@@ -18,6 +18,7 @@ jobs:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
       - run: pnpm install --frozen-lockfile
+      - run: pnpm type-check
       - run: pnpm build
       - run: pnpm size
       - run: pnpm test:package

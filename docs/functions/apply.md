@@ -1,4 +1,4 @@
-[**mutative**](../README.md) • **Docs**
+[**mutative**](../README.md)
 
 ***
 
@@ -6,7 +6,11 @@
 
 # Function: apply()
 
-> **apply**\<`T`, `F`\>(`state`, `patches`, `applyOptions`?): `T` \| `F` *extends* `true` ? [`Immutable`](../type-aliases/Immutable.md)\<`T`\> : `T`
+## Call Signature
+
+> **apply**\<`T`, `F`, `_A`\>(`state`, `patches`, `applyOptions?`): `ApplyState`\<`T`, `F`, `undefined`\>
+
+Defined in: [apply.ts:62](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L62)
 
 `apply(state, patches)` to apply patches to state
 
@@ -28,24 +32,260 @@ expect(patches).toEqual([{ op: 'replace', path: ['foo', 'bar'], value: 'str2' }]
 expect(state).toEqual(apply(baseState, patches));
 ```
 
-## Type Parameters
+### Type Parameters
 
-• **T** *extends* `object`
+#### T
 
-• **F** *extends* `boolean` = `false`
+`T` *extends* `object`
 
-## Parameters
+#### F
 
-• **state**: `T`
+`F` *extends* `boolean` = `false`
 
-• **patches**: [`Patches`](../type-aliases/Patches.md)
+#### _A
 
-• **applyOptions?**: `Pick`\<`Options`\<`boolean`, `F`\>, `"mark"` \| `"strict"` \| `"enableAutoFreeze"`\>
+`_A` *extends* `undefined` \| `ApplyOptions`\<`boolean`\> = `ApplyImmutableOptions`\<`F`\>
 
-## Returns
+### Parameters
 
-`T` \| `F` *extends* `true` ? [`Immutable`](../type-aliases/Immutable.md)\<`T`\> : `T`
+#### state
 
-## Defined in
+`T`
 
-[apply.ts:26](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/apply.ts#L26)
+#### patches
+
+[`Patches`](../type-aliases/Patches.md)
+
+#### applyOptions?
+
+`undefined`
+
+### Returns
+
+`ApplyState`\<`T`, `F`, `undefined`\>
+
+## Call Signature
+
+> **apply**\<`T`, `F`, `A`\>(`state`, `patches`, `applyOptions`): `ApplyResult`\<`T`, `F`, `A`\>
+
+Defined in: [apply.ts:71](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L71)
+
+`apply(state, patches)` to apply patches to state
+
+## Example
+
+```ts
+import { create, apply } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const [state, patches] = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'str2';
+  },
+  { enablePatches: true }
+);
+expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+expect(patches).toEqual([{ op: 'replace', path: ['foo', 'bar'], value: 'str2' }]);
+expect(state).toEqual(apply(baseState, patches));
+```
+
+### Type Parameters
+
+#### T
+
+`T` *extends* `object`
+
+#### F
+
+`F` *extends* `boolean` = `false`
+
+#### A
+
+`A` *extends* `undefined` \| `ApplyOptions`\<`boolean`\> = `ApplyImmutableOptions`\<`F`\>
+
+### Parameters
+
+#### state
+
+`T`
+
+#### patches
+
+[`Patches`](../type-aliases/Patches.md)
+
+#### applyOptions
+
+`A`
+
+### Returns
+
+`ApplyResult`\<`T`, `F`, `A`\>
+
+## Call Signature
+
+> **apply**\<`T`, `F`, `A`\>(`state`, `patches`, `applyOptions?`): `ApplyResult`\<`T`, `F`, `undefined` \| `A`\>
+
+Defined in: [apply.ts:78](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L78)
+
+`apply(state, patches)` to apply patches to state
+
+## Example
+
+```ts
+import { create, apply } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const [state, patches] = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'str2';
+  },
+  { enablePatches: true }
+);
+expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+expect(patches).toEqual([{ op: 'replace', path: ['foo', 'bar'], value: 'str2' }]);
+expect(state).toEqual(apply(baseState, patches));
+```
+
+### Type Parameters
+
+#### T
+
+`T` *extends* `object`
+
+#### F
+
+`F` *extends* `boolean` = `false`
+
+#### A
+
+`A` *extends* `undefined` \| `ApplyOptions`\<`boolean`\> = `ApplyImmutableOptions`\<`F`\>
+
+### Parameters
+
+#### state
+
+`T`
+
+#### patches
+
+[`Patches`](../type-aliases/Patches.md)
+
+#### applyOptions?
+
+`A`
+
+### Returns
+
+`ApplyResult`\<`T`, `F`, `undefined` \| `A`\>
+
+## Call Signature
+
+> **apply**\<`T`, `F`\>(`state`, `patches`, `applyOptions`): `void`
+
+Defined in: [apply.ts:89](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L89)
+
+`apply(state, patches)` to apply patches to state
+
+## Example
+
+```ts
+import { create, apply } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const [state, patches] = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'str2';
+  },
+  { enablePatches: true }
+);
+expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+expect(patches).toEqual([{ op: 'replace', path: ['foo', 'bar'], value: 'str2' }]);
+expect(state).toEqual(apply(baseState, patches));
+```
+
+### Type Parameters
+
+#### T
+
+`T` *extends* `object`
+
+#### F
+
+`F` *extends* `boolean` = `false`
+
+### Parameters
+
+#### state
+
+`T`
+
+#### patches
+
+[`Patches`](../type-aliases/Patches.md)
+
+#### applyOptions
+
+##### mutable
+
+`true`
+
+### Returns
+
+`void`
+
+## Call Signature
+
+> **apply**\<`T`, `F`\>(`state`, `patches`, `applyOptions`): `ApplyResult`\<`T`, `F`, `undefined` \| `ApplyMutableOptions`\>
+
+Defined in: [apply.ts:94](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/apply.ts#L94)
+
+`apply(state, patches)` to apply patches to state
+
+## Example
+
+```ts
+import { create, apply } from '../index';
+
+const baseState = { foo: { bar: 'str' }, arr: [] };
+const [state, patches] = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'str2';
+  },
+  { enablePatches: true }
+);
+expect(state).toEqual({ foo: { bar: 'str2' }, arr: [] });
+expect(patches).toEqual([{ op: 'replace', path: ['foo', 'bar'], value: 'str2' }]);
+expect(state).toEqual(apply(baseState, patches));
+```
+
+### Type Parameters
+
+#### T
+
+`T` *extends* `object`
+
+#### F
+
+`F` *extends* `boolean` = `false`
+
+### Parameters
+
+#### state
+
+`T`
+
+#### patches
+
+[`Patches`](../type-aliases/Patches.md)
+
+#### applyOptions
+
+`undefined` | `ApplyMutableOptions`
+
+### Returns
+
+`ApplyResult`\<`T`, `F`, `undefined` \| `ApplyMutableOptions`\>

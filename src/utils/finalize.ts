@@ -170,11 +170,6 @@ export function finalizeNode(
       if (proxyDraft.finalities === node.finalities)
         finalizeSetValue(proxyDraft);
       finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
-      if (__DEV__ && parent.options.enableAutoFreeze) {
-        parent.options.updatedValues =
-          parent.options.updatedValues ?? new WeakMap();
-        parent.options.updatedValues.set(updatedValue, proxyDraft.original);
-      }
       // final update value
       if (isMapLike) {
         copy.set(key, updatedValue);
@@ -215,11 +210,6 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         // the Set; a draft of another producer may change after that.
         if (proxyDraft.finalities !== target.finalities)
           finalizeSetValue(target, true);
-        if (__DEV__ && target.options.enableAutoFreeze) {
-          target.options.updatedValues =
-            target.options.updatedValues ?? new WeakMap();
-          target.options.updatedValues.set(updatedValue, proxyDraft.original);
-        }
         // final update value
         set(copy, key, updatedValue);
       }

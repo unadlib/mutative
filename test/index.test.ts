@@ -2358,7 +2358,7 @@ test('circular reference - object - 1', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Forbids circular reference: ~/a/b]`
+    `[Error: Forbids circular reference: ~/a/b/c1]`
   );
 });
 
@@ -2398,7 +2398,7 @@ test('circular reference - object - 2', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Forbids circular reference: ~/a/b]`
+    `[Error: Forbids circular reference: ~/a/b/c1]`
   );
 });
 
@@ -2438,7 +2438,7 @@ test('circular reference - object - 3', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Forbids circular reference: ~/a/b]`
+    `[Error: Forbids circular reference: ~/a/b/c1]`
   );
 });
 
@@ -2513,7 +2513,7 @@ test('circular reference - array - 1', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Forbids circular reference: ~/1/a]`
+    `[Error: Forbids circular reference: ~/1/a/b/b]`
   );
 });
 
@@ -2591,7 +2591,7 @@ test('circular reference - set - 1', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Forbids circular reference: ~/1/a/b]`
+    `[Error: Forbids circular reference: ~/1/a/b/c1]`
   );
 });
 
@@ -2680,7 +2680,7 @@ test('circular reference - map - 1', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Forbids circular reference: ~/[Symbol(1)]/a/b]`
+    `[Error: Forbids circular reference: ~/[Symbol(1)]/a/b/c1]`
   );
 });
 
@@ -2797,6 +2797,51 @@ test('circular reference - map - 3 - 1', () => {
       }
     );
   }).toThrowErrorMatchingInlineSnapshot(`[Error: Forbids circular reference]`);
+});
+
+test('auto-freeze accepts a changed draft that holds its original', () => {
+  const base = { a: { n: 0 } };
+  const state = create(
+    base,
+    (draft) => {
+      draft.a.n = 1;
+      // @ts-expect-error
+      draft.a.prev = original(draft.a);
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+  expect(state.a).toEqual({ n: 1, prev: { n: 0 } });
+  // @ts-expect-error
+  expect(state.a.prev).toBe(base.a);
+  expect(Object.isFrozen(state.a)).toBe(true);
+  expect(Object.isFrozen(base.a)).toBe(true);
+});
+
+test('auto-freeze accepts a shared object linked through another path', () => {
+  const shared = { n: 0 };
+  const base = { a: shared, b: shared, list: [shared, shared] };
+  const state = create(
+    base,
+    (draft) => {
+      // @ts-expect-error
+      draft.a.link = draft.b;
+      draft.list[0].n = 5;
+      // @ts-expect-error
+      draft.list[0].other = draft.list[1];
+    },
+    {
+      enableAutoFreeze: true,
+    }
+  );
+  expect(state.a).toEqual({ n: 0, link: shared });
+  expect(state.b).toBe(shared);
+  expect(state.list[0]).toEqual({ n: 5, other: shared });
+  expect(state.list[1]).toBe(shared);
+  expect(Object.isFrozen(state.a)).toBe(true);
+  expect(Object.isFrozen(state.list[0])).toBe(true);
+  expect(Object.isFrozen(shared)).toBe(true);
 });
 
 test('can return an object that references itself', () => {

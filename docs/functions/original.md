@@ -1,4 +1,4 @@
-[**mutative**](../README.md) • **Docs**
+[**mutative**](../README.md)
 
 ***
 
@@ -7,6 +7,8 @@
 # Function: original()
 
 > **original**\<`T`\>(`target`): `T`
+
+Defined in: [original.ts:22](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/original.ts#L22)
 
 `original(draft)` to get original state in the draft mutation function.
 
@@ -27,16 +29,16 @@ const state = create(
 
 ## Type Parameters
 
-• **T**
+### T
+
+`T`
 
 ## Parameters
 
-• **target**: `T`
+### target
+
+`T`
 
 ## Returns
 
 `T`
-
-## Defined in
-
-[original.ts:21](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/original.ts#L21)

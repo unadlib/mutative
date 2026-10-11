@@ -3,6 +3,7 @@ import {
   apply,
   create,
   makeCreator,
+  type Draft,
   type Immutable,
   type Patches,
 } from '../src';
@@ -54,6 +55,82 @@ test('a sync recipe keeps its result type with an explicit state type', () => {
   const replaced = create<State>(base(), () => ({ count: 5, list: [] }));
   expectTypeOf(replaced).toEqualTypeOf<State>();
   expect(replaced.count).toBe(5);
+});
+
+test('a recipe that may return a Promise gives either result with an explicit state type', async () => {
+  const recipe = (draft: State): void | Promise<void> => {
+    if (draft.count > 1) {
+      return Promise.resolve().then(() => {
+        draft.count += 1;
+      });
+    }
+    draft.count += 1;
+  };
+  const now = create<State>(base(), recipe);
+  expectTypeOf(now).toEqualTypeOf<State | Promise<State>>();
+  expect(now).toEqual({ count: 2, list: [1] });
+  const later = create<State>({ count: 2, list: [] }, recipe);
+  expect(later).toBeInstanceOf(Promise);
+  expect(await later).toEqual({ count: 3, list: [] });
+
+  const produce = create<State>(recipe);
+  expectTypeOf(produce).toEqualTypeOf<
+    (base: State) => State | Promise<State>
+  >();
+  expect(await produce({ count: 2, list: [] })).toEqual({ count: 3, list: [] });
+
+  const withPatches = create<State, false, true>(base(), recipe, {
+    enablePatches: true,
+  });
+  expectTypeOf(withPatches).toEqualTypeOf<
+    | [State, Patches<true>, Patches<true>]
+    | Promise<[State, Patches<true>, Patches<true>]>
+  >();
+  const [state, patches] = await withPatches;
+  expect(apply(base(), patches)).toEqual(state);
+
+  const frozen = makeCreator({ enableAutoFreeze: true })<State>(base(), recipe);
+  expectTypeOf(frozen).toEqualTypeOf<
+    Immutable<State> | Promise<Immutable<State>>
+  >();
+  expect(Object.isFrozen(await frozen)).toBe(true);
+});
+
+test('synchronous recipes of a primitive state keep their result type', () => {
+  const count = create<number>(0, (value) => value + 1);
+  expectTypeOf(count).toEqualTypeOf<number>();
+  expect(count).toBe(1);
+
+  const [next, patches] = create<number, false, true>(0, (value) => value + 1, {
+    enablePatches: true,
+  });
+  expectTypeOf(next).toEqualTypeOf<number>();
+  expect(next).toBe(1);
+  expect(patches).toEqual([{ op: 'replace', path: [], value: 1 }]);
+
+  const unchanged = create<string>('a', () => {});
+  expectTypeOf(unchanged).toEqualTypeOf<string>();
+  expect(unchanged).toBe('a');
+
+  const toggle = create<boolean>((value) => !value);
+  expectTypeOf(toggle).toEqualTypeOf<(base: boolean) => boolean>();
+  expect(toggle(true)).toBe(false);
+
+  const add = create<number, [number]>((value, by) => value + by);
+  expectTypeOf(add).toEqualTypeOf<(base: number, by: number) => number>();
+  expect(add(1, 2)).toBe(3);
+
+  const frozen = makeCreator({ enableAutoFreeze: true })<number>(
+    0,
+    (value) => value + 1
+  );
+  expectTypeOf(frozen).toEqualTypeOf<number>();
+  expect(frozen).toBe(1);
+
+  // A recipe that may return a Promise keeps the synchronous type here.
+  const maybe = (value: number): number | Promise<number> =>
+    value > 0 ? Promise.resolve(value) : value + 1;
+  expectTypeOf(create<number>(0, maybe)).toEqualTypeOf<number>();
 });
 
 test('explicit state types contextualize literal replacement values', async () => {
@@ -241,6 +318,32 @@ test('a sync curried recipe can return a new state or its draft', () => {
   });
   expectTypeOf(returnDraft).returns.toEqualTypeOf<State>();
   expect(returnDraft(base()).count).toBe(2);
+});
+
+test('a curried recipe with an annotated draft can return a new state', async () => {
+  const increment = create((draft: State) => ({
+    ...draft,
+    count: draft.count + 1,
+  }));
+  expectTypeOf(increment).toEqualTypeOf<(base: State) => State>();
+  expect(increment(base())).toEqual({ count: 2, list: [1] });
+
+  const add = create((draft: Draft<State>, by: number) => ({
+    ...draft,
+    count: draft.count + by,
+  }));
+  expectTypeOf(add).toEqualTypeOf<(base: State, by: number) => State>();
+  expect(add(base(), 2).count).toBe(3);
+
+  const reset = create(async (draft: State) => ({ ...draft, count: 0 }));
+  expectTypeOf(reset).toEqualTypeOf<(base: State) => Promise<State>>();
+  expect((await reset(base())).count).toBe(0);
+
+  const mutate = create((draft: State) => {
+    draft.count += 1;
+  });
+  expectTypeOf(mutate).toEqualTypeOf<(base: State) => State>();
+  expect(mutate(base()).count).toBe(2);
 });
 
 test('generic helpers keep synchronous replacement results', () => {

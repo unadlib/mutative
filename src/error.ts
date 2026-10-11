@@ -26,6 +26,7 @@ export const enum ErrorCode {
   OriginalOnNonDraft = 18,
   RawReturnWithoutValue = 19,
   RawReturnWithExtraArguments = 20,
+  ReplaceMutableRoot = 21,
 }
 
 type ErrorArguments = {
@@ -49,6 +50,7 @@ type ErrorArguments = {
   [ErrorCode.OriginalOnNonDraft]: [target: any];
   [ErrorCode.RawReturnWithoutValue]: [];
   [ErrorCode.RawReturnWithExtraArguments]: [];
+  [ErrorCode.ReplaceMutableRoot]: [];
 };
 
 type ErrorBuilders = {
@@ -104,6 +106,9 @@ const errors: ErrorBuilders = __DEV__
       () => 'rawReturn() must be called with a value.',
       // ErrorCode.RawReturnWithExtraArguments
       () => 'rawReturn() must be called with one argument.',
+      // ErrorCode.ReplaceMutableRoot
+      () =>
+        'apply() with the mutable option changes the state in place, so a patch cannot replace the root state with another value.',
     ]
   : ([] as unknown as ErrorBuilders);
 

@@ -28,6 +28,10 @@ Yes. Deleting the entry being visited and changing the values of other entries w
 
 Yes, but they compare elements as iterating the draft returns them. An object of the base state is a draft there, so these methods do not match it with the original object, although `has()` accepts the original object. To compare a Set draft with objects of the base state, call the method on `current(draft)`, in which unchanged objects keep their identity, or on `original(draft)` for the base state, or compare ids, for example `[...draft].filter((item) => ids.has(item.id))`. This applies to `union()`, `intersection()`, `difference()`, `symmetricDifference()`, `isSubsetOf()`, `isSupersetOf()` and `isDisjointFrom()`.
 
+- Can a draft be a Map key?
+
+No. Map keys are used as they are, and a draft is revoked when its producer ends, so a Map that kept a draft as a key, and the patches that name that key, would hold a revoked draft, whose properties throw when they are read. Use `original(draft)`, `current(draft)` or an id as the key. Development builds throw when a recipe passes a draft to the `set()` method of a Map draft.
+
 - Does Mutative support shared references?
 
 Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](./shared-references.mdx).

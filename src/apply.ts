@@ -11,6 +11,7 @@ import {
   deepClone,
   getProxyDraft,
   getType,
+  has,
   isDraft,
   unescapePath,
 } from './utils';
@@ -101,6 +102,7 @@ export function apply<
   F extends boolean = false,
   A extends ApplyOptions<boolean> | undefined = ApplyImmutableOptions<F>,
 >(state: T, patches: Patches, applyOptions?: A): ApplyResult<T, F, A> {
+  const mutable = (applyOptions as ApplyMutableOptions)?.mutable;
   let i: number;
   for (i = patches.length - 1; i >= 0; i -= 1) {
     const { value, op, path } = patches[i];
@@ -108,6 +110,9 @@ export function apply<
       (!path.length && op === Operation.Replace) ||
       (path === '' && op === Operation.Add)
     ) {
+      // A mutable application changes the state in place and returns nothing,
+      // so it cannot replace the state with another value.
+      if (mutable && value !== state) die(ErrorCode.ReplaceMutableRoot);
       state = value;
       break;
     }
@@ -115,7 +120,6 @@ export function apply<
   if (i > -1) {
     patches = patches.slice(i + 1);
   }
-  const mutable = (applyOptions as ApplyMutableOptions)?.mutable;
   // The objects that a mutable application changes in place are not drafts.
   const getTargetType = mutable ? getType : getPatchTargetType;
   const mutate = (draft: Draft<T> | T) => {
@@ -137,11 +141,17 @@ export function apply<
             die(ErrorCode.ReservedPatchAttribute);
           }
         }
-        base =
-          parentType === DraftType.Map
-            ? base.get(key)
-            : // use `index` in Set draft
-              (parentType === DraftType.Set ? Array.from(base) : base)[key];
+        if (parentType === DraftType.Set) {
+          // A Set item is found at its index in the array of the Set's items,
+          // so that no other key, such as `__proto__`, reads a property that
+          // the array inherits. No number names such a property. The key is
+          // converted once, so that the check and the read use the same key.
+          key = normalizePatchKey(key);
+          base = Array.from(base);
+          if (typeof key !== 'number' && !has(base, key))
+            die(ErrorCode.CannotApplyPatch, path);
+        }
+        base = parentType === DraftType.Map ? base.get(key) : base[key];
         if (typeof base !== 'object') {
           die(ErrorCode.CannotApplyPatch, path);
         }

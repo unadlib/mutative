@@ -470,7 +470,7 @@ export function finalizeDraft<T>(
       : result;
   if (proxyDraft) revokeProxy(proxyDraft.finalities);
   if (enableAutoFreeze) {
-    deepFreeze(state, state, proxyDraft?.options.updatedValues);
+    deepFreeze(state);
   }
   return [
     state,

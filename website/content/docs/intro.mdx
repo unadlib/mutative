@@ -70,7 +70,7 @@ This is why Mutative was created.
 - **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
 - **High performance** - About 6.7x faster than Immer out of the box, and faster than hand-written spreads when updating objects with thousands of keys or inserting at the front of large arrays.
 - **Optional freezing state** - No freezing of immutable data by default.
-- **Support for JSON Patch** - Full compliance with JSON Patch specification.
+- **Support for JSON Patch** - Patches use the `add`, `remove` and `replace` operations of JSON Patch, and with `pathAsArray: false` and `arrayLengthAssignment: false`, those of objects and arrays are JSON Patch operations.
 - **Custom shallow copy** - Support for more types of immutable data.
 - **Support mark for immutable and mutable data** - Allows for non-invasive marking.
 - **Safer mutable data access in strict mode** - It brings more secure immutable updates.

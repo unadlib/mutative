@@ -1,4 +1,4 @@
-[**mutative**](../README.md) • **Docs**
+[**mutative**](../README.md)
 
 ***
 
@@ -7,6 +7,8 @@
 # Function: rawReturn()
 
 > **rawReturn**\<`T`\>(`value`): `T`
+
+Defined in: [rawReturn.ts:22](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/rawReturn.ts#L22)
 
 Use rawReturn() to wrap the return value to skip the draft check and thus improve performance.
 
@@ -27,16 +29,16 @@ expect(state).toBe(baseState);
 
 ## Type Parameters
 
-• **T** *extends* `undefined` \| `object`
+### T
+
+`T` *extends* `undefined` \| `object`
 
 ## Parameters
 
-• **value**: `T`
+### value
+
+`T`
 
 ## Returns
 
 `T`
-
-## Defined in
-
-[rawReturn.ts:21](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/rawReturn.ts#L21)
