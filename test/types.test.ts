@@ -57,6 +57,45 @@ test('a sync recipe keeps its result type with an explicit state type', () => {
   expect(replaced.count).toBe(5);
 });
 
+test('a recipe that may return a Promise gives either result with an explicit state type', async () => {
+  const recipe = (draft: State): void | Promise<void> => {
+    if (draft.count > 1) {
+      return Promise.resolve().then(() => {
+        draft.count += 1;
+      });
+    }
+    draft.count += 1;
+  };
+  const now = create<State>(base(), recipe);
+  expectTypeOf(now).toEqualTypeOf<State | Promise<State>>();
+  expect(now).toEqual({ count: 2, list: [1] });
+  const later = create<State>({ count: 2, list: [] }, recipe);
+  expect(later).toBeInstanceOf(Promise);
+  expect(await later).toEqual({ count: 3, list: [] });
+
+  const produce = create<State>(recipe);
+  expectTypeOf(produce).toEqualTypeOf<
+    (base: State) => State | Promise<State>
+  >();
+  expect(await produce({ count: 2, list: [] })).toEqual({ count: 3, list: [] });
+
+  const withPatches = create<State, false, true>(base(), recipe, {
+    enablePatches: true,
+  });
+  expectTypeOf(withPatches).toEqualTypeOf<
+    | [State, Patches<true>, Patches<true>]
+    | Promise<[State, Patches<true>, Patches<true>]>
+  >();
+  const [state, patches] = await withPatches;
+  expect(apply(base(), patches)).toEqual(state);
+
+  const frozen = makeCreator({ enableAutoFreeze: true })<State>(base(), recipe);
+  expectTypeOf(frozen).toEqualTypeOf<
+    Immutable<State> | Promise<Immutable<State>>
+  >();
+  expect(Object.isFrozen(await frozen)).toBe(true);
+});
+
 test('explicit state types contextualize literal replacement values', async () => {
   type Status = { status: 'idle' | 'done'; count: number };
   const source: Status = { status: 'idle', count: 0 };

@@ -40,6 +40,10 @@ type ExplicitSyncReturn<T> = [ExplicitState<T>] extends [
   ? AsyncRecipeContext<T>
   : ExplicitReturn<T> | AsyncRecipeContext<T>;
 
+type ExplicitMaybeAsyncReturn<T> =
+  | ExplicitReturn<T>
+  | Promise<ExplicitReturn<T>>;
+
 type ExplicitRecipe<T, P extends any[], R> = [T] extends [never]
   ? never
   : (draft: Draft<ExplicitState<T>>, ...args: P) => R;
@@ -64,6 +68,12 @@ type MakeCreator = <
     mutate: ExplicitRecipe<T, [], Promise<ExplicitReturn<T>>>,
     options?: ExternalOptions<O, F>
   ): Promise<Result<ExplicitState<T>, O, F>>;
+  // A recipe that may or may not return a Promise gives either result.
+  <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
+    base: ExplicitState<T>,
+    mutate: ExplicitRecipe<T, [], ExplicitMaybeAsyncReturn<T>>,
+    options?: ExternalOptions<O, F>
+  ): Result<ExplicitState<T>, O, F> | Promise<Result<ExplicitState<T>, O, F>>;
   <
     T extends any,
     F extends boolean = _F,
@@ -105,6 +115,18 @@ type MakeCreator = <
     base: ExplicitState<T>,
     ...args: P
   ) => Promise<Result<ExplicitState<T>, O, F>>;
+  <
+    T = never,
+    P extends any[] = [],
+    F extends boolean = _F,
+    O extends PatchesOptions = _O,
+  >(
+    mutate: ExplicitRecipe<T, P, ExplicitMaybeAsyncReturn<T>>,
+    options?: ExternalOptions<O, F>
+  ): (
+    base: ExplicitState<T>,
+    ...args: P
+  ) => Result<ExplicitState<T>, O, F> | Promise<Result<ExplicitState<T>, O, F>>;
   <
     T extends any,
     P extends any[] = [],
