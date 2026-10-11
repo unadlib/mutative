@@ -15,21 +15,20 @@ function isFreezable(value: any) {
 export function deepFreeze(
   target: any,
   subKey?: any,
-  updatedValues?: WeakMap<any, any>,
   stack?: any[],
   keys?: any[]
 ) {
   if (__DEV__) {
-    updatedValues = updatedValues ?? new WeakMap();
     stack = stack ?? [];
     keys = keys ?? [];
-    const value = updatedValues.has(target)
-      ? updatedValues.get(target)
-      : target;
+    // A cycle is an object that holds itself through its values. The copy of a
+    // changed draft is a different object from its original, so a copy that
+    // holds its original, as `draft.prev = original(draft)` makes it, is no
+    // cycle, and neither is a shared object reached through another path.
     if (stack.length > 0) {
-      const index = stack.indexOf(value);
-      if (value && typeof value === 'object' && index !== -1) {
-        if (stack[0] === value) {
+      const index = stack.indexOf(target);
+      if (target && typeof target === 'object' && index !== -1) {
+        if (stack[0] === target) {
           throw new Error(`Forbids circular reference`);
         }
         throw new Error(
@@ -48,10 +47,10 @@ export function deepFreeze(
             .join('/')}`
         );
       }
-      stack.push(value);
+      stack.push(target);
       keys.push(subKey);
     } else {
-      stack.push(value);
+      stack.push(target);
     }
   }
   if (Object.isFrozen(target) || isDraft(target)) {
@@ -70,25 +69,22 @@ export function deepFreeze(
       target.set = target.clear = target.delete = throwFrozenError;
       Object.freeze(target);
       for (const [key, value] of target) {
-        if (isFreezable(key)) deepFreeze(key, key, updatedValues, stack, keys);
-        if (isFreezable(value))
-          deepFreeze(value, key, updatedValues, stack, keys);
+        if (isFreezable(key)) deepFreeze(key, key, stack, keys);
+        if (isFreezable(value)) deepFreeze(value, key, stack, keys);
       }
       break;
     case DraftType.Set:
       target.add = target.clear = target.delete = throwFrozenError;
       Object.freeze(target);
       for (const value of target) {
-        if (isFreezable(value))
-          deepFreeze(value, value, updatedValues, stack, keys);
+        if (isFreezable(value)) deepFreeze(value, value, stack, keys);
       }
       break;
     case DraftType.Array:
       Object.freeze(target);
       let index = 0;
       for (const value of target) {
-        if (isFreezable(value))
-          deepFreeze(value, index, updatedValues, stack, keys);
+        if (isFreezable(value)) deepFreeze(value, index, stack, keys);
         index += 1;
       }
       break;
@@ -97,8 +93,7 @@ export function deepFreeze(
       // ignore non-enumerable or symbol properties
       Object.keys(target).forEach((name) => {
         const value = target[name];
-        if (isFreezable(value))
-          deepFreeze(value, name, updatedValues, stack, keys);
+        if (isFreezable(value)) deepFreeze(value, name, stack, keys);
       });
   }
   if (__DEV__) {

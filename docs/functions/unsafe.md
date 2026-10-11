@@ -1,4 +1,4 @@
-[**mutative**](../README.md) • **Docs**
+[**mutative**](../README.md)
 
 ***
 
@@ -7,6 +7,8 @@
 # Function: unsafe()
 
 > **unsafe**\<`T`\>(`callback`): `T`
+
+Defined in: [unsafe.ts:57](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/unsafe.ts#L57)
 
 `unsafe(callback)` to access mutable data directly in strict mode.
 
@@ -39,16 +41,16 @@ expect(state.foobar.bar).toBe(2);
 
 ## Type Parameters
 
-• **T**
+### T
+
+`T`
 
 ## Parameters
 
-• **callback**
+### callback
+
+() => `T`
 
 ## Returns
 
 `T`
-
-## Defined in
-
-[unsafe.ts:53](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/unsafe.ts#L53)

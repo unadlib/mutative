@@ -113,7 +113,7 @@ Mutative's `create` includes patches, `Map`/`Set` support and the native array m
 - **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
 - **High performance** - About 6.7x faster than Immer with each library's defaults, and faster than hand-written spreads in measured wide-object and large-array insertion workloads.
 - **Optional freezing state** - No freezing of immutable data by default.
-- **Support for JSON Patch** - Full compliance with JSON Patch specification.
+- **Support for JSON Patch** - Patches use the `add`, `remove` and `replace` operations of JSON Patch, and with `pathAsArray: false` and `arrayLengthAssignment: false`, those of objects and arrays are JSON Patch operations.
 - **Custom shallow copy** - Support for more types of immutable data.
 - **Support mark for immutable and mutable data** - Allows for non-invasive marking.
 - **Safer mutable data access in strict mode** - It brings more secure immutable updates.
@@ -251,6 +251,7 @@ The recipe can be an async function: `create()` then returns a Promise of the re
   > When the mark function is (target) => 'immutable', it means all the objects in the state structure are immutable. In this specific case, you can totally turn on `AutoFreeze` and `Patches`.
   > `mark` supports multiple marks, and the marks are executed in order, and the first mark that returns a value will be used.
   > When a object tree node is marked by the `mark` function as `mutable`, all of its child nodes will also not be drafted by Mutative and will retain their original values.
+  > An instance that `mark` makes `immutable` is copied with all its own properties, and those that are enumerable, writable and configurable are assigned, so an own property that shadows a setter of its class runs it, and one that shadows a getter or a read-only property throws; see [Copying marked instances](https://mutative.js.org/docs/advanced-guides/mark#copying-marked-instances).
 
 #### `create()` - Currying
 
@@ -310,6 +311,8 @@ function rename(item: Item, name: string): Item {
 On a draft, `rename()` returns the draft itself, so the outer recipe changes its result through the outer draft, and the values that it leaves unchanged keep their references. Unlike a call to `create()`, it changes the outer draft even if the caller discards the result.
 
 Where that does not fit, make such changes in the helper's recipe, or through the outer draft before calling the helper. If the helper's result must not share objects with the base state, give `create()` a deep copy, as in `create(structuredClone(current(draft)), recipe)`, at the cost of copying the draft on each call and of new references for the values that the recipe leaves unchanged; `structuredClone` turns class instances into plain objects and throws on functions. To catch such writes, enable `enableAutoFreeze` in development, for example with `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })` for such helpers: it freezes the helper's result together with the objects of the base state that it shares, so a write to them throws instead of changing the base state, as Immer's default auto-freeze does.
+
+A draft belongs to the `create()` call that made it, also the draft that `create(base)` returns. Do not store it in the draft of another call, or in an object that you assign there: it is revoked when its own call ends, so the other call's result can hold a draft that throws when it is read, and a Set draft that received it may no longer find it with `has()` or `delete()`. Store `current(draft)`, the original object or the result of that call instead.
 
 ### `apply()`
 
@@ -389,9 +392,9 @@ apply(
 expect(baseState).toEqual({ foo: { bar: "test2" } });
 ```
 
-> ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state.
+> ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state. As it changes the state in place, it throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state.
 
-> Patches add and remove Set elements by value, also a changed element of a Set that added or removed elements, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/pathes#sets-of-objects).
+> Patches add and remove Set elements by value, also a changed element of a Set that added or removed elements, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. `apply()` also appends the elements that it adds, so such a Set can hold its elements in another order, and the patches of a later recipe, which find Set elements by position, can then change another element. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/pathes#sets-of-objects).
 
 ### `current()`
 
@@ -648,6 +651,10 @@ Yes. Deleting the entry being visited and changing the values of other entries w
 
 Yes, but they compare elements as iterating the draft returns them. An object of the base state is a draft there, so these methods do not match it with the original object, although `has()` accepts the original object. To compare a Set draft with objects of the base state, call the method on `current(draft)`, in which unchanged objects keep their identity, or on `original(draft)` for the base state, or compare ids, for example `[...draft].filter((item) => ids.has(item.id))`. This applies to `union()`, `intersection()`, `difference()`, `symmetricDifference()`, `isSubsetOf()`, `isSupersetOf()` and `isDisjointFrom()`.
 
+- Can a draft be a Map key?
+
+No. Map keys are used as they are, and a draft is revoked when its producer ends, so a Map that kept a draft as a key, and the patches that name that key, would hold a revoked draft, whose properties throw when they are read. Use `original(draft)`, `current(draft)` or an id as the key. Development builds throw when a recipe passes a draft to the `set()` method of a Map draft.
+
 - Does Mutative support shared references?
 
 Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](https://mutative.js.org/docs/extra-topics/shared-references).
@@ -786,11 +793,15 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - In strict mode, development builds warn once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does.
 - In strict mode, `rawReturn()` of a value without drafts no longer prints contradictory warnings.
 - With `enablePatches: { pathAsArray: false }`, development builds throw when a patch path would hold a Map key that is not a string, or a symbol key, as a string path cannot name such a key: applying the patch writes another key, for example `'1'` instead of `1`, or fails for a change below that key. Production builds still generate such patches, as v1 did, and still throw a `TypeError` for a symbol key. Keep the default array paths for such keys.
+- With `enableAutoFreeze`, development builds report a circular reference only for an object that holds itself. A changed draft that holds its original, as `draft.prev = original(draft)` makes it, or that links to a shared object through another path no longer throws; production builds always froze such states. For a real cycle, the error names the path of the object that repeats, which can be one key longer than in v1.
+- Development builds throw when a recipe passes a draft to the `set()` method of a Map draft, as in `draft.map.set(draft.key, value)`: Map keys are used as they are, so the next state would keep the draft as a key, revoked, and reading its properties would throw. Production builds still keep such a key, as v1 did. Use `original(draft)`, `current(draft)` or an id as the key.
 
 ### TypeScript
 
 - `create()` with an explicit state type and an async recipe, such as `create<State>(base, async (draft) => { … })`, returns `Promise<State>`, and so do curried producers; v1 typed the result as `State`.
 - `apply()` accepts `enableAutoFreeze: true` and then returns `Immutable<State>`, as `apply<State, true>()` does; v1 rejected the option and typed the frozen result as mutable. With `enableAutoFreeze` typed as `boolean` or optional `true`, the result is `State | Immutable<State>`. With `mutable` typed as `boolean`, optional `boolean`, or optional `true`, `apply()` returns `State | void`.
+- A curried producer whose recipe annotates its draft and returns a new state, such as `create((draft: State) => ({ ...draft, count: 0 }))`, returns `State`, or `Promise<State>` for an async recipe. v1 typed such a call as a manual draft, so calling the producer did not compile.
+- With an explicit state type, a recipe that may or may not return a Promise, such as one typed `(draft: State) => void | Promise<void>`, gives `State | Promise<State>`, also in curried producers and creators from `makeCreator()`. v1 typed the result as `State`, as this version still does for a primitive state type, such as `number`.
 
 ### Fixes that change results
 
@@ -807,6 +818,8 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - Consume Map value and entry iterators, and all Set iterators, while their draft is active. After the producer finishes or fails, or a manual draft is finalized, an iterator cannot yield another value and throws a `TypeError`. Lazy iterator helpers follow the same lifetime; an exhausted iterator stays exhausted. Map keys are not drafted, and `keys()` continues to return a native iterator.
 - `apply()` copies the own symbol keys of patch values, and an own `__proto__` key, as `JSON.parse()` creates one, stays a data property. v1 dropped symbol keys there and turned an own `__proto__` key into the prototype of the copy.
 - `apply()` rejects a patch whose path ends in `__proto__` on an object or array, as it rejects `__proto__` earlier in a path. Coercible property keys, such as a boxed string, are checked after conversion too. With `mutable: true`, v1 assigned the value and so replaced the prototype of the object.
+- In a patch path, `apply()` reads an item of a Set only at its index, such as `1` or `'1'`, and throws for any other key, such as `__proto__`. v1 read any property of an array of the Set's items there, which let a path through `__proto__` reach `Array.prototype`.
+- `apply()` with `mutable: true` throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, as the state cannot be replaced in place. v1 ignored the replacement and applied the patches after it to the replacing value, so the state stayed as it was and the value of that patch changed.
 - An object that `mark` makes draftable, such as a plain object under `markSimpleObject`, keeps an own `__proto__` key, as `JSON.parse()` creates one, as a property of its copy; v1 assigned it, which replaced the prototype of the copy.
 - A patch for a Map key that is an array holds the key as one path segment; v1 spread the array into the path, so applying the patch wrote to other keys.
 - `apply()` uses a Map key of a patch path as it is. v1 converted it to a string first, which threw for an object without a prototype.

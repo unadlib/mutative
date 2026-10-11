@@ -1299,6 +1299,131 @@ test('a patch cannot set a prototype through the last segment of its path', () =
   expect(map.get('__proto__')).toBe(1);
 });
 
+test('a patch cannot reach a prototype through a Set position', () => {
+  const constructor = Array.prototype.constructor;
+  const cases: [string, string | number, unknown][] = [
+    ['replace', 'injected', { admin: true }],
+    ['add', 0, { admin: true }],
+    ['replace', 'constructor', 'x'],
+  ];
+  for (const [op, last, value] of cases) {
+    for (const nested of [false, true]) {
+      for (const asString of [false, true]) {
+        for (const options of [undefined, { mutable: true }]) {
+          const state: any = nested
+            ? { set: new Set([{ v: 1 }]) }
+            : new Set([{ v: 1 }]);
+          const keys = [...(nested ? ['set'] : []), '__proto__', last];
+          const path = asString ? `/${keys.join('/')}` : keys;
+          try {
+            expect(() =>
+              apply(state, [{ op, path, value }] as Patches, options)
+            ).toThrow(`Cannot apply patch at '${keys.join('/')}'.`);
+          } finally {
+            // Undo a change of the prototype, so that other tests still work
+            // if the check fails.
+            delete (Array.prototype as any).injected;
+            // eslint-disable-next-line no-extend-native
+            Array.prototype.length = 0;
+            // eslint-disable-next-line no-extend-native
+            Array.prototype.constructor = constructor;
+          }
+          expect(([] as any).injected).toBeUndefined();
+          expect(([] as any)[0]).toBeUndefined();
+          expect(Array.prototype.length).toBe(0);
+          expect([1].map((item) => item + 1)).toEqual([2]);
+        }
+      }
+    }
+  }
+  // A position, also given as a string, still finds its item.
+  for (const options of [undefined, { mutable: true }]) {
+    const state = { set: new Set([{ v: 1 }, { v: 2 }]) };
+    const result = apply(
+      state,
+      [
+        { op: 'replace', path: ['set', 1, 'v'], value: 3 },
+        { op: 'replace', path: '/set/0/v', value: 4 },
+      ] as Patches,
+      options
+    );
+    expect([...(result ?? state).set]).toEqual([{ v: 4 }, { v: 3 }]);
+  }
+});
+
+test('a Set item of a patch path is found only at its index', () => {
+  // Keys that convert to a number but are no index of an item find nothing,
+  // as they do in an array.
+  const keys: unknown[] = [
+    '',
+    ' ',
+    '-0',
+    '01',
+    '1.0',
+    '1e0',
+    '0x1',
+    '+1',
+    null,
+    false,
+    true,
+    [],
+    'length',
+  ];
+  for (const key of keys) {
+    for (const options of [undefined, { mutable: true }]) {
+      const state = { set: new Set([{ v: 1 }, { v: 2 }]) };
+      const path = ['set', key, 'v'];
+      expect(() =>
+        apply(state, [{ op: 'replace', path, value: 3 }] as Patches, options)
+      ).toThrow(`Cannot apply patch at '${path.join('/')}'.`);
+      expect([...state.set]).toEqual([{ v: 1 }, { v: 2 }]);
+    }
+  }
+  // An empty segment of a string path is no index either.
+  expect(() =>
+    apply({ set: new Set([{ v: 1 }]) }, [
+      { op: 'replace', path: '/set//v', value: 3 },
+    ])
+  ).toThrow(`Cannot apply patch at 'set//v'.`);
+});
+
+test('a key of a Set step in a patch path is converted once', () => {
+  // A key that converts to another value on each call must not pass the check
+  // of an index as one key and then be read as another.
+  for (const second of ['__proto__', '1']) {
+    for (const options of [undefined, { mutable: true }]) {
+      let calls = 0;
+      const key = {
+        [Symbol.toPrimitive]() {
+          calls += 1;
+          return calls === 1 ? '0' : second;
+        },
+      };
+      const state = { set: new Set<any>([{ v: 1 }, { v: 2 }]) };
+      let polluted = false;
+      try {
+        const result = apply(
+          state,
+          [{ op: 'replace', path: ['set', key as any, 'probe'], value: true }],
+          options
+        );
+        expect([...(result ?? state).set]).toEqual([
+          { v: 1, probe: true },
+          { v: 2 },
+        ]);
+      } finally {
+        polluted = Object.prototype.hasOwnProperty.call(
+          Array.prototype,
+          'probe'
+        );
+        delete (Array.prototype as any).probe;
+      }
+      expect(polluted).toBe(false);
+      expect(calls).toBe(1);
+    }
+  }
+});
+
 test.each([false, true])(
   'coercible terminal keys cannot set a prototype (mutable: %s)',
   (mutable) => {
@@ -1837,6 +1962,46 @@ test('base - mutate', () => {
   });
   expect(baseState).toEqual({ a: { c: 2 } });
   expect(result).toBeUndefined();
+});
+
+test('a mutable application cannot replace the root state', () => {
+  const [, patches] = create({ old: 1 } as any, () => ({ n: 2 }), {
+    enablePatches: true,
+  });
+  for (const root of [
+    patches[0],
+    { op: 'replace', path: '', value: { n: 2 } },
+    { op: 'add', path: '', value: { n: 2 } },
+  ] as Patches) {
+    const state = { old: 1 };
+    const value = root.value;
+    expect(() =>
+      apply(
+        state,
+        [root, { op: 'replace', path: ['n'], value: 3 }] as Patches,
+        { mutable: true }
+      )
+    ).toThrow(
+      'apply() with the mutable option changes the state in place, so a patch cannot replace the root state with another value.'
+    );
+    expect(state).toEqual({ old: 1 });
+    expect(value).toEqual({ n: 2 });
+  }
+  // A replacement with the state itself changes nothing, as the patch of a
+  // recipe that returns its base state, and the patches after it apply.
+  const state = { n: 1 };
+  const [, own] = create(state, () => state, { enablePatches: true });
+  apply(state, [...own, { op: 'replace', path: ['n'], value: 2 }], {
+    mutable: true,
+  });
+  expect(state).toEqual({ n: 2 });
+  // Without the option, the patches replace the root state.
+  expect(
+    apply({ old: 1 } as any, [
+      ...patches,
+      { op: 'replace', path: ['n'], value: 3 },
+    ])
+  ).toEqual({ n: 3 });
 });
 
 describe('array methods on the draft copy', () => {

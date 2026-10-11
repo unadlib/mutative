@@ -52,7 +52,7 @@ export interface ProxyDraft<T = any> {
   copy: T | null;
   proxy: T | null;
   finalities: Finalities;
-  options: Options<any, any> & { updatedValues?: WeakMap<any, any> };
+  options: Options<any, any>;
   parent: ProxyDraft | null;
   key: string | number | symbol | undefined;
   // The drafts of a Set draft's items and the objects it added, with its items

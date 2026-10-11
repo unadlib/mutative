@@ -84,5 +84,5 @@ apply(
 expect(baseState).toEqual({ foo: { bar: 'test2' } });
 ```
 
-> ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state.
+> ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state. As it changes the state in place, it throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state.
 

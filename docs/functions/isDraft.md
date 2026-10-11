@@ -1,4 +1,4 @@
-[**mutative**](../README.md) • **Docs**
+[**mutative**](../README.md)
 
 ***
 
@@ -8,16 +8,16 @@
 
 > **isDraft**(`target`): `boolean`
 
+Defined in: [utils/draft.ts:33](https://github.com/unadlib/mutative/blob/8667c30c96a236a80844257728eb46826ca6f5d8/src/utils/draft.ts#L33)
+
 Check if the value is a draft
 
 ## Parameters
 
-• **target**: `any`
+### target
+
+`any`
 
 ## Returns
 
 `boolean`
-
-## Defined in
-
-[utils/draft.ts:12](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/utils/draft.ts#L12)
