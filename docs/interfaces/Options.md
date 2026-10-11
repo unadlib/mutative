@@ -1,4 +1,4 @@
-[**mutative**](../README.md) • **Docs**
+[**mutative**](../README.md)
 
 ***
 
@@ -6,11 +6,17 @@
 
 # Interface: Options\<O, F\>
 
+Defined in: [interface.ts:171](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/interface.ts#L171)
+
 ## Type Parameters
 
-• **O** *extends* [`PatchesOptions`](../type-aliases/PatchesOptions.md)
+### O
 
-• **F** *extends* `boolean`
+`O` *extends* [`PatchesOptions`](../type-aliases/PatchesOptions.md)
+
+### F
+
+`F` *extends* `boolean`
 
 ## Properties
 
@@ -18,11 +24,9 @@
 
 > `optional` **enableAutoFreeze**: `F`
 
+Defined in: [interface.ts:184](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/interface.ts#L184)
+
 Enable autoFreeze, and return frozen state.
-
-#### Defined in
-
-[interface.ts:137](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/interface.ts#L137)
 
 ***
 
@@ -30,11 +34,9 @@ Enable autoFreeze, and return frozen state.
 
 > `optional` **enablePatches**: `O`
 
+Defined in: [interface.ts:180](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/interface.ts#L180)
+
 Enable patch, and return the patches and inversePatches.
-
-#### Defined in
-
-[interface.ts:133](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/interface.ts#L133)
 
 ***
 
@@ -42,12 +44,10 @@ Enable patch, and return the patches and inversePatches.
 
 > `optional` **mark**: `Mark`\<`O`, `F`\> \| `Mark`\<`O`, `F`\>[]
 
+Defined in: [interface.ts:189](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/interface.ts#L189)
+
 Set a mark to determine if the object is mutable or if an instance is an immutable.
 And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
-
-#### Defined in
-
-[interface.ts:142](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/interface.ts#L142)
 
 ***
 
@@ -55,8 +55,7 @@ And it can also return a shallow copy function(AutoFreeze and Patches should bot
 
 > `optional` **strict**: `boolean`
 
+Defined in: [interface.ts:176](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/interface.ts#L176)
+
 In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.
-
-#### Defined in
-
-[interface.ts:129](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/interface.ts#L129)
+Development builds also warn once when a recipe leaves 1,000 or more drafts unchanged.

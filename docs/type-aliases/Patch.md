@@ -1,4 +1,4 @@
-[**mutative**](../README.md) • **Docs**
+[**mutative**](../README.md)
 
 ***
 
@@ -6,12 +6,12 @@
 
 # Type Alias: Patch\<P\>
 
-> **Patch**\<`P`\>: `P` *extends* `object` ? `IPatch` & `object` : `P` *extends* `true` \| `object` ? `IPatch` & `object` : `IPatch` & `object`
+> **Patch**\<`P`\> = `P` *extends* `object` ? `IPatch` & `object` : `P` *extends* `true` \| `object` ? `IPatch` & `object` : `IPatch` & `object`
+
+Defined in: [interface.ts:96](https://github.com/unadlib/mutative/blob/080a20500efdd03828f63d0f023fc6d7458b3e98/src/interface.ts#L96)
 
 ## Type Parameters
 
-• **P** *extends* [`PatchesOptions`](PatchesOptions.md) = `any`
+### P
 
-## Defined in
-
-[interface.ts:58](https://github.com/unadlib/mutative/blob/7129237bc42b8475743ffff427a1f8f85e8e1e51/src/interface.ts#L58)
+`P` *extends* [`PatchesOptions`](PatchesOptions.md) = `any`
