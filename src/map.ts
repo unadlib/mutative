@@ -56,10 +56,19 @@ export const mapHandler = {
   set(key: any, value: any) {
     // Map keys are used as they are, and a draft is revoked when its producer
     // ends, so a Map would keep a key that throws when it is read.
-    if (__DEV__ && getProxyDraft(key)) {
-      throw new Error(
-        `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq`
-      );
+    if (__DEV__) {
+      let isDraftKey = false;
+      try {
+        isDraftKey = !!getProxyDraft(key);
+      } catch {
+        // Map keys are compared by identity only, so a key can also be a Proxy
+        // that rejects reading the symbol of drafts, or a revoked one.
+      }
+      if (isDraftKey) {
+        throw new Error(
+          `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq`
+        );
+      }
     }
     const target = getProxyDraft(this)!;
     const source = latest(target);

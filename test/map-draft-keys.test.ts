@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { create, current, original } from '../src';
+import { apply, create, current, original } from '../src';
 
 const message =
   'A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq';
@@ -39,4 +39,35 @@ test('the original or a snapshot of a draft can be a Map key', () => {
   expect(state.map.get(base.key)).toBe('original');
   expect([...state.map.keys()]).toEqual([{ id: 1 }, { id: 2 }]);
   expect(state.key).toEqual({ id: 2 });
+});
+
+test('a key whose properties cannot be read is no draft', () => {
+  const opaque = new Proxy(
+    {},
+    {
+      get() {
+        throw new Error('opaque key');
+      },
+    }
+  );
+  const { proxy: revoked, revoke } = Proxy.revocable({}, {});
+  revoke();
+  for (const key of [opaque, revoked]) {
+    const added = create(new Map<any, number>(), (draft) => {
+      draft.set(key, 1);
+    });
+    expect(added.get(key)).toBe(1);
+    const updated = create(added, (draft) => {
+      draft.set(key, 2);
+    });
+    expect(updated.get(key)).toBe(2);
+    const same = create(updated, (draft) => {
+      draft.set(key, 2);
+    });
+    expect(same).toBe(updated);
+    const applied = apply(updated, [
+      { op: 'replace', path: [key as any], value: 3 },
+    ]);
+    expect(applied.get(key)).toBe(3);
+  }
 });
