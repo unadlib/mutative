@@ -398,7 +398,7 @@ expect(baseState).toEqual({ foo: { bar: "test2" } });
 
 > `apply()` throws for a patch path through the `__proto__` or `constructor` of an object or array, or through the `prototype` of a function, so that patches cannot change the prototypes of objects; Map keys of these names are ordinary keys. It reads the other path segments as properties, as Immer does, and does not guard against prototypes that other code has already changed.
 
-> Patches add and remove Set elements by value, also a changed element of a Set that added or removed elements, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. `apply()` also appends the elements that it adds, so such a Set can hold its elements in another order, and the patches of a later recipe, which find Set elements by position, can then change another element. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/pathes#sets-of-objects).
+> Patches add and remove Set elements by value, also a changed element of a Set that added or removed elements, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. `apply()` also appends the elements that it adds, so such a Set can hold its elements in another order, and the patches of a later recipe, which find Set elements by position, can then change another element. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/patches#sets-of-objects).
 
 ### `current()`
 

@@ -1,6 +1,6 @@
 // Static exports cannot use Next.js redirects, so this writes a page for each
-// URL of the former Docusaurus site that has moved, which sends visitors to
-// its new URL.
+// URL that has moved, of the former Docusaurus site or of a renamed page,
+// which sends visitors to its new URL.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,6 +17,9 @@ const redirects = {
   '/blog/archive/': '/blog/',
   '/blog/tags/': '/blog/',
   '/blog/tags/release/': '/blog/',
+  '/docs/advanced-guides/pathes/': '/docs/advanced-guides/patches/',
+  '/docs/api-reference/marksimplebject/':
+    '/docs/api-reference/marksimpleobject/',
 };
 
 const page = (to) => `<!DOCTYPE html>

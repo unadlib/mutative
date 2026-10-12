@@ -45,7 +45,7 @@ const features: {
     title: 'JSON Patch',
     description:
       'Patches and inverse patches in full compliance with the JSON Patch specification.',
-    href: '/docs/advanced-guides/pathes',
+    href: '/docs/advanced-guides/patches',
   },
   {
     icon: Copy,
