@@ -131,7 +131,7 @@ expect([...state.tags]).toEqual(['ts']);
 expect(baseState.users.get('ada')!.age).toBe(36);
 ```
 
-Values read from a Map or Set draft are drafts too, while Map keys are used as they are. See the [FAQ](/docs/extra-topics/faq) for iterating over Map and Set drafts, for objects as Map keys, and for the Set methods of ES2025.
+Values read from a Map or Set draft are drafts too, while Map keys are used as they are. See the FAQ for [iterating over Map drafts](/docs/extra-topics/faq#can-a-recipe-change-a-map-draft-while-iterating-over-it), [drafts as Map keys](/docs/extra-topics/faq#can-a-draft-be-a-map-key) and [the Set methods of ES2025](/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts).
 
 ## Returning a new state
 
