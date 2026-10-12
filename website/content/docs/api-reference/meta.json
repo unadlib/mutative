@@ -12,6 +12,7 @@
     "unsafe",
     "isdraftable",
     "isdraft",
-    "marksimpleobject"
+    "marksimpleobject",
+    "casts"
   ]
 }
