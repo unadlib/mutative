@@ -611,7 +611,7 @@ Mutative's types support TypeScript 5.0 and later; the package checks compile th
 
 - [use-mutative](https://github.com/mutativejs/use-mutative) - A 2-6x faster alternative to useState with spread operation
 - [use-travel](https://github.com/mutativejs/use-travel) - A React hook for state time travel with undo, redo, reset and archive functionalities.
-- [zustand-mutative](https://github.com/mutativejs/zustand-mutative) - A Mutative middleware for Zustand enhances the efficiency of immutable state updates.
+- [zustand-mutative](https://github.com/mutativejs/zustand-mutative) - A Zustand middleware that makes `set()` take a Mutative recipe.
 
 [Using Mutative with React](https://mutative.js.org/docs/getting-started/mutative-with-react) shows `create()` with `useState()` and `useReducer()`, and the [ecosystem](https://mutative.js.org/docs/extra-topics/mutative-ecosystem) lists the integrations for Jotai, XState, Yjs, undo and redo, and more.
 
@@ -657,7 +657,7 @@ Yes, Mutative supports shared references, but **each path to a shared object get
 
 [Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) maps every Immer API to Mutative and lists the behaviors that differ, and the [migration guide](https://mutative.js.org/docs/advanced-guides/migration) also covers manual drafts, classes and async recipes.
 
-> [mutative-compat](https://github.com/exuanbo/mutative-compat) - Mutative wrapper with full Immer API compatibility, you can use it to quickly migrate from Immer to Mutative.
+> [mutative-compat](https://github.com/exuanbo/mutative-compat) wraps Mutative in Immer's API, for a quick switch before you migrate the calls themselves.
 
 1. `produce()` -> `create()`
 
