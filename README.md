@@ -149,8 +149,6 @@ Mutative's `create` includes patches, `Map`/`Set` support and the native array m
 
 ## Installation
 
-Yarn
-
 ```sh
 pnpm add mutative
 # or `npm install mutative`
