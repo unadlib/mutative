@@ -152,13 +152,9 @@ Mutative's `create` includes patches, `Map`/`Set` support and the native array m
 Yarn
 
 ```sh
-yarn add mutative
-```
-
-NPM
-
-```sh
-npm install mutative
+pnpm add mutative
+# or `npm install mutative`
+# or `yarn add mutative`
 ```
 
 CDN
