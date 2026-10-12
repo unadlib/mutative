@@ -9,6 +9,7 @@ pnpm size
 pnpm test:package
 pnpm test:build-watch
 pnpm type-check
+pnpm test:api-docs
 pnpm test
 pnpm lint
 pnpm format --check
@@ -74,6 +75,10 @@ After changing the compiler or minifier, run these checks as well as the source 
 pnpm pack --pack-destination /tmp
 PATH=/path/to/node-v14.0.0/bin:$PATH node scripts/check-minimum-node.mjs /tmp/mutative-*.tgz
 ```
+
+## API docs
+
+`docs/` holds the API reference that TypeDoc generates from the TSDoc comments and exported types of `src/index.ts`, with the options in `typedoc.json`. Run `pnpm build:doc` after changing them. `pnpm test:api-docs` generates the reference in a temporary directory and fails when `docs/` differs from it; push and pull request workflows run this check. The reference links no source lines, so it changes only with the comments and types that it documents.
 
 ## Watch regression checks
 

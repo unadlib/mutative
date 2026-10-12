@@ -19,7 +19,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: pnpm
-    - name: pnpm install, lint, format check, build, package checks, type-check, and test
+    - name: pnpm install, lint, format check, build, package checks, type-check, API docs check, and test
       run: |
         pnpm install --frozen-lockfile
         pnpm lint
@@ -34,6 +34,7 @@ jobs:
         pnpm test:package
         pnpm test:build-watch
         pnpm type-check
+        pnpm test:api-docs
         pnpm test
       env:
         CI: true
