@@ -10,6 +10,7 @@
     "strict-mode",
     "typescript",
     "pitfalls",
+    "performance-tips",
     "migration",
     "migration-v2"
   ]

@@ -1,0 +1,49 @@
+---
+title: Performance tips
+description: Write recipes that avoid needless drafts, searches, copies, freezing and patches.
+---
+
+Mutative copies each object at most once per update and drafts only what a recipe reads, so most recipes are fast as they are. These tips help with large states and hot paths. The figures come from the [benchmark](/docs/getting-started/performance) on Node.js 24, in microseconds per update.
+
+## Search large arrays in a snapshot
+
+Every object that a recipe reads through a draft becomes a draft, so `draft.list.find()` creates a draft for each element it visits. Search [`current(draft.list)`](/docs/api-reference/current#searching-a-large-array), which holds plain values, and change the match through the draft:
+
+```ts
+import { create, current } from 'mutative';
+
+const baseState = {
+  list: Array.from({ length: 10_000 }, (_, id) => ({ id, done: false })),
+};
+
+const state = create(baseState, (draft) => {
+  const index = current(draft.list).findIndex((item) => item.id === 9_999);
+  draft.list[index].done = true;
+});
+
+expect(state.list[9_999].done).toBe(true);
+```
+
+Updating the first of 10,000 rows and then finding and updating the last one took 176 µs this way and 2,169 µs through the draft. Take one snapshot for a series of searches: each call of `current()` copies the changed parts of the draft again. To read the base state without drafts, use [`original()`](/docs/api-reference/original).
+
+## Return new states with `rawReturn()`
+
+Mutative searches a value that a recipe returns for drafts, which visits every object of it: returning a new state of 10,000 rows took 2,600 µs. When the value holds no drafts, such as a state built from scratch, wrap it in [`rawReturn()`](/docs/api-reference/rawreturn), which took 0.26 µs.
+
+## Let array methods move elements
+
+`shift()`, `unshift()`, `splice()` and `reverse()` run natively on the copy of a plain array, while a loop that moves elements one by one goes through the draft for each of them. Removing the first of 10,000 rows with `shift()` took 7.04 µs, against 7,408 µs for Immer, which moves each element through its draft. See [which array methods run natively](/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts).
+
+## Make one update for related changes
+
+Each `create()` call copies the objects on the path from the root to its changes, so several changes in one recipe copy shared parents once, where one call per change copies them each time. Group the changes of an action or an event into one recipe.
+
+## Turn on what you need
+
+- **Auto-freeze** visits every object of the next state that is not frozen yet. Inserting a property into an object of 1,000 properties took 50.3 µs without it and 140 µs with it. Enable it in development, or where other code relies on frozen state; see [Auto Freeze](/docs/advanced-guides/auto-freeze).
+- **Patches** cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.8 µs without them and 63.2 µs with them. Moving elements emits a patch for each moved index, so removing the first of 10,000 rows took 1,063 µs with patches. Keep `arrayLengthAssignment` on unless the patches must be JSON Patch operations, since a `remove` patch per index costs more than one `replace` of the `length`.
+- **Strict mode** inspects every value that a recipe reads, and sends array methods and `current()` through the draft for arrays that may hold objects. Enable it in development only; see [Strict Mode](/docs/advanced-guides/strict-mode).
+
+## Keep large data out of drafts
+
+Data that recipes read but never change, such as a large lookup table in the state, is drafted object by object as recipes read it. Read it with `original()`, or keep it outside the state. A [mark](/docs/advanced-guides/mark) that returns `'mutable'` for it keeps it out of drafts altogether, but then a recipe that changes it changes it in place.
