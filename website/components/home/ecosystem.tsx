@@ -51,7 +51,7 @@ const libraries = [
   {
     name: 'zustand-travel',
     tag: 'Zustand',
-    description: 'A high-performance time-travel middleware for Zustand.',
+    description: 'An undo and redo middleware for Zustand, built on travels.',
     url: 'https://github.com/mutativejs/zustand-travel',
   },
   {
@@ -70,7 +70,7 @@ const libraries = [
     name: 'usm',
     tag: 'State modules',
     description:
-      'A universal state modular library for Redux, MobX, Vuex and Angular.',
+      'A concise and flexible state model for Redux, MobX, Vuex, Pinia and more.',
     url: 'https://github.com/unadlib/usm',
   },
   {
