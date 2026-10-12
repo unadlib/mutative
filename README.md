@@ -133,7 +133,7 @@ Mutative's `create` includes patches, `Map`/`Set` support and the native array m
 | ES2025 Set methods on Set drafts                      |    ✅    |      ❌       |
 | Freezing reaches the objects used as Map keys         |    ✅    |      ❌       |
 | Array methods that run natively on drafts             |    ✅    | Opt-in plugin |
-| JSON Patch paths and array removals                   |    ✅    |      ❌       |
+| JSON Pointer string paths in patches                  |    ✅    |      ❌       |
 
 [Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) lists every difference, checked against Immer 11.1.18: the APIs that replace Immer's, defaults and configuration, drafts, patches, and the Immer failures that Mutative's tests pin.
 
