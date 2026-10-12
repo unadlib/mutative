@@ -65,7 +65,7 @@ const features: {
     icon: ShieldCheck,
     title: 'Strict mode',
     description:
-      'Safer access to mutable data, for more secure immutable updates.',
+      'Explicit reads of data that is not drafted, which a recipe could otherwise change in place.',
     href: '/docs/advanced-guides/strict-mode',
   },
   {
