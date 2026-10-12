@@ -666,22 +666,27 @@ Yes, Mutative supports shared references, but **each path to a shared object get
 
 ## Migration from Immer to Mutative
 
-[Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) maps every Immer API to Mutative and lists the behaviors that differ.
+[Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) maps every Immer API to Mutative and lists the behaviors that differ, and the [migration guide](https://mutative.js.org/docs/advanced-guides/migration) also covers manual drafts, classes and async recipes.
 
 > [mutative-compat](https://github.com/exuanbo/mutative-compat) - Mutative wrapper with full Immer API compatibility, you can use it to quickly migrate from Immer to Mutative.
 
 1. `produce()` -> `create()`
 
-Mutative auto freezing option is disabled by default, Immer auto freezing option is enabled by default.
+Mutative leaves the next state unfrozen unless `enableAutoFreeze` is set, while Immer freezes it by default.
 
-> You need to check if auto freezing has any impact on your project. If it depends on auto freezing, you can enable it yourself in Mutative.
+> Check whether your code relies on frozen state, for example to catch accidental mutations. If it does, enable auto-freeze in Mutative.
 
 ```ts
-import produce from "immer";
+import { produce } from "immer";
+
+const baseState = [
+  { title: "Learn TypeScript", done: true },
+  { title: "Try Immer", done: false },
+];
 
 const nextState = produce(baseState, (draft) => {
   draft[1].done = true;
-  draft.push({ title: "something" });
+  draft.push({ title: "Tweet about it", done: false });
 });
 ```
 
@@ -690,16 +695,21 @@ Use Mutative
 ```ts
 import { create } from "mutative";
 
+const baseState = [
+  { title: "Learn TypeScript", done: true },
+  { title: "Try Mutative", done: false },
+];
+
 const nextState = create(baseState, (draft) => {
   draft[1].done = true;
-  draft.push({ title: "something" });
+  draft.push({ title: "Tweet about it", done: false });
 });
 ```
 
 2. `Patches`
 
 ```ts
-import { produceWithPatches, applyPatches } from "immer";
+import { applyPatches, enablePatches, produceWithPatches } from "immer";
 
 enablePatches();
 
@@ -746,11 +756,11 @@ expect(state).toEqual(baseState);
 3. Return `undefined`
 
 ```ts
-import produce, { nothing } from "immer";
+import { nothing, produce } from "immer";
 
-const nextState = produce(baseState, (draft) => {
-  return nothing;
-});
+const baseState: { count: number } | undefined = { count: 1 };
+
+const nextState = produce(baseState, () => nothing);
 ```
 
 Use Mutative
@@ -758,9 +768,9 @@ Use Mutative
 ```ts
 import { create, rawReturn } from "mutative";
 
-const nextState = create(baseState, (draft) => {
-  return rawReturn(undefined);
-});
+const baseState: { count: number } | undefined = { count: 1 };
+
+const nextState = create(baseState, () => rawReturn(undefined));
 ```
 
 ## Migration from Mutative v1 to v2
