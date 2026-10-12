@@ -29,9 +29,12 @@ Mutative also takes its options per call instead of from global configuration, d
 
 > Mutative passed all of Immer's test cases.
 
-The [benchmark suite](./perf-testing/README.md) times 97 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+Mutative was 3.6x faster than Immer 11.1.18 with matched settings and 6.6x faster with each library's defaults, on geometric mean across 97 benchmarked workloads, and faster in 595 of 614 measured cases. The gap grows on large arrays, where Mutative moves elements natively: removing the first of 10,000 rows took 7.04 µs, against 7,408 µs. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
-With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.6x on geometric mean.
+<details>
+<summary><strong>Selected results</strong></summary>
+
+The [benchmark suite](./perf-testing/README.md) times 97 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. With matched settings, both libraries freeze or both do not, and both generate patches or both do not. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases.
 
 Times are microseconds per update, medians of three runs on an Apple M1 Max with Node.js 24.16.0, each library in a process of its own; lower is better. Mutative, the first Immer column, and the hand-written reducers run without auto-freeze; the second Immer column shows Immer's default.
 
@@ -59,7 +62,10 @@ Each library ran each workload in a process of its own. With all of them in one 
 
 Run `pnpm benchmark:immer` to measure the suite; the [benchmark guide](./perf-testing/README.md) describes its options.
 
-### Large arrays
+</details>
+
+<details>
+<summary><strong>Large arrays</strong></summary>
 
 At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method plugin, Mutative was faster in 222 of 232 cases at these sizes, 4.7x on geometric mean, and faster in every case that moves elements:
 
@@ -72,7 +78,10 @@ At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method p
 
 Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.04 µs against 7,408 µs, 1,052x. With patches, both libraries emit one patch per moved index, which bounds the gain to 5-9x. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
 
-### With patches
+</details>
+
+<details>
+<summary><strong>With patches</strong></summary>
 
 With patches on and auto-freeze off, Mutative was faster than Immer in 148 of 150 cases and within 5% in the other 2, 3.3x on geometric mean, and faster than Mutative 1.3.0 in 131 and within 5% in the rest, 4.6x. In every array case measured it was faster than both: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.2 µs with patches against 63.8 µs without. Moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches.
 
@@ -92,6 +101,8 @@ Times are microseconds per update with patches on and auto-freeze off:
 | Update one of 10,000 records       | 10,000 |    1,184 |  2,104 |          1,181 |
 
 Immer's optional `enableArrayMethods()` plugin also runs array methods on the draft's copy, and with patches it comes within 1.13-1.70x of Mutative when moving elements of 1,000 or 10,000 rows. These comparisons leave it off because in Immer 11.1.18 it breaks guarantees that Immer otherwise keeps: `shift`, `pop` and `splice` return raw base objects, so editing a removed object changes the previous state; reordering can expose original objects the same way and leave revoked drafts in the result; and its forward patches can fail to replay. In [the audit](./test/immer-array-methods.md), 123 of 4,913 three-step operation sequences break with the plugin and none without it. The [performance summary](./perf-testing/reports/SUMMARY.md) reports Immer with the plugin separately.
+
+</details>
 
 ### Bundle size
 
