@@ -23,6 +23,15 @@ export function baseOptions(): BaseLayoutProps {
 }
 
 /**
+ * The release notes, on GitHub.
+ */
+export const releasesLink: LinkItemType = {
+  text: 'Releases',
+  url: `${githubUrl}/releases`,
+  external: true,
+};
+
+/**
  * The navbar links of the pages outside the docs.
  */
 export const homeLinks: LinkItemType[] = [
@@ -35,4 +44,5 @@ export const homeLinks: LinkItemType[] = [
     url: '/blog',
     active: 'nested-url',
   },
+  releasesLink,
 ];
