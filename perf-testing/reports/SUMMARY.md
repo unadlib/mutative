@@ -67,6 +67,39 @@ The candidate's time stays approximately constant as the payload grows because i
 
 This comparison reuses existing cells and keeps the ordinary-return results and aggregate counts above unchanged. The [focused reproduction commands](../README.md#replacement-returns-with-default-freeze-settings) measure both return scenarios and freeze modes at all three sizes.
 
+### Fresh data returned with default freeze settings
+
+The `return-*` scenarios of this batch return rows that the harness creates before it measures, and that it freezes with the base state when auto-freeze is on, so Immer's default auto-freeze finds them frozen and skips them. Data that arrives with an update, such as a response parsed from JSON, is not frozen yet. `return-fresh` returns the same new root with rows that each call creates, and `return-fresh-raw` wraps that root in `rawReturn()`; Immer has no equivalent and returns the plain root in both. The two scenarios came after this batch, whose counts do not include them. On 2026-10-13 they ran with the source of [`0faa4b8`](https://github.com/unadlib/mutative/commit/0faa4b82be1d2c790506163b343f5f1fe8713141), whose production artifact is the one this batch measured, together with `return-replace` and `return-replace-raw` as controls, every library in processes of its own, three runs each, patches off.
+
+Microseconds per call, medians of three runs:
+
+| Scenario | Rows | Freeze | Mutative | Mutative 1.3.0 | Immer | Hand-written |
+| --- | ---: | --- | ---: | ---: | ---: | ---: |
+| return-fresh | 100 | off | 30.0 | 29.8 | 64.1 | 1.48 |
+| return-fresh | 1,000 | off | 299 | 299 | 607 | 15.6 |
+| return-fresh | 10,000 | off | 3,070 | 3,009 | 6,929 | 191 |
+| return-fresh | 100 | on | 47.7 | 46.1 | 91.8 | — |
+| return-fresh | 1,000 | on | 470 | 456 | 873 | — |
+| return-fresh | 10,000 | on | 4,864 | 4,553 | 9,228 | — |
+| return-fresh-raw | 100 | off | 2.08 | 2.10 | 63.0 | 1.50 |
+| return-fresh-raw | 1,000 | off | 19.8 | 19.7 | 602 | 15.5 |
+| return-fresh-raw | 10,000 | off | 226 | 226 | 6,880 | 192 |
+| return-fresh-raw | 100 | on | 18.6 | 18.3 | 90.1 | — |
+| return-fresh-raw | 1,000 | on | 181 | 177 | 867 | — |
+| return-fresh-raw | 10,000 | on | 1,808 | 1,773 | 9,198 | — |
+
+With each library's defaults, Immer freezes the fresh rows and the candidate searches them for drafts, so Immer took 3.06, 2.92 and 3.01 times as long at 100, 1,000 and 10,000 rows, the reverse of `return-replace`, whose pre-frozen rows the controls of the same runs returned in 0.84–0.86 µs for Immer with its default against 27.9 µs, 270 µs and 2.71 ms for the candidate without auto-freeze. `rawReturn()` returns the fresh rows in 1.18–1.39 times the time of the hand-written reducer, which only creates them; with auto-freeze it freezes them without searching them first, in 37–39% of the time of an ordinary return. Every time includes creating the rows. With auto-freeze, the candidate took 1.6–6.8% longer than Mutative 1.3.0 in these cells, whose process ranges did not overlap in five of the six; without it, the two took the same time.
+
+To reproduce these cells and their controls:
+
+```sh
+pnpm build
+pnpm benchmark:immer:build
+for rows in 100 1000 10000; do
+  node perf-testing/run-benchmarks.mjs --isolate --runs 3 --library all --freeze both --patches off --filter '^return-(replace|fresh)(-raw)?$' --array-size "$rows" --output "perf-testing/results/return-fresh-$rows.json"
+done
+```
+
 ### Large arrays
 
 Against Immer without its array-method plugin, by size and mode, over the 30 scaling scenarios: cells faster / within 5% / slower, and geometric means of Immer time over candidate time. The moves are `array-shift-nested`, `array-unshift-nested`, `array-splice-insert-nested`, `array-reverse-nested` and `array-reverse-primitive`.
@@ -421,7 +454,7 @@ Ten alternating rounds of benchmark bundles built from the source of the previou
 
 ## Tradeoffs and limits
 
-- Returned values: without auto-freeze, the candidate searches every object of a returned value for drafts, as Immer does: `return-replace` took 2.60 ms at 10,000 rows, against 5.72 ms for Immer without auto-freeze. Immer's default auto-freeze skips frozen values (0.79 µs), and so do production builds of the candidate with auto-freeze (0.53 µs). Wrapping the value in `rawReturn()` skips the search (0.26 µs).
+- Returned values: without auto-freeze, the candidate searches every object of a returned value for drafts, as Immer does: `return-replace` took 2.60 ms at 10,000 rows, against 5.72 ms for Immer without auto-freeze. Immer's default auto-freeze skips frozen values (0.79 µs), and so do production builds of the candidate with auto-freeze (0.53 µs). Wrapping the value in `rawReturn()` skips the search (0.26 µs). Immer's default only skips values that are already frozen: returning fresh rows made it freeze them, 9,228 µs at 10,000 rows against 3,070 µs for the candidate's search; see [fresh data returned with default freeze settings](#fresh-data-returned-with-default-freeze-settings).
 - A Set draft copies the Set on its first change and rebuilds it in order once an item that the recipe read through an iterator changed: `set-update` took 531 µs at 10,000 items, against 398 µs for the hand-written reducer, which copies the Set once. With patches, a Set that added or deleted items compares every original item with its copy and every item of the copy with the original: `set-add` took 440 µs with patches at 10,000 items, against 29.5 µs without. Copying the Map dominates `map-update` at 10,000 entries in every library, about 520 µs.
 - After `reverse()`, or after moves whose last offset does not lead back to an element, the candidate finds a moved row's original index by searching the original array from its end with `lastIndexOf`, which V8 runs about 15 times as slowly on frozen, sealed and non-extensible arrays: editing the middle row of 10,000 frozen rows took 310 µs after `reverse()`, against 188 µs after `shift()`, measured outside the suite. An element with more than 16 later copies is searched for backward over at most the last doubled step of its forward searches, which a long run of copies makes long: `shift()` and eight reads of 10,000 rows whose first half holds two objects in turn took 655 µs on frozen input, against 330 µs when the lookups followed every copy forward.
 - With auto-freeze, Immer updated class instances with many fields faster: one with 1,000 fields in 237 µs against 402 µs, and ones with 100 or 10,000 fields in about 5% less time without patches. Without freezing the candidate is faster, 98.8 µs against 203 µs at 1,000 fields, so the difference lies in freezing the candidate's copy, which it makes property by property with descriptors where Immer 11 uses `Object.assign`.
@@ -456,6 +489,8 @@ Candidate production: cb6464f37085cebc64ecbe97ee73551c81999c1d356e491dab97d7df03
 Pinned v1 production: 15ad9df11178c64f80e66797ffe784a4eeedfb03759ca59ef61a64f4142fde41
 Immer production:     30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9
 ```
+
+The fresh-data scenarios of 2026-10-13 measured the source of `0faa4b8`, whose production artifact is the candidate production above. Its source hash, `f6069ebb7ebeaa25104f1cac218d6459bc97979d1c8fd4a184fe2a50e696bfdb`, differs from this batch's because later commits changed TSDoc comments and types in `src`, which the production artifact does not contain.
 
 The Set scenarios of 2026-10-09 measured the production artifact of PR #195, which its head builds unchanged, and compared it with `main` at `e6af4b0`:
 
@@ -535,6 +570,7 @@ MUTATIVE_PERF_BUNDLE="perf-testing/dist/$NAME/immutability-benchmarks.mjs" node 
 
 Earlier versions of this summary, in Git history, describe each round in detail. Cell counts compare the candidate with the named comparator: faster, within 5%, and slower.
 
+- 2026-10-13: the `return-fresh` and `return-fresh-raw` scenarios return rows that each call creates, which are not frozen yet. With each library's defaults, Immer, which freezes them, took about three times as long as the candidate, which searches them, at every size; see [fresh data returned with default freeze settings](#fresh-data-returned-with-default-freeze-settings).
 - 2026-10-11, PR #202: a lookup of a moved array element follows 16 later copies of a repeated element one after another, then searches forward with doubling steps and backward only from the first step past its last copy, instead of once per later copy since PR #200. Against `main` before it, outside the suite, `shift()` and eight reads near the start of 10,000 rows of two objects in turn took 13.6 µs instead of 581 µs (10.3 µs before PR #200), and of 100,000 rows 145 µs instead of 5,840 µs; arrays without repeated objects, with few copies of each, or with copies in their first 100 rows kept their time, and 10,000 rows whose first half holds two objects in turn took 655 µs instead of 330 µs on frozen input. The production CJS artifact grew from 8,449 to 8,472 Brotli bytes.
 - 2026-10-10, PR #200: an array draft looks up the original index of a moved element first where the offset of the last move puts it, and searches forward from there, instead of searching the original array from its end, which V8 runs about 15 times as slowly on frozen arrays. Against `main` before it, Mutative alone, `shift-and-update` took 0.82 of the time over its 12 cells and 0.56–0.77 without patches at 1,000 and 10,000 rows, and eight edits of moved rows of 10,000 frozen rows 208 µs instead of 2,050 µs. With its cells measured again: 596 / 16 / 2 of 614 against Immer (geometric mean 3.59), 154 / 0 / 3 of 157 with each library's defaults (6.66), and 538 / 73 / 3 against 1.3.0 (4.29). The production CJS artifact grew from 8,367 to 8,439 Brotli bytes.
 - 2026-10-09 and 2026-10-10, PR #199, the source of `main` after PR #198, 97 scenarios with every library in processes of its own: 596 / 16 / 2 of 614 cells against Immer (geometric mean 3.58), 154 / 0 / 3 of 157 with each library's defaults (6.62), 538 / 73 / 3 against 1.3.0 (4.27), and 18 / 3 / 129 of 150 against the hand-written reducer; in shared processes the same cells gave 603 / 11 / 0 against Immer (3.79). Against the cells it replaced, the candidate's time changed by less than 1% on geometric mean. PR #200 later measured `shift-and-update` again, as its entry describes.
