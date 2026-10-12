@@ -1,26 +1,19 @@
 ---
 title: original()
+description: Get the value that a draft was created from, without the changes of the recipe.
 ---
 
-Get the original value from a draft.
+`original(draft)` returns the value that a draft was created from: the object of the base state, without the changes that the recipe has made to it.
+
+```ts
+original<T>(draft: T): T
+```
 
 ## Usage
 
-The `original()` is an essential function that allows you to obtain the original state from a draft state. When working with immutable state management, it is often necessary to reference the state before any changes were made to understand the transformations that have occurred. This is where `original()` comes into play.
-
-When you make changes to a state using Mutative's drafting system, you are essentially working on a mutable proxy that safely encapsulates changes without affecting the actual state. However, there may be instances where you need to compare the draft to the original, untouched state. The `original()` function provides a direct reference to this untouched state, enabling such comparisons and validations.
-
-Here are some key points about the `original()` API:
-
-- It returns a reference to the state before any modifications were made, allowing you to view the state as it was when the draft was first created.
-- This is particularly useful when you need to compare the current draft to the original state to determine what changes have occurred.
-- `original()` helps maintain the integrity of the immutable state by providing access to the unaltered state, ensuring that changes can be tracked and managed effectively.
-- It is especially useful for debugging purposes and when you need to make decisions based on the history of the state changes.
-- Just like with other Mutative APIs, `original()` is designed to be straightforward and easy to use, fitting seamlessly into the library’s philosophy of simplifying immutable state management.
-
-In summary, `original()` is a function that underscores Mutative's commitment to providing tools that make immutable state management both efficient and intuitive, allowing developers to work with a clear understanding of the state throughout the mutation process.
-
 ```ts
+import { create, original } from 'mutative';
+
 const baseState = {
   foo: 'bar',
   list: [{ text: 'todo' }],
@@ -29,14 +22,17 @@ const baseState = {
 const state = create(baseState, (draft) => {
   draft.foo = 'foobar';
   draft.list.push({ text: 'learning' });
+
   expect(original(draft.list)).toEqual([{ text: 'todo' }]);
-  expect(original(draft.list)).not.toBe(draft.list);
   expect(original(draft.list)).toBe(baseState.list);
+  expect(original(draft.list)).not.toBe(draft.list);
 });
 ```
 
-`original()` reflects the state before the recipe's changes, so an index found in `original(draft.list)` no longer matches the draft once the recipe has added, removed or moved elements. To search a draft array, use [`current()`](/docs/api-reference/current#searching-a-large-array).
+Use it to compare a draft with its original value, or to read the base state without creating drafts, since the original value holds no proxies.
 
-<Callout type="idea">
-`original()` must only be invoked on draft objects and not on original state objects or finalized states.
-</Callout>
+- `original()` returns the object of the base state itself, so never change it.
+- It throws for a value that is not a draft, such as the base state, a finished state, or a value that the recipe assigned, which Mutative does not draft. Use [`isDraft()`](/docs/api-reference/isdraft) to check.
+- An object of the base state is drafted when the recipe reads it, so a search of a draft array for such an object does not find it; search `original(draft.list)` for it, as in `original(draft.list).indexOf(item)`.
+
+`original()` reflects the state before the recipe's changes, so an index found in `original(draft.list)` no longer matches the draft once the recipe has added, removed or moved elements. To search a draft array, use [`current()`](/docs/api-reference/current#searching-a-large-array).
