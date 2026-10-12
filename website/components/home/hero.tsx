@@ -1,9 +1,9 @@
-import { benchmarkRun, speedups } from '@/lib/benchmarks';
-import { ArrowRight, Zap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { GitHubButton } from './github-button';
 import { InstallCommand } from './install-command';
+import { OverallComparison } from './overall-comparison';
 
 // Darker in light mode, so that the words keep a 3:1 contrast.
 const brandText =
@@ -28,28 +28,15 @@ export function Hero() {
         aria-hidden
         className="pointer-events-none absolute -top-48 left-1/2 h-[520px] w-[min(1000px,140vw)] -translate-x-1/2 rounded-full bg-fd-primary/25 blur-[120px]"
       />
-      <div className="relative mx-auto flex max-w-[1100px] flex-col items-center px-4 pb-20 pt-16 text-center md:pb-28 md:pt-24">
+      <div className="relative mx-auto flex max-w-[1100px] flex-col items-center px-4 pb-16 pt-10 text-center md:pb-24 md:pt-12">
         <Image
           src="/img/logo.svg"
           alt="Mutative"
           width={96}
           height={96}
           loading="eager"
-          className="drop-shadow-[0_8px_32px_rgba(255,136,0,0.35)]"
+          className="size-18 drop-shadow-[0_8px_32px_rgba(255,136,0,0.35)] md:size-24"
         />
-        <Link
-          href="/docs/getting-started/performance"
-          className="group mt-8 inline-flex items-center gap-2 rounded-full border bg-fd-card/80 px-4 py-1.5 text-sm text-fd-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-fd-foreground"
-        >
-          <Zap className="size-3.5 fill-fd-primary text-fd-primary" />
-          <span>
-            {`About ${speedups.matched.factor}x faster than Immer`}
-            <span className="hidden sm:inline">
-              {` across ${benchmarkRun.workloads} workloads`}
-            </span>
-          </span>
-          <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-        </Link>
         <h1 className="mt-6 text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
           <span className={brandText}>Better</span> immutability
           <br />
@@ -59,7 +46,7 @@ export function Hero() {
           A JavaScript library for efficient immutable updates. Write plain
           mutations on a draft, and get the next immutable state.
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/docs/intro"
             className="inline-flex h-11 items-center gap-2 rounded-xl bg-fd-primary px-6 font-semibold text-fd-primary-foreground shadow-[0_8px_24px_-8px_rgba(255,136,0,0.6)] transition-colors hover:bg-fd-primary/90"
@@ -68,10 +55,9 @@ export function Hero() {
             <ArrowRight className="size-4" />
           </Link>
           <GitHubButton />
-        </div>
-        <div className="mt-8">
           <InstallCommand />
         </div>
+        <OverallComparison />
       </div>
     </section>
   );

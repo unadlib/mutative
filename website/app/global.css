@@ -14,6 +14,41 @@
   --color-fd-primary-foreground: hsl(0, 0%, 9%);
 }
 
+/*
+ * The bars of the overall comparison in the hero grow at one speed, so each
+ * stops after a time proportional to its length, and its multiple shows then.
+ * Only `scale` and `opacity` change, which the compositor animates. Readers who
+ * prefer reduced motion see the bars and multiples at once.
+ */
+@keyframes race-grow {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes race-value {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .race-bar {
+    animation: race-grow var(--race-duration) linear var(--race-delay) both;
+  }
+
+  .race-value {
+    animation: race-value 0.3s ease-out
+      calc(var(--race-delay) + var(--race-duration)) both;
+  }
+}
+
 /* Blockquotes in the docs hold notes, not quotations. */
 .prose blockquote {
   font-style: normal;
