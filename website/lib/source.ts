@@ -4,7 +4,7 @@ import { getPageTreePeers } from 'fumadocs-core/page-tree';
 import { llms, loader } from 'fumadocs-core/source';
 import { metaSchema, pageSchema } from 'fumadocs-core/source/schema';
 import { defineDocs } from 'fumadocs-mdx/macro';
-import { docsRoute } from './shared';
+import { docsRoute, getPageMarkdownUrl, siteUrl } from './shared';
 
 const docs = defineDocs({
   dir: 'content/docs',
@@ -39,6 +39,19 @@ export const source = loader({
   baseUrl: docsRoute,
   source: docs.toFumadocsSource(),
 });
+
+/**
+ * The `llms.txt` index, which links each page to its Markdown with an absolute
+ * URL, so that the links also work where the index is read without the site.
+ */
+export const llmsIndex = llms(
+  loader({
+    baseUrl: docsRoute,
+    url: (slugs, locale) =>
+      `${siteUrl}${getPageMarkdownUrl({ slugs, locale }).url}`,
+    source: docs.toFumadocsSource(),
+  })
+);
 
 export const docsLlms = llms(source, {
   async renderPage(page) {
