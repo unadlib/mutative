@@ -120,3 +120,42 @@ describe.each(documents)('$name', ({ examples }) => {
     }
   });
 });
+
+describe('website/content/docs/extra-topics/errors.mdx', () => {
+  const page = readFileSync(
+    join(root, 'website/content/docs/extra-topics/errors.mdx'),
+    'utf8'
+  );
+  const rows = [...page.matchAll(/^\| +(\d+) \| `(\w+)`[^|]*\| (.+) \|$/gm)];
+  const placeholders: Record<number, unknown[]> = {
+    7: ['<value>'],
+    9: ['<result>'],
+    14: [['<path>']],
+    16: ['<op>'],
+    18: ['<value>'],
+  };
+
+  test('lists every error code with its development message', async () => {
+    const { die } = await import('../src/error');
+    const source = readFileSync(join(root, 'src/error.ts'), 'utf8');
+    const codes = [...source.matchAll(/^ {2}(\w+) = (\d+),$/gm)].map(
+      ([, name, code]) => [Number(code), name] as const
+    );
+    expect(rows.map(([, code, name]) => [Number(code), name])).toEqual(
+      [...codes, [12, 'InvalidPatchPath']].sort((a, b) => +a[0] - +b[0])
+    );
+    // Code 12 is retired, so no development message remains for it.
+    for (const [, code, , message] of rows.filter((row) => row[1] !== '12')) {
+      let error: unknown;
+      try {
+        (die as (code: number, ...args: unknown[]) => never)(
+          Number(code),
+          ...(placeholders[Number(code)] ?? [])
+        );
+      } catch (thrown) {
+        error = thrown;
+      }
+      expect((error as Error).message).toBe(message.replace(/^`|`$/g, ''));
+    }
+  });
+});
