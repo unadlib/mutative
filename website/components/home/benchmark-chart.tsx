@@ -47,7 +47,8 @@ function formatFactor(factor: number) {
   })}x`;
 }
 
-// Each workload scales its bars to its slowest time, since the times of the
+// A bar is a library's time relative to Mutative's in its workload, and each
+// workload scales its bars to its slowest time, since the times of the
 // workloads differ by four orders of magnitude.
 function getRatio(workload: ChartWorkload, key: SeriesKey) {
   const slowest = Math.max(...series.map(({ key }) => toNumber(workload[key])));
@@ -88,7 +89,7 @@ export function BenchmarkChart() {
     <figure className="rounded-2xl border bg-fd-background p-5 md:p-8">
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div>
-          <p className="font-medium">Microseconds per update</p>
+          <p className="font-medium">Time per update, relative to Mutative</p>
           <p className="text-sm text-fd-muted-foreground">Shorter is better</p>
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -164,12 +165,13 @@ export function BenchmarkChart() {
                 const index = workloadIndex * series.length + seriesIndex;
                 const ratio = getRatio(workload, key);
                 const isActive = active === index;
+                const multiple = formatFactor(
+                  toNumber(workload[key]) / toNumber(workload.mutative)
+                );
                 const details =
                   key === 'mutative'
                     ? label
-                    : `${label} · ${formatFactor(
-                        toNumber(workload[key]) / toNumber(workload.mutative)
-                      )} Mutative's time`;
+                    : `${label} · ${multiple} Mutative's time`;
                 return (
                   <div
                     key={key}
@@ -240,7 +242,7 @@ export function BenchmarkChart() {
                             : 'text-fd-muted-foreground'
                         }`}
                       >
-                        {workload[key]} µs
+                        {multiple}
                       </span>
                     </div>
                   </div>
@@ -305,7 +307,7 @@ export function BenchmarkChart() {
       </div>
 
       <figcaption className="mt-8 text-sm text-fd-muted-foreground">
-        {`Medians of three runs on an ${benchmarkRun.machine} with Node.js ${benchmarkRun.node} and Immer ${benchmarkRun.immer}, each library in a process of its own, without patches. Mutative and the first Immer bar run without auto-freeze; the second Immer bar shows Immer's default. Each workload is scaled to its slowest time, and its factor compares Mutative with Immer under the same settings. Hand-written reducers that copy only what they change are faster still in most workloads.`}
+        {`Medians of three runs on an ${benchmarkRun.machine} with Node.js ${benchmarkRun.node} and Immer ${benchmarkRun.immer}, each library in a process of its own, without patches. Each bar is a library's time per update relative to Mutative's in its workload, and the table lists the times in microseconds. Mutative and the first Immer bar run without auto-freeze; the second Immer bar shows Immer's default. Hand-written reducers that copy only what they change are faster still in most workloads.`}
       </figcaption>
     </figure>
   );
