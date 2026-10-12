@@ -311,7 +311,7 @@ A draft belongs to the `create()` call that made it, also the draft that `create
 
 ### `apply()`
 
-Use `apply()` for applying patches to get the new state.
+`apply()` applies patches, such as those that `create()` returns with `enablePatches`, and returns the next state.
 
 ```ts
 import { create, apply } from "mutative";
@@ -340,12 +340,7 @@ expect(prevState).toEqual(baseState);
 
 #### `apply(state, patches, options)`
 
-The options parameter is optional and supports two types of configurations:
-
-1. Immutable options (similar to create options but without `enablePatches`):
-   - `strict` - `boolean`, forbid accessing non-draftable values in strict mode
-   - `enableAutoFreeze` - `boolean`, enable autoFreeze and return frozen state
-   - `mark` - mark function to determine if a value is mutable/immutable
+The `options` argument is optional. `enableAutoFreeze`, `strict` and `mark` work as the [options of `create()`](#createstate-fn-options) do. Pass `apply()` the same `mark` as the `create()` calls that generated the patches, so that it drafts the same values, such as class instances.
 
 ```ts
 const baseState = { foo: { bar: "test" } };
@@ -362,10 +357,7 @@ expect(baseState).not.toEqual({ foo: { bar: "test2" } });
 expect(result).toEqual({ foo: { bar: "test2" } });
 ```
 
-2. Mutable option(Mutative v1.2.0+):
-   - `mutable` - `boolean`, if true the state will be mutated directly instead of creating a new state
-
-Example with mutable option:
+`mutable: true`, available since Mutative 1.2.0, changes the state in place instead, and `apply()` then returns `undefined`:
 
 ```ts
 const baseState = { foo: { bar: "test" } };
@@ -387,7 +379,7 @@ apply(
 expect(baseState).toEqual({ foo: { bar: "test2" } });
 ```
 
-> ⚠️Note: The mutable option cannot be combined with other options. When using mutable option, apply() will return void instead of a new state. As it changes the state in place, it throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state.
+> The `mutable` option cannot be combined with the other options, which development builds report with a warning. It throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, because the state cannot be replaced in place.
 
 > `apply()` throws for a patch path through the `__proto__` or `constructor` of an object or array, or through the `prototype` of a function, so that patches cannot change the prototypes of objects; Map keys of these names are ordinary keys. It reads the other path segments as properties, as Immer does, and does not guard against prototypes that other code has already changed.
 
