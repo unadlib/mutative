@@ -387,12 +387,10 @@ expect(baseState).toEqual({ foo: { bar: "test2" } });
 
 ### `current()`
 
-Get the current value from a draft.
+`current(draft)` returns a snapshot of the current value of a draft, with the changes that the recipe has made so far and without the proxies of the draft.
 
-- For any draft where a child node has been modified, the state obtained by executing current() each time will be a new reference object.
-- For a draft where no child nodes have been modified, executing current() will always return the original state.
-
-> It is recommended to minimize the number of times current() is executed when performing read-only operations, ideally executing it only once.
+- For a draft that the recipe has not changed, it returns the original value without copying it.
+- A changed draft is copied, together with its changed descendants, on every call, so each call returns new objects for it. Take one snapshot for a series of reads rather than calling `current()` in a loop.
 
 ```ts
 const state = create({ a: { b: { c: 1 } }, d: { f: 1 } }, (draft) => {
