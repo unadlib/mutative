@@ -13,10 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
+      # npm trusted publishing needs npm 11.5.1 or later, which Node.js 24
+      # ships; it publishes with OIDC and attaches provenance itself.
       - uses: actions/setup-node@v7
         with:
-          node-version: '22.x'
+          node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm type-check
       - run: pnpm build
@@ -24,7 +27,6 @@ jobs:
       - run: pnpm test:package
       - run: pnpm test:build-watch
       - run: pnpm test
-      - run: npm publish --provenance
+      - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
           CI: true
