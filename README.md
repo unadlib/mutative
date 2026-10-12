@@ -8,7 +8,7 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/mutative)](https://npmtrends.com/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-**Mutative** - A JavaScript library for efficient immutable updates. In the [benchmark](./perf-testing/reports/SUMMARY.md), it was about 3.6x faster than Immer with the same settings and 6.6x faster with each library's defaults across 97 workloads.
+**Mutative** - A JavaScript library for efficient immutable updates ([documentation](https://mutative.js.org/)). In the [benchmark](./perf-testing/reports/SUMMARY.md), it was about 3.6x faster than Immer with the same settings and 6.6x faster with each library's defaults across 97 workloads.
 
 In that benchmark the gap widened on large arrays, where Mutative moved elements up to 1,052x faster than Immer. When copying dominates, such as updating objects with thousands of keys, inserting at the front of a large array or adding an item to a large Set, Mutative is even faster than hand-written reducers.
 
@@ -110,14 +110,14 @@ Mutative's `create` includes patches, `Map`/`Set` support and the native array m
 
 ## Features and Benefits
 
-- **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
+- **Mutation makes immutable updates** - Immutable updates of objects, arrays, Maps and Sets, written as mutations of a draft.
 - **High performance** - About 6.6x faster than Immer with each library's defaults, and faster than hand-written spreads in measured wide-object and large-array insertion workloads.
-- **Optional freezing state** - No freezing of immutable data by default.
-- **Support for JSON Patch** - Patches use the `add`, `remove` and `replace` operations of JSON Patch, and with `pathAsArray: false` and `arrayLengthAssignment: false`, those of objects and arrays are JSON Patch operations.
-- **Custom shallow copy** - Support for more types of immutable data.
-- **Support mark for immutable and mutable data** - Allows for non-invasive marking.
-- **Safer mutable data access in strict mode** - It brings more secure immutable updates.
-- **Support for reducer** - Support reducer function and any other immutable state library.
+- **Optional freezing state** - No freezing of immutable data by default, and [auto-freeze](https://mutative.js.org/docs/advanced-guides/auto-freeze) when you want it.
+- **Support for JSON Patch** - [Patches](https://mutative.js.org/docs/advanced-guides/patches) use the `add`, `remove` and `replace` operations of JSON Patch, and with `pathAsArray: false` and `arrayLengthAssignment: false`, those of objects and arrays are JSON Patch operations.
+- **Custom shallow copy** - [Marks](https://mutative.js.org/docs/advanced-guides/mark) draft class instances and other types of immutable data, with their own shallow copies if needed.
+- **Support mark for immutable and mutable data** - Marks set what is drafted without changing the data or its classes.
+- **Safer mutable data access in strict mode** - [Strict mode](https://mutative.js.org/docs/advanced-guides/strict-mode) makes reads of data that cannot be drafted explicit.
+- **Support for reducer** - [Producers](https://mutative.js.org/docs/advanced-guides/currying) work as reducers for Redux and any other immutable state library, and recipes can be async.
 
 ## Difference between Mutative and Immer
 
@@ -177,11 +177,9 @@ expect(state).not.toBe(baseState);
 expect(state.list).not.toBe(baseState.list);
 ```
 
-`create(baseState, (draft) => void, options?: Options): newState`
+`create(baseState, recipe, options?)` drafts the base state and passes the draft to the recipe. The recipe changes the draft with ordinary JavaScript, and `create()` returns the next state, which copies the objects that the recipe changed and shares all the others with the base state. The base state does not change.
 
-The first argument of `create()` is the base state. Mutative drafts it and passes it to the arguments of the draft function, and performs the draft mutation until the draft function finishes, then Mutative will finalize it and produce the new state.
-
-Use `create()` for more advanced features by [setting `options`](#createstate-fn-options).
+Use `create()` for more advanced features by [setting `options`](#createstate-fn-options). The [documentation](https://mutative.js.org/docs/getting-started/usages) shows common updates of objects, arrays, Maps and Sets.
 
 ## APIs
 
@@ -495,7 +493,7 @@ const state = create(baseState, (draft) => {
 
 ### `isDraftable()`
 
-Check if a value is draftable
+Check if a value is draftable: plain objects, arrays, Maps and Sets are, and other values are when a `mark` makes them draftable.
 
 ```ts
 const baseState = {
@@ -511,7 +509,7 @@ expect(isDraftable(baseState.list)).toBeTruthy();
 
 ### `rawReturn()`
 
-For return values that do not contain any drafts, you can use `rawReturn()` to wrap this return value to improve performance. It ensure that the return value is only returned explicitly.
+For return values that do not contain any drafts, you can use `rawReturn()` to wrap this return value to improve performance: `create()` then returns it as it is, without searching it for drafts. `rawReturn(undefined)` also makes `undefined` the next state.
 
 Mutative searches the value a recipe returns for drafts, so that drafts mixed into it are replaced. With auto-freeze enabled, production builds do not search frozen objects or the values they hold, so returning an earlier, frozen state, or state built from one, costs little even without `rawReturn()`. Development builds still search them and throw when they find a draft there, so never put a draft in a frozen object or in a value it holds.
 
@@ -608,11 +606,11 @@ const state = create(
 expect(state.simpleObject).not.toBe(baseState.simpleObject);
 ```
 
-[View more API docs](./docs/README.md).
+See the [API reference](https://mutative.js.org/docs/api-reference) on the website for every option and behavior, and the [generated API docs](./docs/README.md) for the type signatures.
 
 ## Using TypeScript
 
-Mutative's types support TypeScript 5.0 and later; the package checks compile them with TypeScript 5.0.
+Mutative's types support TypeScript 5.0 and later; the package checks compile them with TypeScript 5.0. The [TypeScript guide](https://mutative.js.org/docs/advanced-guides/typescript) describes how they type drafts, results and producers.
 
 - `castDraft()`
 - `castImmutable()`
@@ -629,11 +627,13 @@ Mutative's types support TypeScript 5.0 and later; the package checks compile th
 - [use-travel](https://github.com/mutativejs/use-travel) - A React hook for state time travel with undo, redo, reset and archive functionalities.
 - [zustand-mutative](https://github.com/mutativejs/zustand-mutative) - A Mutative middleware for Zustand enhances the efficiency of immutable state updates.
 
+[Using Mutative with React](https://mutative.js.org/docs/getting-started/mutative-with-react) shows `create()` with `useState()` and `useReducer()`, and the [ecosystem](https://mutative.js.org/docs/extra-topics/mutative-ecosystem) lists the integrations for Jotai, XState, Yjs, undo and redo, and more.
+
 ## FAQs
 
 - I'm already using Immer, can I migrate smoothly to Mutative?
 
-Yes. Unless you have to be compatible with Internet Explorer, Mutative supports almost all of Immer features, and you can easily migrate from Immer to Mutative. [Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) lists the APIs that replace Immer's and every behavior that differs.
+Yes. Unless you have to be compatible with Internet Explorer, Mutative supports almost all of Immer's features, and the [migration guide](https://mutative.js.org/docs/advanced-guides/migration) shows how to replace each API. [Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) lists the APIs that replace Immer's and every behavior that differs.
 
 > Mutative, like Immer, needs `Proxy`. On Android, React Native supports it since version 0.59 with JavaScriptCore and since version 0.64 with [Hermes](https://reactnative.dev/blog/2021/03/12/version-0.64#hermes-with-proxy-support).
 
