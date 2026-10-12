@@ -8,9 +8,9 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/mutative)](https://npmtrends.com/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
-**Mutative** - A JavaScript library for efficient immutable updates. In the [benchmark](./perf-testing/reports/SUMMARY.md), it was about 3.6x faster than Immer with the same settings and 6.7x faster with each library's defaults across 97 workloads.
+**Mutative** - A JavaScript library for efficient immutable updates. In the [benchmark](./perf-testing/reports/SUMMARY.md), it was about 3.6x faster than Immer with the same settings and 6.6x faster with each library's defaults across 97 workloads.
 
-In that benchmark the gap widened on large arrays, where Mutative moved elements up to 1,051x faster than Immer. When copying dominates, such as updating objects with thousands of keys, inserting at the front of a large array or adding an item to a large Set, Mutative is even faster than hand-written reducers.
+In that benchmark the gap widened on large arrays, where Mutative moved elements up to 1,052x faster than Immer. When copying dominates, such as updating objects with thousands of keys, inserting at the front of a large array or adding an item to a large Set, Mutative is even faster than hand-written reducers.
 
 **How does Mutative compare with the spread operation (hand-written reducers)?**
 
@@ -35,31 +35,31 @@ This is why Mutative was created.
 
 The [benchmark suite](./perf-testing/README.md) times 97 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
-With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 596 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.7x on geometric mean.
+With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.6x on geometric mean.
 
 Times are microseconds per update, medians of three runs on an Apple M1 Max with Node.js 24.16.0, each library in a process of its own; lower is better. Mutative, the first Immer column, and the hand-written reducers run without auto-freeze; the second Immer column shows Immer's default.
 
 | Workload                            |   Rows | Mutative |  Immer | Immer, auto-freeze | Hand-written |
 | ----------------------------------- | -----: | -------: | -----: | -----------------: | -----------: |
-| Update one field of a small object  |      — |     0.51 |   0.69 |               0.92 |         0.02 |
-| Update an array item found by ID    |    100 |     1.14 |   1.75 |               23.8 |         0.38 |
-| 200 RTK Query-style updates         |      — |    1,012 |  1,173 |              4,985 |          352 |
-| Read every row by index             | 10,000 |    4,766 | 11,933 |             11,980 |         54.8 |
-| Remove the first row                | 10,000 |     7.07 |  7,426 |              8,186 |         1.41 |
-| Update every row                    | 10,000 |    6,534 |  9,644 |             13,501 |          212 |
-| Update one of 10,000 records        | 10,000 |    1,199 |  2,102 |              3,164 |        2,091 |
-| Insert into a 1,000-property object |      — |     51.5 |    149 |                231 |          127 |
-| Update a Map value                  | 10,000 |      526 |    530 |                741 |          523 |
-| Add a number to a Set               | 10,000 |     30.9 |    913 |                987 |         63.2 |
-| Update a class instance             | 10,000 |     2.90 |   3.42 |                668 |         1.43 |
-| Update a value ten levels deep      |      — |     3.56 |   4.41 |               7.78 |         0.76 |
-| Apply patches to 10% of rows        | 10,000 |      727 |  1,179 |              2,101 |            — |
-| Search `current()` after `shift()`  | 10,000 |      257 | 11,379 |             11,981 |         23.4 |
-| Return draft.filter()               | 10,000 |    2,639 |  4,307 |              4,752 |         79.7 |
-| Return a new state                  | 10,000 |    2,606 |  5,728 |               0.79 |         0.02 |
-| Return it with rawReturn()          | 10,000 |     0.26 |  5,747 |               0.79 |         0.02 |
+| Update one field of a small object  |      — |     0.51 |   0.69 |               0.95 |         0.02 |
+| Update an array item found by ID    |    100 |     1.12 |   1.82 |               25.0 |         0.38 |
+| 200 RTK Query-style updates         |      — |    1,001 |  1,133 |              4,795 |          352 |
+| Read every row by index             | 10,000 |    4,756 |  9,584 |              9,687 |         57.7 |
+| Remove the first row                | 10,000 |     7.04 |  7,408 |              8,137 |         1.40 |
+| Update every row                    | 10,000 |    6,462 | 12,570 |             15,607 |          211 |
+| Update one of 10,000 records        | 10,000 |    1,200 |  2,094 |              3,131 |        2,088 |
+| Insert into a 1,000-property object |      — |     50.3 |    149 |                229 |          126 |
+| Update a Map value                  | 10,000 |      518 |    526 |                733 |          519 |
+| Add a number to a Set               | 10,000 |     29.5 |    904 |                975 |         61.2 |
+| Update a class instance             | 10,000 |     2.92 |   3.44 |                668 |         1.42 |
+| Update a value ten levels deep      |      — |     3.50 |   4.41 |               7.84 |         0.76 |
+| Apply patches to 10% of rows        | 10,000 |      734 |  1,166 |              2,095 |            — |
+| Search `current()` after `shift()`  | 10,000 |      257 | 11,255 |             11,846 |         64.8 |
+| Return draft.filter()               | 10,000 |    2,658 |  4,251 |              4,736 |         77.7 |
+| Return a new state                  | 10,000 |    2,604 |  5,718 |               0.79 |         0.02 |
+| Return it with rawReturn()          | 10,000 |     0.26 |  5,703 |               0.79 |         0.02 |
 
-Each library ran each workload in a process of its own. With all of them in one process every library ran slower, and not by the same amount: Mutative took 1.1 times as long on geometric mean, Immer 1.2 times, and the hand-written reducers 1.6 times. The search removes the first row with `shift()`, then finds the last row in a snapshot of the array and updates it. Immer has no `rawReturn()` and returns the same plain value in the last two rows; with auto-freeze, Mutative skips a returned state that is already frozen, as Immer does, taking 0.53 µs. Immer was faster in 2 of the 614 matched cases, both with auto-freeze when updating a class instance with 1,000 fields.
+Each library ran each workload in a process of its own. With all of them in one process every library ran slower, and not by the same amount: Mutative took 1.1 times as long on geometric mean, Immer 1.2 times, and the hand-written reducers 1.7 times. The search removes the first row with `shift()`, then finds the last row in a snapshot of the array and updates it. Immer has no `rawReturn()` and returns the same plain value in the last two rows; with auto-freeze, Mutative skips a returned state that is already frozen, as Immer does, taking 0.53 µs. Immer was faster in 6 of the 614 matched cases, all with auto-freeze: four updates of class instances with 100 to 10,000 fields, and two array updates at 100 rows whose runs overlapped those of Mutative.
 
 Run `pnpm benchmark:immer` to measure the suite; the [benchmark guide](./perf-testing/README.md) describes its options.
 
@@ -69,33 +69,33 @@ At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method p
 
 | Auto-freeze | Patches | All workloads, 1,000 rows | All workloads, 10,000 rows | Moves, 1,000 rows | Moves, 10,000 rows |
 | ----------- | ------- | ------------------------: | -------------------------: | ----------------: | -----------------: |
-| off         | off     |                      8.7x |                      10.8x |              209x |               431x |
-| off         | on      |                      4.1x |                       4.6x |              7.1x |               7.3x |
+| off         | off     |                      8.7x |                      10.8x |              209x |               430x |
+| off         | on      |                      4.1x |                       4.5x |              7.1x |               7.3x |
 | on          | off     |                      3.9x |                       4.2x |               32x |                39x |
 | on          | on      |                      2.7x |                       2.8x |              6.6x |               6.8x |
 
-Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.07 µs against 7,426 µs, 1,051x. With patches, both libraries emit one patch per moved index, which bounds the gain to 5-9x. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
+Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.04 µs against 7,408 µs, 1,052x. With patches, both libraries emit one patch per moved index, which bounds the gain to 5-9x. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
 
 ### With patches
 
-With patches on and auto-freeze off, Mutative was faster than Immer in 147 of 150 cases and within 5% in the other 3, 3.3x on geometric mean, and faster than Mutative 1.3.0 in 132 and within 5% in the rest, 4.6x. In every array case measured it was faster than both: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.0 µs with patches against 62.9 µs without. Moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches.
+With patches on and auto-freeze off, Mutative was faster than Immer in 148 of 150 cases and within 5% in the other 2, 3.3x on geometric mean, and faster than Mutative 1.3.0 in 131 and within 5% in the rest, 4.6x. In every array case measured it was faster than both: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.2 µs with patches against 63.8 µs without. Moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches.
 
 Times are microseconds per update with patches on and auto-freeze off:
 
 | Workload                           |   Rows | Mutative |  Immer | Mutative 1.3.0 |
 | ---------------------------------- | -----: | -------: | -----: | -------------: |
-| Push a row and insert a property   | 10,000 |     63.0 |    364 |            210 |
-| Update an array item found by ID   |    100 |     1.51 |   3.18 |           3.35 |
-| 200 RTK Query-style updates        |      — |    1,155 |  1,511 |          2,097 |
-| Remove the first row with `splice` |    100 |     11.4 |   83.2 |          2,949 |
-| Insert a row in the middle         |    100 |     8.83 |   48.0 |          1,192 |
-| Sort rows                          |    100 |      103 |    130 |          2,363 |
-| Remove the first row with `shift`  | 10,000 |    1,066 |  8,967 |        273,171 |
-| Reverse the rows                   | 10,000 |    1,073 |  9,525 |        276,034 |
-| Update every row                   | 10,000 |    8,132 | 20,060 |         22,073 |
-| Update one of 10,000 records       | 10,000 |    1,200 |  2,114 |          1,183 |
+| Push a row and insert a property   | 10,000 |     63.2 |    360 |            210 |
+| Update an array item found by ID   |    100 |     1.50 |   3.22 |           3.35 |
+| 200 RTK Query-style updates        |      — |    1,140 |  1,470 |          2,116 |
+| Remove the first row with `splice` |    100 |     11.5 |   83.6 |          2,982 |
+| Insert a row in the middle         |    100 |     8.83 |   48.0 |          1,191 |
+| Sort rows                          |    100 |      105 |    129 |          2,466 |
+| Remove the first row with `shift`  | 10,000 |    1,063 |  8,943 |        265,439 |
+| Reverse the rows                   | 10,000 |    1,071 |  9,424 |        280,542 |
+| Update every row                   | 10,000 |    8,555 | 21,767 |         22,549 |
+| Update one of 10,000 records       | 10,000 |    1,184 |  2,104 |          1,181 |
 
-Immer's optional `enableArrayMethods()` plugin also runs array methods on the draft's copy, and with patches it comes within 1.14-1.71x of Mutative when moving elements of 1,000 or 10,000 rows. These comparisons leave it off because in Immer 11.1.18 it breaks guarantees that Immer otherwise keeps: `shift`, `pop` and `splice` return raw base objects, so editing a removed object changes the previous state; reordering can expose original objects the same way and leave revoked drafts in the result; and its forward patches can fail to replay. In [the audit](./test/immer-array-methods.md), 123 of 4,913 three-step operation sequences break with the plugin and none without it. The [performance summary](./perf-testing/reports/SUMMARY.md) reports Immer with the plugin separately.
+Immer's optional `enableArrayMethods()` plugin also runs array methods on the draft's copy, and with patches it comes within 1.13-1.70x of Mutative when moving elements of 1,000 or 10,000 rows. These comparisons leave it off because in Immer 11.1.18 it breaks guarantees that Immer otherwise keeps: `shift`, `pop` and `splice` return raw base objects, so editing a removed object changes the previous state; reordering can expose original objects the same way and leave revoked drafts in the result; and its forward patches can fail to replay. In [the audit](./test/immer-array-methods.md), 123 of 4,913 three-step operation sequences break with the plugin and none without it. The [performance summary](./perf-testing/reports/SUMMARY.md) reports Immer with the plugin separately.
 
 ### Bundle size
 
@@ -111,7 +111,7 @@ Mutative's `create` includes patches, `Map`/`Set` support and the native array m
 ## Features and Benefits
 
 - **Mutation makes immutable updates** - Immutable data structures supporting objects, arrays, Sets and Maps.
-- **High performance** - About 6.7x faster than Immer with each library's defaults, and faster than hand-written spreads in measured wide-object and large-array insertion workloads.
+- **High performance** - About 6.6x faster than Immer with each library's defaults, and faster than hand-written spreads in measured wide-object and large-array insertion workloads.
 - **Optional freezing state** - No freezing of immutable data by default.
 - **Support for JSON Patch** - Patches use the `add`, `remove` and `replace` operations of JSON Patch, and with `pathAsArray: false` and `arrayLengthAssignment: false`, those of objects and arrays are JSON Patch operations.
 - **Custom shallow copy** - Support for more types of immutable data.
