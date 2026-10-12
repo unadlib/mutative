@@ -220,40 +220,39 @@ The recipe can be an async function: `create()` then returns a Promise of the re
 
 #### `create(state, fn, options)`
 
-> Then options is optional.
+The `options` argument is optional; [`makeCreator()`](#makecreator) sets defaults for it.
 
-- strict - `boolean`, the default is false.
+- `strict` - `boolean`, the default is `false`.
 
-  > Forbid accessing non-draftable values in strict mode(unless using [unsafe()](#unsafe)).
+  In strict mode, reading an object that cannot be drafted from a draft, such as a `Date` or a class instance that no mark makes draftable, or a value that `mark` makes mutable, throws unless the read happens inside [`unsafe()`](#unsafe). A value that the recipe returns with [`rawReturn()`](#rawreturn) is still searched for drafts, and development builds warn when it holds one. In development builds, strict mode also warns once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does; see [`current()`](#current) for searching without creating drafts.
 
-  > When strict mode is enabled, mutable data can only be accessed using [`unsafe()`](#unsafe).
+  Strict mode checks every value that the recipe reads, so enable it in development and disable it in production, for example with `strict: process.env.NODE_ENV !== 'production'`.
 
-  > **It is recommended to enable `strict` in development mode and disable `strict` in production mode.** This will ensure safe explicit returns and also keep good performance in the production build. If the value that does not mix any current draft or is `undefined` is returned, then use [rawReturn()](#rawreturn).
+- `enablePatches` - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean }`, the default is `false`.
 
-  > If you'd like to enable strict mode by default in a development build and turn it off for production, you can use `strict: process.env.NODE_ENV !== 'production'`.
+  `true` makes `create()` return `[nextState, patches, inversePatches]`. An object sets the shape of the patches as well:
 
-  > In development builds, strict mode also warns once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does. See [`current()`](#current) for searching without creating drafts.
+  - `pathAsArray`, `true` by default: a path is an array of keys, such as `['list', 0]`. With `false`, it is a JSON Pointer string, such as `'/list/0'`. A string path holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
+  - `arrayLengthAssignment`, `true` by default: an array that gets shorter gets a `replace` patch of its `length`. With `false`, it gets a `remove` patch for each index that it loses, which takes more time for large arrays.
 
-- enablePatches - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean; }`, the default is false.
+  With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)); see the [related discussion](https://github.com/unadlib/mutative/issues/6).
 
-  > Enable patch, and return the patches/inversePatches.
+  TypeScript types the result from the type of `enablePatches` in the options passed to `create()` or `makeCreator()`: `true` or an object gives `[state, patches, inversePatches]`, and `boolean` gives either. Options typed `{ enablePatches: true }` that may be `undefined`, such as an optional parameter of a wrapper, or typed `{ enablePatches?: true }` still give the tuple, although `create()` returns the state alone when patches are off; type the flag as `boolean` there. With an explicit state type, TypeScript infers no other type argument, so pass `boolean` as the type argument for `enablePatches` as well, as in `create<State, false, boolean>(base, recipe, options)` or `create<State, [], false, boolean>(recipe, options)`.
 
-  > If you need to set the shape of the generated patch in more detail, then you can set `pathAsArray` and `arrayLengthAssignment`。`pathAsArray` default value is `true`, if it's `true`, the path will be an array, otherwise it is a string; `arrayLengthAssignment` default value is `true`, if it's `true`, the array length will be included in the patches, otherwise no include array length(**NOTE**: If `pathAsArray` and `arrayLengthAssignment` are both `false`, the patches of objects and arrays are fully compatible with JSON Patch spec, but `arrayLengthAssignment: false` may have additional performance loss), [view related discussions](https://github.com/unadlib/mutative/issues/6).
+- `enableAutoFreeze` - `boolean`, the default is `false`.
 
-  > A string path is a JSON Pointer and holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
+  Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself.
 
-  > TypeScript types the result from the type of `enablePatches` in the options passed to `create()` or `makeCreator()`: `true` or an object gives `[state, patches, inversePatches]`, and `boolean` gives either. Options typed `{ enablePatches: true }` that may be `undefined`, such as an optional parameter of a wrapper, or typed `{ enablePatches?: true }` still give the tuple, although `create()` returns the state alone when patches are off; type the flag as `boolean` there. With an explicit state type, TypeScript infers no other type argument, so pass `boolean` as the type argument for `enablePatches` as well, as in `create<State, false, boolean>(base, recipe, options)` or `create<State, [], false, boolean>(recipe, options)`.
+- `mark` - `Mark | Mark[]`, where `Mark` is `(target, { mutable, immutable }) => 'mutable' | 'immutable' | (() => copy) | undefined`.
 
-- enableAutoFreeze - `boolean`, the default is false.
+  A mark decides how a value is drafted. It receives each value that the recipe reads, and returns:
 
-  > Enable autoFreeze, and return frozen state, and enable circular reference checking only in `development` mode.
+  - `'immutable'` to make the value draftable, such as a class instance, which is then copied when the recipe changes it.
+  - `'mutable'` to keep the value out of drafts: the recipe reads and changes it in place, as it does all the values that it holds.
+  - A function that returns a shallow copy of the value, which drafts it with that copy. Patches and auto-freeze must be off, and some patches might not apply to such values.
+  - `undefined` to draft the value as usual.
 
-- mark - `(target) => ('mutable'|'immutable'|function) | (target) => ('mutable'|'immutable'|function)[]`
-  > Set a mark to determine if the value is mutable or if an instance is an immutable, and it can also return a shallow copy function(`AutoFreeze` and `Patches` should both be disabled, Some patches operation might not be equivalent).
-  > When the mark function is (target) => 'immutable', it means all the objects in the state structure are immutable. In this specific case, you can totally turn on `AutoFreeze` and `Patches`.
-  > `mark` supports multiple marks, and the marks are executed in order, and the first mark that returns a value will be used.
-  > When a object tree node is marked by the `mark` function as `mutable`, all of its child nodes will also not be drafted by Mutative and will retain their original values.
-  > An instance that `mark` makes `immutable` is copied with all its own properties, and those that are enumerable, writable and configurable are assigned, so an own property that shadows a setter of its class runs it, and one that shadows a getter or a read-only property throws; see [Copying marked instances](https://mutative.js.org/docs/advanced-guides/mark#copying-marked-instances).
+  With an array of marks, the first one that returns a value decides. When a mark makes every object immutable, as `() => 'immutable'` does, patches and auto-freeze work as usual. An instance that `mark` makes `immutable` is copied with all its own properties, and those that are enumerable, writable and configurable are assigned, so an own property that shadows a setter of its class runs it, and one that shadows a getter or a read-only property throws; see [Copying marked instances](https://mutative.js.org/docs/advanced-guides/mark#copying-marked-instances).
 
 #### `create()` - Currying
 
