@@ -47,7 +47,7 @@
     "profile:immer:analyze": "node perf-testing/read-cpuprofile.mjs",
     "build": "pnpm run clean && tsdown && tsc --noEmit false --emitDeclarationOnly --outDir dist && node scripts/write-package-entries.mjs",
     "build:analyze": "ANALYZE=true pnpm build",
-    "build:doc": "rimraf docs && typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts --readme none",
+    "build:doc": "rimraf docs && typedoc",
     "commit": "git-cz",
     "size": "size-limit && pnpm size:compare",
     "size:compare": "node scripts/check-build-size.mjs",

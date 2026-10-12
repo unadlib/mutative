@@ -6,8 +6,6 @@
 
 # Interface: Options\<O, F\>
 
-Defined in: [interface.ts:171](https://github.com/unadlib/mutative/blob/cbcd06102ce38252b6fa8b2c9f28a18ba9d9fbe9/src/interface.ts#L171)
-
 ## Type Parameters
 
 ### O
@@ -24,8 +22,6 @@ Defined in: [interface.ts:171](https://github.com/unadlib/mutative/blob/cbcd0610
 
 > `optional` **enableAutoFreeze**: `F`
 
-Defined in: [interface.ts:184](https://github.com/unadlib/mutative/blob/cbcd06102ce38252b6fa8b2c9f28a18ba9d9fbe9/src/interface.ts#L184)
-
 Enable autoFreeze, and return frozen state.
 
 ***
@@ -33,8 +29,6 @@ Enable autoFreeze, and return frozen state.
 ### enablePatches?
 
 > `optional` **enablePatches**: `O`
-
-Defined in: [interface.ts:180](https://github.com/unadlib/mutative/blob/cbcd06102ce38252b6fa8b2c9f28a18ba9d9fbe9/src/interface.ts#L180)
 
 Enable patch, and return the patches and inversePatches.
 
@@ -44,8 +38,6 @@ Enable patch, and return the patches and inversePatches.
 
 > `optional` **mark**: `Mark`\<`O`, `F`\> \| `Mark`\<`O`, `F`\>[]
 
-Defined in: [interface.ts:189](https://github.com/unadlib/mutative/blob/cbcd06102ce38252b6fa8b2c9f28a18ba9d9fbe9/src/interface.ts#L189)
-
 Set a mark to determine if the object is mutable or if an instance is an immutable.
 And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
 
@@ -54,8 +46,6 @@ And it can also return a shallow copy function(AutoFreeze and Patches should bot
 ### strict?
 
 > `optional` **strict**: `boolean`
-
-Defined in: [interface.ts:176](https://github.com/unadlib/mutative/blob/cbcd06102ce38252b6fa8b2c9f28a18ba9d9fbe9/src/interface.ts#L176)
 
 In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.
 Development builds also warn once when a recipe leaves 1,000 or more drafts unchanged.
