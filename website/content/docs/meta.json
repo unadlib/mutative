@@ -1,4 +1,6 @@
 {
+  "title": "Mutative",
+  "description": "A JavaScript library for efficient immutable updates. A recipe changes a draft of the state with ordinary JavaScript, and Mutative produces the next state, copying only what the recipe changed.",
   "pages": [
     "intro",
     "getting-started",
