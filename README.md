@@ -449,28 +449,31 @@ const state = create(baseState, (draft) => {
 
 ### `unsafe()`
 
-When strict mode is enabled, mutable data can only be accessed using `unsafe()`.
+When strict mode is enabled, reading a value that Mutative does not draft, such as a `Date`, a class instance that no mark makes draftable, or a value that a mark makes mutable, throws outside `unsafe()`.
 
 ```ts
+import { create, unsafe } from "mutative";
+
 const baseState = {
-  list: [],
-  date: new Date(),
+  createdAt: new Date(Date.UTC(2020, 0, 1)),
+  updatedAt: new Date(Date.UTC(2020, 0, 1)),
 };
 
 const state = create(
   baseState,
   (draft) => {
-    unsafe(() => {
-      draft.date.setFullYear(2000);
-    });
-    // or return the mutable data:
-    // const date = unsafe(() => draft.date);
+    const year = unsafe(() => draft.createdAt.getUTCFullYear());
+    expect(year).toBe(2020);
+    // Assigning a value is no read and needs no unsafe().
+    draft.updatedAt = new Date(Date.UTC(2021, 0, 1));
   },
   {
     strict: true,
   },
 );
 ```
+
+Mutative does not copy the values that it does not draft, so changing one of them, such as with `draft.createdAt.setFullYear(2000)`, changes the base state as well. Replace such values, or mark their class as immutable so that Mutative drafts them.
 
 > If you'd like to enable strict mode by default in a development build and turn it off for production, you can use `strict: process.env.NODE_ENV !== 'production'`.
 
