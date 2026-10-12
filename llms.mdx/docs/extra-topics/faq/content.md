@@ -1,0 +1,51 @@
+# FAQ (/docs/extra-topics/faq)
+
+Answers to common questions about Mutative, its performance, migration from Immer, arrays, Maps and Sets.
+
+For other questions, start a thread in [GitHub Discussions](https://github.com/unadlib/mutative/discussions), or open an [issue](https://github.com/unadlib/mutative/issues) for a bug.
+
+## Q\&A [#qa]
+
+### Why does Mutative have such good performance? [#why-does-mutative-have-such-good-performance]
+
+Mutative copies each object at most once per update, however many changes a recipe makes, drafts only the values that a recipe reads, finalizes only the drafts that changed, and moves array elements natively on its copies instead of through the draft's proxy. It also leaves the next state unfrozen by default. See [Performance](/docs/getting-started/performance) for the measurements.
+
+### I'm already using Immer, can I migrate smoothly to Mutative? [#im-already-using-immer-can-i-migrate-smoothly-to-mutative]
+
+Yes. Unless you have to be compatible with Internet Explorer, Mutative supports almost all of Immer's features, and the [migration guide](/docs/advanced-guides/migration) shows how to replace each API. [Comparison with Immer](/docs/extra-topics/comparison-with-immer) lists the APIs that replace Immer's and every behavior that differs.
+
+Mutative, like Immer, needs `Proxy`. On Android, React Native supports it since version 0.59 with JavaScriptCore and since version 0.64 with [Hermes](https://reactnative.dev/blog/2021/03/12/version-0.64#hermes-with-proxy-support).
+
+### Can Mutative be integrated with Redux? [#can-mutative-be-integrated-with-redux]
+
+Yes. A [producer](/docs/advanced-guides/currying) with an action argument is a reducer, and a recipe can return a new state, for example the initial state with [`rawReturn()`](/docs/api-reference/rawreturn). Redux Toolkit drafts state with Immer in `createSlice()` and `createReducer()`, and an RFC to make its [`produce()` configurable](https://github.com/reduxjs/redux-toolkit/pull/3074) is open.
+
+### Which array methods run natively on drafts? [#which-array-methods-run-natively-on-drafts]
+
+`shift`, `unshift`, `splice` and `reverse` move elements directly on the copy of a plain array without holes, including `undefined` elements; `indexOf`, `lastIndexOf` and `includes` search the current array natively; `sort` and `join` run natively on arrays of primitives. Removed elements are returned as drafts, patches replay in both directions, and a call that changes nothing keeps the state. Sparse arrays, array subclasses, an own `constructor` or `Symbol.isConcatSpreadable`, arrays under a custom `mark`, every method with a callback, `at`, `slice`, `fill` and `copyWithin` use the proxy path. An argument that can run user code, such as an object passed as `fromIndex` or as a `splice` index, is converted on the proxy path, so a conversion that changes the array is observed as the native methods observe it. The fast paths are made for data arrays: an accessor property defined on an array index is read as a data value, and the number and order of such getter calls, their re-entrant effects on the draft, and the identity of objects they return are not guaranteed to match element-by-element execution through the proxy. With auto-freeze, Mutative may also read such a getter twice when it copies a frozen, sealed or non-extensible array.
+
+Optimized searches give the same results as the proxy path, comparing elements as a read returns them. Drafts, values assigned in the recipe, non-draftable objects and primitives are found. An object of the base state is drafted when it is read, so it is never found, whether or not it was read before, unless the recipe assigned or inserted it and it is not at its original index; use [`original()`](/docs/api-reference/original) to search the base state, for example `original(draft.list).indexOf(item)`. The search never reads a property of the value it is given.
+
+In strict mode, outside [`unsafe()`](/docs/api-reference/unsafe), optimized calls on an array that may hold objects take the proxy path unchanged, so reading a non-draftable element fails exactly as it always did; arrays of primitives, recognized with `typeof` alone, keep the native paths. Elements are moved and compared without being inspected, while the proxy path inspects each element it reads. An element that is itself a Proxy may therefore see fewer calls to its internal methods on the native paths, never more and never at other times; a revoked Proxy element that a search passes over, for example, does not throw there.
+
+Draftable base elements removed or moved by these methods are drafted before they are exposed. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, go through the draft so that their callbacks see every change and can modify elements; use [`current()`](/docs/api-reference/current) for read-only scans of large arrays.
+
+### Can a recipe change a Map draft while iterating over it? [#can-a-recipe-change-a-map-draft-while-iterating-over-it]
+
+Yes. Deleting the entry being visited and changing the values of other entries work as on a Map, and Set drafts iterate like Sets. One difference remains: an iteration over a Map draft that starts before the recipe has changed that Map, or read an object value from it, walks the entries of the base Map. An entry that the recipe deletes later in such an iteration is still visited, with `undefined` as its value, and an entry that it adds is not visited. To delete other entries while iterating, iterate over `Array.from(draft.keys())` and skip the keys for which `draft.has()` returns false.
+
+### Do the Set methods such as `union()` and `isSubsetOf()` work on Set drafts? [#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts]
+
+Yes, but they compare elements as iterating the draft returns them. An object of the base state is a draft there, so these methods do not match it with the original object, although `has()` accepts the original object. To compare a Set draft with objects of the base state, call the method on `current(draft)`, in which unchanged objects keep their identity, or on `original(draft)` for the base state, or compare ids, for example `[...draft].filter((item) => ids.has(item.id))`. This applies to `union()`, `intersection()`, `difference()`, `symmetricDifference()`, `isSubsetOf()`, `isSupersetOf()` and `isDisjointFrom()`.
+
+### Can a draft be a Map key? [#can-a-draft-be-a-map-key]
+
+No. Map keys are used as they are, and a draft is revoked when its producer ends, so a Map that kept a draft as a key, and the patches that name that key, would hold a revoked draft, whose properties throw when they are read. Use `original(draft)`, `current(draft)` or an id as the key. Development builds throw when a recipe passes a draft to the `set()` method of a Map draft.
+
+### Does Mutative support shared references? [#does-mutative-support-shared-references]
+
+Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](/docs/extra-topics/shared-references).
+
+### Can I keep a draft after the recipe ends? [#can-i-keep-a-draft-after-the-recipe-ends]
+
+No. Mutative revokes the drafts of a `create()` call when its recipe ends, also when it fails, so reading a draft afterwards throws. Keep [`current(draft)`](/docs/api-reference/current), a snapshot of plain values, or the next state instead. A draft of a [manual `create(base)`](/docs/advanced-guides/currying#drafts-that-you-finalize-later) lives until `finalize()` returns, and the draft of an async recipe until its Promise settles.

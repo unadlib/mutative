@@ -1,0 +1,133 @@
+# Mutative Ecosystem (/docs/extra-topics/mutative-ecosystem)
+
+Libraries built on Mutative for React, Zustand, Jotai, XState, Yjs, undo and redo, and more.
+
+These libraries use Mutative for the immutable updates of other tools. Install each one together with `mutative`, and see its repository for its full API.
+
+## React [#react]
+
+* [use-mutative](https://github.com/mutativejs/use-mutative) - A 2-6x faster alternative to useState with spread operation, with `useMutative()` and `useMutativeReducer()`; see [Using Mutative with React](/docs/getting-started/mutative-with-react).
+* [use-travel](https://github.com/mutativejs/use-travel) - A React hook for state time travel with undo, redo, reset and archive functionalities.
+* [reactant](https://github.com/unadlib/reactant) - A framework for building React applications, with Mutative for immutable updates.
+
+## Zustand [#zustand]
+
+[zustand-mutative](https://github.com/mutativejs/zustand-mutative) is a Mutative middleware for Zustand, whose `set()` then takes a recipe:
+
+```tsx
+import { create } from 'zustand';
+import { mutative } from 'zustand-mutative';
+
+type State = { count: number };
+type Actions = { increment: (qty: number) => void };
+
+export const useCountStore = create<State & Actions>()(
+  mutative((set) => ({
+    count: 0,
+    increment: (qty) =>
+      set((state) => {
+        state.count += qty;
+      }),
+  }))
+);
+```
+
+[zustand-travel](https://github.com/mutativejs/zustand-travel) is an undo and redo middleware for Zustand, built on travels.
+
+## Jotai [#jotai]
+
+[jotai-mutative](https://github.com/mutativejs/jotai-mutative) provides atoms whose setters take a recipe:
+
+```tsx
+import { useAtom } from 'jotai';
+import { atomWithMutative } from 'jotai-mutative';
+
+const countAtom = atomWithMutative({ value: 0 });
+
+export function Counter() {
+  const [count, setCount] = useAtom(countAtom);
+  return (
+    <button
+      onClick={() =>
+        setCount((draft) => {
+          draft.value += 1;
+        })
+      }
+    >
+      {count.value}
+    </button>
+  );
+}
+```
+
+`withMutative(atom)` and `useMutativeAtom(atom)` give existing atoms the same setter.
+
+## XState [#xstate]
+
+[xstate-mutative](https://github.com/mutativejs/xstate-mutative) provides an `assign()` action for XState 5 that changes a draft of the context:
+
+```ts
+import { createActor, createMachine } from 'xstate';
+import { assign } from 'xstate-mutative';
+
+const machine = createMachine({
+  context: { count: 0 },
+  on: {
+    increment: {
+      actions: assign(({ context }) => {
+        context.count += 1;
+      }),
+    },
+  },
+});
+
+const actor = createActor(machine).start();
+actor.send({ type: 'increment' });
+```
+
+## Undo and redo [#undo-and-redo]
+
+[travels](https://github.com/mutativejs/travels) is a framework-agnostic undo and redo core that keeps the history of a state as Mutative patches, with history limits, archives and persistence:
+
+```ts
+import { createTravels } from 'travels';
+
+const travels = createTravels({ count: 0 });
+
+travels.setState((draft) => {
+  draft.count += 1;
+});
+travels.back();
+travels.forward();
+```
+
+[use-travel](https://github.com/mutativejs/use-travel) and [zustand-travel](https://github.com/mutativejs/zustand-travel) bring it to React and Zustand. To build undo and redo on patches yourself, see [Patches](/docs/advanced-guides/patches#undo-and-redo).
+
+## Collaboration [#collaboration]
+
+[mutative-yjs](https://github.com/mutativejs/mutative-yjs) binds a Yjs `Y.Map` or `Y.Array` to a plain snapshot, which recipes update and remote changes refresh:
+
+```ts
+import * as Y from 'yjs';
+import { bind } from 'mutative-yjs';
+
+const doc = new Y.Doc();
+const binder = bind<{ count: number; items: string[] }>(doc.getMap('data'));
+
+binder.update((state) => {
+  state.count = 0;
+  state.items = ['apple'];
+});
+binder.update((state) => {
+  state.count += 1;
+  state.items.push('banana');
+});
+
+binder.get(); // { count: 1, items: ['apple', 'banana'] }
+```
+
+## Other libraries [#other-libraries]
+
+* [mutative-compat](https://github.com/exuanbo/mutative-compat) - Mutative wrapper with full Immer API compatibility.
+* [mutability](https://github.com/mutativejs/mutability) - A JavaScript library for transactional mutable updates, which changes the state in place and returns patches.
+* [usm](https://github.com/unadlib/usm) - A concise and flexible state model for Redux, MobX, Vuex, Pinia and more.

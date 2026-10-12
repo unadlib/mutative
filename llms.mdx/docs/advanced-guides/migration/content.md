@@ -1,0 +1,222 @@
+# Migration from Immer to Mutative (/docs/advanced-guides/migration)
+
+Replace Immer's APIs with their Mutative counterparts, and check the defaults that differ.
+
+Most code moves from Immer to Mutative by renaming functions: in both libraries a recipe changes a draft, and the next state shares every part that the recipe left unchanged. [Comparison with Immer](/docs/extra-topics/comparison-with-immer) maps every Immer API to Mutative and lists the behaviors that differ.
+
+<Callout type="idea">
+  [mutative-compat](https://github.com/exuanbo/mutative-compat) wraps Mutative in Immer's API, for a quick switch before you migrate the calls themselves.
+</Callout>
+
+## Checklist [#checklist]
+
+1. Replace `produce()` with `create()`, `produceWithPatches()` with `create()` and `enablePatches: true`, `applyPatches()` with `apply()`, and `nothing` with `rawReturn(undefined)`. `current()`, `original()`, `isDraft()`, `isDraftable()`, `castDraft()` and `castImmutable()` keep their names.
+2. Remove the `enableMapSet()`, `enablePatches()` and `enableArrayMethods()` calls: Mutative supports Maps, Sets and patches without them, and runs array methods natively.
+3. Decide about freezing. Immer freezes the next state by default, and Mutative does not. Code that relies on frozen state, for example to catch accidental mutations, needs `enableAutoFreeze: true`.
+4. Replace the global configuration of `setAutoFreeze()` and `new Immer()` with options per call, or with defaults that [`makeCreator()`](/docs/api-reference/makecreator) sets.
+5. Replace `[immerable] = true` on classes with the [`mark`](/docs/advanced-guides/mark) option.
+
+## `produce()` -> `create()` [#produce---create]
+
+```ts
+import { produce } from 'immer';
+
+const baseState = [
+  { title: 'Learn TypeScript', done: true },
+  { title: 'Try Immer', done: false },
+];
+
+const nextState = produce(baseState, (draft) => {
+  draft[1].done = true;
+  draft.push({ title: 'Tweet about it', done: false });
+});
+
+expect(nextState[1].done).toBe(true);
+expect(Object.isFrozen(nextState)).toBe(true);
+```
+
+With Mutative:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = [
+  { title: 'Learn TypeScript', done: true },
+  { title: 'Try Mutative', done: false },
+];
+
+const nextState = create(baseState, (draft) => {
+  draft[1].done = true;
+  draft.push({ title: 'Tweet about it', done: false });
+});
+
+expect(nextState[1].done).toBe(true);
+expect(Object.isFrozen(nextState)).toBe(false);
+```
+
+Mutative leaves the next state unfrozen unless `enableAutoFreeze` is set, which also makes it faster. To keep Immer's default, pass the option to each call, or create a `create()` that has it:
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({ enableAutoFreeze: true });
+
+const nextState = create({ list: [1] }, (draft) => {
+  draft.list.push(2);
+});
+
+expect(Object.isFrozen(nextState.list)).toBe(true);
+```
+
+A curried producer works the same way in both libraries: `produce(recipe)` becomes `create(recipe)`, and the producer passes its other arguments to the recipe; see [Currying](/docs/advanced-guides/currying).
+
+## Patches [#patches]
+
+```ts
+import { applyPatches, enablePatches, produceWithPatches } from 'immer';
+
+enablePatches();
+
+const baseState = { info: { name: 'Michael', age: 33 } };
+
+const [nextState, patches, inversePatches] = produceWithPatches(
+  baseState,
+  (draft) => {
+    draft.info.age++;
+  }
+);
+
+expect(applyPatches(baseState, patches)).toEqual(nextState);
+expect(applyPatches(nextState, inversePatches)).toEqual(baseState);
+```
+
+With Mutative:
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = { info: { name: 'Michael', age: 33 } };
+
+const [nextState, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.info.age++;
+  },
+  { enablePatches: true }
+);
+
+expect(apply(baseState, patches)).toEqual(nextState);
+expect(apply(nextState, inversePatches)).toEqual(baseState);
+```
+
+A patch listener passed to `produce()` becomes the same option: read the patches from the result of `create()`. The patches of both libraries differ for arrays that get shorter, which Mutative records as a `replace` of the `length` by default, and for objects changed in a Set; `enablePatches: { arrayLengthAssignment: false }` makes Mutative remove each index, as Immer does. See [Patches](/docs/extra-topics/comparison-with-immer#patches) in the comparison.
+
+## Return `undefined` [#return-undefined]
+
+Immer's `nothing` makes a recipe return `undefined`:
+
+```ts
+import { nothing, produce } from 'immer';
+
+const baseState: { count: number } | undefined = { count: 1 };
+
+const nextState = produce(baseState, () => nothing);
+
+expect(nextState).toBeUndefined();
+```
+
+With Mutative, return `rawReturn(undefined)`:
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const baseState: { count: number } | undefined = { count: 1 };
+
+const nextState = create(baseState, () => rawReturn(undefined));
+
+expect(nextState).toBeUndefined();
+```
+
+## Manual drafts [#manual-drafts]
+
+`createDraft()` and `finishDraft()` become one call of `create()` without a recipe, which returns the draft and the function that finalizes it:
+
+```ts
+import { createDraft, finishDraft } from 'immer';
+
+const baseState = { count: 1 };
+
+const draft = createDraft(baseState);
+draft.count += 1;
+const nextState = finishDraft(draft);
+
+expect(nextState).toEqual({ count: 2 });
+```
+
+With Mutative:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { count: 1 };
+
+const [draft, finalize] = create(baseState);
+draft.count += 1;
+const nextState = finalize();
+
+expect(nextState).toEqual({ count: 2 });
+```
+
+## Classes [#classes]
+
+Immer drafts the instances of a class that sets `[immerable] = true`. Mutative leaves classes unchanged and drafts the instances that a `mark` function makes `immutable`:
+
+```ts
+import { create } from 'mutative';
+
+class Clock {
+  constructor(
+    public hour: number,
+    public minute: number
+  ) {}
+}
+
+const clock = new Clock(12, 10);
+
+const nextClock = create(
+  clock,
+  (draft) => {
+    draft.minute += 1;
+  },
+  {
+    mark: (target, { immutable }) =>
+      target instanceof Clock ? immutable : undefined,
+  }
+);
+
+expect(nextClock).toBeInstanceOf(Clock);
+expect(nextClock.minute).toBe(11);
+expect(clock.minute).toBe(10);
+```
+
+Pass the same `mark` to every `create()` and `apply()` call on such state, for example with `makeCreator({ mark })`. See [Marking data structure](/docs/advanced-guides/mark).
+
+## Async recipes [#async-recipes]
+
+Immer 11 does not support async recipes: one that changes the draft before its first `await` throws, because the returned Promise counts as a new value, and one that changes it later writes to a revoked draft. With Mutative, `create()` returns a Promise of the next state, and the draft stays usable until it settles:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { user: { name: '' } };
+
+const nextState = await create(baseState, async (draft) => {
+  draft.user.name = await Promise.resolve('Ada');
+});
+
+expect(nextState.user.name).toBe('Ada');
+```
+
+## TypeScript [#typescript]
+
+`Draft<T>`, `Immutable<T>` and `Patch` are exported by both libraries, and Mutative adds `Patches`, the type of a list of patches, and `castMutable()`. Mutative infers the result type of `create()` from its options, such as the tuple of patches with `enablePatches: true`; see [TypeScript](/docs/advanced-guides/typescript).

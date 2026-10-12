@@ -1,0 +1,123 @@
+# makeCreator() (/docs/api-reference/makecreator)
+
+Make a create() function with default options.
+
+`makeCreator(options)` returns a `create()` function whose [options](/docs/api-reference/create#options) default to the given ones. Use it to set options once for an application, a store or a module, instead of passing them to each call.
+
+```ts
+makeCreator(options?: Options): typeof create
+```
+
+## Usage [#usage]
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({
+  enablePatches: true,
+});
+
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+};
+
+const [state, patches, inversePatches] = create(baseState, (draft) => {
+  draft.foo.bar = 'new str';
+});
+
+expect(state).toEqual({ foo: { bar: 'new str' } });
+expect(patches).toEqual([
+  { op: 'replace', path: ['foo', 'bar'], value: 'new str' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['foo', 'bar'], value: 'str' },
+]);
+```
+
+The returned function has every signature of [`create()`](/docs/api-reference/create): it takes a base state and a recipe, a recipe alone for a [curried producer](/docs/advanced-guides/currying), or a base state alone for a manual draft.
+
+## Overriding the defaults [#overriding-the-defaults]
+
+The options of a call override the defaults of the creator, option by option:
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({
+  enablePatches: true,
+});
+
+const baseState = { count: 0 };
+
+// The defaults: patches on.
+const [state, patches] = create(baseState, (draft) => {
+  draft.count += 1;
+});
+
+// Patches off for this call only.
+const nextState = create(
+  baseState,
+  (draft) => {
+    draft.count += 1;
+  },
+  {
+    enablePatches: false,
+  }
+);
+
+expect(patches).toHaveLength(1);
+expect(nextState).toEqual(state);
+```
+
+TypeScript types the result of each call from the options that apply to it, so the call with `enablePatches: false` returns the state alone.
+
+## Examples [#examples]
+
+Checks for development builds only, such as strict mode and auto-freeze:
+
+```ts
+import { makeCreator } from 'mutative';
+
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+export const create = makeCreator({
+  strict: isDevelopment,
+  enableAutoFreeze: isDevelopment,
+});
+```
+
+The same `mark` for every call on state that holds class instances:
+
+```ts
+import { makeCreator } from 'mutative';
+
+class Point {
+  constructor(
+    public x: number,
+    public y: number
+  ) {}
+}
+
+const create = makeCreator({
+  mark: (target, { immutable }) =>
+    target instanceof Point ? immutable : undefined,
+});
+
+const baseState = { points: [new Point(0, 0)] };
+
+const state = create(baseState, (draft) => {
+  draft.points[0].x = 1;
+});
+
+expect(state.points[0]).toBeInstanceOf(Point);
+expect(state.points[0].x).toBe(1);
+expect(baseState.points[0].x).toBe(0);
+```
+
+Pass the same `mark` to [`apply()`](/docs/api-reference/apply) and [`isDraftable()`](/docs/api-reference/isdraftable) for that state.
+
+<Callout type="idea">
+  Each creator keeps its own options, unlike Immer's global settings, so libraries and applications that use Mutative do not change each other's behavior.
+</Callout>

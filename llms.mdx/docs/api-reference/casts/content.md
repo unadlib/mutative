@@ -1,0 +1,74 @@
+# Type casts (/docs/api-reference/casts)
+
+castDraft(), castImmutable() and castMutable() change the TypeScript type of a value, and return the value as it is.
+
+`castDraft()`, `castImmutable()` and `castMutable()` are helpers for TypeScript. Each returns its argument as it is, with another type, so they cost nothing at runtime and change nothing.
+
+```ts
+castDraft<T>(value: T): Draft<T>
+castImmutable<T>(value: T): Immutable<T>
+castMutable<T>(draft: Draft<T>): T
+```
+
+## castDraft() [#castdraft]
+
+`castDraft(value)` types a value as a draft, [`Draft<T>`](/docs/advanced-guides/typescript#draftt-and-immutablet), whose properties are not `readonly`. Use it to assign a value with readonly types into a draft:
+
+```ts
+import { castDraft, create, type Immutable } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const defaults: Immutable<Todo[]> = [{ text: 'learn', done: false }];
+
+const state = create({ todos: [] as Todo[] }, (draft) => {
+  draft.todos = castDraft(defaults);
+});
+
+expect(state.todos).toBe(defaults);
+```
+
+The value is not drafted: the next state holds it as it is.
+
+## castImmutable() [#castimmutable]
+
+`castImmutable(value)` types a value as [`Immutable<T>`](/docs/advanced-guides/typescript#draftt-and-immutablet), deeply readonly, for example an initial state that code should only read. It does not freeze the value; use [auto-freeze](/docs/advanced-guides/auto-freeze) for that.
+
+```ts
+import { castImmutable, create } from 'mutative';
+
+const initialState = castImmutable({ todos: [{ text: 'learn', done: false }] });
+
+const state = create(initialState, (draft) => {
+  draft.todos[0].done = true;
+});
+
+expect(state.todos[0].done).toBe(true);
+expect(Object.isFrozen(initialState)).toBe(false);
+```
+
+## castMutable() [#castmutable]
+
+`castMutable<T>(draft)` types a draft as `T`, for a function that requires `T` where `Draft<T>` does not fit. A draft type lacks the private members of a class, for example, so a draft of a class instance needs the cast where the class itself is expected:
+
+```ts
+import { castMutable, create } from 'mutative';
+
+class Point {
+  constructor(
+    private x: number,
+    private y: number
+  ) {}
+  distanceTo(other: Point) {
+    return Math.hypot(other.x - this.x, other.y - this.y);
+  }
+}
+
+const origin = new Point(0, 0);
+
+create({ point: new Point(3, 4) }, (draft) => {
+  expect(origin.distanceTo(castMutable<Point>(draft.point))).toBe(5);
+});
+```
+
+TypeScript cannot infer `T` back from a `Draft<T>`, so pass it as a type argument, as above.

@@ -1,0 +1,178 @@
+# Usages (/docs/getting-started/usages)
+
+Common immutable updates of objects, arrays, Maps and Sets with create().
+
+## Use `create()` to create a new state [#use-create-to-create-a-new-state]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'coding' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.list.push({ text: 'learning' });
+});
+
+expect(state).not.toBe(baseState);
+expect(state.list).not.toBe(baseState.list);
+expect(state.list[0]).toBe(baseState.list[0]);
+```
+
+`create(baseState, recipe, options?)` drafts the base state and passes the draft to the recipe. The recipe changes the draft with ordinary JavaScript, and `create()` returns the next state, which copies the objects that the recipe changed and shares all the others with the base state. The base state does not change. See [`create()`](/docs/api-reference/create) for its options and its other forms.
+
+The examples below change a draft as plain JavaScript would change the state itself.
+
+## Objects [#objects]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  user: { name: 'Ada', address: { city: 'London' } },
+  flags: { beta: true } as Record<string, boolean>,
+};
+
+const state = create(baseState, (draft) => {
+  // Update a nested property.
+  draft.user.address.city = 'Paris';
+  // Add a property.
+  draft.flags.darkMode = true;
+  // Delete a property.
+  delete draft.flags.beta;
+});
+
+expect(state).toEqual({
+  user: { name: 'Ada', address: { city: 'Paris' } },
+  flags: { darkMode: true },
+});
+```
+
+## Arrays [#arrays]
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { id: number; text: string; done: boolean };
+
+const baseState: Todo[] = [
+  { id: 1, text: 'learn', done: false },
+  { id: 2, text: 'build', done: false },
+  { id: 3, text: 'ship', done: false },
+];
+
+const state = create(baseState, (draft) => {
+  // Update the item with an id.
+  const todo = draft.find((item) => item.id === 2);
+  if (todo) todo.done = true;
+
+  // Remove the item with an id.
+  const index = draft.findIndex((item) => item.id === 1);
+  if (index !== -1) draft.splice(index, 1);
+
+  // Insert at the front, and add at the end.
+  draft.unshift({ id: 0, text: 'plan', done: true });
+  draft.push({ id: 4, text: 'celebrate', done: false });
+
+  // Move the last item to the second position.
+  const [moved] = draft.splice(draft.length - 1, 1);
+  draft.splice(1, 0, moved);
+});
+
+expect(state.map((todo) => todo.id)).toEqual([0, 4, 2, 3]);
+expect(state[2].done).toBe(true);
+// Unchanged items keep their references.
+expect(state[3]).toBe(baseState[2]);
+```
+
+To filter an array, assign the filtered array to the draft. Mutative replaces the drafts that the new array holds with their values:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { todos: [{ text: 'learn', done: true }, { text: 'ship', done: false }] };
+
+const state = create(baseState, (draft) => {
+  draft.todos = draft.todos.filter((todo) => !todo.done);
+});
+
+expect(state.todos).toEqual([{ text: 'ship', done: false }]);
+expect(state.todos[0]).toBe(baseState.todos[1]);
+```
+
+`find()`, `filter()` and other methods with callbacks visit the elements through the draft, so each element they visit becomes a draft. For read-only searches of large arrays, search [`current(draft)`](/docs/api-reference/current#searching-a-large-array) instead.
+
+## Maps and Sets [#maps-and-sets]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  users: new Map([['ada', { name: 'Ada', age: 36 }]]),
+  tags: new Set(['js']),
+};
+
+const state = create(baseState, (draft) => {
+  // Update a value, and add and delete entries.
+  draft.users.get('ada')!.age += 1;
+  draft.users.set('grace', { name: 'Grace', age: 45 });
+  draft.users.delete('ada');
+
+  draft.tags.add('ts');
+  draft.tags.delete('js');
+});
+
+expect([...state.users.keys()]).toEqual(['grace']);
+expect([...state.tags]).toEqual(['ts']);
+// The base state is unchanged.
+expect(baseState.users.get('ada')!.age).toBe(36);
+```
+
+Values read from a Map or Set draft are drafts too, while Map keys are used as they are. See the FAQ for [iterating over Map drafts](/docs/extra-topics/faq#can-a-recipe-change-a-map-draft-while-iterating-over-it), [drafts as Map keys](/docs/extra-topics/faq#can-a-draft-be-a-map-key) and [the Set methods of ES2025](/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts).
+
+## Returning a new state [#returning-a-new-state]
+
+A recipe can return the next state instead of changing the draft, as a reducer does:
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const baseState = { count: 5, history: [1, 2, 3] };
+
+const state = create(baseState, (draft) => ({ ...draft, count: 0 }));
+
+expect(state).toEqual({ count: 0, history: [1, 2, 3] });
+expect(state.history).toBe(baseState.history);
+
+// `rawReturn()` returns a value as it is, and can return undefined.
+const cleared = create(baseState as typeof baseState | undefined, () =>
+  rawReturn(undefined)
+);
+
+expect(cleared).toBe(undefined);
+```
+
+A recipe must either change the draft or return a new value; doing both throws. See [Returning a new state](/docs/api-reference/create#returning-a-new-state).
+
+## Patches [#patches]
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = { todos: ['learn'] };
+
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.todos.push('ship');
+  },
+  { enablePatches: true }
+);
+
+expect(patches).toEqual([{ op: 'add', path: ['todos', 1], value: 'ship' }]);
+expect(apply(state, inversePatches)).toEqual(baseState);
+```
+
+See [Patches](/docs/advanced-guides/patches) for their format and for undo and redo.

@@ -1,0 +1,2 @@
+:HL["/_next/static/chunks/3ey1kvwr41ajo.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"docs","param":null,"prefetchHints":4128,"slots":{"children":{"name":"slug","param":{"type":"oc","key":"extra-topics/comparison-with-immer","siblings":[]},"prefetchHints":4160,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}}}},"staleTime":300,"buildId":"IvrKho2oQHVJsS8Zyp3nM"}

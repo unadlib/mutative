@@ -1,0 +1,46 @@
+# Mutative
+
+> A JavaScript library for efficient immutable updates. A recipe changes a draft of the state with ordinary JavaScript, and Mutative produces the next state, copying only what the recipe changed.
+
+- [Introduction](https://mutative.js.org/llms.mdx/docs/intro/content.md): Mutative is a JavaScript library for efficient immutable updates. Change a draft with ordinary JavaScript, and get the next immutable state.
+- Getting Started
+  - [Getting Started](https://mutative.js.org/llms.mdx/docs/getting-started/content.md): 5 minutes to learn the most important Mutative concepts.
+  - [Installation](https://mutative.js.org/llms.mdx/docs/getting-started/installation/content.md): Install Mutative from npm or load it from a CDN, and check the environments it supports.
+  - [Usages](https://mutative.js.org/llms.mdx/docs/getting-started/usages/content.md): Common immutable updates of objects, arrays, Maps and Sets with create().
+  - [Concepts](https://mutative.js.org/llms.mdx/docs/getting-started/concepts/content.md): Drafts, finalization with structural sharing, patches and marks, the ideas behind Mutative.
+  - [Using Mutative with React](https://mutative.js.org/llms.mdx/docs/getting-started/mutative-with-react/content.md): Update React state with create(), or with the use-mutative hooks.
+  - [Performance](https://mutative.js.org/llms.mdx/docs/getting-started/performance/content.md): Benchmark results against Immer and hand-written reducers across 97 workloads, and how to run the benchmarks.
+- Advanced Guides
+  - [Advanced Guides](https://mutative.js.org/llms.mdx/docs/advanced-guides/content.md): Freezing, currying, marks, patches, strict mode, TypeScript, pitfalls, performance, and migration from Immer and from Mutative v1.
+  - [Auto Freeze](https://mutative.js.org/llms.mdx/docs/advanced-guides/auto-freeze/content.md): Freeze the next state deeply with enableAutoFreeze, so that accidental changes to it fail.
+  - [Currying](https://mutative.js.org/llms.mdx/docs/advanced-guides/currying/content.md): Create producers that take the base state and more arguments, and drafts that you finalize later.
+  - [Marking data structure](https://mutative.js.org/llms.mdx/docs/advanced-guides/mark/content.md): Decide with the mark option which values Mutative drafts, which it leaves mutable, and how it copies them.
+  - [Patches](https://mutative.js.org/llms.mdx/docs/advanced-guides/patches/content.md): Record the changes of a recipe as patches, and apply them to a state with apply().
+  - [Strict Mode](https://mutative.js.org/llms.mdx/docs/advanced-guides/strict-mode/content.md): Make reads of values that Mutative does not draft explicit, and check returned values in development.
+  - [TypeScript](https://mutative.js.org/llms.mdx/docs/advanced-guides/typescript/content.md): How Mutative types drafts, results, producers and patches, and the types and casts it exports.
+  - [Pitfalls](https://mutative.js.org/llms.mdx/docs/advanced-guides/pitfalls/content.md): Common mistakes with drafts, returned values, values that are not drafted, and patches, and how to avoid them.
+  - [Performance tips](https://mutative.js.org/llms.mdx/docs/advanced-guides/performance-tips/content.md): Write recipes that avoid needless drafts, searches, copies, freezing and patches.
+  - [Migration from Immer to Mutative](https://mutative.js.org/llms.mdx/docs/advanced-guides/migration/content.md): Replace Immer's APIs with their Mutative counterparts, and check the defaults that differ.
+  - [Migration from Mutative v1 to v2](https://mutative.js.org/llms.mdx/docs/advanced-guides/migration-v2/content.md): The changes since Mutative 1.3.0 that can affect existing code, in builds, patches, arrays, returned values, development builds, types and fixes.
+- API Reference
+  - [API Reference](https://mutative.js.org/llms.mdx/docs/api-reference/content.md): The functions that Mutative exports, with their options, results and errors.
+  - [create()](https://mutative.js.org/llms.mdx/docs/api-reference/create/content.md): Produce the next state from the changes that a recipe makes to a draft of the base state.
+  - [apply()](https://mutative.js.org/llms.mdx/docs/api-reference/apply/content.md): Apply patches to a state and get the next state, or change the state in place.
+  - [makeCreator()](https://mutative.js.org/llms.mdx/docs/api-reference/makecreator/content.md): Make a create() function with default options.
+  - [current()](https://mutative.js.org/llms.mdx/docs/api-reference/current/content.md): Take a snapshot of the current value of a draft, as plain objects without proxies.
+  - [original()](https://mutative.js.org/llms.mdx/docs/api-reference/original/content.md): Get the value that a draft was created from, without the changes of the recipe.
+  - [rawReturn()](https://mutative.js.org/llms.mdx/docs/api-reference/rawreturn/content.md): Return a value from a recipe as it is, without searching it for drafts, or return undefined.
+  - [unsafe()](https://mutative.js.org/llms.mdx/docs/api-reference/unsafe/content.md): Read values that are not drafted in strict mode.
+  - [isDraftable()](https://mutative.js.org/llms.mdx/docs/api-reference/isdraftable/content.md): Check whether Mutative drafts a value, optionally with a mark.
+  - [isDraft()](https://mutative.js.org/llms.mdx/docs/api-reference/isdraft/content.md): Check whether a value is a draft.
+  - [markSimpleObject()](https://mutative.js.org/llms.mdx/docs/api-reference/marksimpleobject/content.md): A mark that drafts objects without a prototype and plain objects of other realms.
+  - [Type casts](https://mutative.js.org/llms.mdx/docs/api-reference/casts/content.md): castDraft(), castImmutable() and castMutable() change the TypeScript type of a value, and return the value as it is.
+- Extra Topics
+  - [Extra Topics](https://mutative.js.org/llms.mdx/docs/extra-topics/content.md): How Mutative compares with Immer, answers to common questions, the ecosystem, production error codes and more.
+  - [Comparison with Immer](https://mutative.js.org/llms.mdx/docs/extra-topics/comparison-with-immer/content.md): Every difference between Mutative and Immer 11.1.18 in APIs, defaults, drafts and patches, and the behaviors that both share.
+  - [FAQ](https://mutative.js.org/llms.mdx/docs/extra-topics/faq/content.md): Answers to common questions about Mutative, its performance, migration from Immer, arrays, Maps and Sets.
+  - [Contributing](https://mutative.js.org/llms.mdx/docs/extra-topics/contributing/content.md): Set up the repository, run its checks, and contribute code, benchmarks and docs.
+  - [Mutative Ecosystem](https://mutative.js.org/llms.mdx/docs/extra-topics/mutative-ecosystem/content.md): Libraries built on Mutative for React, Zustand, Jotai, XState, Yjs, undo and redo, and more.
+  - [Who Uses Mutative](https://mutative.js.org/llms.mdx/docs/extra-topics/who-uses-mutative/content.md): Open-source projects that replaced Immer with Mutative, and what they reported.
+  - [Shared References](https://mutative.js.org/llms.mdx/docs/extra-topics/shared-references/content.md): How Mutative drafts an object that several paths of the state lead to, and how to keep it shared.
+  - [Production error codes](https://mutative.js.org/llms.mdx/docs/extra-topics/errors/content.md): Decode minified Mutative production errors, and find the errors and warnings of development builds.

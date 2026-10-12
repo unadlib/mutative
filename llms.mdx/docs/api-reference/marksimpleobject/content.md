@@ -1,0 +1,42 @@
+# markSimpleObject() (/docs/api-reference/marksimpleobject)
+
+A mark that drafts objects without a prototype and plain objects of other realms.
+
+`markSimpleObject` is a [mark](/docs/advanced-guides/mark) that makes simple objects draftable: plain objects, objects without a prototype, such as those of `Object.create(null)`, and plain objects of other realms, such as same-origin iframes or `vm` contexts, whose prototype is that realm's `Object.prototype`. Without it, Mutative drafts only plain objects of its own realm, and `create()` throws for a base state of the other kinds.
+
+```ts
+markSimpleObject(value: unknown): 'immutable' | undefined
+```
+
+## Usage [#usage]
+
+Pass it as the `mark` option, of a call or of [`makeCreator()`](/docs/api-reference/makecreator):
+
+```ts
+import { create, markSimpleObject } from 'mutative';
+
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+  simpleObject: Object.create(null),
+};
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'new str';
+    draft.simpleObject.a = 'a';
+  },
+  {
+    mark: markSimpleObject,
+  }
+);
+
+expect(state.simpleObject).not.toBe(baseState.simpleObject);
+expect(state.simpleObject.a).toBe('a');
+expect(Object.getPrototypeOf(state.simpleObject)).toBe(null);
+expect(baseState.simpleObject.a).toBe(undefined);
+```
+
+It returns `'immutable'` for simple objects and nothing for other values, which Mutative then drafts as usual, so it combines with other marks in an array, as in `mark: [markSimpleObject, markClasses]`. Like any immutable mark, it works with patches and auto-freeze.

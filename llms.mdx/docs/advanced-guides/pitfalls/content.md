@@ -1,0 +1,112 @@
+# Pitfalls (/docs/advanced-guides/pitfalls)
+
+Common mistakes with drafts, returned values, values that are not drafted, and patches, and how to avoid them.
+
+Most recipes are ordinary JavaScript, but drafts are proxies that live only during their recipe, and Mutative copies only the values that it drafts. These are the mistakes that follow from that most often.
+
+## Reassigning the draft parameter [#reassigning-the-draft-parameter]
+
+Assigning to the `draft` parameter only changes a local variable. To replace the whole state, return the new state:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { count: 1 };
+
+const unchanged = create(baseState, (draft) => {
+  // This only changes the local variable.
+  draft = { count: 0 };
+});
+expect(unchanged).toBe(baseState);
+
+const replaced = create(baseState, () => ({ count: 0 }));
+expect(replaced).toEqual({ count: 0 });
+```
+
+## Changing the draft and returning another value [#changing-the-draft-and-returning-another-value]
+
+A recipe either changes its draft or returns a new state. Doing both throws, because Mutative cannot tell which one is the next state; returning `undefined` or the draft itself keeps the changes. To make `undefined` the next state, return [`rawReturn(undefined)`](/docs/api-reference/rawreturn). Watch out for arrow functions that return the value of an assignment or of a method:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { list: [1] };
+
+// `push()` returns the new length, which the recipe then returns:
+// TypeScript rejects such a recipe, and at runtime it throws.
+expect(() =>
+  // @ts-expect-error
+  create(baseState, (draft) => draft.list.push(2))
+).toThrow();
+
+// A block body returns nothing.
+const state = create(baseState, (draft) => {
+  draft.list.push(2);
+});
+expect(state.list).toEqual([1, 2]);
+```
+
+## Keeping a draft after the recipe [#keeping-a-draft-after-the-recipe]
+
+Mutative revokes the drafts of a recipe when it ends, so a draft that a callback, a closure or another state keeps throws when it is read later. Keep [`current(draft)`](/docs/api-reference/current), the original object, or the next state instead. The draft of an async recipe lives until its Promise settles, and that of `create(base)` until `finalize()` returns.
+
+A draft also belongs to its own `create()` call: do not store it in the draft of another call; see [create() on a draft](/docs/api-reference/create#create-on-a-draft).
+
+## Changing values that are not drafted [#changing-values-that-are-not-drafted]
+
+Mutative drafts plain objects, arrays, Maps and Sets. Other objects, such as class instances, dates and objects without a prototype, are shared by the draft, the base state and the next state, so a recipe that changes them changes the base state too:
+
+```ts
+import { create } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = { counter: new Counter() };
+
+const state = create(baseState, (draft) => {
+  draft.counter.count += 1;
+});
+
+// The instance was changed in place, and the state was not copied.
+expect(state).toBe(baseState);
+expect(baseState.counter.count).toBe(1);
+```
+
+[Mark](/docs/advanced-guides/mark) such classes as `immutable` so that Mutative drafts and copies their instances, use [`markSimpleObject()`](/docs/api-reference/marksimpleobject) for objects without a prototype, or replace such values instead of changing them. [Strict mode](/docs/advanced-guides/strict-mode) reports every read of such a value in development.
+
+## Searching a draft for objects of the base state [#searching-a-draft-for-objects-of-the-base-state]
+
+An object of the base state becomes a draft when the recipe reads it, so searching a draft array for the original object finds nothing. Search for an id, or search [`original(draft)`](/docs/api-reference/original), whose indices match the draft until the recipe adds, removes or moves elements:
+
+```ts
+import { create, original } from 'mutative';
+
+const baseState = { list: [{ id: 1 }, { id: 2 }] };
+const item = baseState.list[1];
+
+create(baseState, (draft) => {
+  expect(draft.list.indexOf(item)).toBe(-1);
+  expect(original(draft.list).indexOf(item)).toBe(1);
+  expect(draft.list.findIndex((element) => element.id === 2)).toBe(1);
+});
+```
+
+The same holds for the [Set methods](/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts) of ES2025, while `has()` and `delete()` of a Set draft accept the original object. A draft cannot be a [Map key](/docs/extra-topics/faq#can-a-draft-be-a-map-key).
+
+## Shared objects [#shared-objects]
+
+When several paths of the state lead to the same object, each path gets a draft of its own, and the next state holds a copy for each path that changed. Assign one draft to the other paths to keep them shared; see [Shared references](/docs/extra-topics/shared-references).
+
+## Wrapping drafts in `rawReturn()` [#wrapping-drafts-in-rawreturn]
+
+[`rawReturn()`](/docs/api-reference/rawreturn) returns a value without searching it for drafts, so a draft in it stays in the next state, revoked. Wrap only values without drafts, such as `rawReturn(initialState)`, and enable strict mode in development, which reports such drafts.
+
+## Changing patch values [#changing-patch-values]
+
+A patch value is an object that the next state holds, frozen with it when auto-freeze is on. Copy a patch value before changing it, or apply the patches with [`apply()`](/docs/api-reference/apply), which copies patch values before applying them.
+
+## Freezing the base state [#freezing-the-base-state]
+
+With [auto-freeze](/docs/advanced-guides/auto-freeze), Mutative freezes the objects that the next state shares with the base state, so code that changes the base state in place afterwards fails, also for parts of it that the recipe did not change.

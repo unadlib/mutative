@@ -1,0 +1,205 @@
+# create() (/docs/api-reference/create)
+
+Produce the next state from the changes that a recipe makes to a draft of the base state.
+
+`create()` drafts a base state, runs a recipe that changes the draft, and returns the next state. The next state shares every part that the recipe left unchanged with the base state, and the base state itself does not change.
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.foo = 'foobar';
+  draft.list.push({ text: 'learning' });
+});
+
+expect(state).toEqual({
+  foo: 'foobar',
+  list: [{ text: 'todo' }, { text: 'learning' }],
+});
+expect(state.list[0]).toBe(baseState.list[0]);
+expect(baseState.foo).toBe('bar');
+```
+
+## Signatures [#signatures]
+
+```ts
+create(base, recipe, options?) // the next state
+create(base, recipe, { enablePatches: true }) // [nextState, patches, inversePatches]
+create(recipe, options?) // a producer: (base, ...args) => the next state
+create(base, options?) // [draft, finalize]
+```
+
+* `base` is the state to draft: a plain object, an array, a `Map`, a `Set`, or a value that the [`mark`](#mark) option makes draftable, such as a class instance. Other objects, such as dates and class instances that no mark makes draftable, throw an error. With a recipe, a primitive or `null` base is passed to the recipe as it is, and the value that the recipe returns is the next state.
+* `recipe` receives the draft, and in a producer also the other arguments of the producer. It changes the draft and returns nothing, or returns a [new state](#returning-a-new-state). It can be an [async function](#async-recipes).
+* `options` are described [below](#options); [`makeCreator()`](/docs/api-reference/makecreator) sets their defaults.
+
+`create()` returns the next state, which is the base state itself when the recipe changes nothing. With `enablePatches`, it returns `[nextState, patches, inversePatches]`: the patches turn the base state into the next state, and the inverse patches turn it back. For an async recipe, it returns a Promise of either.
+
+## Options [#options]
+
+<a id="createstate-fn-options---options" />
+
+| Option                                  | Type                                                                                                                          | Default |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------- |
+| [`strict`](#strict)                     | `boolean`                                                                                                                     | `false` |
+| [`enablePatches`](#enablepatches)       | `boolean \| { pathAsArray?: boolean; arrayLengthAssignment?: boolean }`                                                       | `false` |
+| [`enableAutoFreeze`](#enableautofreeze) | `boolean`                                                                                                                     | `false` |
+| [`mark`](#mark)                         | `Mark \| Mark[]`, where `Mark` is `(target, { mutable, immutable }) => 'mutable' \| 'immutable' \| (() => copy) \| undefined` | none    |
+
+### strict [#strict]
+
+In [strict mode](/docs/advanced-guides/strict-mode), reading an object that cannot be drafted from a draft, such as a `Date` or a class instance that no mark makes draftable, or a value that `mark` makes mutable, throws unless the read happens inside [`unsafe()`](/docs/api-reference/unsafe). A value that the recipe returns with [`rawReturn()`](/docs/api-reference/rawreturn) is still searched for drafts, and development builds warn when it holds one. In development builds, strict mode also warns once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does; see [`current()`](/docs/api-reference/current#searching-a-large-array) for searching without creating drafts.
+
+Strict mode checks every value that the recipe reads, so enable it in development and disable it in production, for example with `strict: process.env.NODE_ENV !== 'production'`.
+
+### enablePatches [#enablepatches]
+
+`true` makes `create()` return `[nextState, patches, inversePatches]`; see [Patches](/docs/advanced-guides/patches). An object sets the shape of the patches as well:
+
+* `pathAsArray`, `true` by default: a path is an array of keys, such as `['list', 0]`. With `false`, it is a JSON Pointer string, such as `'/list/0'`. A string path holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
+* `arrayLengthAssignment`, `true` by default: an array that gets shorter gets a `replace` patch of its `length`. With `false`, it gets a `remove` patch for each index that it loses, which takes more time for large arrays.
+
+With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)); see the [related discussion](https://github.com/unadlib/mutative/issues/6).
+
+TypeScript types the result from the type of `enablePatches` in the options passed to `create()` or `makeCreator()`: `true` or an object gives `[state, patches, inversePatches]`, and `boolean` gives either. Options typed `{ enablePatches: true }` that may be `undefined`, such as an optional parameter of a wrapper, or typed `{ enablePatches?: true }` still give the tuple, although `create()` returns the state alone when patches are off; type the flag as `boolean` there. With an explicit state type, TypeScript infers no other type argument, so pass `boolean` as the type argument for `enablePatches` as well, as in `create<State, false, boolean>(base, recipe, options)` or `create<State, [], false, boolean>(recipe, options)`.
+
+### enableAutoFreeze [#enableautofreeze]
+
+Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself; see [Auto Freeze](/docs/advanced-guides/auto-freeze).
+
+### mark [#mark]
+
+A mark decides how a value is drafted; see [Marking data structure](/docs/advanced-guides/mark). It receives each value that the recipe reads and `{ mutable: 'mutable', immutable: 'immutable' }`, and returns:
+
+* `'immutable'` to make the value draftable, such as a class instance, which is then copied when the recipe changes it.
+* `'mutable'` to keep the value out of drafts: the recipe reads and changes it in place, as it does all the values that it holds.
+* A function that returns a shallow copy of the value, which drafts it with that copy. Patches and auto-freeze must be off, and some patches might not apply to such values.
+* `undefined` to draft the value as usual.
+
+With an array of marks, the first one that returns a value decides. When a mark makes every object immutable, as `() => 'immutable'` does, patches and auto-freeze work as usual. An instance that `mark` makes `immutable` is copied with all its own properties, and those that are enumerable, writable and configurable are assigned, so an own property that shadows a setter of its class runs it, and one that shadows a getter or a read-only property throws; see [Copying marked instances](/docs/advanced-guides/mark#copying-marked-instances).
+
+## Returning a new state [#returning-a-new-state]
+
+A recipe can return the next state instead of changing the draft:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { todos: [{ text: 'todo', done: true }] };
+
+const state = create(baseState, (draft) => ({
+  todos: draft.todos.filter((todo) => !todo.done),
+}));
+
+expect(state).toEqual({ todos: [] });
+```
+
+* Returning `undefined` or the draft itself keeps the changes made to the draft. To make `undefined` the next state, return [`rawReturn(undefined)`](/docs/api-reference/rawreturn).
+* A recipe that changes the draft and also returns another value throws an error.
+* Returning an unchanged child draft, such as `draft.list`, makes its value the next state; returning a changed one throws an error.
+* Mutative searches a returned object for drafts and replaces each one with its value, so a returned value can hold drafts, such as `{ ...draft, count: 0 }`. [`rawReturn()`](/docs/api-reference/rawreturn) skips that search for a value that holds no drafts, and development builds warn when a returned object holds no drafts to suggest it.
+
+## Async recipes [#async-recipes]
+
+The recipe can be an async function: `create()` then returns a Promise of the result, and the draft stays usable until that Promise settles.
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { items: ['a'] };
+
+const state = await create(baseState, async (draft) => {
+  const item = await Promise.resolve('b');
+  draft.items.push(item);
+});
+
+expect(state.items).toEqual(['a', 'b']);
+```
+
+`create()` recognizes the Promises of the current JavaScript realm only, so an async function from another realm, such as a `vm` context or an iframe, needs a wrapper from this realm: `create(baseState, async (draft) => { return await recipe(draft); })`. TypeScript types the result as a Promise as well, except with an explicit state type that is a type parameter, as in `create<T>(base, async (draft) => { … })` in a generic function, or that includes Promises, such as `object` or `unknown`, which gives the state type itself. In generic code, leave out the type argument: `create(base, async (draft) => { … })` gives `Promise<T>`, and `create(async (draft: T) => { … })` gives `(base: T) => Promise<T>`.
+
+## Currying [#currying]
+
+With a recipe and no base state, `create()` returns a producer, which takes the base state and passes its other arguments to the recipe:
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const toggle = create((draft: Todo[], index: number) => {
+  draft[index].done = !draft[index].done;
+});
+
+const todos: Todo[] = [{ text: 'learn', done: false }];
+
+expect(toggle(todos, 0)).toEqual([{ text: 'learn', done: true }]);
+```
+
+With a base state and no recipe, `create()` returns a draft and a `finalize()` function, which returns what `create()` returns with a recipe:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { list: [{ text: 'todo' }] };
+
+const [draft, finalize] = create(baseState, { enablePatches: true });
+draft.list.push({ text: 'learning' });
+const [state, patches] = finalize();
+
+expect(state.list).toHaveLength(2);
+expect(patches).toEqual([
+  { op: 'add', path: ['list', 1], value: { text: 'learning' } },
+]);
+```
+
+<Callout type="warn">
+  Call `finalize()` only once. When it throws, for example because a development build rejects a patch path, the drafts are not revoked as they are when a recipe fails: they stay writable, and a second `finalize()` returns a state that can hold a revoked draft, with patches that miss changes. Create a new draft from the base state instead.
+</Callout>
+
+See [Currying](/docs/advanced-guides/currying) for more.
+
+## create() on a draft [#create-on-a-draft]
+
+A recipe can pass a draft to a helper that calls `create()`. Unlike Immer's `produce`, which drafts the draft itself, `create()` drafts a copy of its current state, `current(draft)`: the values that the helper's recipe leaves unchanged are objects of the base state. Assigning the result back into the outer draft is safe, but changing one of those values afterwards changes the base state, because the outer draft returns an assigned value as it is ([#160](https://github.com/unadlib/mutative/issues/160)). Development builds warn once when `create()` receives a draft with a recipe.
+
+```ts
+const state = create(baseState, (draft) => {
+  draft.node = create(draft.node, (node) => {
+    node.name = 'renamed';
+  });
+  // `draft.node` is now the helper's result, and `draft.node.metadata` is an
+  // object of `baseState`: writing to it here would change `baseState`.
+});
+```
+
+To avoid it, let such a helper change a draft in place, and call `create()` only on other values:
+
+```ts
+type Item = { name: string; metadata: { value: string } };
+
+function rename(item: Item, name: string): Item {
+  if (isDraft(item)) {
+    item.name = name;
+    return item;
+  }
+  return create(item, (draft) => {
+    draft.name = name;
+  });
+}
+```
+
+On a draft, `rename()` returns the draft itself, so the outer recipe changes its result through the outer draft, and the values that it leaves unchanged keep their references. Unlike a call to `create()`, it changes the outer draft even if the caller discards the result.
+
+Where that does not fit, make such changes in the helper's recipe, or through the outer draft before calling the helper. If the helper's result must not share objects with the base state, give `create()` a deep copy, as in `create(structuredClone(current(draft)), recipe)`, at the cost of copying the draft on each call and of new references for the values that the recipe leaves unchanged; `structuredClone` turns class instances into plain objects and throws on functions. To catch such writes, enable `enableAutoFreeze` in development, for example with `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })` for such helpers: it freezes the helper's result together with the objects of the base state that it shares, so a write to them throws instead of changing the base state, as Immer's default auto-freeze does.
+
+A draft belongs to the `create()` call that made it, also the draft that `create(base)` returns. Do not store it in the draft of another call, or in an object that you assign there: it is revoked when its own call ends, so the other call's result can hold a draft that throws when it is read, and a Set draft that received it may no longer find it with `has()` or `delete()`. Store `current(draft)`, the original object or the result of that call instead.
+
+## Errors [#errors]
+
+The errors that `create()` throws, such as for an invalid base state or for a recipe that changes the draft and returns another value, are listed with their production codes on the [errors page](/docs/extra-topics/errors).

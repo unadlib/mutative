@@ -1,0 +1,83 @@
+# Comparison with Immer (/docs/extra-topics/comparison-with-immer)
+
+Every difference between Mutative and Immer 11.1.18 in APIs, defaults, drafts and patches, and the behaviors that both share.
+
+Mutative and Immer work the same way: a recipe changes a draft, and the library produces the next state, which shares every part that the recipe left unchanged. Most code moves from Immer by renaming its functions, as the [migration guide](/docs/advanced-guides/migration) shows. This page lists the differences that change what code does or produces, checked against Immer 11.1.18, and the behaviors that both libraries share where it is easy to assume otherwise.
+
+## At a glance [#at-a-glance]
+
+|                                                      | Mutative |     Immer     |
+| :--------------------------------------------------- | :------: | :-----------: |
+| Auto-freeze off by default                           |     ✅    |       ❌       |
+| Options per call, without global settings or plugins |     ✅    |       ❌       |
+| Drafts of class instances without changing the class |     ✅    |       ❌       |
+| Custom shallow copies                                |     ✅    |       ❌       |
+| Strict mode                                          |     ✅    |       ❌       |
+| Async recipes                                        |     ✅    |       ❌       |
+| Map and Set subclasses keep their class              |     ✅    |       ❌       |
+| ES2025 Set methods on Set drafts                     |     ✅    |       ❌       |
+| Freezing reaches the objects used as Map keys        |     ✅    |       ❌       |
+| Array methods that run natively on drafts            |     ✅    | Opt-in plugin |
+| JSON Pointer string paths in patches                 |     ✅    |       ❌       |
+
+## APIs [#apis]
+
+| Immer                                                             | Mutative                                                                                          |
+| :---------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| `produce(base, recipe)`                                           | `create(base, recipe)`                                                                            |
+| `produce(recipe)`, a curried producer                             | `create(recipe)`                                                                                  |
+| `produceWithPatches()`, or a patch listener passed to `produce()` | `create(base, recipe, { enablePatches: true })`, which returns `[state, patches, inversePatches]` |
+| `applyPatches(state, patches)`                                    | `apply(state, patches)`                                                                           |
+| `createDraft(base)` and `finishDraft(draft)`                      | `const [draft, finalize] = create(base)` and `finalize()`                                         |
+| `current()`, `original()`, `isDraft()`, `isDraftable()`           | The same functions; `isDraftable()` also takes `{ mark }`                                         |
+| `castDraft()`, `castImmutable()`                                  | The same functions, and `castMutable()`                                                           |
+| `nothing`, to return `undefined`                                  | `rawReturn(undefined)`                                                                            |
+| `[immerable]: true` on a class                                    | The `mark` option, or `markSimpleObject()`                                                        |
+| `freeze(value, deep)`                                             | No export; `enableAutoFreeze` freezes results                                                     |
+| `setAutoFreeze()`                                                 | The `enableAutoFreeze` option of each call                                                        |
+| `new Immer(config)`                                               | `makeCreator(options)`, which returns a `create()` with these options                             |
+| `enableMapSet()`, `enablePatches()`                               | Not needed                                                                                        |
+| `enableArrayMethods()`                                            | Not needed; array methods run natively                                                            |
+| `setUseStrictShallowCopy()`, `setUseStrictIteration()`            | No settings; see [Marking](#defaults-and-configuration)                                           |
+| No counterpart                                                    | `unsafe()`, for reads in strict mode                                                              |
+
+## Defaults and configuration [#defaults-and-configuration]
+
+* **Auto-freeze.** Mutative leaves results unfrozen unless `enableAutoFreeze` is set, while Immer freezes them by default. With freezing on, both freeze the whole result deeply, unchanged parts included, and freeze Map and Set instances so that their mutators throw. Mutative also freezes the objects that a Map uses as keys, which Immer leaves unfrozen.
+* **Options per call.** Each `create()` and `apply()` call takes its own options, and `makeCreator()` sets defaults, where Immer's `setAutoFreeze()` and its plugins change the module for every caller. Maps, Sets and patches work without the `enableMapSet()` and `enablePatches()` calls that Immer requires and throws without.
+* **Marking.** A `mark` function decides how values are drafted: it can make class instances draftable without changing their class, where Immer requires an `[immerable]` property on it, keep values mutable so that the recipe changes them in place, or return a function that copies a value. Mutative copies a class instance that a mark makes draftable with all its own properties, non-enumerable ones included, as Immer does with `setUseStrictShallowCopy('class_only')`, but assigns those that are enumerable, writable and configurable, as Immer's default copy does, so an own property that shadows a setter of the class runs it; see [Copying marked instances](/docs/advanced-guides/mark#copying-marked-instances). Both copy only the enumerable properties of plain objects and read their getters as values. See [mark](/docs/advanced-guides/mark).
+* **Strict mode.** With `strict: true`, reading a value that the recipe could change without a draft, such as a class instance that is not marked, throws unless the read happens inside `unsafe()`. Immer has no such mode. See [strict mode](/docs/advanced-guides/strict-mode).
+
+## Drafts [#drafts]
+
+* **Map and Set subclasses** keep their class and its methods, in drafts and in the next state. Immer's next state holds plain Maps and Sets instead.
+* **ES2025 Set methods**, such as `union()` and `isSubsetOf()`, work on Set drafts and compare objects as iterating the draft returns them; see the [FAQ](/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts). On Immer's Set drafts they do not see the draft's items: `union()` of a draft of `new Set([1, 2])` with `new Set([3])` returns `Set {3}`.
+* **Async recipes** make `create()` return a Promise of the result, and the draft stays usable until the Promise settles; see [create()](/docs/api-reference/create). Immer 11 throws, because the returned Promise counts as a new value while the recipe changed the draft.
+* **A draft passed to a nested `create()`** is copied, where Immer's `produce()` drafts the draft itself; see [create() on a draft](/docs/api-reference/create#create-on-a-draft).
+* **Returned values.** Both replace the state with a value that the recipe returns, and both throw when the recipe also changed the draft. `rawReturn()` returns `undefined`, as Immer's `nothing` does, and also returns a value without searching it for drafts; see [rawReturn()](/docs/api-reference/rawreturn).
+* **Array methods.** `shift()`, `unshift()`, `splice()` and `reverse()` move the elements of a plain array on its copy, and `indexOf()`, `lastIndexOf()` and `includes()` search it natively, under the contract that the [FAQ](/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts) describes. Immer runs them through the proxy unless its opt-in `enableArrayMethods()` plugin is enabled, which in Immer 11.1.18 can return raw base objects and emit patches that fail to replay; see the [audit](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md).
+* **Alike in both.** Each path to a shared object gets its own draft; see [shared references](/docs/extra-topics/shared-references). A class instance that is neither marked nor `[immerable]` is not drafted, so a recipe that changes it changes the base state. `current()` and `original()` throw for values that are not drafts. An iteration over a Map draft that starts before the recipe changes the Map walks the base Map, in both libraries; see the [FAQ](/docs/extra-topics/faq#can-a-recipe-change-a-map-draft-while-iterating-over-it).
+
+## Patches [#patches]
+
+Both libraries emit the same patches for most changes: the same operations, paths and values, the patches of nested drafts before those of their parents, and values that are the objects of the next state, frozen with it when freezing is on. They differ in the following cases; [Patches](/docs/advanced-guides/patches#patch-behavior) describes how Mutative generates and applies them.
+
+* **Arrays that get shorter.** By default, Mutative records a shorter array with a `replace` patch of its `length`, as in the patches of `pop()` and `list.length = 0` and in the inverse patches of `push()` and of a `splice()` that inserts, while Immer removes each index with a `remove` patch. With `enablePatches: { arrayLengthAssignment: false }`, Mutative emits the same `remove` patches as Immer.
+* **Changed items of a Set.** When a recipe changes objects in a Set without adding or removing items, Mutative emits a `replace` patch under the position of each changed item, while Immer removes the old object and adds the new one. Once the recipe adds or removes items, both carry the changed items by value.
+* **String paths.** With `enablePatches: { pathAsArray: false }`, Mutative emits paths as JSON Pointer strings, as JSON Patch requires, while Immer's paths are always arrays. A string path cannot name a Map key that is not a string, or a symbol key.
+* **Applying patches.** `apply()` takes the `enableAutoFreeze`, `strict` and `mark` options, or `mutable: true` to change the state in place and return `undefined`.
+* **Alike in both.** `apply()` and `applyPatches()` change a draft in place, copy patch values before applying them, accept `-` as the index that appends to an array, and reject `move`, `copy` and `test` operations and paths through `__proto__` or `constructor`. As they copy patch values, an object that patches add to a Set is a copy, which the inverse patches cannot remove, so an undo after a redo leaves it in the Set in both libraries, and both append the elements that patches add, so such a Set can hold its elements in another order; see [Sets of objects](/docs/advanced-guides/patches#sets-of-objects).
+
+## Immer behaviors that Mutative handles [#immer-behaviors-that-mutative-handles]
+
+Mutative passes the test suite of Immer, adapted to its API. The [non-support tests](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts) pin cases that Immer 11.1.18 gets wrong and Mutative does not, such as a draft that escapes into the next state and Map keys that stay mutable after freezing. The [array methods audit](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md) reproduces patch ordering, base mutation and draft finalization failures of Immer's `enableArrayMethods()` plugin, with [reproduction tests](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.test.ts) that include plugin-disabled controls and run the same recipes against Mutative.
+
+## Mutative vs Immer Performance [#mutative-vs-immer-performance]
+
+With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer 11.1.18 in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.6x on geometric mean. Immer was faster only with auto-freeze: when updating class instances with many fields, and in two 100-row array updates whose runs overlapped those of Mutative.
+
+With patches on and auto-freeze off, Mutative was faster in 148 of 150 cases and never slower, and faster in every array case: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. The comparisons run Immer without its `enableArrayMethods()` plugin. In Immer 11.1.18 the plugin returns raw base objects from `shift`, `pop` and `splice`, so editing them changes the previous state, and its patches can fail to replay; the audit above reproduces these failures.
+
+Immer 11.0.0 ported the finalization callbacks of Mutative, which replace a recursive traversal of the draft tree, in [immerjs/immer#1183](https://github.com/immerjs/immer/pull/1183). Immer 11.1.18, which these measurements use, includes them.
+
+See [Performance](/docs/getting-started/performance) for selected results, and the [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) for the complete results, the method, and their limits.

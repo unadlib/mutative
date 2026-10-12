@@ -1,0 +1,48 @@
+# isDraftable() (/docs/api-reference/isdraftable)
+
+Check whether Mutative drafts a value, optionally with a mark.
+
+`isDraftable(value, options?)` returns `true` for a value that Mutative can draft, and which `create()` therefore accepts as its base state.
+
+```ts
+isDraftable(value: any, options?: { mark?: Mark }): boolean
+```
+
+## Usage [#usage]
+
+```ts
+import { isDraftable } from 'mutative';
+
+const baseState = {
+  date: new Date(),
+  list: [{ text: 'todo' }],
+};
+
+expect(isDraftable(baseState)).toBe(true);
+expect(isDraftable(baseState.list)).toBe(true);
+expect(isDraftable(baseState.date)).toBe(false);
+```
+
+Without a mark, these values are draftable:
+
+* Plain objects, whose prototype is `Object.prototype`.
+* Arrays.
+* `Map` and `Set` instances, also of their subclasses.
+
+Other values are not: primitives, functions, dates, class instances, objects without a prototype, and plain objects of other realms, such as iframes. A [mark](/docs/advanced-guides/mark) makes them draftable, as [`markSimpleObject()`](/docs/api-reference/marksimpleobject) does for objects without a prototype and plain objects of other realms. Pass the same `mark` that the `create()` calls use, to get their answer:
+
+```ts
+import { isDraftable } from 'mutative';
+
+class Todo {
+  constructor(public text: string) {}
+}
+
+const mark = (target: unknown) =>
+  target instanceof Todo ? ('immutable' as const) : undefined;
+
+expect(isDraftable(new Todo('learn'))).toBe(false);
+expect(isDraftable(new Todo('learn'), { mark })).toBe(true);
+```
+
+A mark makes a value draftable when it returns `'immutable'` or a function that copies the value. A mark that returns `'mutable'` keeps a value out of drafts when a recipe reads it, but `isDraftable()` still returns `true` for plain objects, arrays, Maps and Sets.

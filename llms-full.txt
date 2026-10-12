@@ -1,0 +1,3259 @@
+# Auto Freeze (/docs/advanced-guides/auto-freeze)
+
+Freeze the next state deeply with enableAutoFreeze, so that accidental changes to it fail.
+
+Mutative leaves the next state unfrozen by default. With the `enableAutoFreeze` option, it freezes the next state deeply with `Object.freeze()`, so that code that changes the state by accident fails instead of changing a state that other code still uses.
+
+## Enable auto-freeze [#enable-auto-freeze]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { user: { name: 'Ada' }, tags: ['a'] };
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.user.name = 'Grace';
+  },
+  {
+    enableAutoFreeze: true,
+  }
+);
+
+expect(Object.isFrozen(state)).toBe(true);
+expect(Object.isFrozen(state.user)).toBe(true);
+// The array that the next state shares with the base state is frozen too.
+expect(state.tags).toBe(baseState.tags);
+expect(Object.isFrozen(baseState.tags)).toBe(true);
+
+// Writing to it throws in strict mode code, such as an ES module.
+expect(() => {
+  'use strict';
+  (state.user as { name: string }).name = 'Linus';
+}).toThrow(TypeError);
+```
+
+Set it for a whole application with [`makeCreator()`](/docs/api-reference/makecreator), and pass it to [`apply()`](/docs/api-reference/apply) to freeze the states that patches produce.
+
+## What is frozen [#what-is-frozen]
+
+* Every object of the next state that its enumerable keys reach: the copies of the objects that the recipe changed, the values that it assigned, and the objects that the next state shares with the base state, which are frozen in the base state as well. A recipe that changes nothing returns the base state itself, frozen.
+* Class instances, dates and functions, which `Object.freeze()` freezes like any object. A `Date` keeps its setters, such as `setFullYear()`, since its value is not a property.
+* Maps and Sets, whose `set()`, `add()`, `delete()` and `clear()` methods then throw, and the objects that a Map uses as keys.
+
+Objects that are already frozen are skipped together with the values they hold, so after the first update freezes the state, each later update freezes only the objects that it copied or added. A base state may be frozen already: Mutative copies frozen objects when a recipe changes them, as it copies any other object.
+
+Writing to a frozen object throws a `TypeError` in strict mode code, which includes ES modules and classes, and does nothing elsewhere. A frozen Map or Set throws in either case.
+
+## Development checks [#development-checks]
+
+Development builds throw for a next state that holds a circular reference, an object that holds itself through its values, which Mutative does not support; see [Shared references](/docs/extra-topics/shared-references). Production builds skip this check.
+
+With auto-freeze, production builds also skip frozen objects when they search a [returned value](/docs/api-reference/rawreturn) for drafts, so returning an earlier, frozen state costs little. Development builds still search them and throw when they find a draft there.
+
+## Cost and recommendation [#cost-and-recommendation]
+
+Freezing visits every object that is not frozen yet, so it costs time on every update, most of all for states that change wide objects or large arrays. In the [benchmark](/docs/getting-started/performance), Immer, which freezes by default, took longer with auto-freeze than without it in most of the selected workloads, and Mutative's defaults leave it off.
+
+<Callout type="idea">
+  Enable auto-freeze in development to catch accidental changes to the state, and leave it off in production for speed: `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })`. Keep it on in production if other code relies on a frozen state.
+</Callout>
+
+A [mark](/docs/advanced-guides/mark) that returns a custom shallow copy function cannot be combined with auto-freeze. [`current()`](/docs/api-reference/current) returns unfrozen snapshots, also with auto-freeze, and TypeScript types the result of `create()` with `enableAutoFreeze: true` as `Immutable<State>`, whose properties are `readonly`.
+
+
+# Currying (/docs/advanced-guides/currying)
+
+Create producers that take the base state and more arguments, and drafts that you finalize later.
+
+Besides `create(base, recipe)`, [`create()`](/docs/api-reference/create) has two curried forms: a recipe alone gives a producer, a function that takes the base state later, and a base state alone gives a draft that you finalize later.
+
+## Producers [#producers]
+
+`create(recipe, options?)` returns a producer, `(base, ...args) => nextState`. The producer drafts its first argument and passes the draft and its other arguments to the recipe:
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const toggle = create((draft: Todo[], index: number) => {
+  draft[index].done = !draft[index].done;
+});
+
+const todos: Todo[] = [
+  { text: 'learn', done: false },
+  { text: 'ship', done: false },
+];
+
+const nextTodos = toggle(todos, 1);
+
+expect(nextTodos[1].done).toBe(true);
+expect(nextTodos[0]).toBe(todos[0]);
+```
+
+A producer with an action argument is a reducer, for Redux, `useReducer()` or any other library that takes one:
+
+```ts
+import { create } from 'mutative';
+
+type State = { todos: { text: string; done: boolean }[] };
+
+type Action =
+  | { type: 'add'; text: string }
+  | { type: 'toggle'; index: number };
+
+const reducer = create((draft: State, action: Action) => {
+  switch (action.type) {
+    case 'add':
+      draft.todos.push({ text: action.text, done: false });
+      break;
+    case 'toggle':
+      draft.todos[action.index].done = !draft.todos[action.index].done;
+      break;
+  }
+});
+
+const initialState: State = { todos: [] };
+const state = [
+  { type: 'add', text: 'learn' } as const,
+  { type: 'toggle', index: 0 } as const,
+].reduce(reducer, initialState);
+
+expect(state.todos).toEqual([{ text: 'learn', done: true }]);
+```
+
+* The options of the call apply to every state that the producer makes, so `create(recipe, { enablePatches: true })` gives a producer that returns `[nextState, patches, inversePatches]`.
+* The producer calls the recipe with its own `this`, so it can be a method.
+* A producer of an async recipe returns a Promise of the next state.
+* In TypeScript, annotate the type of the draft parameter, as above, to type the producer's parameters and result.
+
+## Drafts that you finalize later [#drafts-that-you-finalize-later]
+
+`create(base, options?)` returns a draft of the base state and a `finalize()` function, for changes that do not fit in one recipe, such as changes spread over several functions. `finalize()` returns what `create()` returns with a recipe:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  foobar: { foo: 'str', bar: 'str' },
+  baz: { text: 'str' },
+};
+
+const [draft, finalize] = create(baseState, { enablePatches: true });
+
+draft.foobar.bar = 'baz';
+
+const [state, patches, inversePatches] = finalize();
+
+expect(state).toEqual({
+  foobar: { foo: 'str', bar: 'baz' },
+  baz: { text: 'str' },
+});
+expect(state.baz).toBe(baseState.baz);
+expect(patches).toEqual([
+  { op: 'replace', path: ['foobar', 'bar'], value: 'baz' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['foobar', 'bar'], value: 'str' },
+]);
+```
+
+The base state must be draftable here, since no recipe returns a value instead.
+
+<Callout type="warn">
+  Call `finalize()` only once. When it throws, for example because a development build rejects a patch path, the drafts are not revoked as they are when a recipe fails: they stay writable, and a second `finalize()` returns a state that can hold a revoked draft, with patches that miss changes. Create a new draft from the base state instead.
+</Callout>
+
+The `create()` function of [`makeCreator()`](/docs/api-reference/makecreator) has the same forms, with its default options.
+
+
+# Advanced Guides (/docs/advanced-guides)
+
+Freezing, currying, marks, patches, strict mode, TypeScript, pitfalls, performance, and migration from Immer and from Mutative v1.
+
+- [Auto Freeze](/docs/advanced-guides/auto-freeze)
+- [Currying](/docs/advanced-guides/currying)
+- [Marking data structure](/docs/advanced-guides/mark)
+- [Patches](/docs/advanced-guides/patches)
+- [Strict Mode](/docs/advanced-guides/strict-mode)
+- [TypeScript](/docs/advanced-guides/typescript)
+- [Pitfalls](/docs/advanced-guides/pitfalls)
+- [Performance tips](/docs/advanced-guides/performance-tips)
+- [Migration from Immer to Mutative](/docs/advanced-guides/migration)
+- [Migration from Mutative v1 to v2](/docs/advanced-guides/migration-v2)
+
+
+# Marking data structure (/docs/advanced-guides/mark)
+
+Decide with the mark option which values Mutative drafts, which it leaves mutable, and how it copies them.
+
+By default, Mutative drafts plain objects, arrays, Maps and Sets, and leaves every other value as it is: a class instance, a `Date` or an object without a prototype in the state is shared by the draft, the base state and the next state. The `mark` option changes that for the values you choose, without changing the values or their classes.
+
+## Mark functions [#mark-functions]
+
+A mark is a function that receives each value that a recipe reads from a draft, and `{ mutable: 'mutable', immutable: 'immutable' }`. It returns:
+
+* `'immutable'` to draft the value, such as a class instance. Mutative copies it when the recipe changes it, keeping its prototype.
+* `'mutable'` to keep the value out of drafts. The recipe reads and changes the value itself, and every value that it holds, and the next state shares it.
+* A function that returns a shallow copy of the value, to draft it with that copy.
+* Nothing, to draft the value as usual.
+
+```ts
+import { create } from 'mutative';
+
+class Todo {
+  done = false;
+  constructor(public text: string) {}
+  toggle() {
+    this.done = !this.done;
+  }
+}
+
+const cache = { hits: 0 };
+
+const baseState = {
+  todos: [new Todo('learn'), new Todo('ship')],
+  cache,
+};
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.todos[0].toggle();
+    draft.cache.hits += 1;
+  },
+  {
+    mark: (target, { immutable, mutable }) => {
+      if (target instanceof Todo) return immutable;
+      if (target === cache) return mutable;
+      return undefined;
+    },
+  }
+);
+
+// The changed instance is a copy of the same class.
+expect(state.todos[0]).toBeInstanceOf(Todo);
+expect(state.todos[0].done).toBe(true);
+expect(baseState.todos[0].done).toBe(false);
+expect(state.todos[1]).toBe(baseState.todos[1]);
+
+// The mutable object was changed in place.
+expect(state.cache).toBe(cache);
+expect(cache.hits).toBe(1);
+```
+
+Pass a list of marks to combine them: the first one that returns a value decides, as in `mark: [markSimpleObject, markTodos]`. [`markSimpleObject()`](/docs/api-reference/marksimpleobject) is a mark for objects without a prototype and plain objects of other realms.
+
+Use the same marks for every call on the same state: [`makeCreator({ mark })`](/docs/api-reference/makecreator) sets them as defaults, and [`apply()`](/docs/api-reference/apply) and [`isDraftable()`](/docs/api-reference/isdraftable) take them as an option. A base state that is a class instance needs an `immutable` mark, or `create()` throws.
+
+## Patches, auto-freeze and strict mode [#patches-auto-freeze-and-strict-mode]
+
+* Values marked `immutable` work with patches and auto-freeze like plain objects, and so does a mark that makes every object immutable, as `() => 'immutable'` does.
+* A mark that returns a copy function cannot be combined with patches or auto-freeze, which development builds report with an error, and some patches might not apply to such values.
+* In [strict mode](/docs/advanced-guides/strict-mode), reading a value marked `mutable` from a draft throws outside [`unsafe()`](/docs/api-reference/unsafe), as reading any value that is not drafted does.
+
+## Custom shallow copies [#custom-shallow-copies]
+
+A mark that returns a function drafts the value with the copy that the function returns, for values that the default copy does not handle, such as a `Date`:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { updatedAt: new Date(Date.UTC(2020, 0, 1)) };
+
+const state = create(
+  baseState,
+  (draft) => {
+    const updatedAt = draft.updatedAt;
+    updatedAt.setUTCFullYear(2021);
+    updatedAt.setUTCMonth(5);
+  },
+  {
+    mark: (target) =>
+      target instanceof Date ? () => new Date(target.getTime()) : undefined,
+  }
+);
+
+expect(state.updatedAt.toISOString()).toBe('2021-06-01T00:00:00.000Z');
+expect(baseState.updatedAt.getUTCFullYear()).toBe(2020);
+```
+
+The first read of such a value returns its copy itself, and later reads return a draft of the copy. Changes through either reach the next state, but the methods of a `Date`, and of other objects that keep their data in internal slots or private fields, work only on the copy itself, so read such a value once and change it through that reference, as the recipe above does. To change a `Date` without a mark, assign a new one instead.
+
+## Copying marked instances [#copying-marked-instances]
+
+Mutative copies an instance that `mark` makes `immutable` with all its own properties, non-enumerable ones included, and reads its own accessors as values, as Immer's `setUseStrictShallowCopy('class_only')` does. To copy quickly, it assigns the own properties that are enumerable, writable and configurable instead of defining them, as Immer's default copy does. An own property that shadows a setter of its class, such as a class field over an accessor of a base class, therefore runs that setter on the copy, which can change objects that the copy shares with the base state, and one that shadows a getter without a setter or a read-only property makes the copy throw. Keep such values in accessors of the class or under other keys.
+
+
+# Migration from Mutative v1 to v2 (/docs/advanced-guides/migration-v2)
+
+The changes since Mutative 1.3.0 that can affect existing code, in builds, patches, arrays, returned values, development builds, types and fixes.
+
+Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect existing code.
+
+## Build output and package entries [#build-output-and-package-entries]
+
+* **ES2018 output.** Every build targets ES2018 instead of ES2015, so object spread stays native. Engines that support Proxy but not ES2018 syntax, such as Chrome 49–59, Firefox 18–54, Safari 10–11.0 and Edge 12–18, need Mutative transpiled by your build.
+* **Bundlers.** The ESM entry compares `process.env.NODE_ENV` at each development check instead of always running development code. Production bundles, in which the bundler defines `NODE_ENV` as `production`, drop the development checks and warnings and throw minified errors, as CommonJS consumers already did. Bundles that target Node.js without defining `NODE_ENV`, such as esbuild with `platform: 'node'`, now include both CommonJS builds; define `NODE_ENV` or keep Mutative external.
+* **Node.js ESM.** In Node.js, `import` resolves a module that re-exports the CommonJS build, so `import` and `require` share one instance and both follow `NODE_ENV`. Previously, `import` always ran the development ESM build as a separate instance.
+* **Browsers without a bundler.** `dist/mutative.esm.mjs` and `dist/mutative.esm.js` read `process.env.NODE_ENV`, so a page that loads them directly, for example from a raw CDN URL, fails with `process is not defined`. Load `dist/mutative.esm.production.min.mjs` instead, or the UMD build that the `unpkg` and `jsdelivr` fields point to.
+* **Production errors.** Production builds throw `Minified Mutative error #<code>` with a link to the [errors page](https://mutative.js.org/docs/extra-topics/errors) instead of the full message, also for `apply()`, `original()` and `rawReturn()`. Development builds keep the messages. Code that matches error messages in production must match the codes instead.
+
+## Patches [#patches]
+
+* **Order.** The patches of a nested draft now come before those of its parents, the order Immer uses. For example, `const item = draft.list[0]; draft.list.length = 0; item.text = 'b'; draft.item = item;` yields the `list` length replace before the `item` add. Applying the patches gives the same state as before, and replace patches that only restated an unchanged draft at its original index are no longer emitted.
+* **Values.** A patch value that was a draft is now the object that the next state holds instead of a deep copy, and it is frozen with the state when `enableAutoFreeze` is on. `apply()` still copies patch values before applying them. Copy a patch value before mutating it.
+* **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, no longer emits patches under its old path; the patches of its parent carry its value. In v1, the patches of such a recipe could fail to apply, for example the inverse patches once a primitive took the old key.
+* **Set items.** A changed item of a Set that also added or removed items is carried by the Set's `remove` and `add` patches. v1 also emitted patches under the item's position in the changed Set, which replay applied to whatever sat at that position in the base Set, or could not apply at all. A Set that only changed its items keeps the patches under each item's position.
+* **Original objects assigned over drafts.** Assigning the original object of a draft to the key that holds the draft is recorded like any other assignment: when the draft was read at that key, the key holds its original value again and emits no patch; when the draft was moved there from another key, the key emits the patch of that assignment. In v1, both cases emitted a `remove` patch for an object key that the state kept, and the second emitted no patch for an array element, so replaying the patches dropped the key or lost the element.
+
+## Arrays [#arrays]
+
+* `shift`, `unshift`, `splice` and `reverse` run natively on the draft's copy of a plain array, and `indexOf`, `lastIndexOf` and `includes` search it natively; see [which array methods run natively](/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts). For data arrays, the results are those of v1 and the patches replay in both directions. An accessor property on an array index is read as a data value, so its getter may run a different number of times.
+* `current()` of a changed array copies the current array instead of reading every element through the draft. Base elements that a native method moved and that hold drafts of an outer `create()` call are left as they are, as unmoved elements always were.
+* To search a large array without drafting each element it visits, search `current(draft.list)` and change the match through the draft; see [`current()`](/docs/api-reference/current).
+
+## Returned values [#returned-values]
+
+* With `enableAutoFreeze`, production builds no longer search frozen objects in a value returned from a recipe, the returned value included, or the values they hold, for drafts, and leave a draft there unresolved. Development builds still search them and throw when they find one, also in an unfrozen object that a frozen one holds, where v1 replaced it. Never put a draft in a frozen object or in a value it holds. Without auto-freeze, returned values are searched as in v1.
+
+## Development builds [#development-builds]
+
+* In strict mode, development builds warn once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does.
+* In strict mode, `rawReturn()` of a value without drafts no longer prints contradictory warnings.
+* With `enablePatches: { pathAsArray: false }`, development builds throw when a patch path would hold a Map key that is not a string, or a symbol key, as a string path cannot name such a key: applying the patch writes another key, for example `'1'` instead of `1`, or fails for a change below that key. Production builds still generate such patches, as v1 did, and still throw a `TypeError` for a symbol key. Keep the default array paths for such keys.
+* With `enableAutoFreeze`, development builds report a circular reference only for an object that holds itself. A changed draft that holds its original, as `draft.prev = original(draft)` makes it, or that links to a shared object through another path no longer throws; production builds always froze such states. For a real cycle, the error names the path of the object that repeats, which can be one key longer than in v1.
+* Development builds throw when a recipe passes a draft to the `set()` method of a Map draft, as in `draft.map.set(draft.key, value)`: Map keys are used as they are, so the next state would keep the draft as a key, revoked, and reading its properties would throw. Production builds still keep such a key, as v1 did. Use `original(draft)`, `current(draft)` or an id as the key.
+
+## TypeScript [#typescript]
+
+* `create()` with an explicit state type and an async recipe, such as `create<State>(base, async (draft) => { … })`, returns `Promise<State>`, and so do curried producers; v1 typed the result as `State`. A state type that is a type parameter, as in a generic function, or that includes Promises, such as `object` or `unknown`, still gives the state type for async recipes and for recipes that may return a Promise, as in v1; leave out the type argument in generic code.
+* `apply()` accepts `enableAutoFreeze: true` and then returns `Immutable<State>`, as `apply<State, true>()` does; v1 rejected the option and typed the frozen result as mutable. With `enableAutoFreeze` typed as `boolean` or optional `true`, the result is `State | Immutable<State>`. With `mutable` typed as `boolean`, optional `boolean`, or optional `true`, `apply()` returns `State | void`.
+* A curried producer whose recipe annotates its draft and returns a new state, such as `create((draft: State) => ({ ...draft, count: 0 }))`, returns `State`, or `Promise<State>` for an async recipe. v1 typed such a call as a manual draft, so calling the producer did not compile. A recipe whose draft is annotated with a type parameter, as in `create((draft: T) => { … })` in a generic function, also gives a producer, which v1 typed as a manual draft as well.
+* With an explicit state type, a recipe that may or may not return a Promise, such as one typed `(draft: State) => void | Promise<void>`, gives `State | Promise<State>`, also for a primitive state type, such as `number`, and in curried producers and creators from `makeCreator()`. v1 typed the result as `State`.
+
+## Fixes that change results [#fixes-that-change-results]
+
+* With `enablePatches`, every changed item of a Set keeps its changes. In v1, when two or more items of a Set that was not the root changed below their first level, the state kept the change of only one of them.
+* A Set that receives an unchanged draft holds the original object, as the rest of the state does, instead of the draft's shallow copy.
+* A Set draft that the recipe moves to another place, such as another key, an array, a Map, another Set or a new object, keeps its added, deleted and changed items there when its old place gets another value or is removed; v1 kept its original items.
+* A draft of a Set subclass changes its copy, an instance of the subclass, as Map drafts do: the subclass's own `add`, `has`, `delete` and `clear` take effect during the recipe, while the draft iterates the items in the order in which the Set holds them. v1 kept the items of a changed Set in a separate map, which bypassed those methods until it rebuilt the Set after the recipe. As a Map subclass's `set` already had to in v1, a Set subclass's `add` must store the value that it receives: an `add` that stores a copy of a draft, or of an object that holds drafts, leaves those drafts in the next state, where reading them throws.
+* Assigning `undefined` to a key that `delete`, `shift`, `unshift` or a shrinking `splice` removed from a draft adds the key back; v1 left a hole or kept the shorter length.
+* Under a `mark` that returns `mutable`, a value that the recipe assigned or moved is read back as assigned, through the draft and in `current()`; v1 returned the original value.
+* `current()` of a draft whose state holds a plain Set with drafts returns a snapshot; v1 threw.
+* `current()` snapshots an object that the recipe assigned and that `mark` makes draftable, such as a class instance, together with the drafts it holds; v1 returned the object as it was, so a later change to those drafts showed through the snapshot.
+* With `enableAutoFreeze`, Map and Set instances are frozen too, so adding a property or replacing a method fails as on any frozen object; v1 only replaced their mutators. Later producers skip a frozen Map or Set instead of walking its entries again, and a Map or Set that holds itself no longer overflows the stack in production builds.
+* The iterators that Map and Set drafts return behave like built-in iterators: iterating one that was partly consumed continues where it stopped, and iterator helpers such as `toArray()` are available where the engine has them. In v1, iterating such an iterator started over, and only a Map's `keys()` had the helpers.
+* Consume Map value and entry iterators, and all Set iterators, while their draft is active. After the producer finishes or fails, or a manual draft is finalized, an iterator cannot yield another value and throws a `TypeError`. Lazy iterator helpers follow the same lifetime; an exhausted iterator stays exhausted. Map keys are not drafted, and `keys()` continues to return a native iterator.
+* `apply()` copies the own symbol keys of patch values, and an own `__proto__` key, as `JSON.parse()` creates one, stays a data property. v1 dropped symbol keys there and turned an own `__proto__` key into the prototype of the copy.
+* `apply()` rejects a patch whose path ends in `__proto__` on an object or array, as it rejects `__proto__` earlier in a path. Coercible property keys, such as a boxed string, are checked after conversion too. With `mutable: true`, v1 assigned the value and so replaced the prototype of the object.
+* In a patch path, `apply()` reads an item of a Set only at its index, such as `1` or `'1'`, and throws for any other key, such as `__proto__`. v1 read any property of an array of the Set's items there, which let a path through `__proto__` reach `Array.prototype`.
+* `apply()` with `mutable: true` throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, as the state cannot be replaced in place. v1 ignored the replacement and applied the patches after it to the replacing value, so the state stayed as it was and the value of that patch changed.
+* An object that `mark` makes draftable, such as a plain object under `markSimpleObject`, keeps an own `__proto__` key, as `JSON.parse()` creates one, as a property of its copy; v1 assigned it, which replaced the prototype of the copy.
+* A patch for a Map key that is an array holds the key as one path segment; v1 spread the array into the path, so applying the patch wrote to other keys.
+* `apply()` uses a Map key of a patch path as it is. v1 converted it to a string first, which threw for an object without a prototype.
+* Array patches record a change between `0` and `-0`, which the state already kept; in v1, applying the patches lost the sign. An element that stays `NaN` no longer yields a replace patch.
+* When a recipe shortens an array and lengthens it again, as `draft.length = 1; draft.length = 3` does, the patches replace the indices that the longer length exposes again. In v1, applying the patches kept the removed elements at those indices, and applying the inverse patches left holes there.
+* In strict mode, a nested `unsafe()` call no longer ends the access of the outer call; in v1, reading mutable data after it in the outer callback threw.
+* A producer that fails after its recipe returned, for example because the recipe changed the draft and returned another value, revokes its drafts and releases its array method cache, as a recipe that throws does; v1 left them usable. This also covers errors while inspecting a returned Proxy or calling a returned Promise's `then` method, and preserves the original error.
+* A draft of an array whose `Symbol.isConcatSpreadable` is false copies its elements; v1 put the whole array into the copy as its only element.
+
+
+# Migration from Immer to Mutative (/docs/advanced-guides/migration)
+
+Replace Immer's APIs with their Mutative counterparts, and check the defaults that differ.
+
+Most code moves from Immer to Mutative by renaming functions: in both libraries a recipe changes a draft, and the next state shares every part that the recipe left unchanged. [Comparison with Immer](/docs/extra-topics/comparison-with-immer) maps every Immer API to Mutative and lists the behaviors that differ.
+
+<Callout type="idea">
+  [mutative-compat](https://github.com/exuanbo/mutative-compat) wraps Mutative in Immer's API, for a quick switch before you migrate the calls themselves.
+</Callout>
+
+## Checklist [#checklist]
+
+1. Replace `produce()` with `create()`, `produceWithPatches()` with `create()` and `enablePatches: true`, `applyPatches()` with `apply()`, and `nothing` with `rawReturn(undefined)`. `current()`, `original()`, `isDraft()`, `isDraftable()`, `castDraft()` and `castImmutable()` keep their names.
+2. Remove the `enableMapSet()`, `enablePatches()` and `enableArrayMethods()` calls: Mutative supports Maps, Sets and patches without them, and runs array methods natively.
+3. Decide about freezing. Immer freezes the next state by default, and Mutative does not. Code that relies on frozen state, for example to catch accidental mutations, needs `enableAutoFreeze: true`.
+4. Replace the global configuration of `setAutoFreeze()` and `new Immer()` with options per call, or with defaults that [`makeCreator()`](/docs/api-reference/makecreator) sets.
+5. Replace `[immerable] = true` on classes with the [`mark`](/docs/advanced-guides/mark) option.
+
+## `produce()` -> `create()` [#produce---create]
+
+```ts
+import { produce } from 'immer';
+
+const baseState = [
+  { title: 'Learn TypeScript', done: true },
+  { title: 'Try Immer', done: false },
+];
+
+const nextState = produce(baseState, (draft) => {
+  draft[1].done = true;
+  draft.push({ title: 'Tweet about it', done: false });
+});
+
+expect(nextState[1].done).toBe(true);
+expect(Object.isFrozen(nextState)).toBe(true);
+```
+
+With Mutative:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = [
+  { title: 'Learn TypeScript', done: true },
+  { title: 'Try Mutative', done: false },
+];
+
+const nextState = create(baseState, (draft) => {
+  draft[1].done = true;
+  draft.push({ title: 'Tweet about it', done: false });
+});
+
+expect(nextState[1].done).toBe(true);
+expect(Object.isFrozen(nextState)).toBe(false);
+```
+
+Mutative leaves the next state unfrozen unless `enableAutoFreeze` is set, which also makes it faster. To keep Immer's default, pass the option to each call, or create a `create()` that has it:
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({ enableAutoFreeze: true });
+
+const nextState = create({ list: [1] }, (draft) => {
+  draft.list.push(2);
+});
+
+expect(Object.isFrozen(nextState.list)).toBe(true);
+```
+
+A curried producer works the same way in both libraries: `produce(recipe)` becomes `create(recipe)`, and the producer passes its other arguments to the recipe; see [Currying](/docs/advanced-guides/currying).
+
+## Patches [#patches]
+
+```ts
+import { applyPatches, enablePatches, produceWithPatches } from 'immer';
+
+enablePatches();
+
+const baseState = { info: { name: 'Michael', age: 33 } };
+
+const [nextState, patches, inversePatches] = produceWithPatches(
+  baseState,
+  (draft) => {
+    draft.info.age++;
+  }
+);
+
+expect(applyPatches(baseState, patches)).toEqual(nextState);
+expect(applyPatches(nextState, inversePatches)).toEqual(baseState);
+```
+
+With Mutative:
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = { info: { name: 'Michael', age: 33 } };
+
+const [nextState, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.info.age++;
+  },
+  { enablePatches: true }
+);
+
+expect(apply(baseState, patches)).toEqual(nextState);
+expect(apply(nextState, inversePatches)).toEqual(baseState);
+```
+
+A patch listener passed to `produce()` becomes the same option: read the patches from the result of `create()`. The patches of both libraries differ for arrays that get shorter, which Mutative records as a `replace` of the `length` by default, and for objects changed in a Set; `enablePatches: { arrayLengthAssignment: false }` makes Mutative remove each index, as Immer does. See [Patches](/docs/extra-topics/comparison-with-immer#patches) in the comparison.
+
+## Return `undefined` [#return-undefined]
+
+Immer's `nothing` makes a recipe return `undefined`:
+
+```ts
+import { nothing, produce } from 'immer';
+
+const baseState: { count: number } | undefined = { count: 1 };
+
+const nextState = produce(baseState, () => nothing);
+
+expect(nextState).toBeUndefined();
+```
+
+With Mutative, return `rawReturn(undefined)`:
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const baseState: { count: number } | undefined = { count: 1 };
+
+const nextState = create(baseState, () => rawReturn(undefined));
+
+expect(nextState).toBeUndefined();
+```
+
+## Manual drafts [#manual-drafts]
+
+`createDraft()` and `finishDraft()` become one call of `create()` without a recipe, which returns the draft and the function that finalizes it:
+
+```ts
+import { createDraft, finishDraft } from 'immer';
+
+const baseState = { count: 1 };
+
+const draft = createDraft(baseState);
+draft.count += 1;
+const nextState = finishDraft(draft);
+
+expect(nextState).toEqual({ count: 2 });
+```
+
+With Mutative:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { count: 1 };
+
+const [draft, finalize] = create(baseState);
+draft.count += 1;
+const nextState = finalize();
+
+expect(nextState).toEqual({ count: 2 });
+```
+
+## Classes [#classes]
+
+Immer drafts the instances of a class that sets `[immerable] = true`. Mutative leaves classes unchanged and drafts the instances that a `mark` function makes `immutable`:
+
+```ts
+import { create } from 'mutative';
+
+class Clock {
+  constructor(
+    public hour: number,
+    public minute: number
+  ) {}
+}
+
+const clock = new Clock(12, 10);
+
+const nextClock = create(
+  clock,
+  (draft) => {
+    draft.minute += 1;
+  },
+  {
+    mark: (target, { immutable }) =>
+      target instanceof Clock ? immutable : undefined,
+  }
+);
+
+expect(nextClock).toBeInstanceOf(Clock);
+expect(nextClock.minute).toBe(11);
+expect(clock.minute).toBe(10);
+```
+
+Pass the same `mark` to every `create()` and `apply()` call on such state, for example with `makeCreator({ mark })`. See [Marking data structure](/docs/advanced-guides/mark).
+
+## Async recipes [#async-recipes]
+
+Immer 11 does not support async recipes: one that changes the draft before its first `await` throws, because the returned Promise counts as a new value, and one that changes it later writes to a revoked draft. With Mutative, `create()` returns a Promise of the next state, and the draft stays usable until it settles:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { user: { name: '' } };
+
+const nextState = await create(baseState, async (draft) => {
+  draft.user.name = await Promise.resolve('Ada');
+});
+
+expect(nextState.user.name).toBe('Ada');
+```
+
+## TypeScript [#typescript]
+
+`Draft<T>`, `Immutable<T>` and `Patch` are exported by both libraries, and Mutative adds `Patches`, the type of a list of patches, and `castMutable()`. Mutative infers the result type of `create()` from its options, such as the tuple of patches with `enablePatches: true`; see [TypeScript](/docs/advanced-guides/typescript).
+
+
+# Patches (/docs/advanced-guides/patches)
+
+Record the changes of a recipe as patches, and apply them to a state with apply().
+
+With the `enablePatches` option, `create()` also returns the patches that turn the base state into the next state, and the inverse patches that turn the next state back into the base state. [`apply()`](/docs/api-reference/apply) applies them, for example to replay changes on another copy of the state, to send them over a network, or to undo and redo changes.
+
+## Generating and applying patches [#generating-and-applying-patches]
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.foo = 'foobar';
+    draft.list.push({ text: 'learning' });
+  },
+  {
+    enablePatches: true,
+  }
+);
+
+expect(patches).toEqual([
+  { op: 'add', path: ['list', 1], value: { text: 'learning' } },
+  { op: 'replace', path: ['foo'], value: 'foobar' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['list', 'length'], value: 1 },
+  { op: 'replace', path: ['foo'], value: 'bar' },
+]);
+
+expect(apply(baseState, patches)).toEqual(state);
+expect(apply(state, inversePatches)).toEqual(baseState);
+```
+
+`enablePatches` also works with curried producers, manual drafts and [`makeCreator()`](/docs/api-reference/makecreator), and it supports objects, arrays, Maps, Sets, and the values that a [`mark`](/docs/advanced-guides/mark) makes draftable; pass the same `mark` to `apply()`.
+
+## Patch behavior [#patch-behavior]
+
+* **Operations and paths.** Patches use `add`, `remove` and `replace`. A path leads from the root to the changed value through object keys, array indices, Map keys as they are, objects and arrays included, and the positions of Set items. A recipe that returns a new state gets one `replace` patch with an empty path.
+* **Order.** The patches of a nested draft come before those of its parents, as in Immer.
+* **Values.** A patch value is the object that the next state holds, frozen with it when `enableAutoFreeze` is on, so copy a patch value before changing it. `apply()` copies patch values before applying them.
+* **Arrays.** `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. An array that a recipe shortens and lengthens again also gets patches for the indices that the longer length exposes again.
+* **Maps.** `set()` emits an `add` patch for a new key and a `replace` patch for an existing one, and `delete()` a `remove` patch.
+* **Sets.** Patches add an item by its value and remove one by the value it holds; see [Sets of objects](#sets-of-objects).
+* **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, emits no patches under its old path; the patches of its parent carry its value.
+* **Applying patches.** `apply()` applies `add`, `remove` and `replace` patches and accepts `-` as the index that appends to an array. It throws for other operations and for paths through `__proto__` or `constructor`. It takes the `enableAutoFreeze`, `strict` and `mark` options, or `mutable: true` to change the state in place, which throws for a patch that replaces the root state with another value, and it changes a draft in place.
+* **JSON Patch.** With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations. Maps and Sets have no JSON Patch counterpart.
+
+[Comparison with Immer](/docs/extra-topics/comparison-with-immer#patches) lists where these patches differ from Immer's.
+
+## JSON patches [#json-patches]
+
+`enablePatches` takes `true`, or an object with two options that set the shape of the patches. With both set to `false`, the patches of objects and arrays are [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) operations, which other JSON Patch libraries can apply ([related discussion](https://github.com/unadlib/mutative/issues/6)).
+
+### pathAsArray - default: true [#pathasarray---default-true]
+
+With `pathAsArray: false`, a path is a JSON Pointer string instead of an array of keys:
+
+```ts
+import { create } from 'mutative';
+
+const [state, patches, inversePatches] = create(
+  { list: [1, 2, 3] },
+  (draft) => {
+    draft.list.length = 0;
+  },
+  {
+    enablePatches: {
+      pathAsArray: false,
+    },
+  }
+);
+
+expect(state).toEqual({ list: [] });
+expect(patches).toEqual([{ op: 'replace', path: '/list/length', value: 0 }]);
+expect(inversePatches).toEqual([
+  { op: 'add', path: '/list/0', value: 1 },
+  { op: 'add', path: '/list/1', value: 2 },
+  { op: 'add', path: '/list/2', value: 3 },
+]);
+```
+
+A string path holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
+
+### arrayLengthAssignment - default: true [#arraylengthassignment---default-true]
+
+With `arrayLengthAssignment: false`, an array that gets shorter gets a `remove` patch for each index that it loses, instead of a `replace` patch of its `length`:
+
+```ts
+import { create } from 'mutative';
+
+const [state, patches, inversePatches] = create(
+  { list: [1, 2, 3] },
+  (draft) => {
+    draft.list.length = 0;
+  },
+  {
+    enablePatches: {
+      arrayLengthAssignment: false,
+    },
+  }
+);
+
+expect(state).toEqual({ list: [] });
+expect(patches).toEqual([
+  { op: 'remove', path: ['list', 2] },
+  { op: 'remove', path: ['list', 1] },
+  { op: 'remove', path: ['list', 0] },
+]);
+expect(inversePatches).toEqual([
+  { op: 'add', path: ['list', 0], value: 1 },
+  { op: 'add', path: ['list', 1], value: 2 },
+  { op: 'add', path: ['list', 2], value: 3 },
+]);
+```
+
+<Callout type="idea">
+  A `remove` patch per index takes more time and more patches for large arrays than one `replace` patch of the `length`, so leave `arrayLengthAssignment` on unless the patches must be JSON Patch operations.
+</Callout>
+
+## Undo and redo [#undo-and-redo]
+
+The inverse patches of each change undo it, and its patches redo it:
+
+```ts
+import { apply, create, type Patches } from 'mutative';
+
+let state = { todos: [] as string[] };
+const undoStack: { patches: Patches; inversePatches: Patches }[] = [];
+
+function update(recipe: (draft: typeof state) => void) {
+  const [nextState, patches, inversePatches] = create(state, recipe, {
+    enablePatches: true,
+  });
+  state = nextState;
+  undoStack.push({ patches, inversePatches });
+}
+
+update((draft) => {
+  draft.todos.push('learn Mutative');
+});
+update((draft) => {
+  draft.todos.push('use patches');
+});
+
+const last = undoStack.pop()!;
+state = apply(state, last.inversePatches);
+expect(state.todos).toEqual(['learn Mutative']);
+
+state = apply(state, last.patches);
+expect(state.todos).toEqual(['learn Mutative', 'use patches']);
+```
+
+[travels](https://github.com/mutativejs/travels) builds undo and redo with history limits, archives and persistence on these patches, and [use-travel](https://github.com/mutativejs/use-travel) and [zustand-travel](https://github.com/mutativejs/zustand-travel) bring it to React and Zustand.
+
+## Sets of objects [#sets-of-objects]
+
+Patches add a Set element by its value and remove one by the value it holds, so a `remove` patch removes an object only from a Set that holds that same object. A Set whose elements changed in place, without any element added or removed, gets patches under the position of each changed element, and they replay in both directions. Once a recipe adds or removes elements of a Set, the Set's `remove` and `add` patches carry every changed element by value instead. `apply()` copies the value of each patch before applying it, so a Set that `apply()` changes holds copies of the objects that patches add, and the inverse patches cannot remove those copies: an undo after a redo leaves the object in the Set. `apply()` also appends every element that it adds, so a Set that it changes can hold its elements in another order than the state that the recipe produced: a changed element of a Set that also added or removed elements, or an element that inverse patches add back, moves to the end, and a recipe that deletes an element and adds it back moves it to the end without a patch. The positions in the patches of a later recipe then find other elements, and its changes under them apply to another element without an error. Sets of primitives keep their elements, but their order can change in the same way. When patches are replayed on states that `apply()` returned, as undo, redo and synchronized copies do, keep such objects in a Map keyed by an id or in an array instead.
+
+
+# Performance tips (/docs/advanced-guides/performance-tips)
+
+Write recipes that avoid needless drafts, searches, copies, freezing and patches.
+
+Mutative copies each object at most once per update and drafts only what a recipe reads, so most recipes are fast as they are. These tips help with large states and hot paths. The figures come from the [benchmark](/docs/getting-started/performance) on Node.js 24, in microseconds per update.
+
+## Search large arrays in a snapshot [#search-large-arrays-in-a-snapshot]
+
+Every object that a recipe reads through a draft becomes a draft, so `draft.list.find()` creates a draft for each element it visits. Search [`current(draft.list)`](/docs/api-reference/current#searching-a-large-array), which holds plain values, and change the match through the draft:
+
+```ts
+import { create, current } from 'mutative';
+
+const baseState = {
+  list: Array.from({ length: 10_000 }, (_, id) => ({ id, done: false })),
+};
+
+const state = create(baseState, (draft) => {
+  const index = current(draft.list).findIndex((item) => item.id === 9_999);
+  draft.list[index].done = true;
+});
+
+expect(state.list[9_999].done).toBe(true);
+```
+
+Updating the first of 10,000 rows and then finding and updating the last one took 176 µs this way and 2,169 µs through the draft. Take one snapshot for a series of searches: each call of `current()` copies the changed parts of the draft again. To read the base state without drafts, use [`original()`](/docs/api-reference/original).
+
+## Return new states with `rawReturn()` [#return-new-states-with-rawreturn]
+
+Mutative searches a value that a recipe returns for drafts, which visits every object of it: returning a new state of 10,000 rows took 2,600 µs. When the value holds no drafts, such as a state built from scratch, wrap it in [`rawReturn()`](/docs/api-reference/rawreturn), which took 0.26 µs.
+
+## Let array methods move elements [#let-array-methods-move-elements]
+
+`shift()`, `unshift()`, `splice()` and `reverse()` run natively on the copy of a plain array, while a loop that moves elements one by one goes through the draft for each of them. Removing the first of 10,000 rows with `shift()` took 7.04 µs, against 7,408 µs for Immer, which moves each element through its draft. See [which array methods run natively](/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts).
+
+## Make one update for related changes [#make-one-update-for-related-changes]
+
+Each `create()` call copies the objects on the path from the root to its changes, so several changes in one recipe copy shared parents once, where one call per change copies them each time. Group the changes of an action or an event into one recipe.
+
+## Turn on what you need [#turn-on-what-you-need]
+
+* **Auto-freeze** visits every object of the next state that is not frozen yet. Inserting a property into an object of 1,000 properties took 50.3 µs without it and 140 µs with it. Enable it in development, or where other code relies on frozen state; see [Auto Freeze](/docs/advanced-guides/auto-freeze).
+* **Patches** cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.8 µs without them and 63.2 µs with them. Moving elements emits a patch for each moved index, so removing the first of 10,000 rows took 1,063 µs with patches. Keep `arrayLengthAssignment` on unless the patches must be JSON Patch operations, since a `remove` patch per index costs more than one `replace` of the `length`.
+* **Strict mode** inspects every value that a recipe reads, and sends array methods and `current()` through the draft for arrays that may hold objects. Enable it in development only; see [Strict Mode](/docs/advanced-guides/strict-mode).
+
+## Keep large data out of drafts [#keep-large-data-out-of-drafts]
+
+Data that recipes read but never change, such as a large lookup table in the state, is drafted object by object as recipes read it. Read it with `original()`, or keep it outside the state. A [mark](/docs/advanced-guides/mark) that returns `'mutable'` for it keeps it out of drafts altogether, but then a recipe that changes it changes it in place.
+
+
+# Pitfalls (/docs/advanced-guides/pitfalls)
+
+Common mistakes with drafts, returned values, values that are not drafted, and patches, and how to avoid them.
+
+Most recipes are ordinary JavaScript, but drafts are proxies that live only during their recipe, and Mutative copies only the values that it drafts. These are the mistakes that follow from that most often.
+
+## Reassigning the draft parameter [#reassigning-the-draft-parameter]
+
+Assigning to the `draft` parameter only changes a local variable. To replace the whole state, return the new state:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { count: 1 };
+
+const unchanged = create(baseState, (draft) => {
+  // This only changes the local variable.
+  draft = { count: 0 };
+});
+expect(unchanged).toBe(baseState);
+
+const replaced = create(baseState, () => ({ count: 0 }));
+expect(replaced).toEqual({ count: 0 });
+```
+
+## Changing the draft and returning another value [#changing-the-draft-and-returning-another-value]
+
+A recipe either changes its draft or returns a new state. Doing both throws, because Mutative cannot tell which one is the next state; returning `undefined` or the draft itself keeps the changes. To make `undefined` the next state, return [`rawReturn(undefined)`](/docs/api-reference/rawreturn). Watch out for arrow functions that return the value of an assignment or of a method:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { list: [1] };
+
+// `push()` returns the new length, which the recipe then returns:
+// TypeScript rejects such a recipe, and at runtime it throws.
+expect(() =>
+  // @ts-expect-error
+  create(baseState, (draft) => draft.list.push(2))
+).toThrow();
+
+// A block body returns nothing.
+const state = create(baseState, (draft) => {
+  draft.list.push(2);
+});
+expect(state.list).toEqual([1, 2]);
+```
+
+## Keeping a draft after the recipe [#keeping-a-draft-after-the-recipe]
+
+Mutative revokes the drafts of a recipe when it ends, so a draft that a callback, a closure or another state keeps throws when it is read later. Keep [`current(draft)`](/docs/api-reference/current), the original object, or the next state instead. The draft of an async recipe lives until its Promise settles, and that of `create(base)` until `finalize()` returns.
+
+A draft also belongs to its own `create()` call: do not store it in the draft of another call; see [create() on a draft](/docs/api-reference/create#create-on-a-draft).
+
+## Changing values that are not drafted [#changing-values-that-are-not-drafted]
+
+Mutative drafts plain objects, arrays, Maps and Sets. Other objects, such as class instances, dates and objects without a prototype, are shared by the draft, the base state and the next state, so a recipe that changes them changes the base state too:
+
+```ts
+import { create } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = { counter: new Counter() };
+
+const state = create(baseState, (draft) => {
+  draft.counter.count += 1;
+});
+
+// The instance was changed in place, and the state was not copied.
+expect(state).toBe(baseState);
+expect(baseState.counter.count).toBe(1);
+```
+
+[Mark](/docs/advanced-guides/mark) such classes as `immutable` so that Mutative drafts and copies their instances, use [`markSimpleObject()`](/docs/api-reference/marksimpleobject) for objects without a prototype, or replace such values instead of changing them. [Strict mode](/docs/advanced-guides/strict-mode) reports every read of such a value in development.
+
+## Searching a draft for objects of the base state [#searching-a-draft-for-objects-of-the-base-state]
+
+An object of the base state becomes a draft when the recipe reads it, so searching a draft array for the original object finds nothing. Search for an id, or search [`original(draft)`](/docs/api-reference/original), whose indices match the draft until the recipe adds, removes or moves elements:
+
+```ts
+import { create, original } from 'mutative';
+
+const baseState = { list: [{ id: 1 }, { id: 2 }] };
+const item = baseState.list[1];
+
+create(baseState, (draft) => {
+  expect(draft.list.indexOf(item)).toBe(-1);
+  expect(original(draft.list).indexOf(item)).toBe(1);
+  expect(draft.list.findIndex((element) => element.id === 2)).toBe(1);
+});
+```
+
+The same holds for the [Set methods](/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts) of ES2025, while `has()` and `delete()` of a Set draft accept the original object. A draft cannot be a [Map key](/docs/extra-topics/faq#can-a-draft-be-a-map-key).
+
+## Shared objects [#shared-objects]
+
+When several paths of the state lead to the same object, each path gets a draft of its own, and the next state holds a copy for each path that changed. Assign one draft to the other paths to keep them shared; see [Shared references](/docs/extra-topics/shared-references).
+
+## Wrapping drafts in `rawReturn()` [#wrapping-drafts-in-rawreturn]
+
+[`rawReturn()`](/docs/api-reference/rawreturn) returns a value without searching it for drafts, so a draft in it stays in the next state, revoked. Wrap only values without drafts, such as `rawReturn(initialState)`, and enable strict mode in development, which reports such drafts.
+
+## Changing patch values [#changing-patch-values]
+
+A patch value is an object that the next state holds, frozen with it when auto-freeze is on. Copy a patch value before changing it, or apply the patches with [`apply()`](/docs/api-reference/apply), which copies patch values before applying them.
+
+## Freezing the base state [#freezing-the-base-state]
+
+With [auto-freeze](/docs/advanced-guides/auto-freeze), Mutative freezes the objects that the next state shares with the base state, so code that changes the base state in place afterwards fails, also for parts of it that the recipe did not change.
+
+
+# Strict Mode (/docs/advanced-guides/strict-mode)
+
+Make reads of values that Mutative does not draft explicit, and check returned values in development.
+
+Mutative drafts plain objects, arrays, Maps and Sets, and the values that a [mark](/docs/advanced-guides/mark) makes immutable. Every other object in the state, such as a `Date` or a class instance, is shared by the draft, the base state and the next state, so a recipe that changes it changes the base state as well. With the `strict` option, such reads become explicit.
+
+## What strict mode checks [#what-strict-mode-checks]
+
+* Reading an object that cannot be drafted from a draft, or a value that a mark makes `mutable`, throws, unless the read happens inside [`unsafe()`](/docs/api-reference/unsafe). Primitives, drafts and assignments are not affected.
+* A value that a recipe returns with [`rawReturn()`](/docs/api-reference/rawreturn) is still searched for drafts, which are replaced with their values, and development builds warn when they find one.
+* Development builds warn once when a recipe leaves 1,000 or more drafts unchanged. Every object read through a draft becomes a draft, so a search through a large draft array, such as `draft.list.find()`, creates one for each element it visits. Search [`current(draft.list)`](/docs/api-reference/current#searching-a-large-array) instead and change the match through the draft.
+
+```ts
+import { create, unsafe } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = {
+  counter: new Counter(),
+  list: [{ text: 'todo' }],
+};
+
+create(
+  baseState,
+  (draft) => {
+    // Drafts and primitives can be read and changed as usual.
+    draft.list[0].text = 'done';
+
+    // The Counter instance is not drafted, so reading it throws.
+    expect(() => draft.counter.count).toThrow();
+
+    // Inside unsafe(), it can be read.
+    expect(unsafe(() => draft.counter.count)).toBe(0);
+  },
+  {
+    strict: true,
+  }
+);
+```
+
+To change such a value, replace it with a new one, or mark its class as `immutable`, so that Mutative drafts and copies it:
+
+```ts
+import { create } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = { counter: new Counter() };
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.counter.count += 1;
+  },
+  {
+    strict: true,
+    mark: (target, { immutable }) =>
+      target instanceof Counter ? immutable : undefined,
+  }
+);
+
+expect(state.counter.count).toBe(1);
+expect(baseState.counter.count).toBe(0);
+```
+
+## Enable it in development [#enable-it-in-development]
+
+Strict mode inspects every value that a recipe reads, so array methods that otherwise run natively on the copy of an array that may hold objects, and `current()` of a changed array, read the array through the draft instead. Enable it in development and disable it in production:
+
+```ts
+import { makeCreator } from 'mutative';
+
+export const create = makeCreator({
+  strict: process.env.NODE_ENV !== 'production',
+});
+```
+
+<Callout type="idea">
+  Strict mode is most useful with `rawReturn()`: without it, a value that `rawReturn()` wraps is not searched for drafts, so a draft in it stays in the next state, revoked.
+</Callout>
+
+
+# TypeScript (/docs/advanced-guides/typescript)
+
+How Mutative types drafts, results, producers and patches, and the types and casts it exports.
+
+Mutative is written in TypeScript and ships its type declarations. They support TypeScript 5.0 and later; the package checks compile them with TypeScript 5.0.
+
+## Inferred types [#inferred-types]
+
+`create()` infers the type of the state from the base state. The draft has the type `Draft<State>`, which removes `readonly` deeply, so a recipe can change state that is typed as readonly, and the result has the type of the base state:
+
+```ts
+import { create } from 'mutative';
+
+type State = {
+  readonly todos: readonly { readonly text: string; readonly done: boolean }[];
+};
+
+const baseState: State = { todos: [{ text: 'learn', done: false }] };
+
+const state: State = create(baseState, (draft) => {
+  draft.todos[0].done = true;
+  draft.todos.push({ text: 'ship', done: false });
+});
+
+expect(state.todos).toHaveLength(2);
+```
+
+The options change the type of the result: `enablePatches: true` gives `[State, Patches, Patches]`, `enableAutoFreeze: true` gives `Immutable<State>`, and an async recipe gives a Promise. See [create()](/docs/api-reference/create#enablepatches) for options typed as `boolean`, and [apply()](/docs/api-reference/apply#typescript) for its result types.
+
+When the base state does not have the type of the state, such as an empty array, pass the state type as a type argument:
+
+```ts
+import { create } from 'mutative';
+
+type State = { items: string[] };
+
+const state = create<State>({ items: [] }, (draft) => {
+  draft.items.push('a');
+});
+
+expect(state.items).toEqual(['a']);
+```
+
+With an explicit state type, TypeScript infers no other type argument, so pass `boolean` as the type argument for `enablePatches` when the options set it with a variable, as in `create<State, false, boolean>(base, recipe, options)`.
+
+## `Draft<T>` and `Immutable<T>` [#draftt-and-immutablet]
+
+* `Draft<T>` is the type of a draft of `T`: its objects, arrays, Maps and Sets without `readonly`, deeply. Functions, Promises, dates and regular expressions keep their types, and the keys of a Map are not drafted.
+* `Immutable<T>` is a deeply readonly `T`, with `ReadonlyMap` and `ReadonlySet` for Maps and Sets: the type of a frozen state.
+
+Use `Draft<State>` to type helpers that change a draft:
+
+```ts
+import { create, type Draft } from 'mutative';
+
+type State = { todos: { text: string; done: boolean }[] };
+
+function addTodo(draft: Draft<State>, text: string) {
+  draft.todos.push({ text, done: false });
+}
+
+const state = create({ todos: [] } as State, (draft) => {
+  addTodo(draft, 'learn');
+});
+
+expect(state.todos).toEqual([{ text: 'learn', done: false }]);
+```
+
+## Producers [#producers]
+
+Annotate the draft parameter of a recipe without a base state, so that the producer has typed parameters and a typed result. Its other parameters become the producer's:
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const toggle = create((draft: Todo[], index: number) => {
+  draft[index].done = !draft[index].done;
+});
+
+const todos: Todo[] = toggle([{ text: 'learn', done: false }], 0);
+
+expect(todos[0].done).toBe(true);
+```
+
+The type arguments `create<Todo[], [index: number]>((draft, index) => { … })` give the same producer. In a generic function, annotate the draft with the type parameter, as in `create((draft: T) => { … })`, and leave out the type argument for async recipes; see [Async recipes](/docs/api-reference/create#async-recipes).
+
+## Casts [#casts]
+
+`castDraft()`, `castImmutable()` and `castMutable()` change only the type of a value, and return the value as it is:
+
+* `castDraft(value)` types a value as a draft, for example to assign a readonly value into a draft.
+* `castImmutable(value)` types a value as `Immutable<T>`, for example an initial state that should be read only. It does not freeze the value.
+* `castMutable<T>(draft)` types a draft as `T`, for a function that requires `T` where `Draft<T>` does not fit, such as a class with private members, which a draft type lacks.
+
+```ts
+import { castDraft, castImmutable, castMutable, create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const defaults = castImmutable({ todos: [{ text: 'learn', done: false }] as Todo[] });
+
+const state = create({ todos: [] as Todo[] }, (draft) => {
+  // `defaults.todos` is readonly, which a draft does not accept without a cast.
+  draft.todos = castDraft(defaults.todos);
+});
+
+expect(state.todos).toBe(defaults.todos);
+
+class Point {
+  constructor(
+    private x: number,
+    private y: number
+  ) {}
+  distanceTo(other: Point) {
+    return Math.hypot(other.x - this.x, other.y - this.y);
+  }
+}
+
+const origin = new Point(0, 0);
+
+create({ point: new Point(3, 4) }, (draft) => {
+  // The draft type of a Point lacks its private members.
+  expect(origin.distanceTo(castMutable<Point>(draft.point))).toBe(5);
+});
+```
+
+## Exported types [#exported-types]
+
+| Type               | Description                                                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `Draft<T>`         | The type of a draft of `T`.                                                                                                 |
+| `Immutable<T>`     | A deeply readonly `T`.                                                                                                      |
+| `Patch<P>`         | An `add`, `remove` or `replace` operation; its path is a string when `P` is `{ pathAsArray: false }`.                       |
+| `Patches<P>`       | An array of patches.                                                                                                        |
+| `PatchesOptions`   | The type of the `enablePatches` option.                                                                                     |
+| `Options<O, F>`    | The options of `create()` and `makeCreator()`, where `O` is the type of `enablePatches` and `F` that of `enableAutoFreeze`. |
+| `DraftedObject<T>` | The draft type of an object type.                                                                                           |
+
+The [API reference in the repository](https://github.com/unadlib/mutative/tree/main/docs) lists their definitions, generated from the source.
+
+
+# apply() (/docs/api-reference/apply)
+
+Apply patches to a state and get the next state, or change the state in place.
+
+`apply()` applies [patches](/docs/advanced-guides/patches), such as those that [`create()`](/docs/api-reference/create) returns with `enablePatches`, and returns the next state. Like `create()`, it leaves the state as it was and shares every part that the patches do not change.
+
+```ts
+apply(state, patches, options?) // the next state
+apply(state, patches, { mutable: true }) // changes the state in place and returns undefined
+```
+
+## Usage [#usage]
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.foo = 'foobar';
+    draft.list.push({ text: 'learning' });
+  },
+  {
+    enablePatches: true,
+  }
+);
+
+const nextState = apply(baseState, patches);
+expect(nextState).toEqual(state);
+
+const prevState = apply(state, inversePatches);
+expect(prevState).toEqual(baseState);
+```
+
+<a id="applystate-patches-options" />
+
+## Options [#options]
+
+| Option             | Type             | Default |
+| ------------------ | ---------------- | ------- |
+| `enableAutoFreeze` | `boolean`        | `false` |
+| `strict`           | `boolean`        | `false` |
+| `mark`             | `Mark \| Mark[]` | none    |
+| `mutable`          | `boolean`        | `false` |
+
+`enableAutoFreeze`, `strict` and `mark` work as the [options of `create()`](/docs/api-reference/create#options) do. Pass `apply()` the same `mark` as the `create()` calls that generated the patches, so that it drafts the same values, such as class instances.
+
+`mutable: true`, available since Mutative 1.2.0, changes the state in place instead, and `apply()` then returns `undefined`. It cannot be combined with the other options, which development builds report with a warning, and it throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, because the state cannot be replaced in place.
+
+```ts
+import { apply } from 'mutative';
+
+const baseState = { foo: { bar: 'test' } };
+
+// This changes baseState itself.
+const result = apply(
+  baseState,
+  [
+    {
+      op: 'replace',
+      path: ['foo', 'bar'],
+      value: 'test2',
+    },
+  ],
+  {
+    mutable: true,
+  }
+);
+
+expect(result).toBeUndefined();
+expect(baseState).toEqual({ foo: { bar: 'test2' } });
+```
+
+## Applying patches to a draft [#applying-patches-to-a-draft]
+
+Inside a recipe, `apply(draft, patches)` changes the draft in place and returns it, so patches can be combined with other changes in one update. It takes no options there.
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = { count: 0, log: [] as string[] };
+
+const state = create(baseState, (draft) => {
+  apply(draft, [{ op: 'replace', path: ['count'], value: 1 }]);
+  draft.log.push('count set to 1');
+});
+
+expect(state).toEqual({ count: 1, log: ['count set to 1'] });
+```
+
+## Patches that apply() accepts [#patches-that-apply-accepts]
+
+* `add`, `remove` and `replace` operations. Other operations, such as JSON Patch's `move`, `copy` and `test`, throw an error.
+* Paths as arrays of keys, or as JSON Pointer strings, such as those of `pathAsArray: false`. The index `-` appends to an array.
+* Map keys as they are, and Set items by value: `add` and `remove` patches add and remove the value that they hold, and a `replace` patch of a Set item throws. See [Sets of objects](/docs/advanced-guides/patches#sets-of-objects).
+* A path through the `__proto__` or `constructor` of an object or array, or through the `prototype` of a function, throws, so that patches cannot change the prototypes of objects; Map keys of these names are ordinary keys. `apply()` reads the other path segments as properties, as Immer does, and does not guard against prototypes that other code has already changed.
+* A path that does not resolve throws an error that names it.
+
+`apply()` copies the value of each patch deeply before applying it, so the next state does not share objects with the patches, and applying the same patches again gives another copy.
+
+## TypeScript [#typescript]
+
+With `enableAutoFreeze: true`, `apply()` returns `Immutable<State>`, as `apply<State, true>()` does. With `enableAutoFreeze` typed as `boolean` or optional `true`, the result is `State | Immutable<State>`. With `mutable: true`, the result is `void`, and with `mutable` typed as `boolean`, optional `boolean`, or optional `true`, it is `State | void`.
+
+The errors that `apply()` throws are listed with their production codes on the [errors page](/docs/extra-topics/errors).
+
+
+# Type casts (/docs/api-reference/casts)
+
+castDraft(), castImmutable() and castMutable() change the TypeScript type of a value, and return the value as it is.
+
+`castDraft()`, `castImmutable()` and `castMutable()` are helpers for TypeScript. Each returns its argument as it is, with another type, so they cost nothing at runtime and change nothing.
+
+```ts
+castDraft<T>(value: T): Draft<T>
+castImmutable<T>(value: T): Immutable<T>
+castMutable<T>(draft: Draft<T>): T
+```
+
+## castDraft() [#castdraft]
+
+`castDraft(value)` types a value as a draft, [`Draft<T>`](/docs/advanced-guides/typescript#draftt-and-immutablet), whose properties are not `readonly`. Use it to assign a value with readonly types into a draft:
+
+```ts
+import { castDraft, create, type Immutable } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const defaults: Immutable<Todo[]> = [{ text: 'learn', done: false }];
+
+const state = create({ todos: [] as Todo[] }, (draft) => {
+  draft.todos = castDraft(defaults);
+});
+
+expect(state.todos).toBe(defaults);
+```
+
+The value is not drafted: the next state holds it as it is.
+
+## castImmutable() [#castimmutable]
+
+`castImmutable(value)` types a value as [`Immutable<T>`](/docs/advanced-guides/typescript#draftt-and-immutablet), deeply readonly, for example an initial state that code should only read. It does not freeze the value; use [auto-freeze](/docs/advanced-guides/auto-freeze) for that.
+
+```ts
+import { castImmutable, create } from 'mutative';
+
+const initialState = castImmutable({ todos: [{ text: 'learn', done: false }] });
+
+const state = create(initialState, (draft) => {
+  draft.todos[0].done = true;
+});
+
+expect(state.todos[0].done).toBe(true);
+expect(Object.isFrozen(initialState)).toBe(false);
+```
+
+## castMutable() [#castmutable]
+
+`castMutable<T>(draft)` types a draft as `T`, for a function that requires `T` where `Draft<T>` does not fit. A draft type lacks the private members of a class, for example, so a draft of a class instance needs the cast where the class itself is expected:
+
+```ts
+import { castMutable, create } from 'mutative';
+
+class Point {
+  constructor(
+    private x: number,
+    private y: number
+  ) {}
+  distanceTo(other: Point) {
+    return Math.hypot(other.x - this.x, other.y - this.y);
+  }
+}
+
+const origin = new Point(0, 0);
+
+create({ point: new Point(3, 4) }, (draft) => {
+  expect(origin.distanceTo(castMutable<Point>(draft.point))).toBe(5);
+});
+```
+
+TypeScript cannot infer `T` back from a `Draft<T>`, so pass it as a type argument, as above.
+
+
+# create() (/docs/api-reference/create)
+
+Produce the next state from the changes that a recipe makes to a draft of the base state.
+
+`create()` drafts a base state, runs a recipe that changes the draft, and returns the next state. The next state shares every part that the recipe left unchanged with the base state, and the base state itself does not change.
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.foo = 'foobar';
+  draft.list.push({ text: 'learning' });
+});
+
+expect(state).toEqual({
+  foo: 'foobar',
+  list: [{ text: 'todo' }, { text: 'learning' }],
+});
+expect(state.list[0]).toBe(baseState.list[0]);
+expect(baseState.foo).toBe('bar');
+```
+
+## Signatures [#signatures]
+
+```ts
+create(base, recipe, options?) // the next state
+create(base, recipe, { enablePatches: true }) // [nextState, patches, inversePatches]
+create(recipe, options?) // a producer: (base, ...args) => the next state
+create(base, options?) // [draft, finalize]
+```
+
+* `base` is the state to draft: a plain object, an array, a `Map`, a `Set`, or a value that the [`mark`](#mark) option makes draftable, such as a class instance. Other objects, such as dates and class instances that no mark makes draftable, throw an error. With a recipe, a primitive or `null` base is passed to the recipe as it is, and the value that the recipe returns is the next state.
+* `recipe` receives the draft, and in a producer also the other arguments of the producer. It changes the draft and returns nothing, or returns a [new state](#returning-a-new-state). It can be an [async function](#async-recipes).
+* `options` are described [below](#options); [`makeCreator()`](/docs/api-reference/makecreator) sets their defaults.
+
+`create()` returns the next state, which is the base state itself when the recipe changes nothing. With `enablePatches`, it returns `[nextState, patches, inversePatches]`: the patches turn the base state into the next state, and the inverse patches turn it back. For an async recipe, it returns a Promise of either.
+
+## Options [#options]
+
+<a id="createstate-fn-options---options" />
+
+| Option                                  | Type                                                                                                                          | Default |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------- |
+| [`strict`](#strict)                     | `boolean`                                                                                                                     | `false` |
+| [`enablePatches`](#enablepatches)       | `boolean \| { pathAsArray?: boolean; arrayLengthAssignment?: boolean }`                                                       | `false` |
+| [`enableAutoFreeze`](#enableautofreeze) | `boolean`                                                                                                                     | `false` |
+| [`mark`](#mark)                         | `Mark \| Mark[]`, where `Mark` is `(target, { mutable, immutable }) => 'mutable' \| 'immutable' \| (() => copy) \| undefined` | none    |
+
+### strict [#strict]
+
+In [strict mode](/docs/advanced-guides/strict-mode), reading an object that cannot be drafted from a draft, such as a `Date` or a class instance that no mark makes draftable, or a value that `mark` makes mutable, throws unless the read happens inside [`unsafe()`](/docs/api-reference/unsafe). A value that the recipe returns with [`rawReturn()`](/docs/api-reference/rawreturn) is still searched for drafts, and development builds warn when it holds one. In development builds, strict mode also warns once when a recipe leaves 1,000 or more drafts unchanged, as a search through a large draft array does; see [`current()`](/docs/api-reference/current#searching-a-large-array) for searching without creating drafts.
+
+Strict mode checks every value that the recipe reads, so enable it in development and disable it in production, for example with `strict: process.env.NODE_ENV !== 'production'`.
+
+### enablePatches [#enablepatches]
+
+`true` makes `create()` return `[nextState, patches, inversePatches]`; see [Patches](/docs/advanced-guides/patches). An object sets the shape of the patches as well:
+
+* `pathAsArray`, `true` by default: a path is an array of keys, such as `['list', 0]`. With `false`, it is a JSON Pointer string, such as `'/list/0'`. A string path holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
+* `arrayLengthAssignment`, `true` by default: an array that gets shorter gets a `replace` patch of its `length`. With `false`, it gets a `remove` patch for each index that it loses, which takes more time for large arrays.
+
+With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)); see the [related discussion](https://github.com/unadlib/mutative/issues/6).
+
+TypeScript types the result from the type of `enablePatches` in the options passed to `create()` or `makeCreator()`: `true` or an object gives `[state, patches, inversePatches]`, and `boolean` gives either. Options typed `{ enablePatches: true }` that may be `undefined`, such as an optional parameter of a wrapper, or typed `{ enablePatches?: true }` still give the tuple, although `create()` returns the state alone when patches are off; type the flag as `boolean` there. With an explicit state type, TypeScript infers no other type argument, so pass `boolean` as the type argument for `enablePatches` as well, as in `create<State, false, boolean>(base, recipe, options)` or `create<State, [], false, boolean>(recipe, options)`.
+
+### enableAutoFreeze [#enableautofreeze]
+
+Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself; see [Auto Freeze](/docs/advanced-guides/auto-freeze).
+
+### mark [#mark]
+
+A mark decides how a value is drafted; see [Marking data structure](/docs/advanced-guides/mark). It receives each value that the recipe reads and `{ mutable: 'mutable', immutable: 'immutable' }`, and returns:
+
+* `'immutable'` to make the value draftable, such as a class instance, which is then copied when the recipe changes it.
+* `'mutable'` to keep the value out of drafts: the recipe reads and changes it in place, as it does all the values that it holds.
+* A function that returns a shallow copy of the value, which drafts it with that copy. Patches and auto-freeze must be off, and some patches might not apply to such values.
+* `undefined` to draft the value as usual.
+
+With an array of marks, the first one that returns a value decides. When a mark makes every object immutable, as `() => 'immutable'` does, patches and auto-freeze work as usual. An instance that `mark` makes `immutable` is copied with all its own properties, and those that are enumerable, writable and configurable are assigned, so an own property that shadows a setter of its class runs it, and one that shadows a getter or a read-only property throws; see [Copying marked instances](/docs/advanced-guides/mark#copying-marked-instances).
+
+## Returning a new state [#returning-a-new-state]
+
+A recipe can return the next state instead of changing the draft:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { todos: [{ text: 'todo', done: true }] };
+
+const state = create(baseState, (draft) => ({
+  todos: draft.todos.filter((todo) => !todo.done),
+}));
+
+expect(state).toEqual({ todos: [] });
+```
+
+* Returning `undefined` or the draft itself keeps the changes made to the draft. To make `undefined` the next state, return [`rawReturn(undefined)`](/docs/api-reference/rawreturn).
+* A recipe that changes the draft and also returns another value throws an error.
+* Returning an unchanged child draft, such as `draft.list`, makes its value the next state; returning a changed one throws an error.
+* Mutative searches a returned object for drafts and replaces each one with its value, so a returned value can hold drafts, such as `{ ...draft, count: 0 }`. [`rawReturn()`](/docs/api-reference/rawreturn) skips that search for a value that holds no drafts, and development builds warn when a returned object holds no drafts to suggest it.
+
+## Async recipes [#async-recipes]
+
+The recipe can be an async function: `create()` then returns a Promise of the result, and the draft stays usable until that Promise settles.
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { items: ['a'] };
+
+const state = await create(baseState, async (draft) => {
+  const item = await Promise.resolve('b');
+  draft.items.push(item);
+});
+
+expect(state.items).toEqual(['a', 'b']);
+```
+
+`create()` recognizes the Promises of the current JavaScript realm only, so an async function from another realm, such as a `vm` context or an iframe, needs a wrapper from this realm: `create(baseState, async (draft) => { return await recipe(draft); })`. TypeScript types the result as a Promise as well, except with an explicit state type that is a type parameter, as in `create<T>(base, async (draft) => { … })` in a generic function, or that includes Promises, such as `object` or `unknown`, which gives the state type itself. In generic code, leave out the type argument: `create(base, async (draft) => { … })` gives `Promise<T>`, and `create(async (draft: T) => { … })` gives `(base: T) => Promise<T>`.
+
+## Currying [#currying]
+
+With a recipe and no base state, `create()` returns a producer, which takes the base state and passes its other arguments to the recipe:
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const toggle = create((draft: Todo[], index: number) => {
+  draft[index].done = !draft[index].done;
+});
+
+const todos: Todo[] = [{ text: 'learn', done: false }];
+
+expect(toggle(todos, 0)).toEqual([{ text: 'learn', done: true }]);
+```
+
+With a base state and no recipe, `create()` returns a draft and a `finalize()` function, which returns what `create()` returns with a recipe:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { list: [{ text: 'todo' }] };
+
+const [draft, finalize] = create(baseState, { enablePatches: true });
+draft.list.push({ text: 'learning' });
+const [state, patches] = finalize();
+
+expect(state.list).toHaveLength(2);
+expect(patches).toEqual([
+  { op: 'add', path: ['list', 1], value: { text: 'learning' } },
+]);
+```
+
+<Callout type="warn">
+  Call `finalize()` only once. When it throws, for example because a development build rejects a patch path, the drafts are not revoked as they are when a recipe fails: they stay writable, and a second `finalize()` returns a state that can hold a revoked draft, with patches that miss changes. Create a new draft from the base state instead.
+</Callout>
+
+See [Currying](/docs/advanced-guides/currying) for more.
+
+## create() on a draft [#create-on-a-draft]
+
+A recipe can pass a draft to a helper that calls `create()`. Unlike Immer's `produce`, which drafts the draft itself, `create()` drafts a copy of its current state, `current(draft)`: the values that the helper's recipe leaves unchanged are objects of the base state. Assigning the result back into the outer draft is safe, but changing one of those values afterwards changes the base state, because the outer draft returns an assigned value as it is ([#160](https://github.com/unadlib/mutative/issues/160)). Development builds warn once when `create()` receives a draft with a recipe.
+
+```ts
+const state = create(baseState, (draft) => {
+  draft.node = create(draft.node, (node) => {
+    node.name = 'renamed';
+  });
+  // `draft.node` is now the helper's result, and `draft.node.metadata` is an
+  // object of `baseState`: writing to it here would change `baseState`.
+});
+```
+
+To avoid it, let such a helper change a draft in place, and call `create()` only on other values:
+
+```ts
+type Item = { name: string; metadata: { value: string } };
+
+function rename(item: Item, name: string): Item {
+  if (isDraft(item)) {
+    item.name = name;
+    return item;
+  }
+  return create(item, (draft) => {
+    draft.name = name;
+  });
+}
+```
+
+On a draft, `rename()` returns the draft itself, so the outer recipe changes its result through the outer draft, and the values that it leaves unchanged keep their references. Unlike a call to `create()`, it changes the outer draft even if the caller discards the result.
+
+Where that does not fit, make such changes in the helper's recipe, or through the outer draft before calling the helper. If the helper's result must not share objects with the base state, give `create()` a deep copy, as in `create(structuredClone(current(draft)), recipe)`, at the cost of copying the draft on each call and of new references for the values that the recipe leaves unchanged; `structuredClone` turns class instances into plain objects and throws on functions. To catch such writes, enable `enableAutoFreeze` in development, for example with `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })` for such helpers: it freezes the helper's result together with the objects of the base state that it shares, so a write to them throws instead of changing the base state, as Immer's default auto-freeze does.
+
+A draft belongs to the `create()` call that made it, also the draft that `create(base)` returns. Do not store it in the draft of another call, or in an object that you assign there: it is revoked when its own call ends, so the other call's result can hold a draft that throws when it is read, and a Set draft that received it may no longer find it with `has()` or `delete()`. Store `current(draft)`, the original object or the result of that call instead.
+
+## Errors [#errors]
+
+The errors that `create()` throws, such as for an invalid base state or for a recipe that changes the draft and returns another value, are listed with their production codes on the [errors page](/docs/extra-topics/errors).
+
+
+# current() (/docs/api-reference/current)
+
+Take a snapshot of the current value of a draft, as plain objects without proxies.
+
+`current(draft)` returns a snapshot of the current value of a draft: plain objects, arrays, Maps and Sets with the changes that the recipe has made so far, without the proxies of the draft. The snapshot stays valid after the recipe ends, so it can be logged, compared, kept or searched.
+
+```ts
+current<T>(draft: Draft<T>): T
+```
+
+## Usage [#usage]
+
+```ts
+import { create, current } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.foo = 'foobar';
+  draft.list.push({ text: 'learning' });
+
+  const snapshot = current(draft.list);
+  expect(snapshot).toEqual([{ text: 'todo' }, { text: 'learning' }]);
+
+  draft.list.push({ text: 'shipping' });
+  // Later changes do not reach the snapshot.
+  expect(snapshot).toHaveLength(2);
+});
+```
+
+* The snapshot shares every object that the recipe has not changed with the base state. For a draft that the recipe has not changed, `current(draft)` returns its original value, which [`original(draft)`](/docs/api-reference/original) also returns, without copying it.
+* A changed draft is copied, together with its changed descendants, on every call, so each call returns new objects for it. Take one snapshot for a series of reads rather than calling `current()` in a loop.
+* Later changes to the draft do not change the snapshot, except changes to objects that are not drafted, such as class instances that no mark makes draftable, which the snapshot shares with the draft.
+* `current()` does not freeze the snapshot, also with `enableAutoFreeze`.
+* `current()` throws for a value that is not a draft, such as the base state or a finished state; use [`isDraft()`](/docs/api-reference/isdraft) to check.
+
+## Searching a large array [#searching-a-large-array]
+
+Every object read through a draft becomes a draft of its own, so `draft.list.find()` pays for a draft per visited element. Searching `current(draft.list)` reads plain values instead: the original array while the recipe has not changed it, and otherwise a copy that holds the current value of each changed element and the original object of every other one. Its indices are those of the draft, also after the recipe added, removed or moved elements. Change the match through the draft. Its elements are not drafts, so the callback must only read them.
+
+```ts
+import { create, current } from 'mutative';
+
+const baseState = {
+  list: Array.from({ length: 1000 }, (_, id) => ({ id, done: false })),
+};
+
+const state = create(baseState, (draft) => {
+  draft.list.shift();
+  const index = current(draft.list).findIndex((item) => item.id === 500);
+  draft.list[index].done = true;
+});
+
+expect(state.list[499]).toEqual({ id: 500, done: true });
+expect(state.list[0]).toBe(baseState.list[1]);
+```
+
+In [strict mode](/docs/advanced-guides/strict-mode), development builds warn once when a recipe leaves 1,000 or more drafts unchanged, which is what a search through a large draft array does.
+
+<Callout type="idea">
+  [`original(draft.list)`](/docs/api-reference/original) searches the base state instead, whose indices no longer match those of the draft once the recipe has added, removed or moved elements.
+</Callout>
+
+
+# API Reference (/docs/api-reference)
+
+The functions that Mutative exports, with their options, results and errors.
+
+- [create()](/docs/api-reference/create)
+- [apply()](/docs/api-reference/apply)
+- [makeCreator()](/docs/api-reference/makecreator)
+- [current()](/docs/api-reference/current)
+- [original()](/docs/api-reference/original)
+- [rawReturn()](/docs/api-reference/rawreturn)
+- [unsafe()](/docs/api-reference/unsafe)
+- [isDraftable()](/docs/api-reference/isdraftable)
+- [isDraft()](/docs/api-reference/isdraft)
+- [markSimpleObject()](/docs/api-reference/marksimpleobject)
+- [Type casts](/docs/api-reference/casts)
+
+
+# isDraft() (/docs/api-reference/isdraft)
+
+Check whether a value is a draft.
+
+`isDraft(value)` returns `true` for a draft, of the current recipe or of any other one, and `false` for any other value, including the base state, a finished state and the values that a recipe assigned.
+
+```ts
+isDraft(value: any): boolean
+```
+
+## Usage [#usage]
+
+```ts
+import { create, isDraft } from 'mutative';
+
+const baseState = {
+  date: new Date(),
+  list: [{ text: 'todo' }],
+};
+
+const state = create(baseState, (draft) => {
+  expect(isDraft(draft)).toBe(true);
+  expect(isDraft(draft.list)).toBe(true);
+  // A Date is not drafted.
+  expect(isDraft(draft.date)).toBe(false);
+});
+
+expect(isDraft(state)).toBe(false);
+expect(isDraft(baseState)).toBe(false);
+```
+
+Use it in helpers that take a draft or a plain value, for example to change a draft in place and to call `create()` for any other value, as [`create()` on a draft](/docs/api-reference/create#create-on-a-draft) shows. [`current()`](/docs/api-reference/current) and [`original()`](/docs/api-reference/original) throw for values that are not drafts.
+
+`isDraft()` reads the value, so for a draft whose producer has ended, which Mutative revokes, it throws as any other read does.
+
+
+# isDraftable() (/docs/api-reference/isdraftable)
+
+Check whether Mutative drafts a value, optionally with a mark.
+
+`isDraftable(value, options?)` returns `true` for a value that Mutative can draft, and which `create()` therefore accepts as its base state.
+
+```ts
+isDraftable(value: any, options?: { mark?: Mark }): boolean
+```
+
+## Usage [#usage]
+
+```ts
+import { isDraftable } from 'mutative';
+
+const baseState = {
+  date: new Date(),
+  list: [{ text: 'todo' }],
+};
+
+expect(isDraftable(baseState)).toBe(true);
+expect(isDraftable(baseState.list)).toBe(true);
+expect(isDraftable(baseState.date)).toBe(false);
+```
+
+Without a mark, these values are draftable:
+
+* Plain objects, whose prototype is `Object.prototype`.
+* Arrays.
+* `Map` and `Set` instances, also of their subclasses.
+
+Other values are not: primitives, functions, dates, class instances, objects without a prototype, and plain objects of other realms, such as iframes. A [mark](/docs/advanced-guides/mark) makes them draftable, as [`markSimpleObject()`](/docs/api-reference/marksimpleobject) does for objects without a prototype and plain objects of other realms. Pass the same `mark` that the `create()` calls use, to get their answer:
+
+```ts
+import { isDraftable } from 'mutative';
+
+class Todo {
+  constructor(public text: string) {}
+}
+
+const mark = (target: unknown) =>
+  target instanceof Todo ? ('immutable' as const) : undefined;
+
+expect(isDraftable(new Todo('learn'))).toBe(false);
+expect(isDraftable(new Todo('learn'), { mark })).toBe(true);
+```
+
+A mark makes a value draftable when it returns `'immutable'` or a function that copies the value. A mark that returns `'mutable'` keeps a value out of drafts when a recipe reads it, but `isDraftable()` still returns `true` for plain objects, arrays, Maps and Sets.
+
+
+# makeCreator() (/docs/api-reference/makecreator)
+
+Make a create() function with default options.
+
+`makeCreator(options)` returns a `create()` function whose [options](/docs/api-reference/create#options) default to the given ones. Use it to set options once for an application, a store or a module, instead of passing them to each call.
+
+```ts
+makeCreator(options?: Options): typeof create
+```
+
+## Usage [#usage]
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({
+  enablePatches: true,
+});
+
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+};
+
+const [state, patches, inversePatches] = create(baseState, (draft) => {
+  draft.foo.bar = 'new str';
+});
+
+expect(state).toEqual({ foo: { bar: 'new str' } });
+expect(patches).toEqual([
+  { op: 'replace', path: ['foo', 'bar'], value: 'new str' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['foo', 'bar'], value: 'str' },
+]);
+```
+
+The returned function has every signature of [`create()`](/docs/api-reference/create): it takes a base state and a recipe, a recipe alone for a [curried producer](/docs/advanced-guides/currying), or a base state alone for a manual draft.
+
+## Overriding the defaults [#overriding-the-defaults]
+
+The options of a call override the defaults of the creator, option by option:
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({
+  enablePatches: true,
+});
+
+const baseState = { count: 0 };
+
+// The defaults: patches on.
+const [state, patches] = create(baseState, (draft) => {
+  draft.count += 1;
+});
+
+// Patches off for this call only.
+const nextState = create(
+  baseState,
+  (draft) => {
+    draft.count += 1;
+  },
+  {
+    enablePatches: false,
+  }
+);
+
+expect(patches).toHaveLength(1);
+expect(nextState).toEqual(state);
+```
+
+TypeScript types the result of each call from the options that apply to it, so the call with `enablePatches: false` returns the state alone.
+
+## Examples [#examples]
+
+Checks for development builds only, such as strict mode and auto-freeze:
+
+```ts
+import { makeCreator } from 'mutative';
+
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+export const create = makeCreator({
+  strict: isDevelopment,
+  enableAutoFreeze: isDevelopment,
+});
+```
+
+The same `mark` for every call on state that holds class instances:
+
+```ts
+import { makeCreator } from 'mutative';
+
+class Point {
+  constructor(
+    public x: number,
+    public y: number
+  ) {}
+}
+
+const create = makeCreator({
+  mark: (target, { immutable }) =>
+    target instanceof Point ? immutable : undefined,
+});
+
+const baseState = { points: [new Point(0, 0)] };
+
+const state = create(baseState, (draft) => {
+  draft.points[0].x = 1;
+});
+
+expect(state.points[0]).toBeInstanceOf(Point);
+expect(state.points[0].x).toBe(1);
+expect(baseState.points[0].x).toBe(0);
+```
+
+Pass the same `mark` to [`apply()`](/docs/api-reference/apply) and [`isDraftable()`](/docs/api-reference/isdraftable) for that state.
+
+<Callout type="idea">
+  Each creator keeps its own options, unlike Immer's global settings, so libraries and applications that use Mutative do not change each other's behavior.
+</Callout>
+
+
+# markSimpleObject() (/docs/api-reference/marksimpleobject)
+
+A mark that drafts objects without a prototype and plain objects of other realms.
+
+`markSimpleObject` is a [mark](/docs/advanced-guides/mark) that makes simple objects draftable: plain objects, objects without a prototype, such as those of `Object.create(null)`, and plain objects of other realms, such as same-origin iframes or `vm` contexts, whose prototype is that realm's `Object.prototype`. Without it, Mutative drafts only plain objects of its own realm, and `create()` throws for a base state of the other kinds.
+
+```ts
+markSimpleObject(value: unknown): 'immutable' | undefined
+```
+
+## Usage [#usage]
+
+Pass it as the `mark` option, of a call or of [`makeCreator()`](/docs/api-reference/makecreator):
+
+```ts
+import { create, markSimpleObject } from 'mutative';
+
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+  simpleObject: Object.create(null),
+};
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'new str';
+    draft.simpleObject.a = 'a';
+  },
+  {
+    mark: markSimpleObject,
+  }
+);
+
+expect(state.simpleObject).not.toBe(baseState.simpleObject);
+expect(state.simpleObject.a).toBe('a');
+expect(Object.getPrototypeOf(state.simpleObject)).toBe(null);
+expect(baseState.simpleObject.a).toBe(undefined);
+```
+
+It returns `'immutable'` for simple objects and nothing for other values, which Mutative then drafts as usual, so it combines with other marks in an array, as in `mark: [markSimpleObject, markClasses]`. Like any immutable mark, it works with patches and auto-freeze.
+
+
+# original() (/docs/api-reference/original)
+
+Get the value that a draft was created from, without the changes of the recipe.
+
+`original(draft)` returns the value that a draft was created from: the object of the base state, without the changes that the recipe has made to it.
+
+```ts
+original<T>(draft: T): T
+```
+
+## Usage [#usage]
+
+```ts
+import { create, original } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.foo = 'foobar';
+  draft.list.push({ text: 'learning' });
+
+  expect(original(draft.list)).toEqual([{ text: 'todo' }]);
+  expect(original(draft.list)).toBe(baseState.list);
+  expect(original(draft.list)).not.toBe(draft.list);
+});
+```
+
+Use it to compare a draft with its original value, or to read the base state without creating drafts, since the original value holds no proxies.
+
+* `original()` returns the object of the base state itself, so never change it.
+* It throws for a value that is not a draft, such as the base state, a finished state, or a value that the recipe assigned, which Mutative does not draft. Use [`isDraft()`](/docs/api-reference/isdraft) to check.
+* An object of the base state is drafted when the recipe reads it, so a search of a draft array for such an object does not find it; search `original(draft.list)` for it, as in `original(draft.list).indexOf(item)`.
+
+`original()` reflects the state before the recipe's changes, so an index found in `original(draft.list)` no longer matches the draft once the recipe has added, removed or moved elements. To search a draft array, use [`current()`](/docs/api-reference/current#searching-a-large-array).
+
+
+# rawReturn() (/docs/api-reference/rawreturn)
+
+Return a value from a recipe as it is, without searching it for drafts, or return undefined.
+
+`rawReturn(value)` wraps the value that a recipe returns, so that `create()` makes it the next state as it is, without searching it for drafts. It also makes `undefined` the next state, which a recipe that returns nothing cannot.
+
+```ts
+rawReturn<T extends object | undefined>(value: T): T
+```
+
+## Usage [#usage]
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const baseState = { id: 'test' };
+
+const state = create(baseState as { id: string } | undefined, () => {
+  return rawReturn(undefined);
+});
+
+expect(state).toBe(undefined);
+```
+
+A recipe can return a new state instead of changing the draft. Mutative searches such a value for drafts and replaces each one with its value, so that a returned value can hold drafts, as `{ ...draft, a: 2 }` does:
+
+```ts
+import { create, isDraft } from 'mutative';
+
+const baseState = { a: 1, b: { c: 1 } };
+
+const state = create(baseState, (draft) => {
+  return {
+    ...draft,
+    a: 2,
+  };
+});
+
+expect(state).toEqual({ a: 2, b: { c: 1 } });
+expect(isDraft(state.b)).toBe(false);
+expect(state.b).toBe(baseState.b);
+```
+
+That search visits every object of the returned value, which takes time for large values. `rawReturn()` skips it for a value that holds no drafts, such as a state built from scratch or an earlier state:
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const initialState = { todos: [] as string[] };
+const baseState = { todos: ['learn'] };
+
+// A reducer that resets the state.
+const state = create(baseState, () => rawReturn(initialState));
+
+expect(state).toBe(initialState);
+```
+
+In the benchmark, returning a new state of 10,000 rows took 2.6 ms with the search and 0.26 µs with `rawReturn()`. Development builds warn when a returned object holds no drafts, to suggest `rawReturn()`.
+
+## Rules [#rules]
+
+* Never wrap a value that holds drafts. Without strict mode, Mutative does not search it, so the next state keeps those drafts, which are revoked when the recipe ends and throw when they are read. In [strict mode](/docs/advanced-guides/strict-mode), Mutative still searches a value that `rawReturn()` wraps and replaces its drafts, and development builds warn: `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
+* Call it with exactly one argument; it throws otherwise.
+* Wrap only objects and `undefined`. A recipe can return a primitive as it is, since a primitive holds no drafts, and development builds warn when `rawReturn()` receives one.
+* With auto-freeze, production builds do not search frozen objects in a returned value or the values they hold, so returning an earlier, frozen state, or state built from one, costs little even without `rawReturn()`. Development builds still search them and throw when they find a draft there, so never put a draft in a frozen object or in a value it holds.
+
+<Callout type="idea">
+  Enable strict mode in development when you use `rawReturn()`, for example with `strict: process.env.NODE_ENV !== 'production'`, so that a wrapped value that holds drafts is reported.
+</Callout>
+
+
+# unsafe() (/docs/api-reference/unsafe)
+
+Read values that are not drafted in strict mode.
+
+In [strict mode](/docs/advanced-guides/strict-mode), reading an object that Mutative does not draft throws, such as a `Date`, a class instance that no mark makes draftable, or a value that a `mark` makes mutable. `unsafe(callback)` runs the callback with such reads allowed and returns what it returns.
+
+```ts
+unsafe<T>(callback: () => T): T
+```
+
+## Usage [#usage]
+
+```ts
+import { create, unsafe } from 'mutative';
+
+const baseState = {
+  createdAt: new Date(Date.UTC(2020, 0, 1)),
+  updatedAt: new Date(Date.UTC(2020, 0, 1)),
+};
+
+const state = create(
+  baseState,
+  (draft) => {
+    // Reading a Date from a draft throws in strict mode:
+    expect(() => draft.createdAt.getTime()).toThrow();
+
+    const year = unsafe(() => draft.createdAt.getUTCFullYear());
+    expect(year).toBe(2020);
+
+    // Assigning a value is no read and needs no unsafe().
+    draft.updatedAt = new Date(Date.UTC(2021, 0, 1));
+  },
+  {
+    strict: true,
+  }
+);
+
+expect(state.updatedAt.getUTCFullYear()).toBe(2021);
+expect(baseState.updatedAt.getUTCFullYear()).toBe(2020);
+```
+
+Strict mode makes such reads explicit because Mutative does not copy the values that it does not draft: the draft and the base state share them, so a change to one of them, such as `draft.createdAt.setFullYear(2000)`, changes the base state as well, and the next state holds the same object. Replace such values, as the recipe above replaces `updatedAt`, or [mark](/docs/advanced-guides/mark) their class as `immutable` so that Mutative drafts and copies them.
+
+* `unsafe()` allows the reads of all producers until its callback returns. A nested call keeps the access of the outer call until the outer one returns.
+* Outside strict mode, `unsafe()` only calls the callback.
+* Values that a recipe reads inside `unsafe()` are still drafts when they are draftable, so changes to them are recorded as usual.
+
+
+# Comparison with Immer (/docs/extra-topics/comparison-with-immer)
+
+Every difference between Mutative and Immer 11.1.18 in APIs, defaults, drafts and patches, and the behaviors that both share.
+
+Mutative and Immer work the same way: a recipe changes a draft, and the library produces the next state, which shares every part that the recipe left unchanged. Most code moves from Immer by renaming its functions, as the [migration guide](/docs/advanced-guides/migration) shows. This page lists the differences that change what code does or produces, checked against Immer 11.1.18, and the behaviors that both libraries share where it is easy to assume otherwise.
+
+## At a glance [#at-a-glance]
+
+|                                                      | Mutative |     Immer     |
+| :--------------------------------------------------- | :------: | :-----------: |
+| Auto-freeze off by default                           |     ✅    |       ❌       |
+| Options per call, without global settings or plugins |     ✅    |       ❌       |
+| Drafts of class instances without changing the class |     ✅    |       ❌       |
+| Custom shallow copies                                |     ✅    |       ❌       |
+| Strict mode                                          |     ✅    |       ❌       |
+| Async recipes                                        |     ✅    |       ❌       |
+| Map and Set subclasses keep their class              |     ✅    |       ❌       |
+| ES2025 Set methods on Set drafts                     |     ✅    |       ❌       |
+| Freezing reaches the objects used as Map keys        |     ✅    |       ❌       |
+| Array methods that run natively on drafts            |     ✅    | Opt-in plugin |
+| JSON Pointer string paths in patches                 |     ✅    |       ❌       |
+
+## APIs [#apis]
+
+| Immer                                                             | Mutative                                                                                          |
+| :---------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| `produce(base, recipe)`                                           | `create(base, recipe)`                                                                            |
+| `produce(recipe)`, a curried producer                             | `create(recipe)`                                                                                  |
+| `produceWithPatches()`, or a patch listener passed to `produce()` | `create(base, recipe, { enablePatches: true })`, which returns `[state, patches, inversePatches]` |
+| `applyPatches(state, patches)`                                    | `apply(state, patches)`                                                                           |
+| `createDraft(base)` and `finishDraft(draft)`                      | `const [draft, finalize] = create(base)` and `finalize()`                                         |
+| `current()`, `original()`, `isDraft()`, `isDraftable()`           | The same functions; `isDraftable()` also takes `{ mark }`                                         |
+| `castDraft()`, `castImmutable()`                                  | The same functions, and `castMutable()`                                                           |
+| `nothing`, to return `undefined`                                  | `rawReturn(undefined)`                                                                            |
+| `[immerable]: true` on a class                                    | The `mark` option, or `markSimpleObject()`                                                        |
+| `freeze(value, deep)`                                             | No export; `enableAutoFreeze` freezes results                                                     |
+| `setAutoFreeze()`                                                 | The `enableAutoFreeze` option of each call                                                        |
+| `new Immer(config)`                                               | `makeCreator(options)`, which returns a `create()` with these options                             |
+| `enableMapSet()`, `enablePatches()`                               | Not needed                                                                                        |
+| `enableArrayMethods()`                                            | Not needed; array methods run natively                                                            |
+| `setUseStrictShallowCopy()`, `setUseStrictIteration()`            | No settings; see [Marking](#defaults-and-configuration)                                           |
+| No counterpart                                                    | `unsafe()`, for reads in strict mode                                                              |
+
+## Defaults and configuration [#defaults-and-configuration]
+
+* **Auto-freeze.** Mutative leaves results unfrozen unless `enableAutoFreeze` is set, while Immer freezes them by default. With freezing on, both freeze the whole result deeply, unchanged parts included, and freeze Map and Set instances so that their mutators throw. Mutative also freezes the objects that a Map uses as keys, which Immer leaves unfrozen.
+* **Options per call.** Each `create()` and `apply()` call takes its own options, and `makeCreator()` sets defaults, where Immer's `setAutoFreeze()` and its plugins change the module for every caller. Maps, Sets and patches work without the `enableMapSet()` and `enablePatches()` calls that Immer requires and throws without.
+* **Marking.** A `mark` function decides how values are drafted: it can make class instances draftable without changing their class, where Immer requires an `[immerable]` property on it, keep values mutable so that the recipe changes them in place, or return a function that copies a value. Mutative copies a class instance that a mark makes draftable with all its own properties, non-enumerable ones included, as Immer does with `setUseStrictShallowCopy('class_only')`, but assigns those that are enumerable, writable and configurable, as Immer's default copy does, so an own property that shadows a setter of the class runs it; see [Copying marked instances](/docs/advanced-guides/mark#copying-marked-instances). Both copy only the enumerable properties of plain objects and read their getters as values. See [mark](/docs/advanced-guides/mark).
+* **Strict mode.** With `strict: true`, reading a value that the recipe could change without a draft, such as a class instance that is not marked, throws unless the read happens inside `unsafe()`. Immer has no such mode. See [strict mode](/docs/advanced-guides/strict-mode).
+
+## Drafts [#drafts]
+
+* **Map and Set subclasses** keep their class and its methods, in drafts and in the next state. Immer's next state holds plain Maps and Sets instead.
+* **ES2025 Set methods**, such as `union()` and `isSubsetOf()`, work on Set drafts and compare objects as iterating the draft returns them; see the [FAQ](/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts). On Immer's Set drafts they do not see the draft's items: `union()` of a draft of `new Set([1, 2])` with `new Set([3])` returns `Set {3}`.
+* **Async recipes** make `create()` return a Promise of the result, and the draft stays usable until the Promise settles; see [create()](/docs/api-reference/create). Immer 11 throws, because the returned Promise counts as a new value while the recipe changed the draft.
+* **A draft passed to a nested `create()`** is copied, where Immer's `produce()` drafts the draft itself; see [create() on a draft](/docs/api-reference/create#create-on-a-draft).
+* **Returned values.** Both replace the state with a value that the recipe returns, and both throw when the recipe also changed the draft. `rawReturn()` returns `undefined`, as Immer's `nothing` does, and also returns a value without searching it for drafts; see [rawReturn()](/docs/api-reference/rawreturn).
+* **Array methods.** `shift()`, `unshift()`, `splice()` and `reverse()` move the elements of a plain array on its copy, and `indexOf()`, `lastIndexOf()` and `includes()` search it natively, under the contract that the [FAQ](/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts) describes. Immer runs them through the proxy unless its opt-in `enableArrayMethods()` plugin is enabled, which in Immer 11.1.18 can return raw base objects and emit patches that fail to replay; see the [audit](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md).
+* **Alike in both.** Each path to a shared object gets its own draft; see [shared references](/docs/extra-topics/shared-references). A class instance that is neither marked nor `[immerable]` is not drafted, so a recipe that changes it changes the base state. `current()` and `original()` throw for values that are not drafts. An iteration over a Map draft that starts before the recipe changes the Map walks the base Map, in both libraries; see the [FAQ](/docs/extra-topics/faq#can-a-recipe-change-a-map-draft-while-iterating-over-it).
+
+## Patches [#patches]
+
+Both libraries emit the same patches for most changes: the same operations, paths and values, the patches of nested drafts before those of their parents, and values that are the objects of the next state, frozen with it when freezing is on. They differ in the following cases; [Patches](/docs/advanced-guides/patches#patch-behavior) describes how Mutative generates and applies them.
+
+* **Arrays that get shorter.** By default, Mutative records a shorter array with a `replace` patch of its `length`, as in the patches of `pop()` and `list.length = 0` and in the inverse patches of `push()` and of a `splice()` that inserts, while Immer removes each index with a `remove` patch. With `enablePatches: { arrayLengthAssignment: false }`, Mutative emits the same `remove` patches as Immer.
+* **Changed items of a Set.** When a recipe changes objects in a Set without adding or removing items, Mutative emits a `replace` patch under the position of each changed item, while Immer removes the old object and adds the new one. Once the recipe adds or removes items, both carry the changed items by value.
+* **String paths.** With `enablePatches: { pathAsArray: false }`, Mutative emits paths as JSON Pointer strings, as JSON Patch requires, while Immer's paths are always arrays. A string path cannot name a Map key that is not a string, or a symbol key.
+* **Applying patches.** `apply()` takes the `enableAutoFreeze`, `strict` and `mark` options, or `mutable: true` to change the state in place and return `undefined`.
+* **Alike in both.** `apply()` and `applyPatches()` change a draft in place, copy patch values before applying them, accept `-` as the index that appends to an array, and reject `move`, `copy` and `test` operations and paths through `__proto__` or `constructor`. As they copy patch values, an object that patches add to a Set is a copy, which the inverse patches cannot remove, so an undo after a redo leaves it in the Set in both libraries, and both append the elements that patches add, so such a Set can hold its elements in another order; see [Sets of objects](/docs/advanced-guides/patches#sets-of-objects).
+
+## Immer behaviors that Mutative handles [#immer-behaviors-that-mutative-handles]
+
+Mutative passes the test suite of Immer, adapted to its API. The [non-support tests](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts) pin cases that Immer 11.1.18 gets wrong and Mutative does not, such as a draft that escapes into the next state and Map keys that stay mutable after freezing. The [array methods audit](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md) reproduces patch ordering, base mutation and draft finalization failures of Immer's `enableArrayMethods()` plugin, with [reproduction tests](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.test.ts) that include plugin-disabled controls and run the same recipes against Mutative.
+
+## Mutative vs Immer Performance [#mutative-vs-immer-performance]
+
+With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer 11.1.18 in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.6x on geometric mean. Immer was faster only with auto-freeze: when updating class instances with many fields, and in two 100-row array updates whose runs overlapped those of Mutative.
+
+With patches on and auto-freeze off, Mutative was faster in 148 of 150 cases and never slower, and faster in every array case: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. The comparisons run Immer without its `enableArrayMethods()` plugin. In Immer 11.1.18 the plugin returns raw base objects from `shift`, `pop` and `splice`, so editing them changes the previous state, and its patches can fail to replay; the audit above reproduces these failures.
+
+Immer 11.0.0 ported the finalization callbacks of Mutative, which replace a recursive traversal of the draft tree, in [immerjs/immer#1183](https://github.com/immerjs/immer/pull/1183). Immer 11.1.18, which these measurements use, includes them.
+
+See [Performance](/docs/getting-started/performance) for selected results, and the [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) for the complete results, the method, and their limits.
+
+
+# Contributing (/docs/extra-topics/contributing)
+
+Set up the repository, run its checks, and contribute code, benchmarks and docs.
+
+Mutative's goal is efficient immutable updates. The focus is on performance and on APIs that make development easier, and pull requests that help with either are welcome. For a larger change, open an [issue](https://github.com/unadlib/mutative/issues) or a [discussion](https://github.com/unadlib/mutative/discussions) first.
+
+### Development Workflow [#development-workflow]
+
+* Clone the [repository](https://github.com/unadlib/mutative), and use Node.js 22 or 24 with the pnpm version that `package.json` declares.
+* Run `pnpm install` to install all the dependencies.
+* Run `pnpm test` to run the tests, or `pnpm test --watch` for an interactive test watcher.
+* Run `pnpm format`, `pnpm lint` and `pnpm type-check` before you commit.
+* Run `pnpm commit` to write a commit message in the [Conventional Commits](https://www.conventionalcommits.org/) format.
+* Create a pull request.
+
+### Builds, packages and benchmarks [#builds-packages-and-benchmarks]
+
+[Building and validating Mutative](https://github.com/unadlib/mutative/blob/main/BUILDING.md) describes the build pipeline, the package checks, the bundle size limits and the generated API reference. [The benchmark suite](https://github.com/unadlib/mutative/blob/main/perf-testing/README.md) compares the current build with Mutative 1.3.0, Immer and hand-written reducers, and describes the regression budgets that CI checks: run `pnpm benchmark:immer:check` to validate every workload and `pnpm benchmark:immer` to measure them.
+
+### Docs [#docs]
+
+* The website lives in [`website/`](https://github.com/unadlib/mutative/tree/main/website). Run `pnpm start:docs` from the repository root to preview it, and `pnpm build` in `website/` to export it and check its links.
+* Code examples that import from `mutative`, and from no other module than `mutative` and `immer`, run as tests, with Vitest's `expect`: keep such examples complete, and leave the imports out of fragments that are not meant to run.
+* `pnpm build:doc` regenerates the API reference in [`docs/`](https://github.com/unadlib/mutative/tree/main/docs) from the TSDoc comments of the source, and CI checks that it is up to date.
+* Write each Markdown paragraph and list item on a single line.
+
+
+# Production error codes (/docs/extra-topics/errors)
+
+Decode minified Mutative production errors, and find the errors and warnings of development builds.
+
+In Mutative's minified production build, full error messages are replaced with numeric codes to reduce the number of bytes sent to users.
+
+When debugging locally, we recommend using the development build. It retains the full error messages, additional validation, and warnings that provide more context about potential problems in your application; see [Development and production builds](/docs/getting-started/installation#development-and-production-builds).
+
+If an exception occurs in production, its message reads `Minified Mutative error #<code>; visit https://mutative.js.org/docs/extra-topics/errors`. Find that code in the table below to recover the message that the development build throws, where `<…>` stands for a value of the call. The source identifier is provided for contributors working on Mutative itself.
+
+Numeric codes remain stable when an error is removed. Retired codes are reserved so that older production logs can still be decoded.
+
+| Code | Source identifier                | Development message                                                                                                          |
+| ---: | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+|    0 | `InvalidBaseState`               | `Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable.` |
+|    1 | `CannotAssignToMapOrSet`         | `Map/Set draft does not support any property assignment.`                                                                    |
+|    2 | `InvalidArrayIndex`              | `Only supports setting array indices and the 'length' property.`                                                             |
+|    3 | `CannotSetPrototypeOfDraft`      | `Cannot call 'setPrototypeOf()' on drafts`                                                                                   |
+|    4 | `CannotDefinePropertyOnDraft`    | `Cannot call 'defineProperty()' on drafts`                                                                                   |
+|    5 | `MutateAndReturn`                | `Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.`          |
+|    6 | `CannotReturnModifiedChildDraft` | `Cannot return a modified child draft.`                                                                                      |
+|    7 | `CurrentOnNonDraft`              | `current() is only used for Draft, parameter: <value>`                                                                       |
+|    8 | `StrictModeAccess`               | `Strict mode: Mutable data cannot be accessed directly, please use 'unsafe(callback)' wrap.`                                 |
+|    9 | `UnsupportedMarkResult`          | `Unsupported mark result: <result>`                                                                                          |
+|   10 | `InvalidMark`                    | `Please check mark() to ensure that it is a stable marker draftable function.`                                               |
+|   11 | `CannotModifyFrozenObject`       | `Cannot modify frozen object`                                                                                                |
+|   12 | `InvalidPatchPath` (retired)     | A generated patch path was invalid. This internal check has been removed; the code is reserved.                              |
+|   13 | `ReservedPatchAttribute`         | `Patching reserved attributes like __proto__ and constructor is not allowed.`                                                |
+|   14 | `CannotApplyPatch`               | `Cannot apply patch at '<path>'.`                                                                                            |
+|   15 | `ReplacePatchOnSet`              | `Cannot apply replace patch to set.`                                                                                         |
+|   16 | `UnsupportedPatchOperation`      | `Unsupported patch operation: <op>.`                                                                                         |
+|   17 | `ApplyOptionsToDraft`            | `Cannot apply patches with options to a draft.`                                                                              |
+|   18 | `OriginalOnNonDraft`             | `original() is only used for a draft, parameter: <value>`                                                                    |
+|   19 | `RawReturnWithoutValue`          | `rawReturn() must be called with a value.`                                                                                   |
+|   20 | `RawReturnWithExtraArguments`    | `rawReturn() must be called with one argument.`                                                                              |
+|   21 | `ReplaceMutableRoot`             | `apply() with the mutable option changes the state in place, so a patch cannot replace the root state with another value.`   |
+
+What the errors mean:
+
+* **0**: the base state of `create()` is not draftable, such as a class instance or a `Date`; see [`isDraftable()`](/docs/api-reference/isdraftable) and [marks](/docs/advanced-guides/mark).
+* **1–4**: a recipe assigned a property to a Map or Set draft, assigned a non-index property to an array draft, or called `Object.setPrototypeOf()` or `Object.defineProperty()` on a draft.
+* **5** and **6**: a recipe changed its draft and returned another value, or returned a changed child draft; see [Returning a new state](/docs/api-reference/create#returning-a-new-state).
+* **7** and **18**: `current()` or `original()` received a value that is not a draft.
+* **8**: in [strict mode](/docs/advanced-guides/strict-mode), a recipe read a value that is not drafted outside `unsafe()`.
+* **9**: a `mark` returned a value other than `'mutable'`, `'immutable'`, a function or nothing.
+* **10**: a `mark` answered differently for the same value, such as `'immutable'` when Mutative drafted it and nothing when Mutative copied it; a mark must give the same answer for a value each time.
+* **11**: code called `set()`, `add()`, `delete()` or `clear()` on a Map or Set that [auto-freeze](/docs/advanced-guides/auto-freeze) froze.
+* **13–17** and **21**: `apply()` received a patch that it cannot apply; see [Patches that apply() accepts](/docs/api-reference/apply#patches-that-apply-accepts).
+* **19** and **20**: `rawReturn()` was called without an argument or with more than one.
+
+## Development-only errors [#development-only-errors]
+
+Development builds also throw these errors, for checks that production builds skip:
+
+| Message                                                                                                                                                                              | Cause                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `Invalid options: <options>, 'options' should be an object.`                                                                                                                         | `create()` or `makeCreator()` received options that are not an object.                                                          |
+| `Invalid mark: <mark>, 'mark' should be a function.`                                                                                                                                 | An array of marks holds a value that is not a function.                                                                         |
+| `You can't use mark and patches or auto freeze together.`                                                                                                                            | A mark returned a copy function while patches or auto-freeze are on.                                                            |
+| `Forbids circular reference`                                                                                                                                                         | With auto-freeze, the next state holds an object that holds itself; a longer message names the path of the object that repeats. |
+| `Patches with string paths only support string Map keys and no symbol keys, got a key of type '<type>'. Set 'pathAsArray' to true to keep keys of other types.`                      | With `pathAsArray: false`, a patch path would hold a Map key that is not a string, or a symbol key.                             |
+| `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq`          | A recipe passed a draft to the `set()` method of a Map draft as the key.                                                        |
+| `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.` | With auto-freeze, a value that a recipe returned holds a draft inside a frozen object.                                          |
+
+## Development warnings [#development-warnings]
+
+Development builds print these warnings with `console.warn()`; production builds do not:
+
+| Message                                                                                                                                                               | Cause                                                                                                                                                          |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`                                              | A recipe returned an object that holds no drafts, which [`rawReturn()`](/docs/api-reference/rawreturn) would return without searching it.                      |
+| `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`                                                                          | In strict mode, a value that `rawReturn()` wraps holds drafts.                                                                                                 |
+| ``rawReturn() must be called with an object(including plain object, arrays, Set, Map, etc.) or `undefined`, other types do not need to be returned via rawReturn().`` | `rawReturn()` received a primitive, which a recipe can return as it is.                                                                                        |
+| `Strict mode: the recipe left <count> drafts unchanged; …`                                                                                                            | Once, in strict mode, when a recipe leaves 1,000 or more drafts unchanged; see [searching a large array](/docs/api-reference/current#searching-a-large-array). |
+| `create() received a draft as its base and drafts current(draft), unlike Immer's produce: …`                                                                          | Once, when `create()` receives a draft with a recipe; see [create() on a draft](/docs/api-reference/create#create-on-a-draft).                                 |
+| `The "mutable" option is not allowed to be used with other options.`                                                                                                  | `apply()` received `mutable: true` together with other options.                                                                                                |
+
+
+# FAQ (/docs/extra-topics/faq)
+
+Answers to common questions about Mutative, its performance, migration from Immer, arrays, Maps and Sets.
+
+For other questions, start a thread in [GitHub Discussions](https://github.com/unadlib/mutative/discussions), or open an [issue](https://github.com/unadlib/mutative/issues) for a bug.
+
+## Q\&A [#qa]
+
+### Why does Mutative have such good performance? [#why-does-mutative-have-such-good-performance]
+
+Mutative copies each object at most once per update, however many changes a recipe makes, drafts only the values that a recipe reads, finalizes only the drafts that changed, and moves array elements natively on its copies instead of through the draft's proxy. It also leaves the next state unfrozen by default. See [Performance](/docs/getting-started/performance) for the measurements.
+
+### I'm already using Immer, can I migrate smoothly to Mutative? [#im-already-using-immer-can-i-migrate-smoothly-to-mutative]
+
+Yes. Unless you have to be compatible with Internet Explorer, Mutative supports almost all of Immer's features, and the [migration guide](/docs/advanced-guides/migration) shows how to replace each API. [Comparison with Immer](/docs/extra-topics/comparison-with-immer) lists the APIs that replace Immer's and every behavior that differs.
+
+Mutative, like Immer, needs `Proxy`. On Android, React Native supports it since version 0.59 with JavaScriptCore and since version 0.64 with [Hermes](https://reactnative.dev/blog/2021/03/12/version-0.64#hermes-with-proxy-support).
+
+### Can Mutative be integrated with Redux? [#can-mutative-be-integrated-with-redux]
+
+Yes. A [producer](/docs/advanced-guides/currying) with an action argument is a reducer, and a recipe can return a new state, for example the initial state with [`rawReturn()`](/docs/api-reference/rawreturn). Redux Toolkit drafts state with Immer in `createSlice()` and `createReducer()`, and an RFC to make its [`produce()` configurable](https://github.com/reduxjs/redux-toolkit/pull/3074) is open.
+
+### Which array methods run natively on drafts? [#which-array-methods-run-natively-on-drafts]
+
+`shift`, `unshift`, `splice` and `reverse` move elements directly on the copy of a plain array without holes, including `undefined` elements; `indexOf`, `lastIndexOf` and `includes` search the current array natively; `sort` and `join` run natively on arrays of primitives. Removed elements are returned as drafts, patches replay in both directions, and a call that changes nothing keeps the state. Sparse arrays, array subclasses, an own `constructor` or `Symbol.isConcatSpreadable`, arrays under a custom `mark`, every method with a callback, `at`, `slice`, `fill` and `copyWithin` use the proxy path. An argument that can run user code, such as an object passed as `fromIndex` or as a `splice` index, is converted on the proxy path, so a conversion that changes the array is observed as the native methods observe it. The fast paths are made for data arrays: an accessor property defined on an array index is read as a data value, and the number and order of such getter calls, their re-entrant effects on the draft, and the identity of objects they return are not guaranteed to match element-by-element execution through the proxy. With auto-freeze, Mutative may also read such a getter twice when it copies a frozen, sealed or non-extensible array.
+
+Optimized searches give the same results as the proxy path, comparing elements as a read returns them. Drafts, values assigned in the recipe, non-draftable objects and primitives are found. An object of the base state is drafted when it is read, so it is never found, whether or not it was read before, unless the recipe assigned or inserted it and it is not at its original index; use [`original()`](/docs/api-reference/original) to search the base state, for example `original(draft.list).indexOf(item)`. The search never reads a property of the value it is given.
+
+In strict mode, outside [`unsafe()`](/docs/api-reference/unsafe), optimized calls on an array that may hold objects take the proxy path unchanged, so reading a non-draftable element fails exactly as it always did; arrays of primitives, recognized with `typeof` alone, keep the native paths. Elements are moved and compared without being inspected, while the proxy path inspects each element it reads. An element that is itself a Proxy may therefore see fewer calls to its internal methods on the native paths, never more and never at other times; a revoked Proxy element that a search passes over, for example, does not throw there.
+
+Draftable base elements removed or moved by these methods are drafted before they are exposed. Methods with callbacks, such as `forEach`, `map`, `filter` and `find`, go through the draft so that their callbacks see every change and can modify elements; use [`current()`](/docs/api-reference/current) for read-only scans of large arrays.
+
+### Can a recipe change a Map draft while iterating over it? [#can-a-recipe-change-a-map-draft-while-iterating-over-it]
+
+Yes. Deleting the entry being visited and changing the values of other entries work as on a Map, and Set drafts iterate like Sets. One difference remains: an iteration over a Map draft that starts before the recipe has changed that Map, or read an object value from it, walks the entries of the base Map. An entry that the recipe deletes later in such an iteration is still visited, with `undefined` as its value, and an entry that it adds is not visited. To delete other entries while iterating, iterate over `Array.from(draft.keys())` and skip the keys for which `draft.has()` returns false.
+
+### Do the Set methods such as `union()` and `isSubsetOf()` work on Set drafts? [#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts]
+
+Yes, but they compare elements as iterating the draft returns them. An object of the base state is a draft there, so these methods do not match it with the original object, although `has()` accepts the original object. To compare a Set draft with objects of the base state, call the method on `current(draft)`, in which unchanged objects keep their identity, or on `original(draft)` for the base state, or compare ids, for example `[...draft].filter((item) => ids.has(item.id))`. This applies to `union()`, `intersection()`, `difference()`, `symmetricDifference()`, `isSubsetOf()`, `isSupersetOf()` and `isDisjointFrom()`.
+
+### Can a draft be a Map key? [#can-a-draft-be-a-map-key]
+
+No. Map keys are used as they are, and a draft is revoked when its producer ends, so a Map that kept a draft as a key, and the patches that name that key, would hold a revoked draft, whose properties throw when they are read. Use `original(draft)`, `current(draft)` or an id as the key. Development builds throw when a recipe passes a draft to the `set()` method of a Map draft.
+
+### Does Mutative support shared references? [#does-mutative-support-shared-references]
+
+Yes, Mutative supports shared references, but **each path to a shared object gets its own independent draft**. Modifications to one path do not automatically reflect in others. If you want to preserve shared references in the result, you must explicitly assign them (e.g., `draft.b = draft.a`). [Read more details](/docs/extra-topics/shared-references).
+
+### Can I keep a draft after the recipe ends? [#can-i-keep-a-draft-after-the-recipe-ends]
+
+No. Mutative revokes the drafts of a `create()` call when its recipe ends, also when it fails, so reading a draft afterwards throws. Keep [`current(draft)`](/docs/api-reference/current), a snapshot of plain values, or the next state instead. A draft of a [manual `create(base)`](/docs/advanced-guides/currying#drafts-that-you-finalize-later) lives until `finalize()` returns, and the draft of an async recipe until its Promise settles.
+
+
+# Extra Topics (/docs/extra-topics)
+
+How Mutative compares with Immer, answers to common questions, the ecosystem, production error codes and more.
+
+- [Comparison with Immer](/docs/extra-topics/comparison-with-immer)
+- [FAQ](/docs/extra-topics/faq)
+- [Contributing](/docs/extra-topics/contributing)
+- [Mutative Ecosystem](/docs/extra-topics/mutative-ecosystem)
+- [Who Uses Mutative](/docs/extra-topics/who-uses-mutative)
+- [Shared References](/docs/extra-topics/shared-references)
+- [Production error codes](/docs/extra-topics/errors)
+
+
+# Mutative Ecosystem (/docs/extra-topics/mutative-ecosystem)
+
+Libraries built on Mutative for React, Zustand, Jotai, XState, Yjs, undo and redo, and more.
+
+These libraries use Mutative for the immutable updates of other tools. Install each one together with `mutative`, and see its repository for its full API.
+
+## React [#react]
+
+* [use-mutative](https://github.com/mutativejs/use-mutative) - A 2-6x faster alternative to useState with spread operation, with `useMutative()` and `useMutativeReducer()`; see [Using Mutative with React](/docs/getting-started/mutative-with-react).
+* [use-travel](https://github.com/mutativejs/use-travel) - A React hook for state time travel with undo, redo, reset and archive functionalities.
+* [reactant](https://github.com/unadlib/reactant) - A framework for building React applications, with Mutative for immutable updates.
+
+## Zustand [#zustand]
+
+[zustand-mutative](https://github.com/mutativejs/zustand-mutative) is a Mutative middleware for Zustand, whose `set()` then takes a recipe:
+
+```tsx
+import { create } from 'zustand';
+import { mutative } from 'zustand-mutative';
+
+type State = { count: number };
+type Actions = { increment: (qty: number) => void };
+
+export const useCountStore = create<State & Actions>()(
+  mutative((set) => ({
+    count: 0,
+    increment: (qty) =>
+      set((state) => {
+        state.count += qty;
+      }),
+  }))
+);
+```
+
+[zustand-travel](https://github.com/mutativejs/zustand-travel) is an undo and redo middleware for Zustand, built on travels.
+
+## Jotai [#jotai]
+
+[jotai-mutative](https://github.com/mutativejs/jotai-mutative) provides atoms whose setters take a recipe:
+
+```tsx
+import { useAtom } from 'jotai';
+import { atomWithMutative } from 'jotai-mutative';
+
+const countAtom = atomWithMutative({ value: 0 });
+
+export function Counter() {
+  const [count, setCount] = useAtom(countAtom);
+  return (
+    <button
+      onClick={() =>
+        setCount((draft) => {
+          draft.value += 1;
+        })
+      }
+    >
+      {count.value}
+    </button>
+  );
+}
+```
+
+`withMutative(atom)` and `useMutativeAtom(atom)` give existing atoms the same setter.
+
+## XState [#xstate]
+
+[xstate-mutative](https://github.com/mutativejs/xstate-mutative) provides an `assign()` action for XState 5 that changes a draft of the context:
+
+```ts
+import { createActor, createMachine } from 'xstate';
+import { assign } from 'xstate-mutative';
+
+const machine = createMachine({
+  context: { count: 0 },
+  on: {
+    increment: {
+      actions: assign(({ context }) => {
+        context.count += 1;
+      }),
+    },
+  },
+});
+
+const actor = createActor(machine).start();
+actor.send({ type: 'increment' });
+```
+
+## Undo and redo [#undo-and-redo]
+
+[travels](https://github.com/mutativejs/travels) is a framework-agnostic undo and redo core that keeps the history of a state as Mutative patches, with history limits, archives and persistence:
+
+```ts
+import { createTravels } from 'travels';
+
+const travels = createTravels({ count: 0 });
+
+travels.setState((draft) => {
+  draft.count += 1;
+});
+travels.back();
+travels.forward();
+```
+
+[use-travel](https://github.com/mutativejs/use-travel) and [zustand-travel](https://github.com/mutativejs/zustand-travel) bring it to React and Zustand. To build undo and redo on patches yourself, see [Patches](/docs/advanced-guides/patches#undo-and-redo).
+
+## Collaboration [#collaboration]
+
+[mutative-yjs](https://github.com/mutativejs/mutative-yjs) binds a Yjs `Y.Map` or `Y.Array` to a plain snapshot, which recipes update and remote changes refresh:
+
+```ts
+import * as Y from 'yjs';
+import { bind } from 'mutative-yjs';
+
+const doc = new Y.Doc();
+const binder = bind<{ count: number; items: string[] }>(doc.getMap('data'));
+
+binder.update((state) => {
+  state.count = 0;
+  state.items = ['apple'];
+});
+binder.update((state) => {
+  state.count += 1;
+  state.items.push('banana');
+});
+
+binder.get(); // { count: 1, items: ['apple', 'banana'] }
+```
+
+## Other libraries [#other-libraries]
+
+* [mutative-compat](https://github.com/exuanbo/mutative-compat) - Mutative wrapper with full Immer API compatibility.
+* [mutability](https://github.com/mutativejs/mutability) - A JavaScript library for transactional mutable updates, which changes the state in place and returns patches.
+* [usm](https://github.com/unadlib/usm) - A concise and flexible state model for Redux, MobX, Vuex, Pinia and more.
+
+
+# Shared References (/docs/extra-topics/shared-references)
+
+How Mutative drafts an object that several paths of the state lead to, and how to keep it shared.
+
+Mutative supports non-unidirectional trees (DAGs with shared nodes) where there is more than one path from the root to the same node, **as long as there are no cycles**. However, there is an important behavior to understand regarding how drafts handle these shared references.
+
+## Independent Drafts for Multiple Paths [#independent-drafts-for-multiple-paths]
+
+When the same object is referenced from multiple paths in the base state, Mutative creates **independent drafts for each path**. This means modifications to one path will **not** automatically reflect in the other paths.
+
+```javascript
+import { create } from 'mutative';
+
+const obj = {};
+// Same object referenced by two keys
+obj.color1 = obj.color2 = { name: 'Red' };
+
+const result = create(obj, (draft) => {
+  // ⚠️ Different drafts created for each path!
+  console.log(draft.color1 === draft.color2); // false
+
+  draft.color1.name = 'Blue';
+  
+  // color2 remains unchanged because it has a separate draft
+  console.log(draft.color2.name); // 'Red'
+});
+
+console.log(result.color1 === result.color2); // false
+// Result: { color1: { name: 'Blue' }, color2: { name: 'Red' } }
+```
+
+This behavior is **by design** and matches Immer's behavior. Each path through the state tree gets its own independent draft proxy.
+
+## Creating Shared References [#creating-shared-references]
+
+If you need to **preserve or create shared references** in the result state, you must do so explicitly within your recipe function by assigning one draft to another.
+
+```javascript
+const result = create(obj, (draft) => {
+  draft.color1.name = 'Blue';
+  
+  // ✅ Explicitly share the reference
+  draft.color2 = draft.color1;
+});
+
+// Now they share the same reference in the result
+console.log(result.color1 === result.color2); // true
+// Result: { color1: { name: 'Blue' }, color2: { name: 'Blue' } }
+```
+
+## Summary [#summary]
+
+| Scenario                         | Behavior                                                                                                    |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Shared nodes in base state**   | Each path gets its own **independent draft**. Mutations through one path do **not** reflect in other paths. |
+| **Manually assigned references** | ✅ **Supported**. Assigning `draft.x = draft.y` creates shared references in the final state.                |
+| **Real cycles**                  | ❌ **Not supported**. Cycles are actively detected in development mode when auto-freeze is enabled.          |
+
+
+# Who Uses Mutative (/docs/extra-topics/who-uses-mutative)
+
+Open-source projects that replaced Immer with Mutative, and what they reported.
+
+These open-source projects depend on Mutative directly. The quotes come from the pull requests and release notes in which they adopted it, and each describes that project at that time, not every workload. The projects were checked against their default branches on October 9, 2026.
+
+## Appsmith [#appsmith]
+
+[Appsmith](https://github.com/appsmithorg/appsmith), a platform to build admin panels, internal tools and dashboards, replaced Immer with Mutative in its client:
+
+> Using mutative instead of immer, this has reduced the main thread scripting by about 1 second.
+
+From [appsmithorg/appsmith#38993](https://github.com/appsmithorg/appsmith/pull/38993), merged on February 6, 2025. The same pull request also removed a deep clone and skipped Mutative for the first evaluation of its tree.
+
+## InstantDB [#instantdb]
+
+[InstantDB](https://github.com/instantdb/instant), a backend with auth, permissions, storage and presence, replaced Immer with Mutative, which does not rely on auto-freeze. In its performance tester, a single transaction took about 8 ms with Immer, and about 40 ms as pending transactions were added:
+
+> Mutative is about 3ms on a single transaction. As I add more pending transactions, the size *seems to stay* at 3ms!
+
+From [instantdb/instant#243](https://github.com/instantdb/instant/pull/243), merged on September 19, 2024.
+
+## Notesnook [#notesnook]
+
+[Notesnook](https://github.com/streetwriters/notesnook), an end-to-end encrypted note-taking app, replaced Immer with Mutative in version 3.0.11:
+
+> we have gotten rid of immer and replaced it with mutative for immutable state management inside the app. mutative is almost 10x faster so you'll notice slight improvements in app responsiveness.
+
+From the [Notesnook v3.0.11 release notes](https://notesnook.com/blog/notesnook-v3.0.11), July 18, 2024. The 10x figure describes the library; for the app, the release notes speak of slight improvements in responsiveness.
+
+## Plate [#plate]
+
+[Plate](https://github.com/udecode/plate), a rich-text editor for React, moved its plugin stores to [zustand-mutative](https://github.com/mutativejs/zustand-mutative) in version 42, and its core package depends on Mutative:
+
+> All plugin stores now use zustand-mutative for immutable state updates, which is faster than `immer`.
+
+From the [release of version 42](https://github.com/udecode/plate/pull/3945), merged on January 9, 2025.
+
+## Also used by [#also-used-by]
+
+* [Mol\*](https://github.com/molstar/molstar), a comprehensive macromolecular library, replaced Immer with Mutative in [molstar/molstar#1618](https://github.com/molstar/molstar/pull/1618), together with other optimizations of its animation loading.
+* [OpenRewrite](https://github.com/openrewrite/rewrite), for automated mass refactoring of source code, replaced Immer with Mutative in its JavaScript support in [openrewrite/rewrite#6460](https://github.com/openrewrite/rewrite/pull/6460).
+* [MSW Data](https://github.com/mswjs/data), a data querying library for testing JavaScript applications.
+
+
+# Concepts (/docs/getting-started/concepts)
+
+Drafts, finalization with structural sharing, patches and marks, the ideas behind Mutative.
+
+Mutative is based on `Proxy`. A recipe changes a draft of the state, Mutative records which parts changed, and it produces the next state from those changes, sharing every part that did not change. Patches describe the changes, and marks decide which values are drafted.
+
+## Base Workflow [#base-workflow]
+
+<img alt="Mutative workflow" src="__img0" />
+
+* The current state is the base state, which never changes.
+* The draft is where the recipe makes its changes. Mutative creates a draft of each object that the recipe reads, shown with dotted lines, and copies the objects that it changes, shown in red.
+* The next state holds the copies of the changed objects and shares all the others with the base state.
+
+```ts
+import { create, isDraft } from 'mutative';
+
+const baseState = {
+  a0: {
+    b0: {},
+  },
+  a1: {
+    b1: {},
+    b2: {
+      c0: 0,
+    },
+  },
+  a2: {},
+};
+
+const nextState = create(baseState, (draft) => {
+  const { a0 } = draft;
+  // Reading a draftable value through a draft gives a draft of it.
+  expect(isDraft(a0)).toBe(true);
+  draft.a1.b2.c0 = 1;
+});
+
+expect(nextState).not.toBe(baseState);
+// Drafted but not changed: shared with the base state.
+expect(nextState.a0).toBe(baseState.a0);
+// Never read: shared with the base state.
+expect(nextState.a2).toBe(baseState.a2);
+// Changed, and every object on the path to the change: copied.
+expect(nextState.a1).not.toBe(baseState.a1);
+expect(nextState.a1.b2).not.toBe(baseState.a1.b2);
+expect(nextState.a1.b1).toBe(baseState.a1.b1);
+expect(nextState.a1.b2.c0).toBe(1);
+```
+
+## Drafts [#drafts]
+
+A draft is a `Proxy` of a value of the state. It behaves like that value: a recipe reads it, assigns to it, deletes from it and calls its methods, such as `push()` on arrays or `set()` on Maps. Mutative drafts lazily:
+
+* Reading a draftable value through a draft gives a draft of it, created on that first read. Plain objects, arrays, Maps and Sets are draftable, and so are the values that a [mark](/docs/advanced-guides/mark) makes draftable, such as class instances; see [`isDraftable()`](/docs/api-reference/isdraftable). Other values, such as primitives and dates, are returned as they are.
+* The first change to a draft makes a shallow copy of its value, and later changes go to the same copy, so Mutative copies each object at most once per update, however many changes the recipe makes.
+* Values that the recipe assigns are not drafted: the next state holds them as they are.
+* Each path to an object gets a draft of its own, also when several paths lead to the same object; see [Shared references](/docs/extra-topics/shared-references).
+
+Drafts live only as long as their `create()` call: when the recipe ends, Mutative revokes them, and reading one later throws. Keep [`current(draft)`](/docs/api-reference/current), a snapshot of plain values, instead of a draft, and check for drafts with [`isDraft()`](/docs/api-reference/isdraft).
+
+## Finalization [#finalization]
+
+When the recipe ends, Mutative finalizes the drafts: the next state holds the copy of each changed draft and the original value of every unchanged one, so it shares every object that the recipe did not change with the base state. A recipe that changes nothing returns the base state itself. With [auto-freeze](/docs/advanced-guides/auto-freeze), Mutative then freezes the next state deeply.
+
+A recipe can also return a new state instead of changing the draft; see [Returning a new state](/docs/api-reference/create#returning-a-new-state).
+
+## Patches [#patches]
+
+With the `enablePatches` option, `create()` also returns patches, which describe the changes of the recipe, and inverse patches, which undo them. Each patch is an object with an `op`, `add`, `remove` or `replace`, a `path` from the root to the changed value, and, for `add` and `replace`, the new `value`. [`apply()`](/docs/api-reference/apply) applies patches to a state, for example to replay changes on another copy of the state or to undo them; see [Patches](/docs/advanced-guides/patches).
+
+## Mark [#mark]
+
+A state can mix data that should be drafted with data that should not, such as class instances, caches or values from other libraries. The `mark` option decides, value by value, whether Mutative drafts a value, leaves it mutable, or copies it with a function of your own, without marking the objects themselves. See [Marking data structure](/docs/advanced-guides/mark).
+
+
+# Getting Started (/docs/getting-started)
+
+5 minutes to learn the most important Mutative concepts.
+
+- [Installation](/docs/getting-started/installation)
+- [Usages](/docs/getting-started/usages)
+- [Concepts](/docs/getting-started/concepts)
+- [Using Mutative with React](/docs/getting-started/mutative-with-react)
+- [Performance](/docs/getting-started/performance)
+
+
+# Installation (/docs/getting-started/installation)
+
+Install Mutative from npm or load it from a CDN, and check the environments it supports.
+
+## Package managers [#package-managers]
+
+
+
+```bash
+npm install mutative
+```
+
+```bash
+pnpm add mutative
+```
+
+```bash
+yarn add mutative
+```
+
+```bash
+bun add mutative
+```
+
+Mutative has no dependencies. A production bundle of `create` alone is about 7.9 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.5 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
+
+```ts
+import { create } from 'mutative';
+```
+
+## Requirements [#requirements]
+
+* **JavaScript.** Mutative needs `Proxy` and the ES2018 syntax that its builds keep, such as object spread: Node.js 14.0 or later, current browsers, and React Native 0.64 or later. Engines that support `Proxy` but not ES2018 syntax, such as Chrome 49–59, Firefox 18–54, Safari 10–11.0 and Edge 12–18, need Mutative transpiled by your build. Internet Explorer has no `Proxy` and is not supported.
+* **TypeScript.** The type declarations support TypeScript 5.0 and later; see [TypeScript](/docs/advanced-guides/typescript).
+
+## Development and production builds [#development-and-production-builds]
+
+The package holds a development build, with full error messages, warnings and extra checks, and a minified production build, whose errors are [numeric codes](/docs/extra-topics/errors). Which one runs depends on `process.env.NODE_ENV`:
+
+* **Bundlers** resolve the ESM build, whose development checks compare `process.env.NODE_ENV` with `'production'`. Bundlers that define it as `'production'`, as webpack, Vite, Rollup and esbuild setups for production usually do, drop the development code. Bundles that target Node.js resolve the CommonJS entry instead; define `process.env.NODE_ENV` there, or leave Mutative external.
+* **Node.js** runs the CommonJS build for `require` and `import` alike, and selects the development or production build from `NODE_ENV` when it loads Mutative.
+* **Browsers without a bundler** have no `process`, so they need the production ESM file or the UMD build below.
+
+## CDN [#cdn]
+
+* Unpkg: `<script src="https://unpkg.com/mutative"></script>`
+* JSDelivr: `<script src="https://cdn.jsdelivr.net/npm/mutative"></script>`
+* ES module: `import { create } from 'https://unpkg.com/mutative/dist/mutative.esm.production.min.mjs';`
+
+The `<script>` tags load the production UMD build, which defines a global `Mutative`, as in `Mutative.create(baseState, recipe)`. The package's other ESM files read `process.env.NODE_ENV`, which bundlers and Node.js provide; a browser without a bundler needs the production file above.
+
+```html
+<script type="module">
+  import { create } from 'https://unpkg.com/mutative/dist/mutative.esm.production.min.mjs';
+
+  const state = create({ count: 0 }, (draft) => {
+    draft.count += 1;
+  });
+  console.log(state.count); // 1
+</script>
+```
+
+
+# Using Mutative with React (/docs/getting-started/mutative-with-react)
+
+Update React state with create(), or with the use-mutative hooks.
+
+React re-renders when a component's state is replaced with a new object, so state updates must not change the current state. `create()` produces that new state from changes to a draft, and the parts of the state that a recipe leaves unchanged keep their references, so memoized children and selectors skip them.
+
+## With `useState` and `useReducer` [#with-usestate-and-usereducer]
+
+`create()` needs no adapter: call it in a functional update of `useState`, or in a reducer for `useReducer`.
+
+```tsx
+import { useReducer, useState } from 'react';
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+export function TodoList() {
+  const [todos, setTodos] = useState<Todo[]>([{ text: 'Learn React', done: false }]);
+
+  const toggle = (index: number) =>
+    setTodos((current) =>
+      create(current, (draft) => {
+        draft[index].done = !draft[index].done;
+      })
+    );
+
+  return (
+    <ul>
+      {todos.map((todo, index) => (
+        <li key={index} onClick={() => toggle(index)}>
+          {todo.done ? '✓' : '○'} {todo.text}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+type Action = { type: 'add'; text: string } | { type: 'remove'; index: number };
+
+function reducer(state: Todo[], action: Action) {
+  return create(state, (draft) => {
+    switch (action.type) {
+      case 'add':
+        draft.push({ text: action.text, done: false });
+        break;
+      case 'remove':
+        draft.splice(action.index, 1);
+        break;
+    }
+  });
+}
+
+export function useTodos(initialTodos: Todo[]) {
+  return useReducer(reducer, initialTodos);
+}
+```
+
+A recipe that changes nothing returns the current state itself, so React skips the re-render.
+
+## use-mutative [#use-mutative]
+
+[use-mutative](https://github.com/mutativejs/use-mutative) wraps these patterns in two hooks.
+
+
+
+```bash
+npm install mutative use-mutative
+```
+
+```bash
+pnpm add mutative use-mutative
+```
+
+```bash
+yarn add mutative use-mutative
+```
+
+```bash
+bun add mutative use-mutative
+```
+
+### `useMutative()` [#usemutative]
+
+`useMutative()` works like `useState()`, and its setter also takes a recipe that changes a draft:
+
+```tsx
+import { useMutative } from 'use-mutative';
+
+export function App() {
+  const [state, setState] = useMutative({
+    foo: 'bar',
+    list: [{ text: 'todo' }],
+  });
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          // Change a draft of the state.
+          setState((draft) => {
+            draft.foo = `${draft.foo} 2`;
+            draft.list.push({ text: 'todo 2' });
+          });
+        }}
+      >
+        Update
+      </button>
+      <button
+        onClick={() => {
+          // Or replace the state.
+          setState({ foo: 'bar 2', list: [{ text: 'todo 2' }] });
+        }}
+      >
+        Replace
+      </button>
+      <pre>{JSON.stringify(state, null, 2)}</pre>
+    </>
+  );
+}
+```
+
+### `useMutativeReducer()` [#usemutativereducer]
+
+`useMutativeReducer()` works like `useReducer()`, and its reducer receives a draft of the state. A reducer changes the draft and returns nothing, or returns a new state; wrap a returned value that holds no drafts in [`rawReturn()`](/docs/api-reference/rawreturn) to skip searching it for drafts.
+
+```tsx
+import { rawReturn, type Draft } from 'mutative';
+import { useMutativeReducer } from 'use-mutative';
+
+const initialState = { count: 0 };
+
+type Action = { type: 'reset' | 'increment' | 'decrement' };
+
+function reducer(draft: Draft<typeof initialState>, action: Action) {
+  switch (action.type) {
+    case 'reset':
+      return rawReturn(initialState);
+    case 'increment':
+      draft.count += 1;
+      return;
+    case 'decrement':
+      draft.count -= 1;
+      return;
+  }
+}
+
+export function Counter() {
+  const [state, dispatch] = useMutativeReducer(reducer, initialState);
+
+  return (
+    <div>
+      Count: {state.count}
+      <button onClick={() => dispatch({ type: 'increment' })}>Increment</button>
+      <button onClick={() => dispatch({ type: 'decrement' })}>Decrement</button>
+      <button onClick={() => dispatch({ type: 'reset' })}>Reset</button>
+    </div>
+  );
+}
+```
+
+### Options and patches [#options-and-patches]
+
+Both hooks take the [options of `create()`](/docs/api-reference/create#options) as their last argument. With `enablePatches`, they also return the patches and inverse patches of the last update:
+
+```tsx
+const [state, setState, patches, inversePatches] = useMutative(initialState, {
+  enablePatches: true,
+});
+
+const [state, dispatch, patches, inversePatches] = useMutativeReducer(
+  reducer,
+  initialState,
+  undefined,
+  { enablePatches: true }
+);
+```
+
+The third argument of `useMutativeReducer()` is the optional initializer of `useReducer()`.
+
+## Undo and redo [#undo-and-redo]
+
+[use-travel](https://github.com/mutativejs/use-travel) keeps a history of the state from the patches of each update, with undo, redo and reset:
+
+```tsx
+import { useTravel } from 'use-travel';
+
+export function Counter() {
+  const [state, setState, controls] = useTravel({ count: 0 });
+
+  return (
+    <div>
+      <strong>{state.count}</strong>
+      <button
+        onClick={() =>
+          setState((draft) => {
+            draft.count += 1;
+          })
+        }
+      >
+        Increment
+      </button>
+      <button onClick={() => controls.back()} disabled={!controls.canUndo}>
+        Undo
+      </button>
+      <button onClick={() => controls.forward()} disabled={!controls.canRedo}>
+        Redo
+      </button>
+    </div>
+  );
+}
+```
+
+State libraries such as Zustand, Jotai and XState have Mutative integrations as well; see the [ecosystem](/docs/extra-topics/mutative-ecosystem).
+
+
+# Performance (/docs/getting-started/performance)
+
+Benchmark results against Immer and hand-written reducers across 97 workloads, and how to run the benchmarks.
+
+Mutative is about 3.6x faster than Immer with matched settings and 6.6x faster with each library's defaults, across 97 benchmarked workloads. A hand-written reducer that copies only what it changes is faster still in most of them.
+
+## Benchmark suite [#benchmark-suite]
+
+The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 97 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+
+## Mutative vs Immer [#mutative-vs-immer]
+
+> Mutative passed all of Immer's test cases.
+
+With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.6x on geometric mean.
+
+Times are microseconds per update, medians of three runs on an Apple M1 Max with Node.js 24.16.0, each library in a process of its own; lower is better. Mutative, the first Immer column, and the hand-written reducers run without auto-freeze; the second Immer column shows Immer's default.
+
+| Workload                            |   Rows | Mutative |  Immer | Immer, auto-freeze | Hand-written |
+| ----------------------------------- | -----: | -------: | -----: | -----------------: | -----------: |
+| Update one field of a small object  |      — |     0.51 |   0.69 |               0.95 |         0.02 |
+| Update an array item found by ID    |    100 |     1.12 |   1.82 |               25.0 |         0.38 |
+| 200 RTK Query-style updates         |      — |    1,001 |  1,133 |              4,795 |          352 |
+| Read every row by index             | 10,000 |    4,756 |  9,584 |              9,687 |         57.7 |
+| Remove the first row                | 10,000 |     7.04 |  7,408 |              8,137 |         1.40 |
+| Update every row                    | 10,000 |    6,462 | 12,570 |             15,607 |          211 |
+| Update one of 10,000 records        | 10,000 |    1,200 |  2,094 |              3,131 |        2,088 |
+| Insert into a 1,000-property object |      — |     50.3 |    149 |                229 |          126 |
+| Update a Map value                  | 10,000 |      518 |    526 |                733 |          519 |
+| Add a number to a Set               | 10,000 |     29.5 |    904 |                975 |         61.2 |
+| Update a class instance             | 10,000 |     2.92 |   3.44 |                668 |         1.42 |
+| Update a value ten levels deep      |      — |     3.50 |   4.41 |               7.84 |         0.76 |
+| Apply patches to 10% of rows        | 10,000 |      734 |  1,166 |              2,095 |            — |
+| Search `current()` after `shift()`  | 10,000 |      257 | 11,255 |             11,846 |         64.8 |
+| Return draft.filter()               | 10,000 |    2,658 |  4,251 |              4,736 |         77.7 |
+| Return a new state                  | 10,000 |    2,604 |  5,718 |               0.79 |         0.02 |
+| Return it with rawReturn()          | 10,000 |     0.26 |  5,703 |               0.79 |         0.02 |
+
+Each library ran each workload in a process of its own. With all of them in one process every library ran slower, and not by the same amount: Mutative took 1.1 times as long on geometric mean, Immer 1.2 times, and the hand-written reducers 1.7 times. The search removes the first row with `shift()`, then finds the last row in a snapshot of the array and updates it. Immer has no `rawReturn()` and returns the same plain value in the last two rows; with auto-freeze, Mutative skips a returned state that is already frozen, as Immer does, taking 0.53 µs. Immer was faster in 6 of the 614 matched cases, all with auto-freeze: four updates of class instances with 100 to 10,000 fields, and two array updates at 100 rows whose runs overlapped those of Mutative.
+
+## Large arrays [#large-arrays]
+
+At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method plugin, Mutative was faster in 222 of 232 cases at these sizes, 4.7x on geometric mean, and faster in every case that moves elements:
+
+| Auto-freeze | Patches | All workloads, 1,000 rows | All workloads, 10,000 rows | Moves, 1,000 rows | Moves, 10,000 rows |
+| ----------- | ------- | ------------------------: | -------------------------: | ----------------: | -----------------: |
+| off         | off     |                      8.7x |                      10.8x |              209x |               430x |
+| off         | on      |                      4.1x |                       4.5x |              7.1x |               7.3x |
+| on          | off     |                      3.9x |                       4.2x |               32x |                39x |
+| on          | on      |                      2.7x |                       2.8x |              6.6x |               6.8x |
+
+Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.04 µs against 7,408 µs, 1,052x. With patches, both libraries emit one patch per moved index, which bounds the gain to 5-9x. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
+
+## With patches [#with-patches]
+
+With patches on and auto-freeze off, Mutative was faster than Immer in 148 of 150 cases and within 5% in the other 2, 3.3x on geometric mean, and faster than Mutative 1.3.0 in 131 and within 5% in the rest, 4.6x. In every array case measured it was faster than both: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.2 µs with patches against 63.8 µs without. Moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches.
+
+Times are microseconds per update with patches on and auto-freeze off:
+
+| Workload                           |   Rows | Mutative |  Immer | Mutative 1.3.0 |
+| ---------------------------------- | -----: | -------: | -----: | -------------: |
+| Push a row and insert a property   | 10,000 |     63.2 |    360 |            210 |
+| Update an array item found by ID   |    100 |     1.50 |   3.22 |           3.35 |
+| 200 RTK Query-style updates        |      — |    1,140 |  1,470 |          2,116 |
+| Remove the first row with `splice` |    100 |     11.5 |   83.6 |          2,982 |
+| Insert a row in the middle         |    100 |     8.83 |   48.0 |          1,191 |
+| Sort rows                          |    100 |      105 |    129 |          2,466 |
+| Remove the first row with `shift`  | 10,000 |    1,063 |  8,943 |        265,439 |
+| Reverse the rows                   | 10,000 |    1,071 |  9,424 |        280,542 |
+| Update every row                   | 10,000 |    8,555 | 21,767 |         22,549 |
+| Update one of 10,000 records       | 10,000 |    1,184 |  2,104 |          1,181 |
+
+Immer's optional `enableArrayMethods()` plugin also runs array methods on the draft's copy, and with patches it comes within 1.13-1.70x of Mutative when moving elements of 1,000 or 10,000 rows. These comparisons leave it off because in Immer 11.1.18 it breaks guarantees that Immer otherwise keeps: `shift`, `pop` and `splice` return raw base objects, so editing a removed object changes the previous state; reordering can expose original objects the same way and leave revoked drafts in the result; and its forward patches can fail to replay. In [the audit](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md), 123 of 4,913 three-step operation sequences break with the plugin and none without it. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) reports Immer with the plugin separately.
+
+## Mutative vs hand-written reducers [#mutative-vs-hand-written-reducers]
+
+A hand-written reducer that copies only what it changes is faster than any library that drafts state, and it was faster than Mutative in 129 of the suite's 150 cases. Mutative was faster when copying wide objects, such as records with 1,000 keys or class instances with 100 fields, by 1.5-2.8x, when inserting at the front of 10,000 rows: 16 µs instead of 28 µs, and when adding a number to a Set of 1,000 or 10,000 numbers, which it copies faster than `new Set()` does: 30 µs instead of 61 µs at 10,000.
+
+Spreads also become slow when code copies the same structure again and again. Mutative copies each object at most once per update, however many changes a recipe makes.
+
+See [Performance tips](/docs/advanced-guides/performance-tips) for recipes that avoid needless drafts, searches, copies, freezing and patches.
+
+## Run the benchmarks [#run-the-benchmarks]
+
+From a clone of the repository:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm benchmark:immer:check
+pnpm benchmark:immer
+```
+
+The [benchmark guide](https://github.com/unadlib/mutative/blob/main/perf-testing/README.md) describes the workloads, options, memory measurements, and CI regression budgets.
+
+
+# Usages (/docs/getting-started/usages)
+
+Common immutable updates of objects, arrays, Maps and Sets with create().
+
+## Use `create()` to create a new state [#use-create-to-create-a-new-state]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'coding' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.list.push({ text: 'learning' });
+});
+
+expect(state).not.toBe(baseState);
+expect(state.list).not.toBe(baseState.list);
+expect(state.list[0]).toBe(baseState.list[0]);
+```
+
+`create(baseState, recipe, options?)` drafts the base state and passes the draft to the recipe. The recipe changes the draft with ordinary JavaScript, and `create()` returns the next state, which copies the objects that the recipe changed and shares all the others with the base state. The base state does not change. See [`create()`](/docs/api-reference/create) for its options and its other forms.
+
+The examples below change a draft as plain JavaScript would change the state itself.
+
+## Objects [#objects]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  user: { name: 'Ada', address: { city: 'London' } },
+  flags: { beta: true } as Record<string, boolean>,
+};
+
+const state = create(baseState, (draft) => {
+  // Update a nested property.
+  draft.user.address.city = 'Paris';
+  // Add a property.
+  draft.flags.darkMode = true;
+  // Delete a property.
+  delete draft.flags.beta;
+});
+
+expect(state).toEqual({
+  user: { name: 'Ada', address: { city: 'Paris' } },
+  flags: { darkMode: true },
+});
+```
+
+## Arrays [#arrays]
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { id: number; text: string; done: boolean };
+
+const baseState: Todo[] = [
+  { id: 1, text: 'learn', done: false },
+  { id: 2, text: 'build', done: false },
+  { id: 3, text: 'ship', done: false },
+];
+
+const state = create(baseState, (draft) => {
+  // Update the item with an id.
+  const todo = draft.find((item) => item.id === 2);
+  if (todo) todo.done = true;
+
+  // Remove the item with an id.
+  const index = draft.findIndex((item) => item.id === 1);
+  if (index !== -1) draft.splice(index, 1);
+
+  // Insert at the front, and add at the end.
+  draft.unshift({ id: 0, text: 'plan', done: true });
+  draft.push({ id: 4, text: 'celebrate', done: false });
+
+  // Move the last item to the second position.
+  const [moved] = draft.splice(draft.length - 1, 1);
+  draft.splice(1, 0, moved);
+});
+
+expect(state.map((todo) => todo.id)).toEqual([0, 4, 2, 3]);
+expect(state[2].done).toBe(true);
+// Unchanged items keep their references.
+expect(state[3]).toBe(baseState[2]);
+```
+
+To filter an array, assign the filtered array to the draft. Mutative replaces the drafts that the new array holds with their values:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { todos: [{ text: 'learn', done: true }, { text: 'ship', done: false }] };
+
+const state = create(baseState, (draft) => {
+  draft.todos = draft.todos.filter((todo) => !todo.done);
+});
+
+expect(state.todos).toEqual([{ text: 'ship', done: false }]);
+expect(state.todos[0]).toBe(baseState.todos[1]);
+```
+
+`find()`, `filter()` and other methods with callbacks visit the elements through the draft, so each element they visit becomes a draft. For read-only searches of large arrays, search [`current(draft)`](/docs/api-reference/current#searching-a-large-array) instead.
+
+## Maps and Sets [#maps-and-sets]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  users: new Map([['ada', { name: 'Ada', age: 36 }]]),
+  tags: new Set(['js']),
+};
+
+const state = create(baseState, (draft) => {
+  // Update a value, and add and delete entries.
+  draft.users.get('ada')!.age += 1;
+  draft.users.set('grace', { name: 'Grace', age: 45 });
+  draft.users.delete('ada');
+
+  draft.tags.add('ts');
+  draft.tags.delete('js');
+});
+
+expect([...state.users.keys()]).toEqual(['grace']);
+expect([...state.tags]).toEqual(['ts']);
+// The base state is unchanged.
+expect(baseState.users.get('ada')!.age).toBe(36);
+```
+
+Values read from a Map or Set draft are drafts too, while Map keys are used as they are. See the FAQ for [iterating over Map drafts](/docs/extra-topics/faq#can-a-recipe-change-a-map-draft-while-iterating-over-it), [drafts as Map keys](/docs/extra-topics/faq#can-a-draft-be-a-map-key) and [the Set methods of ES2025](/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts).
+
+## Returning a new state [#returning-a-new-state]
+
+A recipe can return the next state instead of changing the draft, as a reducer does:
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const baseState = { count: 5, history: [1, 2, 3] };
+
+const state = create(baseState, (draft) => ({ ...draft, count: 0 }));
+
+expect(state).toEqual({ count: 0, history: [1, 2, 3] });
+expect(state.history).toBe(baseState.history);
+
+// `rawReturn()` returns a value as it is, and can return undefined.
+const cleared = create(baseState as typeof baseState | undefined, () =>
+  rawReturn(undefined)
+);
+
+expect(cleared).toBe(undefined);
+```
+
+A recipe must either change the draft or return a new value; doing both throws. See [Returning a new state](/docs/api-reference/create#returning-a-new-state).
+
+## Patches [#patches]
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = { todos: ['learn'] };
+
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.todos.push('ship');
+  },
+  { enablePatches: true }
+);
+
+expect(patches).toEqual([{ op: 'add', path: ['todos', 1], value: 'ship' }]);
+expect(apply(state, inversePatches)).toEqual(baseState);
+```
+
+See [Patches](/docs/advanced-guides/patches) for their format and for undo and redo.
+
+
+# Introduction (/docs/intro)
+
+Mutative is a JavaScript library for efficient immutable updates. Change a draft with ordinary JavaScript, and get the next immutable state.
+
+**Mutative** is a JavaScript library for efficient immutable updates. A recipe changes a draft of the state with ordinary JavaScript, and Mutative produces the next state, copying only what the recipe changed. It was about 3.6x faster than Immer with matched settings and 6.6x faster with each library's defaults, across [97 benchmarked workloads](/docs/getting-started/performance).
+
+## What is Mutative? [#what-is-mutative]
+
+State that React, Redux and many other libraries compare by reference must not change in place: each update produces a new state, which copies the objects on the path to every change and shares all the others. Written by hand with spread syntax, such an update grows with the depth of the change, and a missed copy changes the previous state.
+
+For example, take a state with a list, and mark its last item as done and add a new item, first by hand and then with Mutative:
+
+```ts
+import { create } from 'mutative';
+
+const state = {
+  list: [
+    { text: 'Learn TypeScript', done: true },
+    { text: 'Learn React', done: true },
+    { text: 'Learn Redux', done: false },
+  ],
+};
+
+// By hand, copying each level on the path to the changes:
+const byHand = {
+  ...state,
+  list: [
+    ...state.list.slice(0, 2),
+    { ...state.list[2], done: true },
+    { text: 'Learn Mutative', done: true },
+  ],
+};
+
+// With Mutative, changing a draft:
+const nextState = create(state, (draft) => {
+  draft.list[2].done = true;
+  draft.list.push({ text: 'Learn Mutative', done: true });
+});
+
+expect(nextState).toEqual(byHand);
+// The unchanged items are shared, and the base state is unchanged.
+expect(nextState.list[0]).toBe(state.list[0]);
+expect(state.list[2].done).toBe(false);
+```
+
+The draft is a proxy of the state: Mutative copies an object the first time the recipe changes it, and the next state shares every object that the recipe left unchanged. See [Concepts](/docs/getting-started/concepts) for how it works.
+
+## Features and Benefits [#features-and-benefits]
+
+* **Mutation makes immutable updates** - Immutable updates of objects, arrays, Maps and Sets, written as mutations of a draft.
+* **High performance** - About 6.6x faster than Immer with each library's defaults, and faster than hand-written spreads in measured wide-object and large-array insertion workloads.
+* **Optional freezing state** - No freezing of immutable data by default, and [auto-freeze](/docs/advanced-guides/auto-freeze) when you want it.
+* **Support for JSON Patch** - [Patches](/docs/advanced-guides/patches) use the `add`, `remove` and `replace` operations of JSON Patch, and with `pathAsArray: false` and `arrayLengthAssignment: false`, those of objects and arrays are JSON Patch operations.
+* **Custom shallow copy** - [Marks](/docs/advanced-guides/mark) draft class instances and other types of immutable data, with their own shallow copies if needed.
+* **Support mark for immutable and mutable data** - Marks set what is drafted without changing the data or its classes.
+* **Safer mutable data access in strict mode** - [Strict mode](/docs/advanced-guides/strict-mode) makes reads of data that cannot be drafted explicit.
+* **Support for reducer** - [Producers](/docs/advanced-guides/currying) work as reducers for Redux and any other immutable state library, and recipes can be async.
+
+## Motivation [#motivation]
+
+Immer made it easy to write immutable updates as mutations of a draft. Mutative keeps that model and focuses on performance: it copies each object at most once per update, drafts objects only when a recipe reads them, finalizes only the drafts that changed, and runs array methods that move elements natively on its copies. Immer freezes the next state by default, which costs time on every update; Mutative freezes it only when asked to.
+
+Mutative also takes its options per call instead of from global configuration, drafts class instances through marks instead of changing their classes, supports async recipes and Map and Set subclasses, and handles [edge cases](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts) that Immer gets wrong. [Comparison with Immer](/docs/extra-topics/comparison-with-immer) lists the differences.
+
+## Next steps [#next-steps]
+
+<Cards>
+  <Card title="Installation" href="/docs/getting-started/installation">
+    Add Mutative to a project, or load it from a CDN.
+  </Card>
+
+  <Card title="Usages" href="/docs/getting-started/usages">
+    Update objects, arrays, Maps and Sets with `create()`.
+  </Card>
+
+  <Card title="Concepts" href="/docs/getting-started/concepts">
+    Drafts, structural sharing, patches and marks.
+  </Card>
+
+  <Card title="Migration from Immer" href="/docs/advanced-guides/migration">
+    Replace Immer's APIs with their Mutative counterparts.
+  </Card>
+</Cards>
+
+## Credits [#credits]
+
+Mutative is inspired by [Immer](https://immerjs.github.io/immer/), which has helped many people write simpler immutable updates. Mutative is based on the same idea, with a different implementation and more features.

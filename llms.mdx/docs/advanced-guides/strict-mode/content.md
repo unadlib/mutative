@@ -1,0 +1,84 @@
+# Strict Mode (/docs/advanced-guides/strict-mode)
+
+Make reads of values that Mutative does not draft explicit, and check returned values in development.
+
+Mutative drafts plain objects, arrays, Maps and Sets, and the values that a [mark](/docs/advanced-guides/mark) makes immutable. Every other object in the state, such as a `Date` or a class instance, is shared by the draft, the base state and the next state, so a recipe that changes it changes the base state as well. With the `strict` option, such reads become explicit.
+
+## What strict mode checks [#what-strict-mode-checks]
+
+* Reading an object that cannot be drafted from a draft, or a value that a mark makes `mutable`, throws, unless the read happens inside [`unsafe()`](/docs/api-reference/unsafe). Primitives, drafts and assignments are not affected.
+* A value that a recipe returns with [`rawReturn()`](/docs/api-reference/rawreturn) is still searched for drafts, which are replaced with their values, and development builds warn when they find one.
+* Development builds warn once when a recipe leaves 1,000 or more drafts unchanged. Every object read through a draft becomes a draft, so a search through a large draft array, such as `draft.list.find()`, creates one for each element it visits. Search [`current(draft.list)`](/docs/api-reference/current#searching-a-large-array) instead and change the match through the draft.
+
+```ts
+import { create, unsafe } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = {
+  counter: new Counter(),
+  list: [{ text: 'todo' }],
+};
+
+create(
+  baseState,
+  (draft) => {
+    // Drafts and primitives can be read and changed as usual.
+    draft.list[0].text = 'done';
+
+    // The Counter instance is not drafted, so reading it throws.
+    expect(() => draft.counter.count).toThrow();
+
+    // Inside unsafe(), it can be read.
+    expect(unsafe(() => draft.counter.count)).toBe(0);
+  },
+  {
+    strict: true,
+  }
+);
+```
+
+To change such a value, replace it with a new one, or mark its class as `immutable`, so that Mutative drafts and copies it:
+
+```ts
+import { create } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = { counter: new Counter() };
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.counter.count += 1;
+  },
+  {
+    strict: true,
+    mark: (target, { immutable }) =>
+      target instanceof Counter ? immutable : undefined,
+  }
+);
+
+expect(state.counter.count).toBe(1);
+expect(baseState.counter.count).toBe(0);
+```
+
+## Enable it in development [#enable-it-in-development]
+
+Strict mode inspects every value that a recipe reads, so array methods that otherwise run natively on the copy of an array that may hold objects, and `current()` of a changed array, read the array through the draft instead. Enable it in development and disable it in production:
+
+```ts
+import { makeCreator } from 'mutative';
+
+export const create = makeCreator({
+  strict: process.env.NODE_ENV !== 'production',
+});
+```
+
+<Callout type="idea">
+  Strict mode is most useful with `rawReturn()`: without it, a value that `rawReturn()` wraps is not searched for drafts, so a draft in it stays in the next state, revoked.
+</Callout>
