@@ -192,7 +192,7 @@ Use `create()` for more advanced features by [setting `options`](#createstate-fn
 
 ### `create()`
 
-Use `create()` for draft mutation to get a new state, which also supports currying.
+`create()` produces the next state from the changes that a recipe makes to a draft of the base state, and also makes [producers and manual drafts](#create---currying).
 
 ```ts
 import { create } from "mutative";
@@ -208,7 +208,7 @@ const state = create(baseState, (draft) => {
 });
 ```
 
-In this basic example, the changes to the draft are 'mutative' within the draft callback, and `create()` is finally executed with a new immutable state.
+The recipe changes the draft as if it were mutable, and `create()` returns the next state with those changes, while `baseState` stays as it was.
 
 The recipe can be an async function: `create()` then returns a Promise of the result, and the draft stays usable until that Promise settles. `create()` recognizes the Promises of the current JavaScript realm only, so an async function from another realm, such as a `vm` context or an iframe, needs a wrapper from this realm: `create(baseState, async (draft) => { return await recipe(draft); })`. TypeScript types the result as a Promise as well, except with an explicit state type that is a type parameter, as in `create<T>(base, async (draft) => { … })` in a generic function, or that includes Promises, such as `object` or `unknown`, which gives the state type itself. In generic code, leave out the type argument: `create(base, async (draft) => { … })` gives `Promise<T>`, and `create(async (draft: T) => { … })` gives `(base: T) => Promise<T>`.
 
@@ -250,28 +250,28 @@ The `options` argument is optional; [`makeCreator()`](#makecreator) sets default
 
 #### `create()` - Currying
 
-- create `draft`
+- A base state without a recipe gives a draft and a `finalize()` function, which returns what `create()` returns with a recipe:
 
 ```ts
 const [draft, finalize] = create(baseState);
-draft.foobar.bar = "baz";
+draft.foo = "foobar";
 const state = finalize();
 ```
 
-> Support set options such as `const [draft, finalize] = create(baseState, { enableAutoFreeze: true });`
+> Options follow the base state, as in `const [draft, finalize] = create(baseState, { enableAutoFreeze: true });`.
 
 > Call `finalize()` only once. When it throws, for example because a development build rejects a patch path, the drafts are not revoked as they are when a recipe fails: they stay writable, and a second `finalize()` returns a state that can hold a revoked draft, with patches that miss changes. Create a new draft from the base state instead.
 
-- create `producer`
+- A recipe without a base state gives a producer, which takes the base state and passes its other arguments to the recipe:
 
 ```ts
 const produce = create((draft) => {
-  draft.foobar.bar = "baz";
+  draft.foo = "foobar";
 });
 const state = produce(baseState);
 ```
 
-> Also support set options such as `const produce = create((draft) => {}, { enableAutoFreeze: true });`
+> Options follow the recipe, as in `const produce = create((draft) => {}, { enableAutoFreeze: true });`.
 
 #### `create()` on a draft
 
