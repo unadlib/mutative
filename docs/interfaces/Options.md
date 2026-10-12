@@ -47,5 +47,9 @@ And it can also return a shallow copy function(AutoFreeze and Patches should bot
 
 > `optional` **strict**: `boolean`
 
-In strict mode, Forbid accessing non-draftable values and forbid returning a non-draft value.
-Development builds also warn once when a recipe leaves 1,000 or more drafts unchanged.
+In strict mode, reading an object that cannot be drafted from a draft,
+such as a class instance that no mark makes draftable, or a value that
+`mark` makes mutable, throws unless the read happens inside `unsafe()`.
+A value returned with `rawReturn()` is still searched for drafts, which
+development builds report with a warning. Development builds also warn
+once when a recipe leaves 1,000 or more drafts unchanged.
