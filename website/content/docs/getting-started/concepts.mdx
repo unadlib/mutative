@@ -67,7 +67,7 @@ A recipe can also return a new state instead of changing the draft; see [Returni
 
 ## Patches
 
-With the `enablePatches` option, `create()` also returns patches, which describe the changes of the recipe, and inverse patches, which undo them. Each patch is an object with an `op`, `add`, `remove` or `replace`, a `path` from the root to the changed value, and the new `value`. [`apply()`](/docs/api-reference/apply) applies patches to a state, for example to replay changes on another copy of the state or to undo them; see [Patches](/docs/advanced-guides/patches).
+With the `enablePatches` option, `create()` also returns patches, which describe the changes of the recipe, and inverse patches, which undo them. Each patch is an object with an `op`, `add`, `remove` or `replace`, a `path` from the root to the changed value, and, for `add` and `replace`, the new `value`. [`apply()`](/docs/api-reference/apply) applies patches to a state, for example to replay changes on another copy of the state or to undo them; see [Patches](/docs/advanced-guides/patches).
 
 ## Mark
 
