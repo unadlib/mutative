@@ -9,6 +9,7 @@
     "patches",
     "strict-mode",
     "typescript",
+    "pitfalls",
     "migration",
     "migration-v2"
   ]
