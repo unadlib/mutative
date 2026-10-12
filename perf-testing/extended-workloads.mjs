@@ -7,6 +7,10 @@ import { immerable } from 'immer';
 const stable = () => ({ value: 'untouched' });
 const range = (length) => Array.from({ length }, (_, i) => i);
 const row = (id) => ({ id, value: id, nested: { value: id + 1 } });
+// New rows with the values of `rows`, as data parsed from JSON arrives: not
+// frozen, and shared with no state.
+const freshRows = (rows) =>
+  rows.map((item) => ({ ...item, nested: { ...item.nested } }));
 
 export class Entity {
   // Immer drafts class instances marked with immerable; Mutative uses `mark`.
@@ -241,6 +245,15 @@ export function createExtendedScenarios(config) {
     entry('return-replace-raw', rowsState, [
       { type: 'bench/return-replace-raw', payload: range(size).map(row) },
     ]),
+    // The same return with rows created in the call, which are not frozen yet:
+    // with auto-freeze, both libraries freeze them, and without it, both
+    // search them for drafts unless rawReturn() tells Mutative not to.
+    entry('return-fresh', rowsState, [
+      { type: 'bench/return-fresh', payload: range(size).map(row) },
+    ]),
+    entry('return-fresh-raw', rowsState, [
+      { type: 'bench/return-fresh-raw', payload: range(size).map(row) },
+    ]),
     entry('return-filter', () => range(size).map(row), [
       { type: 'bench/return-filter' },
     ]),
@@ -376,6 +389,10 @@ export function applyExtendedRecipe(
       return { ...state, rows: action.payload };
     case 'bench/return-replace-raw':
       return rawReturn({ ...state, rows: action.payload });
+    case 'bench/return-fresh':
+      return { ...state, rows: freshRows(action.payload) };
+    case 'bench/return-fresh-raw':
+      return rawReturn({ ...state, rows: freshRows(action.payload) });
     case 'bench/return-filter':
       return draft.filter((item) => item.value % 2 === 0);
     case 'bench/search': {
@@ -527,6 +544,9 @@ export function reduceExtended(state, action) {
     case 'bench/return-replace':
     case 'bench/return-replace-raw':
       return { ...state, rows: action.payload };
+    case 'bench/return-fresh':
+    case 'bench/return-fresh-raw':
+      return { ...state, rows: freshRows(action.payload) };
     case 'bench/return-filter':
       return state.filter((item) => item.value % 2 === 0);
     case 'bench/search': {
