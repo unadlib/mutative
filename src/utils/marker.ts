@@ -1,10 +1,9 @@
 import { dataTypes } from '../constant';
 
 const constructorString = Object.prototype.constructor.toString();
-/**
- * Check if the value is a simple object(No prototype chain object or iframe same-origin object),
- * support case: https://github.com/unadlib/mutative/issues/17
- */
+// Whether a value is a plain object, an object without a prototype, or a plain
+// object of another realm, such as a same-origin iframe, whose constructor is
+// that realm's `Object`.
 const isSimpleObject = (value: unknown) => {
   if (!value || typeof value !== 'object') return false;
   const prototype = Object.getPrototypeOf(value);
@@ -23,6 +22,10 @@ const isSimpleObject = (value: unknown) => {
   );
 };
 
+/**
+ * A `mark` that drafts plain objects, objects without a prototype and plain
+ * objects of other realms, such as same-origin iframes.
+ */
 export const markSimpleObject = (value: unknown) => {
   if (isSimpleObject(value)) {
     return dataTypes.immutable;

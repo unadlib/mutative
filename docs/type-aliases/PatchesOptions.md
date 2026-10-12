@@ -8,6 +8,9 @@
 
 > **PatchesOptions** = `boolean` \| \{ `arrayLengthAssignment?`: `boolean`; `pathAsArray?`: `boolean`; \}
 
+The `enablePatches` option: `true` or an object generates patches, `false`
+does not.
+
 ## Type Declaration
 
 `boolean`
@@ -18,10 +21,13 @@
 
 > `optional` **arrayLengthAssignment**: `boolean`
 
-The default value is `true`. If it's `true`, the array length will be included in the patches, otherwise no include array length.
+Whether an array that gets shorter gets a `replace` patch of its
+`length`, as by default, or a `remove` patch for each index that it
+loses, as JSON Patch requires.
 
 ### pathAsArray?
 
 > `optional` **pathAsArray**: `boolean`
 
-The default value is `true`. If it's `true`, the path will be an array, otherwise it is a string.
+Whether a patch path is an array of keys, as by default, or a JSON
+Pointer string, such as `/list/0`.

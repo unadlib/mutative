@@ -22,7 +22,8 @@
 
 > `optional` **enableAutoFreeze**: `F`
 
-Enable autoFreeze, and return frozen state.
+Freeze the next state deeply, also the parts that it shares with the base
+state. Development builds also throw for an object that holds itself.
 
 ***
 
@@ -30,7 +31,8 @@ Enable autoFreeze, and return frozen state.
 
 > `optional` **enablePatches**: `O`
 
-Enable patch, and return the patches and inversePatches.
+Generate patches: the result is then
+`[state, patches, inversePatches]`.
 
 ***
 
@@ -38,8 +40,11 @@ Enable patch, and return the patches and inversePatches.
 
 > `optional` **mark**: `Mark`\<`O`, `F`\> \| `Mark`\<`O`, `F`\>[]
 
-Set a mark to determine if the object is mutable or if an instance is an immutable.
-And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
+Decide how values are drafted: a mark returns `immutable` to make a value
+draftable, such as a class instance, `mutable` to keep it out of drafts so
+that the recipe changes it in place, or a function that returns a shallow
+copy of the value, which needs patches and auto-freeze off. With several
+marks, the first one that returns a value decides.
 
 ***
 

@@ -8,7 +8,7 @@
 
 > **castMutable**\<`T`\>(`draft`): `T`
 
-Cast a value to an Mutable type value.
+Cast a draft to the type of its base state.
 
 ## Type Parameters
 

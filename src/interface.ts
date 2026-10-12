@@ -15,15 +15,22 @@ export const Operation = {
 
 export type DataType = keyof typeof dataTypes;
 
+/**
+ * The `enablePatches` option: `true` or an object generates patches, `false`
+ * does not.
+ */
 export type PatchesOptions =
   | boolean
   | {
       /**
-       * The default value is `true`. If it's `true`, the path will be an array, otherwise it is a string.
+       * Whether a patch path is an array of keys, as by default, or a JSON
+       * Pointer string, such as `/list/0`.
        */
       pathAsArray?: boolean;
       /**
-       * The default value is `true`. If it's `true`, the array length will be included in the patches, otherwise no include array length.
+       * Whether an array that gets shorter gets a `replace` patch of its
+       * `length`, as by default, or a `remove` patch for each index that it
+       * loses, as JSON Patch requires.
        */
       arrayLengthAssignment?: boolean;
     };
@@ -93,6 +100,11 @@ export interface IPatch {
   value?: any;
 }
 
+/**
+ * An `add`, `remove` or `replace` operation at a path, as `create()` generates
+ * it with `enablePatches` and `apply()` applies it. The path is an array of
+ * keys, or a JSON Pointer string with `pathAsArray: false`.
+ */
 export type Patch<P extends PatchesOptions = any> = P extends {
   pathAsArray: false;
 }
@@ -107,6 +119,9 @@ export type Patch<P extends PatchesOptions = any> = P extends {
         path: string | (string | number)[];
       };
 
+/**
+ * Patches in the order in which `apply()` applies them.
+ */
 export type Patches<P extends PatchesOptions = any> = Patch<P>[];
 
 export type Result<
@@ -158,16 +173,21 @@ export interface Options<O extends PatchesOptions, F extends boolean> {
    */
   strict?: boolean;
   /**
-   * Enable patch, and return the patches and inversePatches.
+   * Generate patches: the result is then
+   * `[state, patches, inversePatches]`.
    */
   enablePatches?: O;
   /**
-   * Enable autoFreeze, and return frozen state.
+   * Freeze the next state deeply, also the parts that it shares with the base
+   * state. Development builds also throw for an object that holds itself.
    */
   enableAutoFreeze?: F;
   /**
-   * Set a mark to determine if the object is mutable or if an instance is an immutable.
-   * And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
+   * Decide how values are drafted: a mark returns `immutable` to make a value
+   * draftable, such as a class instance, `mutable` to keep it out of drafts so
+   * that the recipe changes it in place, or a function that returns a shallow
+   * copy of the value, which needs patches and auto-freeze off. With several
+   * marks, the first one that returns a value decides.
    */
   mark?: Mark<O, F>;
 }
@@ -183,16 +203,21 @@ export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
    */
   strict?: boolean;
   /**
-   * Enable patch, and return the patches and inversePatches.
+   * Generate patches: the result is then
+   * `[state, patches, inversePatches]`.
    */
   enablePatches?: O;
   /**
-   * Enable autoFreeze, and return frozen state.
+   * Freeze the next state deeply, also the parts that it shares with the base
+   * state. Development builds also throw for an object that holds itself.
    */
   enableAutoFreeze?: F;
   /**
-   * Set a mark to determine if the object is mutable or if an instance is an immutable.
-   * And it can also return a shallow copy function(AutoFreeze and Patches should both be disabled).
+   * Decide how values are drafted: a mark returns `immutable` to make a value
+   * draftable, such as a class instance, `mutable` to keep it out of drafts so
+   * that the recipe changes it in place, or a function that returns a shallow
+   * copy of the value, which needs patches and auto-freeze off. With several
+   * marks, the first one that returns a value decides.
    */
   mark?: Mark<O, F>[] | Mark<O, F>;
 }
@@ -216,6 +241,11 @@ type WeakReferences =
   | IfAvailable<WeakSet<any>>;
 type AtomicObject = Function | Promise<any> | Date | RegExp;
 
+/**
+ * A deeply readonly `T`, the type of a state that `enableAutoFreeze` freezes:
+ * Maps and Sets become `ReadonlyMap` and `ReadonlySet`, and functions,
+ * Promises, dates and regular expressions keep their types.
+ */
 export type Immutable<T> = T extends Primitive | AtomicObject
   ? T
   : T extends IfAvailable<ReadonlyMap<infer K, infer V>>
@@ -230,10 +260,18 @@ export type Immutable<T> = T extends Primitive | AtomicObject
 
 type DraftedMap<K, V> = Map<K, Draft<V>>;
 type DraftedSet<T> = Set<Draft<T>>;
+/**
+ * The draft of an object type: writable properties whose values are drafts.
+ */
 export type DraftedObject<T> = {
   -readonly [K in keyof T]: Draft<T[K]>;
 };
 
+/**
+ * The type of a draft of `T`: its objects, arrays, Maps and Sets without
+ * `readonly`, deeply, so that a recipe can change them. Functions, Promises,
+ * dates and regular expressions keep their types.
+ */
 export type Draft<T> = T extends Primitive | AtomicObject
   ? T
   : T extends IfAvailable<ReadonlyMap<infer K, infer V>>

@@ -8,7 +8,7 @@
 
 > **castImmutable**\<`T`\>(`value`): [`Immutable`](../type-aliases/Immutable.md)\<`T`\>
 
-Cast a value to an Immutable type value.
+Cast a value to its immutable type, without freezing it.
 
 ## Type Parameters
 
