@@ -1,20 +1,21 @@
 ---
 title: Concepts
+description: Drafts, finalization with structural sharing, patches and marks, the ideas behind Mutative.
 ---
 
-Mutative is based on the Proxy, its core concepts are `draft` and `patch`.
+Mutative is based on `Proxy`. A recipe changes a draft of the state, Mutative records which parts changed, and it produces the next state from those changes, sharing every part that did not change. Patches describe the changes, and marks decide which values are drafted.
 
 ## Base Workflow
 
-Mutative Workflow depicted in the image illustrates a three-stage process:
+![Mutative workflow](img/mutative-workflow.png)
 
-![mutative workflow](img/mutative-workflow.png)
-
-- The "Current State" represents the initial, unchanged state. 
-- The "Draft" stage indicates a mutable phase where changes are made to a draft, marked in red, showing where modifications are occurring. The dotted lines suggest that these are accessed and drafts are created. 
-- Finally, the "Next State" is the immutable data after the changes are finalized.
+- The current state is the base state, which never changes.
+- The draft is where the recipe makes its changes. Mutative creates a draft of each object that the recipe reads, shown with dotted lines, and copies the objects that it changes, shown in red.
+- The next state holds the copies of the changed objects and shares all the others with the base state.
 
 ```ts
+import { create, isDraft } from 'mutative';
+
 const baseState = {
   a0: {
     b0: {},
@@ -26,38 +27,48 @@ const baseState = {
     },
   },
   a2: {},
-}
+};
 
 const nextState = create(baseState, (draft) => {
   const { a0 } = draft;
-  // If it is draftable, once it has been accessed, it will generate a corresponding draft.
-  expect(isDraft(a0)).toBeTruthy();
-  // each node is a draft, and the draft is a proxy object
+  // Reading a draftable value through a draft gives a draft of it.
+  expect(isDraft(a0)).toBe(true);
   draft.a1.b2.c0 = 1;
 });
 
 expect(nextState).not.toBe(baseState);
-expect(nextState.a0).toBe(baseState.a0); // generated draft, but not changed
-expect(nextState.a2).toBe(baseState.a2); // no generated draft, not changed
+// Drafted but not changed: shared with the base state.
+expect(nextState.a0).toBe(baseState.a0);
+// Never read: shared with the base state.
+expect(nextState.a2).toBe(baseState.a2);
+// Changed, and every object on the path to the change: copied.
 expect(nextState.a1).not.toBe(baseState.a1);
 expect(nextState.a1.b2).not.toBe(baseState.a1.b2);
+expect(nextState.a1.b1).toBe(baseState.a1.b1);
 expect(nextState.a1.b2.c0).toBe(1);
 ```
 
 ## Drafts
 
-Using Mutative to produce a new immutable data(next state) from intermediate drafts. 
+A draft is a `Proxy` of a value of the state. It behaves like that value: a recipe reads it, assigns to it, deletes from it and calls its methods, such as `push()` on arrays or `set()` on Maps. Mutative drafts lazily:
 
-Mutative creates a draft copy based on the current state. The `draft` is a mutable `Proxy` object, which behaves the same as the original object. Those mutations are recorded and used to produce the next state once the draft function is done. Additionally, if the patches is enabled, it will also produce a `patches`.
+- Reading a draftable value through a draft gives a draft of it, created on that first read. Plain objects, arrays, Maps and Sets are draftable, and so are the values that a [mark](/docs/advanced-guides/mark) makes draftable, such as class instances; see [`isDraftable()`](/docs/api-reference/isdraftable). Other values, such as primitives and dates, are returned as they are.
+- The first change to a draft makes a shallow copy of its value, and later changes go to the same copy, so Mutative copies each object at most once per update, however many changes the recipe makes.
+- Values that the recipe assigns are not drafted: the next state holds them as they are.
+- Each path to an object gets a draft of its own, also when several paths lead to the same object; see [Shared references](/docs/extra-topics/shared-references).
+
+Drafts live only as long as their `create()` call: when the recipe ends, Mutative revokes them, and reading one later throws. Keep [`current(draft)`](/docs/api-reference/current), a snapshot of plain values, instead of a draft, and check for drafts with [`isDraft()`](/docs/api-reference/isdraft).
+
+## Finalization
+
+When the recipe ends, Mutative finalizes the drafts: the next state holds the copy of each changed draft and the original value of every unchanged one, so it shares every object that the recipe did not change with the base state. A recipe that changes nothing returns the base state itself. With [auto-freeze](/docs/advanced-guides/auto-freeze), Mutative then freezes the next state deeply.
+
+A recipe can also return a new state instead of changing the draft; see [Returning a new state](/docs/api-reference/create#returning-a-new-state).
 
 ## Patches
 
-`Patches` are operation patches for immutable updates, consisting of an array where each element is a `Patch`. A `Patch` is an object that contains a `path`, a `value`, and an `op`. The `path` is an array representing the path to an object; the `value` is a new value for the object; and `op` is a string representing the type of operation, which can be `add`, `remove`, or `replace`.
-
-By applying `patches`, immutable updates can be made to an object based on these patches. These patches enable immutable updates without modifying the original object, acting as instructions for the update process.
+With the `enablePatches` option, `create()` also returns patches, which describe the changes of the recipe, and inverse patches, which undo them. Each patch is an object with an `op`, `add`, `remove` or `replace`, a `path` from the root to the changed value, and the new `value`. [`apply()`](/docs/api-reference/apply) applies patches to a state, for example to replay changes on another copy of the state or to undo them; see [Patches](/docs/advanced-guides/patches).
 
 ## Mark
 
-If a data structure mixes mutable and immutable data, Mutative supports marking both immutable and mutable data. It allows for non-invasive marking of nodes within this data tree, meaning the original object structure does not require an additional marking symbol. Mutative can maintain the original characteristics of the structure tree's nodes. And The option allows you to mark the immutable data with custom shallow copy.
-
-It is used to mark the immutable data that needs to be updated, and the mutable data that needs to be accessed. You pass the `mark` option to `create()` to mark the immutable data.
+A state can mix data that should be drafted with data that should not, such as class instances, caches or values from other libraries. The `mark` option decides, value by value, whether Mutative drafts a value, leaves it mutable, or copies it with a function of your own, without marking the objects themselves. See [Marking data structure](/docs/advanced-guides/mark).
