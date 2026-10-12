@@ -6,13 +6,13 @@ Mutative is about 3.6x faster than Immer with matched settings and 6.6x faster w
 
 ## Benchmark suite [#benchmark-suite]
 
-The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 97 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 99 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. Its last full run measured 97 of them, and a focused run the two that return fresh data. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
 ## Mutative vs Immer [#mutative-vs-immer]
 
 > Mutative passed all of Immer's test cases.
 
-With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.6x on geometric mean.
+With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.6x on geometric mean. The other 3 return a state that Immer froze earlier: Immer skips frozen values when it searches a returned state for drafts, while Mutative, which does not freeze by default, searches it unless the recipe wraps it in [`rawReturn()`](/docs/api-reference/rawreturn#performance-compared-with-immer), which took 0.26 µs.
 
 Times are microseconds per update, medians of three runs on an Apple M1 Max with Node.js 24.16.0, each library in a process of its own; lower is better. Mutative, the first Immer column, and the hand-written reducers run without auto-freeze; the second Immer column shows Immer's default.
 

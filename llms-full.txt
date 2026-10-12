@@ -780,7 +780,7 @@ Updating the first of 10,000 rows and then finding and updating the last one too
 
 ## Return new states with `rawReturn()` [#return-new-states-with-rawreturn]
 
-Mutative searches a value that a recipe returns for drafts, which visits every object of it: returning a new state of 10,000 rows took 2,600 µs. When the value holds no drafts, such as a state built from scratch, wrap it in [`rawReturn()`](/docs/api-reference/rawreturn), which took 0.26 µs.
+Mutative searches a value that a recipe returns for drafts, which visits every object of it: returning a new state of 10,000 rows took 2,600 µs. When the value holds no drafts, such as a state built from scratch, wrap it in [`rawReturn()`](/docs/api-reference/rawreturn), which took 0.26 µs. Returning an earlier state is the one workload in which Immer's defaults were faster than Mutative's, since Immer freezes its states and skips frozen values in a returned state; see [Performance compared with Immer](/docs/api-reference/rawreturn#performance-compared-with-immer).
 
 ## Let array methods move elements [#let-array-methods-move-elements]
 
@@ -1976,6 +1976,12 @@ expect(state).toBe(initialState);
 
 In the benchmark, returning a new state of 10,000 rows took 2.6 ms with the search and 0.26 µs with `rawReturn()`. Development builds warn when a returned object holds no drafts, to suggest `rawReturn()`.
 
+## Performance compared with Immer [#performance-compared-with-immer]
+
+Returning an earlier state is the one workload of the [benchmark](/docs/getting-started/performance) in which Mutative's defaults were slower than Immer's. Immer freezes each next state by default and skips frozen values when it searches a returned state for drafts, so returning a state that it had frozen earlier took it 0.79 µs at 10,000 rows, while Mutative, which does not freeze by default, searched the same state for 2.6 ms. With the same settings, Mutative was faster: 2.6 ms against 5.7 ms without auto-freeze, and 0.53 µs against 0.79 µs with it, since its production builds skip frozen values too. `rawReturn()` returns a state that holds no drafts in 0.26 µs.
+
+Freezing by default is a trade-off rather than a shortcut. Data that is not frozen yet, such as a response parsed from JSON, has to be frozen first: returning 10,000 rows that each call creates took Immer 9.2 ms with its default, against 3.1 ms for Mutative's search and 0.23 ms with `rawReturn()`, of which creating the rows took 0.19 ms. Freezing also made Immer slower in every other workload of the [selected results](/docs/getting-started/performance#mutative-vs-immer), such as 25.0 µs instead of 1.82 µs to update an item of 100 rows. [Auto Freeze](/docs/advanced-guides/auto-freeze) describes when freezing is worth its cost.
+
 ## Rules [#rules]
 
 * Never wrap a value that holds drafts. Without strict mode, Mutative does not search it, so the next state keeps those drafts, which are revoked when the recipe ends and throw when they are read. In [strict mode](/docs/advanced-guides/strict-mode), Mutative still searches a value that `rawReturn()` wraps and replaces its drafts, and development builds warn: `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`
@@ -2903,13 +2909,13 @@ Mutative is about 3.6x faster than Immer with matched settings and 6.6x faster w
 
 ## Benchmark suite [#benchmark-suite]
 
-The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 97 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 99 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. Its last full run measured 97 of them, and a focused run the two that return fresh data. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
 ## Mutative vs Immer [#mutative-vs-immer]
 
 > Mutative passed all of Immer's test cases.
 
-With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.6x on geometric mean.
+With matched settings, both freezing or both not and both generating patches or both not, Mutative was faster than Immer in 595 of 614 measured cases, 3.6x on geometric mean. With each library's defaults, Mutative without auto-freeze and Immer with it, Mutative was faster in 154 of 157 cases, 6.6x on geometric mean. The other 3 return a state that Immer froze earlier: Immer skips frozen values when it searches a returned state for drafts, while Mutative, which does not freeze by default, searches it unless the recipe wraps it in [`rawReturn()`](/docs/api-reference/rawreturn#performance-compared-with-immer), which took 0.26 µs.
 
 Times are microseconds per update, medians of three runs on an Apple M1 Max with Node.js 24.16.0, each library in a process of its own; lower is better. Mutative, the first Immer column, and the hand-written reducers run without auto-freeze; the second Immer column shows Immer's default.
 

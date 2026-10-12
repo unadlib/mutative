@@ -27,7 +27,7 @@ Updating the first of 10,000 rows and then finding and updating the last one too
 
 ## Return new states with `rawReturn()` [#return-new-states-with-rawreturn]
 
-Mutative searches a value that a recipe returns for drafts, which visits every object of it: returning a new state of 10,000 rows took 2,600 µs. When the value holds no drafts, such as a state built from scratch, wrap it in [`rawReturn()`](/docs/api-reference/rawreturn), which took 0.26 µs.
+Mutative searches a value that a recipe returns for drafts, which visits every object of it: returning a new state of 10,000 rows took 2,600 µs. When the value holds no drafts, such as a state built from scratch, wrap it in [`rawReturn()`](/docs/api-reference/rawreturn), which took 0.26 µs. Returning an earlier state is the one workload in which Immer's defaults were faster than Mutative's, since Immer freezes its states and skips frozen values in a returned state; see [Performance compared with Immer](/docs/api-reference/rawreturn#performance-compared-with-immer).
 
 ## Let array methods move elements [#let-array-methods-move-elements]
 
