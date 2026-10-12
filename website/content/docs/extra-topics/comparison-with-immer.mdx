@@ -1,5 +1,6 @@
 ---
 title: Comparison with Immer
+description: Every difference between Mutative and Immer 11.1.18 in APIs, defaults, drafts and patches, and the behaviors that both share.
 ---
 
 Mutative and Immer work the same way: a recipe changes a draft, and the library produces the next state, which shares every part that the recipe left unchanged. Most code moves from Immer by renaming its functions, as the [migration guide](/docs/advanced-guides/migration) shows. This page lists the differences that change what code does or produces, checked against Immer 11.1.18, and the behaviors that both libraries share where it is easy to assume otherwise.

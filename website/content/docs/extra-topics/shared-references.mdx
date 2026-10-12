@@ -1,5 +1,6 @@
 ---
 title: Shared References
+description: How Mutative drafts an object that several paths of the state lead to, and how to keep it shared.
 ---
 
 Mutative supports non-unidirectional trees (DAGs with shared nodes) where there is more than one path from the root to the same node, **as long as there are no cycles**. However, there is an important behavior to understand regarding how drafts handle these shared references.
