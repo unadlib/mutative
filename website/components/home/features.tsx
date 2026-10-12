@@ -44,7 +44,7 @@ const features: {
     icon: FileDiff,
     title: 'JSON Patch',
     description:
-      'Patches and inverse patches in full compliance with the JSON Patch specification.',
+      'Patches and inverse patches of each update, which can be JSON Patch operations.',
     href: '/docs/advanced-guides/patches',
   },
   {
