@@ -196,7 +196,7 @@ let draftBaseWarned = false;
  * ## Example
  *
  * ```ts
- * import { makeCreator } from '../index';
+ * import { makeCreator } from 'mutative';
  *
  * const baseState = { foo: { bar: 'str' }, arr: [] };
  * const create = makeCreator({ enableAutoFreeze: true });

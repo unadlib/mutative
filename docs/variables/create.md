@@ -13,7 +13,7 @@
 ## Example
 
 ```ts
-import { create } from '../index';
+import { create } from 'mutative';
 
 const baseState = { foo: { bar: 'str' }, arr: [] };
 const state = create(

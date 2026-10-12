@@ -7,7 +7,7 @@ import { die, ErrorCode } from './error';
  * ## Example
  *
  * ```ts
- * import { create, original } from '../index';
+ * import { create, original } from 'mutative';
  *
  * const baseState = { foo: { bar: 'str' }, arr: [] };
  * const state = create(

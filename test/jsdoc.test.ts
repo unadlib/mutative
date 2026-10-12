@@ -2,8 +2,9 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { basename, resolve } from 'path';
 
 // Run the ```ts examples in the JSDoc comments of a source file. Each one is
-// written next to this file as `<name>.<index>.snap.ts` and then imported, so
-// that it goes through Vitest's transform pipeline.
+// written next to this file as `<name>.<index>.snap.ts`, importing the source
+// where the example imports `mutative`, and then imported, so that it goes
+// through Vitest's transform pipeline.
 const jsdocTests = async (path: string, dirname: string) => {
   const filePath = resolve(dirname, path);
   const filename = basename(filePath, '.ts');
@@ -11,9 +12,10 @@ const jsdocTests = async (path: string, dirname: string) => {
   let index = 0;
   for (const [comment] of source.matchAll(/\/\*\*\n[\s\S]*?\*\//g)) {
     const markdown = comment.replace(/^[ \t]*\* ?/gm, '');
-    for (const [, code] of markdown.matchAll(
+    for (const [, example] of markdown.matchAll(
       /^```(?:js|javascript|ts|typescript)\n([\s\S]*?)^```/gm
     )) {
+      const code = example.replace(/ from 'mutative';$/gm, " from '../index';");
       const snapPath = resolve(dirname, `${filename}.${index}.snap.ts`);
       if (!existsSync(snapPath) || readFileSync(snapPath, 'utf8') !== code) {
         writeFileSync(snapPath, code, 'utf8');

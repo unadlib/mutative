@@ -15,7 +15,7 @@
 ## Example
 
 ```ts
-import { create, apply } from '../index';
+import { create, apply } from 'mutative';
 
 const baseState = { foo: { bar: 'str' }, arr: [] };
 const [state, patches] = create(
@@ -71,7 +71,7 @@ expect(state).toEqual(apply(baseState, patches));
 ## Example
 
 ```ts
-import { create, apply } from '../index';
+import { create, apply } from 'mutative';
 
 const baseState = { foo: { bar: 'str' }, arr: [] };
 const [state, patches] = create(
@@ -127,7 +127,7 @@ expect(state).toEqual(apply(baseState, patches));
 ## Example
 
 ```ts
-import { create, apply } from '../index';
+import { create, apply } from 'mutative';
 
 const baseState = { foo: { bar: 'str' }, arr: [] };
 const [state, patches] = create(
@@ -183,7 +183,7 @@ expect(state).toEqual(apply(baseState, patches));
 ## Example
 
 ```ts
-import { create, apply } from '../index';
+import { create, apply } from 'mutative';
 
 const baseState = { foo: { bar: 'str' }, arr: [] };
 const [state, patches] = create(
@@ -237,7 +237,7 @@ expect(state).toEqual(apply(baseState, patches));
 ## Example
 
 ```ts
-import { create, apply } from '../index';
+import { create, apply } from 'mutative';
 
 const baseState = { foo: { bar: 'str' }, arr: [] };
 const [state, patches] = create(

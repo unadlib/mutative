@@ -15,7 +15,7 @@
 ## Example
 
 ```ts
-import { create, current } from '../index';
+import { create, current } from 'mutative';
 
 const baseState = { foo: { bar: 'str' }, arr: [] };
 const state = create(

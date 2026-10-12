@@ -30,7 +30,7 @@ export const checksReads = (options: Options<any, any>) =>
  * ## Example
  *
  * ```ts
- * import { create, unsafe } from '../index';
+ * import { create, unsafe } from 'mutative';
  *
  * class Foobar {
  *   bar = 1;
