@@ -107,19 +107,23 @@ const documents = files
   }))
   .filter(({ examples }) => examples.length > 0);
 
-describe.each(documents)('$name', ({ examples }) => {
-  test.each(examples)('the example at line $line', async ({ code }) => {
-    // Examples may log, and development builds warn about some of them.
-    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    try {
-      await runExample(code);
-    } finally {
-      log.mockRestore();
-      warn.mockRestore();
-    }
-  });
-});
+// `%s` keeps the whole path in the name, where `$name` would shorten it.
+describe.each(documents.map(({ name, examples }) => [name, examples] as const))(
+  '%s',
+  (_name, examples) => {
+    test.each(examples)('the example at line $line', async ({ code }) => {
+      // Examples may log, and development builds warn about some of them.
+      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      try {
+        await runExample(code);
+      } finally {
+        log.mockRestore();
+        warn.mockRestore();
+      }
+    });
+  }
+);
 
 describe('website/content/docs/extra-topics/errors.mdx', () => {
   const page = readFileSync(
