@@ -849,11 +849,11 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 ## Contributing
 
-Mutative goal is to provide efficient and immutable updates. The focus is on performance improvements and providing better APIs for better development experiences. We are still working on it and welcome PRs that may help Mutative.
+Mutative's goal is efficient immutable updates. The focus is on performance and on APIs that make development easier, and pull requests that help with either are welcome.
 
 Development Workflow:
 
-See [Building and validating Mutative](./BUILDING.md) for the build pipeline, package checks, and bundle-size regression policy.
+See [Building and validating Mutative](./BUILDING.md) for the build pipeline, package checks, bundle-size regression policy and the generated API reference.
 
 See [the benchmark suite](./perf-testing/README.md) for the comparison of the current build with Mutative 1.3.0, Immer, and a hand-written reducer, matched freeze and patch modes, memory measurements, and CI regression budgets. Run `pnpm benchmark:immer:check` to validate every workload and `pnpm benchmark:immer` to measure them.
 
@@ -862,6 +862,8 @@ See [the benchmark suite](./perf-testing/README.md) for the comparison of the cu
 - Run `pnpm format` to format the code.
 - `pnpm test --watch` runs an interactive test watcher.
 - Run `pnpm commit` to make a git commit.
+
+The [contributing guide](https://mutative.js.org/docs/extra-topics/contributing) also covers the docs: code examples in this README and on the website that import from `mutative` run as tests.
 
 ## License
 

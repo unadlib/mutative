@@ -40,3 +40,5 @@ This command builds the website and pushes the `out` directory to the `gh-pages`
 - `static/img/ mutative.png` is the logo of the README, which the READMEs of the published npm packages load from the `main` branch, so it stays at this path.
 
 Pages can use the [components of Fumadocs UI](https://fumadocs.dev/docs/ui/components), such as `<Callout type="warn">`, and code blocks with the `npm` language show an install command for each package manager.
+
+Code blocks that import from `mutative`, and from no other module than `mutative` and `immer`, run as tests of the library in `test/docs.test.ts`, with Vitest's `expect`, so keep them complete; fragments that are not meant to run leave the imports out. The test also checks the table of `content/docs/extra-topics/errors.mdx` against the error messages of the source.
