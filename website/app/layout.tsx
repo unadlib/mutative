@@ -1,4 +1,5 @@
 import { Provider } from '@/components/provider';
+import { speedups } from '@/lib/benchmarks';
 import { createMetadata, metadataBase } from '@/lib/metadata';
 import type { Metadata } from 'next';
 import './global.css';
@@ -12,8 +13,7 @@ export const metadata: Metadata = {
         'Mutative - A JavaScript library for efficient immutable updates',
       template: '%s | Mutative',
     },
-    description:
-      "Efficient immutable updates, about 3.6x faster than Immer with matched settings and 6.6x faster with each library's defaults.",
+    description: `Efficient immutable updates, about ${speedups.matched.factor}x faster than Immer with matched settings and ${speedups.defaults.factor}x faster with each library's defaults.`,
   }),
 };
 

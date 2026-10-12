@@ -1,3 +1,4 @@
+import { benchmarkRun, speedups } from '@/lib/benchmarks';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { SectionHeading } from './section-heading';
@@ -5,17 +6,17 @@ import { SectionHeading } from './section-heading';
 // The results of the performance page in the docs.
 const stats = [
   {
-    value: '3.6x',
+    value: `${speedups.matched.factor}x`,
     label: 'Faster than Immer with matched settings',
-    detail: 'Faster in 595 of 614 measured cases',
+    detail: `Faster in ${speedups.matched.faster} of ${speedups.matched.cases} measured cases`,
   },
   {
-    value: '6.6x',
+    value: `${speedups.defaults.factor}x`,
     label: "Faster than Immer with each library's defaults",
-    detail: 'Faster in 154 of 157 measured cases',
+    detail: `Faster in ${speedups.defaults.faster} of ${speedups.defaults.cases} measured cases`,
   },
   {
-    value: '97',
+    value: `${benchmarkRun.workloads}`,
     label: 'Benchmarked workloads',
     detail: 'Every result checked against hand-written reducers',
   },
@@ -50,8 +51,7 @@ export function Benchmarks() {
           ))}
         </div>
         <p className="mt-8 text-center text-sm text-fd-muted-foreground">
-          Geometric means of Immer&apos;s time over Mutative&apos;s, against
-          Immer 11.1.18 on Node.js 24.{' '}
+          {`Geometric means of Immer's time over Mutative's, against Immer ${benchmarkRun.immer} on Node.js ${benchmarkRun.node}.`}{' '}
           <Link
             href="/docs/getting-started/performance"
             className="inline-flex items-center gap-1 font-medium text-fd-foreground underline decoration-fd-primary underline-offset-4 transition-opacity hover:opacity-80"

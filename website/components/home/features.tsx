@@ -9,6 +9,7 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react';
+import { speedups } from '@/lib/benchmarks';
 import Link from 'next/link';
 import { SectionHeading } from './section-heading';
 
@@ -29,8 +30,7 @@ const features: {
   {
     icon: Zap,
     title: 'High performance',
-    description:
-      'About 6.6x faster than Immer out of the box, and faster than hand-written spreads for objects with thousands of keys.',
+    description: `About ${speedups.defaults.factor}x faster than Immer out of the box, and faster than hand-written spreads for objects with thousands of keys.`,
     href: '/docs/getting-started/performance',
   },
   {

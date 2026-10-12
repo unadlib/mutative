@@ -1,3 +1,4 @@
+import { benchmarkRun, speedups } from '@/lib/benchmarks';
 import { ArrowRight, Zap } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -42,8 +43,10 @@ export function Hero() {
         >
           <Zap className="size-3.5 fill-fd-primary text-fd-primary" />
           <span>
-            About 3.6x faster than Immer
-            <span className="hidden sm:inline"> across 97 workloads</span>
+            {`About ${speedups.matched.factor}x faster than Immer`}
+            <span className="hidden sm:inline">
+              {` across ${benchmarkRun.workloads} workloads`}
+            </span>
           </span>
           <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
