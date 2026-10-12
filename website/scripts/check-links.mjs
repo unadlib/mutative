@@ -49,23 +49,52 @@ function resolve(pathname) {
 }
 
 const broken = [];
+
+function check(source, href, url) {
+  const target = resolve(decodeURIComponent(url.pathname));
+  if (!target) {
+    broken.push(`${source}: ${href} (missing page)`);
+  } else if (
+    url.hash.length > 1 &&
+    target.endsWith('.html') &&
+    !getIds(target).has(decodeURIComponent(url.hash.slice(1)))
+  ) {
+    broken.push(`${source}: ${href} (missing anchor)`);
+  }
+}
+
 const files = getHtmlFiles(outDir);
 for (const file of files) {
   const page = `/${path.relative(outDir, file).replace(/index\.html$/, '')}`;
   const html = fs.readFileSync(file, 'utf8');
   for (const [, href] of html.matchAll(/<a\s[^>]*?href="([^"]*)"/g)) {
     const url = new URL(decode(href), siteUrl + page);
-    if (url.origin !== siteUrl) continue;
-    const target = resolve(decodeURIComponent(url.pathname));
-    if (!target) {
-      broken.push(`${page}: ${href} (missing page)`);
-    } else if (
-      url.hash.length > 1 &&
-      target.endsWith('.html') &&
-      !getIds(target).has(decodeURIComponent(url.hash.slice(1)))
-    ) {
-      broken.push(`${page}: ${href} (missing anchor)`);
-    }
+    if (url.origin === siteUrl) check(page, href, url);
+  }
+}
+
+// The README of the package and the messages of the library link to the
+// site too, so a moved page or heading must keep their links working.
+const repoDir = fileURLToPath(new URL('../../', import.meta.url));
+function getSourceFiles(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const file = path.join(dir, entry.name);
+    if (entry.isDirectory()) return getSourceFiles(file);
+    return entry.name.endsWith('.ts') ? [file] : [];
+  });
+}
+const sources = [
+  path.join(repoDir, 'README.md'),
+  ...getSourceFiles(path.join(repoDir, 'src')),
+];
+for (const file of sources) {
+  const text = fs.readFileSync(file, 'utf8');
+  for (const [href] of text.matchAll(
+    /https:\/\/mutative\.js\.org[^\s)"'`<>\]]*/g
+  )) {
+    // A sentence can end right after a link.
+    const link = href.replace(/[.,;:]+$/, '');
+    check(path.relative(repoDir, file), link, new URL(link));
   }
 }
 
@@ -73,4 +102,6 @@ if (broken.length > 0) {
   console.error(`Found ${broken.length} broken links:\n${broken.join('\n')}`);
   process.exit(1);
 }
-console.log(`Checked the links of ${files.length} pages`);
+console.log(
+  `Checked the links of ${files.length} pages and ${sources.length} files of the package`
+);

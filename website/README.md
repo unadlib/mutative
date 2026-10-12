@@ -22,7 +22,7 @@ This command starts a local development server at http://localhost:3000. Most ch
 $ pnpm build
 ```
 
-This command exports the static site into the `out` directory. After `next build`, it writes the pages that redirect moved URLs, those of the former Docusaurus site, such as `/docs/category/getting-started/`, and of renamed pages, and fails when a page links to a missing page or anchor. `pnpm start` serves the `out` directory to preview the build.
+This command exports the static site into the `out` directory. After `next build`, it writes the pages that redirect moved URLs, those of the former Docusaurus site, such as `/docs/category/getting-started/`, and of renamed pages, and fails when a page, the README of the package or a message of the library links to a missing page or anchor of the site. `pnpm start` serves the `out` directory to preview the build.
 
 ### Deployment
 

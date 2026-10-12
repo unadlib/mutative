@@ -4,11 +4,15 @@ on:
   pull_request:
     paths:
       - 'website/**'
+      - 'README.md'
+      - 'src/**'
       - '.github/workflows/website.yml'
   push:
     branches: [main]
     paths:
       - 'website/**'
+      - 'README.md'
+      - 'src/**'
       - '.github/workflows/website.yml'
 
 permissions:
