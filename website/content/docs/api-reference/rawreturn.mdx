@@ -1,82 +1,70 @@
 ---
 title: rawReturn()
+description: Return a value from a recipe as it is, without searching it for drafts, or return undefined.
 ---
 
-For return values that do not contain any drafts, you can use `rawReturn()` to wrap this return value to improve performance. It ensure that the return value is only returned explicitly.
+`rawReturn(value)` wraps the value that a recipe returns, so that `create()` makes it the next state as it is, without searching it for drafts. It also makes `undefined` the next state, which a recipe that returns nothing cannot.
 
-Mutative searches the value a recipe returns for drafts, so that drafts mixed into it are replaced. With auto-freeze enabled, production builds do not search frozen objects or the values they hold, so returning an earlier, frozen state, or state built from one, costs little even without `rawReturn()`. Development builds still search them and throw when they find a draft there, so never put a draft in a frozen object or in a value it holds.
+```ts
+rawReturn<T extends object | undefined>(value: T): T
+```
 
 ## Usage
 
-The `rawReturn()` API offers developers an advanced control mechanism over the return value of state mutation operations. Unlike the standard behavior where the state manipulation function returns the updated draft state, `rawReturn()` allows the return of a raw value directly, bypassing the draft mechanism.
-
-When you invoke `rawReturn()` within a state manipulation function, you instruct Mutative to use the value you pass to `rawReturn()` as the final result of the current operation. This capability is particularly useful when the desired outcome of an operation is not a new draft state but a specific value that reflects a computed result or a status code.
-
-Key aspects of the `rawReturn()` API include:
-
-- It overrides the default draft return, enabling a direct and explicit return of any value from a state mutation function.
-- This function can be used to return values such as `undefined`, `null`, or any other primitive or object, offering more flexibility in state management scenarios. `rawReturn()` can not return drafts or contain sub-drafts in draft tree, in strict mode `rawReturn()` will also warn if the return value contains drafts.
-- It is particularly useful in cases where you want to terminate the draft operation early and return a predetermined value.
-- The API helps maintain clear and explicit control over what is returned from mutation operations, aiding in creating predictable state management flows.
-
-In essence, `rawReturn()` expands the versatility of state management in Mutative, enabling developers to return immediate values from within draft operations, thereby enhancing the control they have over state transitions and outcomes.
-
-<Callout type="idea">
-If using Redux, you can use `rawReturn()` to return the default state directly.
-</Callout>
-
 ```ts
+import { create, rawReturn } from 'mutative';
+
 const baseState = { id: 'test' };
-const state = create(baseState as { id: string } | undefined, (draft) => {
+
+const state = create(baseState as { id: string } | undefined, () => {
   return rawReturn(undefined);
 });
+
 expect(state).toBe(undefined);
 ```
 
-> If the return value mixes drafts, you should not use `rawReturn()`.
+A recipe can return a new state instead of changing the draft. Mutative searches such a value for drafts and replaces each one with its value, so that a returned value can hold drafts, as `{ ...draft, a: 2 }` does:
 
 ```ts
+import { create, isDraft } from 'mutative';
+
 const baseState = { a: 1, b: { c: 1 } };
+
 const state = create(baseState, (draft) => {
-  if (draft.b.c === 1) {
-    return {
-      ...draft,
-      a: 2,
-    };
-  }
+  return {
+    ...draft,
+    a: 2,
+  };
 });
+
 expect(state).toEqual({ a: 2, b: { c: 1 } });
-expect(isDraft(state.b)).toBeFalsy();
+expect(isDraft(state.b)).toBe(false);
+expect(state.b).toBe(baseState.b);
 ```
 
-If you use `rawReturn()`, we recommend that you enable [`strict` mode](/docs/advanced-guides/strict-mode) in development.
+That search visits every object of the returned value, which takes time for large values. `rawReturn()` skips it for a value that holds no drafts, such as a state built from scratch or an earlier state:
 
 ```ts
-const baseState = { a: 1, b: { c: 1 } };
-const state = create(
-  baseState,
-  (draft) => {
-    if (draft.b.c === 1) {
-      // it will warn `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.` in strict mode.
-      return rawReturn({
-        ...draft,
-        a: 2,
-      });
-    }
-  },
-  {
-    strict: true,
-  }
-);
-expect(state).toEqual({ a: 2, b: { c: 1 } });
-expect(isDraft(state.b)).toBeFalsy();
+import { create, rawReturn } from 'mutative';
+
+const initialState = { todos: [] as string[] };
+const baseState = { todos: ['learn'] };
+
+// A reducer that resets the state.
+const state = create(baseState, () => rawReturn(initialState));
+
+expect(state).toBe(initialState);
 ```
 
-<Callout type="warn">
-In strict mode, if the return value contains drafts, it will warn:
-```
-The return value contains drafts, please don't use 'rawReturn()' to wrap the return value
-```
+In the benchmark, returning a new state of 10,000 rows took 2.6 ms with the search and 0.26 µs with `rawReturn()`. Development builds warn when a returned object holds no drafts, to suggest `rawReturn()`.
 
-If the return value may contain a draft, then please do NOT use `rawReturn()` to wrap the return value.
+## Rules
+
+- Never wrap a value that holds drafts. Without strict mode, Mutative does not search it, so the next state keeps those drafts, which are revoked when the recipe ends and throw when they are read. In [strict mode](/docs/advanced-guides/strict-mode), Mutative still searches a value that `rawReturn()` wraps and replaces its drafts, and development builds warn: ``The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.``
+- Call it with exactly one argument; it throws otherwise.
+- Wrap only objects and `undefined`. A recipe can return a primitive as it is, since a primitive holds no drafts, and development builds warn when `rawReturn()` receives one.
+- With auto-freeze, production builds do not search frozen objects in a returned value or the values they hold, so returning an earlier, frozen state, or state built from one, costs little even without `rawReturn()`. Development builds still search them and throw when they find a draft there, so never put a draft in a frozen object or in a value it holds.
+
+<Callout type="idea">
+Enable strict mode in development when you use `rawReturn()`, for example with `strict: process.env.NODE_ENV !== 'production'`, so that a wrapped value that holds drafts is reported.
 </Callout>
