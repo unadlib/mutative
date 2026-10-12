@@ -17,17 +17,13 @@ In that benchmark the gap widened on large arrays, where Mutative moved elements
 - <a href="https://www.richsnapp.com/article/2019/06-09-reduce-spread-anti-pattern" target="_blank">The reduce ({...spread}) anti-pattern</a>
 - <a href="https://jonlinnell.co.uk/articles/spread-operator-performance?fbclid=IwAR0mElQwz2aOxl8rcsqoYwkcQDlcXcwuyIsTmTAbmyzrarysS8-BC1lSY9k" target="_blank">How slow is the Spread operator in JavaScript?</a>
 
-Mutative copies each object at most once per update, however many changes a recipe makes, and focuses on shallow copy optimization, more complete lazy drafts, finalization process optimization, and more.
+Mutative copies each object at most once per update, however many changes a recipe makes.
 
 ## Motivation
 
-Writing immutable updates by hand is usually difficult, prone to errors, and cumbersome. Immer helps us write simpler immutable updates with "mutative" logic.
+Immer made it easy to write immutable updates as mutations of a draft. Mutative keeps that model and focuses on performance: it copies each object at most once per update, drafts objects only when a recipe reads them, finalizes only the drafts that changed, and runs array methods that move elements natively on its copies. Immer freezes the next state by default, which costs time on every update; Mutative freezes it only when asked to.
 
-But its performance issue causes a runtime performance overhead. Immer enables auto-freeze by default, and such frozen immutable state is not common. In scenarios such as cross-processing, remote data transfer, etc., these immutable data must be constantly frozen.
-
-There are more parts that could be improved, such as better type inference, non-intrusive markup, support for more types of immutability, Safer immutability, [more edge cases](test/immer-non-support.test.ts), and so on.
-
-This is why Mutative was created.
+Mutative also takes its options per call instead of from global configuration, drafts class instances through marks instead of changing their classes, supports async recipes and Map and Set subclasses, and handles [edge cases](test/immer-non-support.test.ts) that Immer gets wrong. [Comparison with Immer](https://mutative.js.org/docs/extra-topics/comparison-with-immer) lists the differences.
 
 ## Performance
 
