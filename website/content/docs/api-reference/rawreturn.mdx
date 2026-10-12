@@ -58,6 +58,12 @@ expect(state).toBe(initialState);
 
 In the benchmark, returning a new state of 10,000 rows took 2.6 ms with the search and 0.26 µs with `rawReturn()`. Development builds warn when a returned object holds no drafts, to suggest `rawReturn()`.
 
+## Performance compared with Immer
+
+Returning an earlier state is the one workload of the [benchmark](/docs/getting-started/performance) in which Mutative's defaults were slower than Immer's. Immer freezes each next state by default and skips frozen values when it searches a returned state for drafts, so returning a state that it had frozen earlier took it 0.79 µs at 10,000 rows, while Mutative, which does not freeze by default, searched the same state for 2.6 ms. With the same settings, Mutative was faster: 2.6 ms against 5.7 ms without auto-freeze, and 0.53 µs against 0.79 µs with it, since its production builds skip frozen values too. `rawReturn()` returns a state that holds no drafts in 0.26 µs.
+
+Freezing by default is a trade-off rather than a shortcut. Data that is not frozen yet, such as a response parsed from JSON, has to be frozen first: returning 10,000 rows that each call creates took Immer 9.2 ms with its default, against 3.1 ms for Mutative's search and 0.23 ms with `rawReturn()`, of which creating the rows took 0.19 ms. Freezing also made Immer slower in every other workload of the [selected results](/docs/getting-started/performance#mutative-vs-immer), such as 25.0 µs instead of 1.82 µs to update an item of 100 rows. [Auto Freeze](/docs/advanced-guides/auto-freeze) describes when freezing is worth its cost.
+
 ## Rules
 
 - Never wrap a value that holds drafts. Without strict mode, Mutative does not search it, so the next state keeps those drafts, which are revoked when the recipe ends and throw when they are read. In [strict mode](/docs/advanced-guides/strict-mode), Mutative still searches a value that `rawReturn()` wraps and replaces its drafts, and development builds warn: ``The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.``
