@@ -37,7 +37,7 @@ Bundlers that target Node.js resolve the same CJS entry, for example esbuild wit
 `pnpm size` runs both checks below, including in push, pull request and release workflows:
 
 1. `size-limit` bundles what a consumer imports with webpack in production mode and checks its Brotli size against the limit in `package.json`: all exports of the production CJS artifact, and `create` and all exports of the ESM entry. Each check names its imports: without them, webpack drops the unused exports of the entry and measures only module initialization. Each limit is the size at its last refresh plus 1%, rounded up to 0.1 kB.
-2. `pnpm size:compare` compares the build with the pre-migration Rollup measurements in `scripts/build-size-baseline.json`.
+2. `pnpm size:compare` compares the build with the measurements of a reference revision in `scripts/build-size-baseline.json`, the revision of the last change that accepted a size difference.
 
 The baseline comparison measures:
 
@@ -61,7 +61,7 @@ node scripts/check-build-size.mjs --check /path/to/checkout
 
 The reference revision and build commands are recorded in the baseline JSON. To reproduce it, check that revision out into a separate worktree, install with its frozen lockfile, build it, and run `--measure` from the current checkout. This uses the same pinned consumer bundler for both builds.
 
-A legitimate API expansion or measurement-tool upgrade may require a new baseline. Review the raw, compressed and consumer deltas, update the reference metadata and measurements together, and explain the accepted change in the commit. Normal builds and checks never update the baseline automatically.
+A change that legitimately grows the build, such as a fix, a feature or a measurement-tool upgrade, refreshes the baseline. Review the raw, compressed and consumer deltas, update the reference metadata and measurements together, and explain the accepted change in the commit. Normal builds and checks never update the baseline automatically.
 
 ## Package checks
 
