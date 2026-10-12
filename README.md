@@ -835,19 +835,18 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 ## Contributing
 
-Mutative's goal is efficient immutable updates. The focus is on performance and on APIs that make development easier, and pull requests that help with either are welcome.
+Mutative's goal is efficient immutable updates. The focus is on performance and on APIs that make development easier, and pull requests that help with either are welcome. For a larger change, open an [issue](https://github.com/unadlib/mutative/issues) or a [discussion](https://github.com/unadlib/mutative/discussions) first.
 
-Development Workflow:
+Development workflow:
 
-See [Building and validating Mutative](./BUILDING.md) for the build pipeline, package checks, bundle-size regression policy and the generated API reference.
-
-See [the benchmark suite](./perf-testing/README.md) for the comparison of the current build with Mutative 1.3.0, Immer, and a hand-written reducer, matched freeze and patch modes, memory measurements, and CI regression budgets. Run `pnpm benchmark:immer:check` to validate every workload and `pnpm benchmark:immer` to measure them.
-
-- Clone Mutative repo.
+- Clone the repository, and use Node.js 22 or 24 with the pnpm version that `package.json` declares.
 - Run `pnpm install` to install all the dependencies.
-- Run `pnpm format` to format the code.
-- `pnpm test --watch` runs an interactive test watcher.
-- Run `pnpm commit` to make a git commit.
+- Run `pnpm test` to run the tests, or `pnpm test --watch` for an interactive test watcher.
+- Run `pnpm format`, `pnpm lint` and `pnpm type-check` before you commit.
+- Run `pnpm commit` to write a commit message in the [Conventional Commits](https://www.conventionalcommits.org/) format.
+- Create a pull request.
+
+[Building and validating Mutative](./BUILDING.md) describes the build pipeline, the package checks, the bundle size limits and the generated API reference. [The benchmark suite](./perf-testing/README.md) compares the current build with Mutative 1.3.0, Immer and hand-written reducers, and describes the regression budgets that CI checks: run `pnpm benchmark:immer:check` to validate every workload and `pnpm benchmark:immer` to measure them.
 
 The [contributing guide](https://mutative.js.org/docs/extra-topics/contributing) also covers the docs: code examples in this README and on the website that import from `mutative` run as tests.
 
