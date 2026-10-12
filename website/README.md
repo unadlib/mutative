@@ -36,6 +36,7 @@ This command builds the website and pushes the `out` directory to the `gh-pages`
 
 - `content/docs` holds the docs as MDX files. The `title` and `description` frontmatter fields give the heading and the description of a page; without a description, the first paragraph describes the page in search results and link previews. The `meta.json` file of each folder orders its pages in the sidebar, and its `index.mdx` file is the overview page of the section.
 - `content/blog` holds the blog posts, with `title`, `date`, `authors` and `tags` frontmatter fields; the authors are listed in `lib/blog.ts`.
+- `lib/benchmarks.ts` holds the benchmark figures of the home page. The tests of the repository check them against `perf-testing/reports/SUMMARY.md`, the README and the performance page, so a new benchmark run updates them together.
 - `public` holds the static files, served at the root of the site.
 - `static/img/ mutative.png` is the logo of the README, which the READMEs of the published npm packages load from the `main` branch, so it stays at this path.
 

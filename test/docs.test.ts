@@ -163,3 +163,80 @@ describe('website/content/docs/extra-topics/errors.mdx', () => {
     }
   });
 });
+
+describe('website/lib/benchmarks.ts', () => {
+  const read = (path: string) => readFileSync(join(root, path), 'utf8');
+  // The text from a heading to the next heading of its level.
+  const section = (text: string, heading: string) => {
+    const level = heading.match(/^#+/)![0];
+    const start = text.indexOf(`\n${heading}\n`);
+    expect(start, heading).not.toBe(-1);
+    const end = text.indexOf(`\n${level} `, start + heading.length + 2);
+    return text.slice(start, end === -1 ? undefined : end);
+  };
+  const summary = read('perf-testing/reports/SUMMARY.md');
+
+  test('holds the run and the speedups of the performance summary', async () => {
+    const { benchmarkRun, speedups } =
+      await import('../website/lib/benchmarks');
+    const scope = section(summary, '## Scope and method');
+    expect(scope).toContain(`${benchmarkRun.machine},`);
+    expect(scope).toContain(`Node ${benchmarkRun.node},`);
+    expect(scope).toContain(`${benchmarkRun.workloads} scenarios at 100 rows`);
+    expect(summary).toContain(`Immer is pinned to ${benchmarkRun.immer} `);
+    // The last column of the results holds all cells: faster / within 5% /
+    // slower of all, and the geometric mean.
+    const results = section(summary, '### Against Immer and Mutative 1.3.0');
+    for (const [comparator, speedup] of [
+      [`Immer ${benchmarkRun.immer}`, speedups.matched],
+      [`Immer ${benchmarkRun.immer} with its defaults`, speedups.defaults],
+    ] as const) {
+      const row = results
+        .split('\n')
+        .find((line) => line.startsWith(`| ${comparator} |`));
+      const [, faster, cases, mean] =
+        row?.match(/\| (\d+) \/ \d+ \/ \d+ of (\d+), ([\d.]+) \|$/) ?? [];
+      expect({
+        comparator,
+        faster,
+        cases,
+        factor: Number(mean).toFixed(1),
+      }).toEqual({
+        comparator,
+        faster: String(speedup.faster),
+        cases: String(speedup.cases),
+        factor: speedup.factor.toFixed(1),
+      });
+    }
+  });
+
+  test('charts the times of the README and the performance page', async () => {
+    const { chartWorkloads } = await import('../website/lib/benchmarks');
+    const tables = {
+      'README.md': section(read('README.md'), '## Performance'),
+      'performance.mdx': section(
+        read('website/content/docs/getting-started/performance.mdx'),
+        '## Mutative vs Immer'
+      ),
+    };
+    for (const [name, table] of Object.entries(tables)) {
+      for (const workload of chartWorkloads) {
+        // | Workload | Rows | Mutative | Immer | Immer, auto-freeze | Hand-written |
+        const cells = table
+          .split('\n')
+          .map((line) => line.split('|').map((cell) => cell.trim()))
+          .find((row) => row[1] === workload.name);
+        expect({ name, cells: cells?.slice(1, 6) }).toEqual({
+          name,
+          cells: [
+            workload.name,
+            workload.rows,
+            workload.mutative,
+            workload.immer,
+            workload.immerAutoFreeze,
+          ],
+        });
+      }
+    }
+  });
+});
