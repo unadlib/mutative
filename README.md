@@ -581,7 +581,7 @@ const [state, patches, inversePatches] = create(baseState, (draft) => {
 
 ### `markSimpleObject()`
 
-`markSimpleObject()` is a mark function that marks all objects as immutable.
+`markSimpleObject()` is a mark function that makes simple objects draftable: plain objects, objects without a prototype, such as those of `Object.create(null)`, and plain objects of other realms, such as same-origin iframes.
 
 ```ts
 const baseState = {
