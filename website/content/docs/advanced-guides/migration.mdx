@@ -220,4 +220,4 @@ expect(nextState.user.name).toBe('Ada');
 
 ## TypeScript
 
-`Draft<T>`, `Immutable<T>`, `Patch` and `Patches` are exported by both libraries, and Mutative adds `castMutable()`. Mutative infers the result type of `create()` from its options, such as the tuple of patches with `enablePatches: true`; see [TypeScript](/docs/advanced-guides/typescript).
+`Draft<T>`, `Immutable<T>` and `Patch` are exported by both libraries, and Mutative adds `Patches`, the type of a list of patches, and `castMutable()`. Mutative infers the result type of `create()` from its options, such as the tuple of patches with `enablePatches: true`; see [TypeScript](/docs/advanced-guides/typescript).
