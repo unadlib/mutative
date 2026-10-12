@@ -1,20 +1,35 @@
 ---
 title: isDraft()
+description: Check whether a value is a draft.
 ---
 
-Check if a value is a draft.
+`isDraft(value)` returns `true` for a draft, of the current recipe or of any other one, and `false` for any other value, including the base state, a finished state and the values that a recipe assigned.
+
+```ts
+isDraft(value: any): boolean
+```
 
 ## Usage
 
 ```ts
+import { create, isDraft } from 'mutative';
+
 const baseState = {
   date: new Date(),
   list: [{ text: 'todo' }],
 };
 
 const state = create(baseState, (draft) => {
-  expect(isDraft(draft.date)).toBeFalsy();
-  expect(isDraft(draft.list)).toBeTruthy();
+  expect(isDraft(draft)).toBe(true);
+  expect(isDraft(draft.list)).toBe(true);
+  // A Date is not drafted.
+  expect(isDraft(draft.date)).toBe(false);
 });
+
+expect(isDraft(state)).toBe(false);
+expect(isDraft(baseState)).toBe(false);
 ```
 
+Use it in helpers that take a draft or a plain value, for example to change a draft in place and to call `create()` for any other value, as [`create()` on a draft](/docs/api-reference/create#create-on-a-draft) shows. [`current()`](/docs/api-reference/current) and [`original()`](/docs/api-reference/original) throw for values that are not drafts.
+
+`isDraft()` reads the value, so for a draft whose producer has ended, which Mutative revokes, it throws as any other read does.
