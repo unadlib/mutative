@@ -5,7 +5,7 @@ import {
   chartWorkloads,
   type ChartWorkload,
 } from '@/lib/benchmarks';
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useRef, useState, type KeyboardEvent } from 'react';
 
 type SeriesKey = 'mutative' | 'immer' | 'immerAutoFreeze';
 
@@ -54,68 +54,15 @@ function getRatio(workload: ChartWorkload, key: SeriesKey) {
   return toNumber(workload[key]) / slowest;
 }
 
-// The bars of a workload grow when it scrolls into view, unless it is on
-// screen when the page loads or the reader prefers reduced motion. The static
-// HTML holds the grown bars.
-type Motion = 'static' | 'ready' | 'growing';
-
-const barMotion: Record<Motion, string> = {
-  static: '',
-  ready: 'scale-x-0',
-  growing:
-    'scale-x-100 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
-};
-
 const rowCount = chartWorkloads.length * series.length;
 
 export function BenchmarkChart() {
   const [view, setView] = useState<'chart' | 'table'>('chart');
-  const [motion, setMotion] = useState<Motion[]>(() =>
-    chartWorkloads.map(() => 'static')
-  );
   // The row whose details show, by hover or focus, and the row that the
   // keyboard reaches the chart at.
   const [active, setActive] = useState<number | null>(null);
   const [focusable, setFocusable] = useState(0);
-  const facets = useRef<(HTMLDivElement | null)[]>([]);
   const rows = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    if (
-      typeof IntersectionObserver === 'undefined' ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      return;
-    }
-    const setFacet = (index: number, value: Motion) =>
-      setMotion((current) =>
-        current.map((item, i) => (i === index ? value : item))
-      );
-    const seen = new Set<Element>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const index = facets.current.indexOf(entry.target as HTMLDivElement);
-          if (!seen.has(entry.target)) {
-            seen.add(entry.target);
-            if (entry.isIntersecting) {
-              observer.unobserve(entry.target);
-            } else {
-              setFacet(index, 'ready');
-            }
-          } else if (entry.isIntersecting) {
-            setFacet(index, 'growing');
-            observer.unobserve(entry.target);
-          }
-        }
-      },
-      { rootMargin: '0px 0px -15% 0px' }
-    );
-    for (const facet of facets.current) {
-      if (facet) observer.observe(facet);
-    }
-    return () => observer.disconnect();
-  }, []);
 
   function moveFocus(event: KeyboardEvent<HTMLDivElement>) {
     const keys: Record<string, number> = {
@@ -185,9 +132,6 @@ export function BenchmarkChart() {
         {chartWorkloads.map((workload, workloadIndex) => (
           <div
             key={workload.name}
-            ref={(element) => {
-              facets.current[workloadIndex] = element;
-            }}
             role="group"
             aria-labelledby={`benchmark-${workloadIndex}`}
           >
@@ -211,7 +155,7 @@ export function BenchmarkChart() {
               role="list"
               className="relative mt-4 grid grid-cols-[7rem_minmax(0,1fr)] gap-x-2 gap-y-1 sm:grid-cols-[8.75rem_minmax(0,1fr)]"
             >
-              {/* The baseline that the bars grow from. */}
+              {/* The baseline of the bars. */}
               <div
                 aria-hidden
                 className="col-start-2 row-span-3 row-start-1 border-l border-fd-border"
@@ -265,12 +209,7 @@ export function BenchmarkChart() {
                           width: `max(3px, calc((100% - 4.5rem) * ${ratio}))`,
                         }}
                       >
-                        <div
-                          className={`h-full origin-left rounded-r-[4px] ${color} ${
-                            barMotion[motion[workloadIndex]]
-                          }`}
-                          style={{ transitionDelay: `${seriesIndex * 90}ms` }}
-                        />
+                        <div className={`h-full rounded-r-[4px] ${color}`} />
                         {isActive && (
                           <div
                             aria-hidden
