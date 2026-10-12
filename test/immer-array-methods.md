@@ -1,6 +1,6 @@
 # Immer array methods and patch correctness
 
-This audit reproduces failures in the published **Immer 11.1.18** package, the npm `latest` version verified on 2026-09-30. It replaces the exploratory `check-immer` branch's Immer 11.1.3 dependency with the current package on a fresh branch based on Mutative `main` at `af06787b798c43db5e5d7ed9f7f4f64fa58e4dbe`. The dependency is pinned so a future Immer fix produces a visible test change.
+This audit reproduces failures in the published **Immer 11.1.18** package, the npm `latest` version verified on 2026-09-30. It replaces the exploratory `check-immer` branch's Immer 11.1.3 dependency with the current package on a fresh branch based on Mutative `main` after PR #170. The dependency is pinned so a future Immer fix produces a visible test change.
 
 Sources: [11.1.18 release](https://github.com/immerjs/immer/releases/tag/v11.1.18), [array methods API](https://immerjs.github.io/immer/api/), and the source shipped in the npm tarball. The separate vendored `test/immer` tree is not the package under investigation.
 
@@ -100,7 +100,7 @@ See [the splice insertion bookkeeping](https://github.com/immerjs/immer/blob/v11
 
 ## Qualification and upgrade changes
 
-The original `check-immer` array file at `720c26ff6029139a3336437dba6796a10a291a9a` has 15 recipes. Executing their state and replay assertions without comparing historical snapshots yields 15 passes with optimization disabled and five failures with optimization enabled, for both 11.1.3 and 11.1.18. The old helper computes its native expectation **after** production and compares inverse replay to the same potentially mutated base. The new suite saves both oracles before production, checks base preservation explicitly, and uses independent JSON patch replay. It adds no snapshot files.
+The original array file of the exploratory `check-immer` branch has 15 recipes. Executing their state and replay assertions without comparing historical snapshots yields 15 passes with optimization disabled and five failures with optimization enabled, for both 11.1.3 and 11.1.18. The old helper computes its native expectation **after** production and compares inverse replay to the same potentially mutated base. The new suite saves both oracles before production, checks base preservation explicitly, and uses independent JSON patch replay. It adds no snapshot files.
 
 Comparator and predicate callbacks are read-only in the new fixtures. The plugin documents that callbacks receive raw values. The report's failures do not depend on mutating callback arguments, cyclic input, duplicate output references, or other unsupported graph shapes.
 
