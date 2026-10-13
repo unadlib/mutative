@@ -31,7 +31,7 @@ Mutative also takes its options per call instead of from global configuration, d
 
 > Mutative passed all of Immer's test cases.
 
-Mutative was 3.6x faster than Immer 11.1.18 with matched settings and 6.6x faster with each library's defaults, on geometric mean across 97 benchmarked workloads, and faster in 595 of 614 measured cases. The gap grows on large arrays, where Mutative moves elements natively: removing the first of 10,000 rows took 7.04 µs, against 7,408 µs. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+Mutative 2.0.0 was 3.6x faster than Immer 11.1.18 with matched settings and 6.6x faster with each library's defaults, on geometric mean across 97 benchmarked workloads, and faster in 595 of 614 measured cases. The gap grows on large arrays, where Mutative moves elements natively: removing the first of 10,000 rows took 7.04 µs, against 7,408 µs. The [performance summary](./perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
 <details>
 <summary><strong>Selected results</strong></summary>
@@ -109,7 +109,7 @@ Immer's optional `enableArrayMethods()` plugin also runs array methods on the dr
 <details>
 <summary><strong>Bundle size compared with Immer</strong></summary>
 
-Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from the ESM entry that bundlers resolve for each library (Immer 11.1.21 `dist/immer.mjs`; Mutative 2.0), with `process.env.NODE_ENV` defined as `production`, bundled for the browser with `--minify --target=es2018 --format=esm`. The first row imports `create`, `apply`, `current` and `original` for Mutative, and `produce`, `applyPatches`, `current` and `original` with Immer's `enablePatches`, `enableMapSet` and `enableArrayMethods`. The second imports only `create` or `produce`.
+Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from the ESM entry that bundlers resolve for each library (Immer 11.1.21 `dist/immer.mjs`; Mutative 2.0.0), with `process.env.NODE_ENV` defined as `production`, bundled for the browser with `--minify --target=es2018 --format=esm`. The first row imports `create`, `apply`, `current` and `original` for Mutative, and `produce`, `applyPatches`, `current` and `original` with Immer's `enablePatches`, `enableMapSet` and `enableArrayMethods`. The second imports only `create` or `produce`.
 
 | Bundle                                      |  Immer | Mutative |
 | ------------------------------------------- | -----: | -------: |
