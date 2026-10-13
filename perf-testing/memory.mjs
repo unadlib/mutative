@@ -9,6 +9,19 @@ export function allocatedBytes(node) {
   );
 }
 
+// A heap reading right after a full GC can include hundreds of KiB that the
+// next GC reclaims, as on GitHub's Linux runners with Node 24, so read the heap
+// after several collections and keep the lowest reading.
+function collectedMemoryUsage() {
+  let lowest;
+  for (let i = 0; i < 3; i++) {
+    globalThis.gc();
+    const usage = process.memoryUsage();
+    if (!lowest || usage.heapUsed < lowest.heapUsed) lowest = usage;
+  }
+  return lowest;
+}
+
 // Allocation sampling and retained-heap measurement are separate passes. Neither
 // pass supplies latency results: inspector and explicit GC change execution.
 export async function measureMemory(
@@ -56,14 +69,13 @@ export async function measureMemory(
     session.disconnect();
     outputs.fill(null);
   }
-  globalThis.gc();
-  const before = process.memoryUsage();
+  const before = collectedMemoryUsage();
   retainOutputs();
   const batchEnd = process.memoryUsage();
   const gcStart = performance.now();
   globalThis.gc();
   const gcAfterRetainMs = performance.now() - gcStart;
-  const retained = process.memoryUsage();
+  const retained = collectedMemoryUsage();
   // Observe the contents after measurement, keeping every output live through GC.
   // Patches retain the last tuple per iteration. Avoid storing an output in a
   // separate local, which would keep it alive after clearing the holder.
@@ -72,8 +84,7 @@ export async function measureMemory(
     if (outputs[i] !== undefined) observedOutputs++;
   assert.equal(observedOutputs, iterations);
   outputs.fill(null);
-  globalThis.gc();
-  const released = process.memoryUsage();
+  const released = collectedMemoryUsage();
   return {
     iterations,
     samplingInterval,
