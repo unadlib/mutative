@@ -46,9 +46,9 @@ node perf-testing/run-benchmarks.mjs --runs 3
 pnpm benchmark:immer --library both
 pnpm benchmark:immer --library mutative-v1
 
-# Build a v2 checkout first, then reuse this harness with that production artifact
-# Reports read its real package version and Git revision; no v2 code is invented.
-MUTATIVE_PERF_CANDIDATE_DIR=/absolute/path/to/v2-checkout pnpm benchmark:immer
+# Measure the production artifact of another built checkout with this harness
+# Reports read its real package version and Git revision.
+MUTATIVE_PERF_CANDIDATE_DIR=/absolute/path/to/other-checkout pnpm benchmark:immer
 
 # Refresh the pinned comparison, review budgets.json's version policy, and rerun
 pnpm add -D -E immer@latest
