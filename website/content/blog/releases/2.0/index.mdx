@@ -1,162 +1,78 @@
 ---
-title: Announcing Mutative 2.0 - Faster Arrays, Safer Patches, the Same API
+title: Announcing Mutative 2.0 - Faster Updates and Safer Patches
 authors: unadlib
 tags: [release]
-description: Mutative 2.0 keeps the 1.x API, runs array methods natively on drafts, fixes patch and collection edge cases, and changes how its builds are selected. What changed, how it was measured, and how to upgrade.
+description: Mutative 2.0 keeps the 1.x API while doing less work on arrays, collections and snapshots, fixing states and patches in important edge cases, and making production builds and types predictable. What changes for your code, and how to upgrade.
 image: /img/mutative-social-card.jpg
 date: 2026-10-13
 ---
 
-Mutative is a JavaScript library for efficient immutable updates: a recipe changes a draft of the state with ordinary JavaScript, and Mutative produces the next state, copying only what the recipe changed. Mutative 2.0 keeps the functions and options of 1.x and changes the work behind them:
+Mutative lets you write immutable updates as ordinary mutations. A recipe changes a draft of the state, and Mutative returns the next state, copying only what the recipe changed and sharing the rest with the previous state.
 
-- Array methods that move elements, such as `shift()` and `splice()`, run natively on the draft's copy of the array instead of moving each element through the draft's proxy.
-- Set and Map drafts, `current()` snapshots and `apply()` do less work per update.
-- Patches, Set drafts, collection iterators and failed producers behave correctly in cases where 1.x did not.
-- The development or production build is selected from `process.env.NODE_ENV` in bundlers and in Node.js alike, and production builds throw coded errors.
+Mutative 2.0 keeps the API of 1.x and changes the work behind it. Picture a worker that takes the first job off a queue of 10,000 jobs and puts it back at the end when it fails. In 1.x, that `shift()` call moved each of the 9,999 remaining jobs through the draft's proxy. In 2.0, it moves them natively on the draft's copy. With auto-freeze and patches off, removing the first of 10,000 rows measured 7 µs in 2.0 versus 8.2 ms in 1.3.0.
 
-This post is for those who use Mutative 1.x and for those who are new to it. It shows the model in two examples, reports a benchmark of the 2.0 code against Mutative 1.3.0 and Immer 11.1.18, with its settings and the cases in which Mutative is slower, walks through the changes, and ends with a checklist for upgrading.
+That is one of three improvements in 2.0:
+
+- **[Less work on arrays, collections and snapshots](#less-work-on-arrays-collections-and-snapshots).** Array methods that move elements run natively, and Set and Map drafts, `current()` and `apply()` do less work per update.
+- **[Correct results in edge cases](#correct-results-in-edge-cases).** Patches follow Immer's order and replay where some 1.x patches failed, Set drafts keep every change, and `apply()` is stricter about the paths it accepts.
+- **[Predictable builds and types](#predictable-builds-and-types).** Bundlers and Node.js both select the development or production build from `process.env.NODE_ENV`, and more types match what the code returns.
+
+No function or option was renamed or removed, and no new option is required. This is a major release because observable behavior changes: patch order and values, freezing of Map and Set instances, build selection, production errors and some inferred types. Builds now target ES2018, and several bug fixes change results that 1.x computed incorrectly.
 
 <Callout type="info">
-Upgrading from 1.x? The API is the same, but some states, patches, errors and types differ. The [checklist](#upgrading-from-1x) at the end links each step to the [migration guide](/docs/advanced-guides/migration-v2), which lists every change since 1.3.0.
+Upgrading from 1.x? The [checklist](#upgrading-from-1x) at the end lists what to check, and the [migration guide](/docs/advanced-guides/migration-v2) describes every change since 1.3.0.
 </Callout>
 
-## Why a major version
+## How Mutative works
 
-2.0 keeps the API of 1.x: no function or option is renamed or removed, and no new option is required. It is a major version because some of what code observes changes:
-
-- Patches come in Immer's order, those of nested drafts before those of their parents, and a patch value that was a draft is now the object that the next state holds instead of a deep copy.
-- With auto-freeze, Map and Set instances themselves are frozen, and production builds no longer search the frozen objects of a returned value for drafts.
-- Production bundles drop the development checks of the ESM build too, production builds throw error codes instead of messages, and every build uses ES2018 syntax.
-- Several types are more precise, such as those of async recipes with an explicit state type, which 1.x typed as synchronous.
-- Fixes change results that 1.x computed differently, mostly for patches, Sets and `apply()`.
-
-Three goals run through these changes. An update should not pay per element where a native operation does the same work, which is what the changes to arrays, Sets, Maps, `current()` and `apply()` do. A result should be right before it is fast: patches should replay, and the next state should keep every change of its recipe. And the package should run the same build wherever it is loaded, so that a production bundle runs the production build.
-
-## Immutable updates by mutation
-
-If Mutative is new to you, this is the whole idea. `create()` passes a draft of the base state to a recipe and returns the next state:
-
-```ts
-import { create } from 'mutative';
-
-const baseState = {
-  user: { name: 'Ada' },
-  todos: [
-    { id: 1, text: 'Learn Mutative', done: false },
-    { id: 2, text: 'Upgrade to 2.0', done: false },
-  ],
-};
-
-const nextState = create(baseState, (draft) => {
-  draft.todos[0].done = true;
-  draft.todos.push({ id: 3, text: 'Read the release notes', done: false });
-});
-
-// The next state holds the changes...
-expect(nextState.todos[0].done).toBe(true);
-expect(nextState.todos).toHaveLength(3);
-// ...the base state is unchanged...
-expect(baseState.todos[0].done).toBe(false);
-expect(baseState.todos).toHaveLength(2);
-// ...and what the recipe left unchanged is shared, not copied.
-expect(nextState.user).toBe(baseState.user);
-expect(nextState.todos[1]).toBe(baseState.todos[1]);
-expect(nextState.todos[0]).not.toBe(baseState.todos[0]);
-```
-
-- A draft is a `Proxy`. Mutative drafts an object when the recipe reads it and copies it shallowly on its first change; later changes go to the same copy, so each object is copied at most once per update. Plain objects, arrays, Maps and Sets are drafted, and so are the values that a [mark](/docs/advanced-guides/mark) makes draftable, such as class instances.
-- The next state holds the copies of the changed objects and shares all the others with the base state, so code that compares by reference, such as React's memoization or the selectors of a store, can skip the unchanged parts. A recipe that changes nothing returns the base state itself.
-- A recipe either changes the draft or returns a new state; doing both throws. Drafts are revoked when the recipe ends, so keep the next state, or a snapshot from [`current()`](/docs/api-reference/current), rather than a draft.
-- Options are passed to each call, or set once for a `create()` of your own with [`makeCreator()`](/docs/api-reference/makecreator): there are no global settings and no plugins. The next state is not frozen unless you pass `enableAutoFreeze: true`.
-
-With `enablePatches`, `create()` also returns the patches of the update and the inverse patches that undo it, and [`apply()`](/docs/api-reference/apply) applies them, for example to undo and redo, or to replay the update on another copy of the state:
+If Mutative is new to you, this example shows the model. The recipe marks the first job as done. With `enablePatches`, `create()` also returns patches that describe the change and inverse patches that undo it, which [`apply()`](/docs/api-reference/apply) can replay:
 
 ```ts
 import { apply, create } from 'mutative';
 
-const baseState = { todos: [{ text: 'Learn Mutative', done: false }] };
+const baseState = {
+  settings: { maxAttempts: 3 },
+  queue: [
+    { id: 1, done: false },
+    { id: 2, done: false },
+  ],
+};
 
 const [nextState, patches, inversePatches] = create(
   baseState,
   (draft) => {
-    draft.todos[0].done = true;
+    draft.queue[0].done = true;
   },
   { enablePatches: true }
 );
 
+// The base state is unchanged, and what the recipe did not change is shared.
+expect(baseState.queue[0].done).toBe(false);
+expect(nextState.queue[0].done).toBe(true);
+expect(nextState.settings).toBe(baseState.settings);
+expect(nextState.queue[1]).toBe(baseState.queue[1]);
+
+// Patches describe the change, and inverse patches undo it.
 expect(patches).toEqual([
-  { op: 'replace', path: ['todos', 0, 'done'], value: true },
-]);
-expect(inversePatches).toEqual([
-  { op: 'replace', path: ['todos', 0, 'done'], value: false },
+  { op: 'replace', path: ['queue', 0, 'done'], value: true },
 ]);
 expect(apply(baseState, patches)).toEqual(nextState);
 expect(apply(nextState, inversePatches)).toEqual(baseState);
 ```
 
-[Usages](/docs/getting-started/usages) shows common updates of objects, arrays, Maps and Sets, and [Concepts](/docs/getting-started/concepts) explains drafts and finalization.
+A draft is a `Proxy`. Mutative copies an object shallowly the first time the recipe changes it, so each object is copied at most once per update, and every unchanged object is shared with the base state. Reference checks, such as React's memoization or a store's selectors, can then skip what did not change.
 
-## Performance
+When two paths lead to the same base object, each path gets an independent draft. To keep them shared after a change, assign one draft to the other path; see [Shared references](/docs/extra-topics/shared-references).
 
-The figures in this post come from one benchmark batch, measured on October 12, 2026 and recorded in the repository's [performance summary][summary], unless a paragraph names another run. The batch measured the source of `main` after PR #204, at commit [`40f3a42`][measured-commit], before its version number changed from 1.3.0 to 2.0.0. The commits between it and 2.0.0 left the production build as it was: the 2.0.0 source builds a production file with the SHA-256 that the summary [records for the measured build][identity], `cb6464f3…`. The tables call it Mutative 2.0.
+A recipe either changes the draft or returns a new state, and its drafts are revoked when it ends, so keep the next state or a [`current()`](/docs/api-reference/current) snapshot rather than a draft. Mutative drafts plain objects, arrays, Maps and Sets, plus values that a [mark](/docs/advanced-guides/mark) makes draftable, such as class instances; other objects are shared as they are. Options are passed per call or set once with [`makeCreator()`](/docs/api-reference/makecreator), and the next state is frozen only with `enableAutoFreeze: true`. [Concepts](/docs/getting-started/concepts) explains the model in depth, and [Pitfalls](/docs/advanced-guides/pitfalls) collects its rules.
 
-- **Comparators.** Mutative 1.3.0 from npm; Immer 11.1.18, without its `enableArrayMethods()` plugin, which [a section below](#immers-array-method-plugin) discusses; and a hand-written reducer, the spread-based reference code against which every result is checked before it is timed.
-- **Workloads.** 97 scenarios at 100 rows, 30 of them also at 1,000 and 10,000 rows: Immer's own performance workloads, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values and searches, which the [benchmark guide][workloads] describes.
-- **Modes.** Mutative 2.0, Mutative 1.3.0 and Immer ran with auto-freeze off and on, and with patches off and on; the hand-written reducer ran with both off. With auto-freeze on, the inputs are frozen in advance and the libraries freeze their outputs, so the first freeze of data from outside is not timed. With patches on, Mutative runs with `arrayLengthAssignment: false`, which gives an array that gets shorter the same patches as Immer gives it.
-- **Environment.** An Apple M1 Max with 64 GiB of RAM, darwin/arm64, Node.js 24.16.0 with V8 13.6, and Mitata 1.0.34. Each library ran each scenario in processes of its own, three per cell, and each time is the median of the three process means, in microseconds per complete scenario.
+## Less work on arrays, collections and snapshots
 
-A cell is one scenario at one size in one mode. The counts below call a cell faster when its time is below 95% of the comparator's, slower when it is above 105%, and within 5% otherwise. The geometric means divide the comparator's time by that of Mutative 2.0, so values above 1 favor 2.0. They give every cell of the suite the same weight: they summarize this suite, not the speed of an application, whose time goes to its own mix of updates.
+### Array methods that move elements
 
-### Compared with Immer
+In 1.x, array methods ran through the draft's proxy, so `shift()` read and wrote every remaining element through it. In 2.0, `shift()`, `unshift()`, `splice()` and `reverse()` move the elements of a plain array directly on the draft's copy. `indexOf()`, `lastIndexOf()` and `includes()` search the current array natively, and `sort()` and `join()` run natively on arrays of primitives.
 
-With the same settings, both libraries freezing or neither and both generating patches or neither, Mutative 2.0 was faster than Immer in 595 of 614 cells, within 5% in 13 and slower in 6, with a geometric mean of 3.58: 3.04 at 100 rows, and 4.70 at 1,000 and 10,000 rows. With patches on and auto-freeze off, it was faster in 148 of 150 cells and within 5% in the other 2, with a geometric mean of 3.28.
-
-With each library's defaults, Mutative without auto-freeze and Immer with it, both without patches, Mutative 2.0 was faster in 154 of 157 cells, with a geometric mean of 6.63. The first comparison measures the two libraries doing the same work; the second measures each as it is configured out of the box, where part of Immer's time goes to freezing the next state.
-
-### Compared with Mutative 1.3.0
-
-In the same 614 cells, 2.0 was faster than 1.3.0 in 535, within 5% in 70 and slower in 9, with a geometric mean of 4.27: 3.45 at 100 rows, and 6.07 at 1,000 and 10,000 rows. The largest differences are in arrays, Sets and searches, where 1.3.0 did work for every element; updates whose time goes to copying a large object, record or Map take about as long as before. With patches on and auto-freeze off, 2.0 was faster in 131 of 150 cells and within 5% in the other 19, and in the 70 of them that involve arrays its geometric mean was 13.09. Its sampled allocation was lower than that of 1.3.0 in 107 of 114 memory cells.
-
-### Selected workloads
-
-Microseconds per complete scenario; lower is better. In each row, every library ran in the mode that the row names, and the hand-written reducer ran only without auto-freeze and patches.
-
-| Workload | Size | Auto-freeze | Patches | Mutative 2.0 | Mutative 1.3.0 | Immer 11.1.18 | Hand-written |
-| --- | ---: | --- | --- | ---: | ---: | ---: | ---: |
-| Update one field of a small object | — | off | off | 0.51 | 0.80 | 0.69 | 0.02 |
-| 200 RTK Query-style updates | — | off | off | 1,001 | 1,849 | 1,133 | 352 |
-| Read every row by index | 10,000 | off | off | 4,756 | 8,120 | 9,584 | 57.7 |
-| Remove the first row with `shift()` | 10,000 | off | off | 7.04 | 8,203 | 7,408 | 1.40 |
-| Update one of 10,000 records | 10,000 | off | off | 1,200 | 1,188 | 2,094 | 2,088 |
-| Insert a property into a 1,000-property object | — | off | off | 50.3 | 50.7 | 149 | 126 |
-| The same, with auto-freeze | — | on | off | 140 | 121 | 229 | — |
-| Push a row and insert a property | 10,000 | off | on | 63.2 | 210 | 360 | — |
-| Apply patches that insert, remove and replace rows | 100 | off | off | 2.97 | 115 | 99.0 | — |
-| Update a field of a class instance with 1,000 fields | — | on | off | 402 | 411 | 237 | — |
-| Return a new state of rows frozen earlier | 10,000 | on | off | 0.53 | 2,628 | 0.79 | — |
-
-The RTK Query-style row simulates the reducer of 100 pending and 100 resolved requests; it does not run Redux Toolkit. Patches cost 2.0 little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.8 µs without patches and 63.2 µs with them, against 65.8 µs and 210 µs for 1.3.0, and 161 µs and 360 µs for Immer. The last rows include exceptions, which the next section explains.
-
-### Where 2.0 is slower
-
-- **Than Immer with the same settings**, in 6 of 614 cells, all with auto-freeze. Four update one field of a class instance with many fields. With 1,000 fields, 2.0 took 402 µs without patches and 414 µs with them, against 237 µs and 238 µs; with 100 and 10,000 fields and no patches, about 5% longer. Without auto-freeze, 2.0 was faster, 98.8 µs against 203 µs with 1,000 fields, and the summary attributes the gap to freezing the copy of the instance, which 2.0 makes property by property with descriptors where Immer 11 uses `Object.assign`. The other two cells, `add` and `concat` at 100 rows, are cells in which the processes of both libraries overlapped.
-- **Than Immer with each library's defaults**, in 3 of 157 cells, all of a recipe that returns a new state of rows that were frozen earlier. Immer's default auto-freeze lets it skip frozen values when it searches a returned state for drafts, in 0.78–0.79 µs, while 2.0 without auto-freeze searches every object: 26.2 µs, 257 µs and 2.60 ms at 100, 1,000 and 10,000 rows. Wrapping such a value in [`rawReturn()`](/docs/api-reference/rawreturn#performance-compared-with-immer) skips the search, in 0.26 µs, and with auto-freeze, the production build of 2.0 skips frozen values as Immer does, in 0.53 µs at 10,000 rows. Data that is not frozen yet reverses the result. In a [focused run][fresh] on October 13, 2026, with the same production build, every library in processes of its own, three runs, patches off and outside the counts above, returning 10,000 rows that each call creates took Immer 9,228 µs with its default auto-freeze, against 3,070 µs for 2.0 without it, and 226 µs with `rawReturn()`.
-- **Than Mutative 1.3.0**, in 9 of 614 cells, by 8–18%, all with auto-freeze: `add`, `concat`, `update-largeObject1` and `push-and-insert` at 100 rows, and `object-delete` at 1,000 rows. The processes of each version varied by up to 1.4 times in these cells and overlapped between the versions, except in `concat` with patches, 20.5–21.1 µs against 17.1–20.2 µs. In the focused run of fresh rows, 2.0 with auto-freeze took 1.6–6.8% longer than 1.3.0, and the same time without it.
-- **Than a hand-written reducer**, in 129 of 150 cells. Across the 150, 2.0 took 8.4 times as long on geometric mean: the reducer copies only what each update changes, and has no drafts to create, track or finalize. 2.0 was faster in 18 cells: copying wide objects, such as records with 1,000 or 10,000 keys or class instances with 100 or more fields, by 1.5–2.8 times; inserting at the front of 10,000 rows, in 15.8 µs against 28.4 µs; and adding a number to a Set of 1,000 or 10,000 numbers, in 29.5 µs against 61.2 µs at 10,000. The reducer is the spread-based reference that checks every result, and faster hand-written code exists for many workloads.
-
-Other costs remain. With patches, a Set that adds or deletes items compares all its items to emit its patches: adding a number to a Set of 10,000 numbers took 440 µs with patches, against 29.5 µs without. Copies of objects with more than 128 keys become dictionary-mode objects in V8, which retained 48 KiB per output at 1,000 keys, against 8 KiB for the other libraries. And all of these numbers come from one machine and one version of Node.js, while browser engines differ: in WebKit 26.4, every scan of a frozen array was slow, so updating 10,000 frozen rows took several milliseconds there with every build. [Tradeoffs and limits][limits] in the summary lists the rest.
-
-### Bundle size
-
-Some of this speed is paid in bytes. Patches, Map and Set support and the native array methods are part of `create()` rather than plugins, so a bundler cannot drop them, even when a recipe does not use them. Bundled with esbuild 0.24.0 from the ESM entry that bundlers resolve, for the browser, minified, with `process.env.NODE_ENV` defined as `production` and compressed with Brotli, `create()` alone takes 7.9 kB, against 3.6 kB for the `produce()` of Immer 11.1.21, and `create()`, `apply()`, `current()` and `original()` take 8.5 kB, against 6.4 kB for their Immer counterparts with `enablePatches()`, `enableMapSet()` and `enableArrayMethods()`, as the [README][readme-performance] records.
-
-<Callout type="idea">
-The main timing tables describe the October 12, 2026 batch; the fresh-data run and bundle-size comparison are identified separately above. The [Performance](/docs/getting-started/performance) page and the [latest summary][latest-summary] show the current results, and `pnpm benchmark:immer`, run in a clone of the repository, measures the suite on your machine.
-</Callout>
-
-## Native array methods
-
-In 1.x, an array method that moved elements, such as `shift()`, ran through the draft's proxy, which moved every element through the draft. In 2.0, `shift()`, `unshift()`, `splice()` and `reverse()` move the elements of a plain array directly on the draft's copy, `indexOf()`, `lastIndexOf()` and `includes()` search the current array natively, and `sort()` and `join()` run natively on arrays of primitives. On supported data arrays, a removed draftable base element is returned as a draft, so changing it does not change the base state; an element that only moves keeps its identity; the patches replay in both directions; and a call that changes nothing keeps the state.
+On these data arrays, a removed draftable object from the base state comes back as a draft, so changing it leaves the base state alone. An element that only moves keeps its identity, and the patches replay in both directions. Here is the retry from the introduction, on a short queue:
 
 ```ts
 import { apply, create, isDraft } from 'mutative';
@@ -168,7 +84,7 @@ const baseState = {
 const [nextState, patches, inversePatches] = create(
   baseState,
   (draft) => {
-    // shift() moves the other jobs natively on the draft's copy, and returns
+    // shift() moves the other jobs natively on the draft's copy and returns
     // the removed job as a draft.
     const job = draft.queue.shift()!;
     expect(isDraft(job)).toBe(true);
@@ -188,327 +104,179 @@ expect(apply(baseState, patches)).toEqual(nextState);
 expect(apply(nextState, inversePatches)).toEqual(baseState);
 ```
 
-The fast paths are made for data arrays. Sparse arrays, array subclasses, arrays with an own `constructor` or `Symbol.isConcatSpreadable`, arrays under a custom `mark`, every method with a callback, and `at()`, `slice()`, `fill()` and `copyWithin()` take the proxy path, as do calls on arrays that may hold objects in strict mode outside `unsafe()`. An accessor property on an array index is read as a data value, so its getter can run a different number of times than through the proxy. The [FAQ](/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts) and the [native array method contract][contract] of the summary give the details.
+These native paths are built for dense arrays of plain data. Sparse arrays, array subclasses, arrays under a custom mark and methods with callbacks take the proxy path, as do calls in strict mode on arrays that may hold objects, unless they run inside `unsafe()`. Getters on array indices have a narrower contract: the native methods read them as plain values, so a getter may run a different number of times. The [FAQ](/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts) and the [native array method contract][contract] give the details.
 
-### Large arrays
+### Search a snapshot, change the draft
 
-The gap grows with the array. At 1,000 and 10,000 rows, over the 30 scenarios that also ran at these sizes, Mutative 2.0 was faster than Immer in 222 of 232 cells. The table shows the geometric means of Immer's time over that of 2.0, for all 30 scenarios and for the moves, the five scenarios that shift, unshift, insert with `splice()` and reverse rows:
-
-| Auto-freeze | Patches | All, 1,000 rows | All, 10,000 rows | Moves, 1,000 rows | Moves, 10,000 rows |
-| --- | --- | ---: | ---: | ---: | ---: |
-| off | off | 8.67 | 10.79 | 209 | 430 |
-| off | on | 4.13 | 4.53 | 7.1 | 7.3 |
-| on | off | 3.92 | 4.23 | 32.4 | 38.7 |
-| on | on | 2.70 | 2.82 | 6.6 | 6.8 |
-
-With auto-freeze and patches off, removing the first of 10,000 rows took 7.04 µs, against 7,408 µs for Immer and 8,203 µs for 1.3.0. Patches bound the gain, since every library emits one patch per moved index: the same update then produces 10,000 forward and 10,000 inverse patches, and took 2.0 1,063 µs, against 8,943 µs for Immer and 265,439 µs for 1.3.0.
-
-A change to a row after a move needs the row's original index. With auto-freeze and patches off, removing the first of 10,000 rows with `shift()` and then updating the middle one took 8.91 µs, against 9,525 µs for 1.3.0 and 8,611 µs for Immer, after [#200](https://github.com/unadlib/mutative/pull/200) and [#202](https://github.com/unadlib/mutative/pull/202) made that lookup cheap after `shift()`, `unshift()` and `splice()`, also in frozen arrays and arrays that hold the same object many times. After `reverse()` it costs more: editing the middle row of 10,000 frozen rows took 310 µs after `reverse()`, against 188 µs after `shift()`, measured outside the suite.
-
-### Searching large arrays
-
-Methods with callbacks, such as `find()` and `filter()`, still go through the draft, so their callbacks see every change and can change elements, and every object that they visit becomes a draft. For a read-only search, search a [`current()`](/docs/api-reference/current#searching-a-large-array) snapshot and change the match through the draft. In 2.0, `current()` copies a changed array from its current elements instead of reading each one through the draft, and the indices of the snapshot are those of the draft, also after elements moved:
+Methods with callbacks, such as `find()` and `filter()`, still run through the draft, so a read-only scan may create a draft for every row it visits. For a read-only search of a large array, search a [`current()`](/docs/api-reference/current#searching-a-large-array) snapshot of plain values instead, and change the match through the draft. In 2.0, `current()` copies a changed array from its current elements rather than reading each one through the draft, and the snapshot keeps the draft's indices after elements move:
 
 ```ts
 import { create, current } from 'mutative';
 
 const baseState = {
-  rows: Array.from({ length: 10_000 }, (_, id) => ({ id, selected: false })),
+  queue: Array.from({ length: 10_000 }, (_, id) => ({ id, paused: false })),
 };
 
 const nextState = create(baseState, (draft) => {
-  draft.rows.shift();
+  draft.queue.shift();
   // Search a snapshot of plain values, which creates no drafts, and change
   // the match through the draft.
-  const index = current(draft.rows).findIndex((row) => row.id === 9_999);
-  draft.rows[index].selected = true;
+  const index = current(draft.queue).findIndex((job) => job.id === 9_999);
+  draft.queue[index].paused = true;
 });
 
-expect(nextState.rows).toHaveLength(9_999);
-expect(nextState.rows[9_998]).toEqual({ id: 9_999, selected: true });
-expect(nextState.rows[0]).toBe(baseState.rows[1]);
+expect(nextState.queue).toHaveLength(9_999);
+expect(nextState.queue[9_998]).toEqual({ id: 9_999, paused: true });
+expect(nextState.queue[0]).toBe(baseState.queue[1]);
 ```
 
-With auto-freeze and patches off, updating the first of 10,000 rows and then finding and updating the last one took 2.0 176 µs through a snapshot and 2,169 µs through the draft. The snapshot search took 3,436 µs with 1.3.0 and 23,152 µs with Immer, whose `current()` walks every unfrozen object. After `shift()`, as above, it took 257 µs, against 15,717 µs for 1.3.0 and 11,255 µs for Immer. As on the proxy path, `draft.rows.indexOf(row)` does not find an object of the base state, which a read turns into a draft: search [`original(draft.rows)`](/docs/api-reference/original) for it, whose indices match those of the draft until the recipe adds, removes or moves elements.
+With auto-freeze and patches off, a recipe that updates the first of 10,000 rows and then finds and updates the last one ran in 176 µs with a snapshot search and in 2,169 µs with a search through the draft. With 1.3.0, the snapshot version took 3,436 µs.
 
-### Immer's array-method plugin
+### Sets, Maps and applying patches
 
-Immer 11.1.18 has an opt-in `enableArrayMethods()` plugin, which also runs array methods on the draft's copy. The main comparison leaves it off, because in that version the plugin breaks guarantees that Immer otherwise keeps: `shift()`, `pop()` and `splice()` return raw base objects, so editing a removed object changes the previous state; reordering can expose original objects the same way, and leave revoked drafts in the result; and its forward patches can fail to replay. In [the audit][audit], 123 of 4,913 three-step operation sequences break with the plugin, and none without it.
+Set and Map updates also do less work. As soon as a recipe read a Set, 1.3.0 mapped every item, and it copied the Set when a lookup missed. 2.0, like Immer, does neither until the recipe changes the Set. Even then, it edits the Set's copy directly and tracks only the items that have drafts, instead of copying every item into a Map and back. A Map draft's `forEach()` reads entries from the draft's state rather than through the proxy, and `apply()` reads the type of each draft on a patch path once per step, where it used to ask the proxy twice.
 
-Measured separately, Immer with the plugin was faster than 2.0 in 59 of 328 cells, most of them cells in which the plugin hands raw base elements to the callbacks of `find()`, `findIndex()`, `filter()` and `sort()`, which 2.0 never does. 2.0 was faster in every `shift()`, `unshift()`, `splice()` and `reverse()` cell: at 10,000 rows by 20–53 times with auto-freeze and patches off, and by 1.2–2.0 times with patches on.
+### What the benchmark shows
 
-## Faster Sets, Maps and patch application
+The numbers in this post come from one benchmark batch, run on October 12, 2026, that compared Mutative 2.0 with Mutative 1.3.0 and Immer 11.1.18 in 97 scenarios, with auto-freeze and patches each off and on. A cell is one scenario at one size in one mode; [How the numbers were measured](#how-the-numbers-were-measured) gives the rest of the setup.
 
-Sets and Maps got the same treatment. From the same batch, in microseconds, with patches off:
+With matched settings, 2.0 was faster than Immer in 595 of 614 cells, within 5% in 13 and slower in 6, with a geometric mean speedup of 3.58. Against 1.3.0, it was faster in 535 cells, within 5% in 70 and slower in 9, with a geometric mean of 4.27. With each library's defaults, where Immer freezes the next state, Mutative does not, and neither generates patches, 2.0 was faster than Immer in 154 of 157 cells, with a geometric mean of 6.63. These means weight every cell equally, so they describe this suite, not the speed of your application.
 
-| Workload | Size | Auto-freeze | Mutative 2.0 | Mutative 1.3.0 | Immer 11.1.18 | Hand-written |
-| --- | ---: | --- | ---: | ---: | ---: | ---: |
-| Look up two numbers in a Set and read its size | 10,000 | off | 0.62 | 544 | 0.66 | 0.03 |
-| Update an object in a Set | 10,000 | off | 531 | 1,024 | 6,024 | 398 |
-| Sum the values of a Map with `forEach()` | 10,000 | off | 261 | 873 | 289 | 54.9 |
-| Add to a Map and a Set, then update a number beside them in nine more producers | 10,000 | on | 768 | 3,408 | 2,267 | — |
+The table shows where the gains come from and where they stop. Times are microseconds per scenario, with auto-freeze and patches off unless the row says otherwise; lower is better.
 
-- Reading a Set draft no longer maps its items. 1.3.0 mapped every item as soon as a recipe read the Set, and copied the Set when a lookup missed; 2.0, like Immer, does neither until the recipe changes the Set.
-- A Set draft adds and deletes items in its copy and maps only the items that drafts stand for, instead of copying every item into a Map and back. With auto-freeze and patches off, adding a number to a Set of 10,000 numbers allocated a sampled 330 KiB per update, against 2,888 KiB for 1.3.0.
-- `forEach()` on a Map draft reads each entry from the draft's state instead of calling `get()` through the proxy.
-- With auto-freeze, 2.0 freezes Map and Set instances themselves, where 1.3.0 only replaced their mutators, so a later producer skips a frozen collection instead of walking it again, as Immer's producers do.
+| Workload | Size | Mutative 2.0 | Mutative 1.3.0 | Immer 11.1.18 |
+| --- | ---: | ---: | ---: | ---: |
+| Remove the first row with `shift()` | 10,000 | 7.04 | 8,203 | 7,408 |
+| Look up two numbers in a Set and read its size | 10,000 | 0.62 | 544 | 0.66 |
+| Update an object in a Set | 10,000 | 531 | 1,024 | 6,024 |
+| Push a row and insert a property, with patches | 10,000 | 63.2 | 210 | 360 |
+| Apply patches that insert, remove and replace rows | 100 | 2.97 | 115 | 99.0 |
+| 200 RTK Query-style updates | — | 1,001 | 1,849 | 1,133 |
+| Update one of 10,000 records | 10,000 | 1,200 | 1,188 | 2,094 |
+| Update a field of a class instance with 1,000 fields, with auto-freeze | — | 402 | 411 | 237 |
 
-`apply()` now reads the type of each draft on a patch path from the draft's state, once per step, where it asked the draft's proxy twice. Applying patches that replace a nested value in 10% of 10,000 rows took 734 µs, against 1,166 µs for Immer: before this change, the code of 2.0 was 16–22% slower than Immer in this workload without auto-freeze, and after it, faster at every size, by 1.6–2.0 times. Applying patches that insert, remove and replace rows of 100 took 2.97 µs, against 115 µs for 1.3.0 and 99.0 µs for Immer.
+The RTK Query-style row simulates a reducer for 100 pending and 100 resolved requests, without running Redux Toolkit; in that mix of small updates, 2.0 took about half as long as 1.3.0 and 12% less time than Immer. Updates that spend their time copying one large object, record or Map, like the records row, take about as long as before. And patches add little when an update changes only a few paths: the push-and-insert update took 63.8 µs without patches and 63.2 µs with them.
 
-Across the 114 sampled memory cells, 2.0 allocated less than 1.3.0 in 107 and less than Immer in 79. With auto-freeze and patches off, reversing 10,000 nested rows allocated a sampled 88.3 KiB per update, against 11,077.5 KiB for 1.3.0 and 12,859.8 KiB for Immer. Immer allocated less for Map drafts, by up to 2.3 times, for the large fixture of the push-and-insert workload and the 1,000-key record, and by a few KiB for small producers.
+#### Where 2.0 is slower
 
-## Correctness fixes
+Against Immer with matched settings, 2.0 was slower in 6 cells, all with auto-freeze. Four update one field of a class instance with many fields. The summary attributes the gap to freezing the copy, which 2.0 builds property by property from descriptors where Immer 11 uses `Object.assign()`; without auto-freeze, 2.0 was about twice as fast there. In the other two cells, `add` and `concat` at 100 rows, the per-process timings of the two libraries overlapped. With each library's defaults, all 3 slower cells return a new state of rows frozen earlier, a case that [Auto-freeze and returned values](#auto-freeze-and-returned-values) explains.
 
-Alongside the speed work, 2.0 fixes cases in which 1.x produced a different state, or patches that did not replay. These are the main ones; the [migration guide](/docs/advanced-guides/migration-v2#fixes-that-change-results) lists every change.
+Against 1.3.0, 2.0 was 8–18% slower in 9 cells, all with auto-freeze, and in all but one of them the per-process timings of the two versions overlapped. A hand-written reducer is still faster in most cases: in the 150 cells where the suite's spread-based reference reducer ran, 2.0 was slower in 129 and took 8.4 times as long on geometric mean.
+
+Two other costs are worth knowing. With patches, a Set that adds or deletes items compares all of its items to emit its patches. With auto-freeze off, adding a number to a Set of 10,000 numbers took 440 µs with patches and 29.5 µs without. Browser engines also differ from Node.js: in WebKit 26.4, every scan of a frozen array was slow, so updating 10,000 frozen rows took several milliseconds there with every build. [Tradeoffs and limits][limits] lists the rest, including memory.
+
+#### Bundle size
+
+Some of this speed is paid for in bytes. Patches, Map and Set support and the native array methods are built into `create()` rather than offered as plugins, so a bundler cannot drop them. Bundled for the browser in production mode, minified and compressed with Brotli, `create()` alone takes 7.9 kB, against 3.6 kB for `produce()` from Immer 11.1.21. `create()`, `apply()`, `current()` and `original()` together take 8.5 kB, against 6.4 kB for their Immer counterparts with its patch, Map/Set and array-method plugins enabled. The [README][readme-performance] records the setup.
+
+#### How the numbers were measured
+
+The batch measured `main` at commit [`40f3a42`][measured-commit], before its version changed from 1.3.0 to 2.0.0. The commits since then left the production build unchanged: the 2.0.0 source builds a production file with the SHA-256 that the summary [records for the measured build][identity], `cb6464f3…`. The 97 scenarios ran at 100 rows, and 30 of them also at 1,000 and 10,000 rows, as the [benchmark guide][workloads] describes, on an Apple M1 Max with 64 GiB of RAM and Node.js 24.16.0. Mutative 1.3.0 and Immer 11.1.18 were pinned from npm. Each library ran each scenario in three isolated processes, and each time is the median of the three process means. With auto-freeze on, the inputs were frozen in advance, so freezing outside data for the first time is not timed. Patch-enabled measurements use `arrayLengthAssignment: false` in Mutative to match Immer's index-removal patches.
+
+Immer's opt-in `enableArrayMethods()` plugin was off. In 11.1.18, it returns objects of the base state from `shift()`, `pop()` and `splice()`, so editing a removed object changes the previous state, and its forward patches can fail to replay, as the [audit][audit] shows. Measured separately with the plugin, Immer was faster in 59 of 328 cells, mostly where it hands base objects to callbacks, which 2.0 never does, and slower in every cell that moves elements.
+
+The [performance summary][summary] records the results, method and limits of the batch. The [Performance](/docs/getting-started/performance) page and the [latest summary][latest-summary] show current results, and `pnpm benchmark:immer` runs the suite in a clone of the repository.
+
+## Correct results in edge cases
+
+Alongside the speed work, 2.0 fixes cases in which 1.x produced a wrong state or patches that did not replay. These are the fixes most likely to matter; the [migration guide](/docs/advanced-guides/migration-v2#fixes-that-change-results) lists them all.
 
 ### Patches
 
-- **Order.** The patches of a nested draft come before those of its parents, as Immer orders them. Applying them gives the same state as before, and the `replace` patches that only restated an unchanged draft at its original index are gone.
-- **Values.** A patch value that was a draft is now the object that the next state holds, instead of a deep copy, and auto-freeze freezes it with the state. Copy a patch value before you change it; `apply()` still copies patch values before it applies them.
-- **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it, emits no patches under its old path; the patches of its parent carry its value. In 1.x, such patches could fail to apply.
-- **Sets.** A changed item of a Set that also added or removed items travels in the Set's own `remove` and `add` patches. 1.x also emitted patches under the item's position, which a replay could apply to another item, or not at all.
-- **Original objects assigned over drafts** are recorded like any other assignment, where 1.x emitted `remove` patches that dropped a key or lost an element on replay.
+If you record patches for undo, redo or synchronization, expect these differences:
 
-Some of these fixes change the next state itself. With patches on, 1.3.0 kept the change of only one item when two or more items of a Set below the root changed below their first level, as in this recipe; 2.0 keeps every change, and the patches replay in both directions:
+- **Order.** Patches of a nested draft come before those of its parents, as in Immer. Applying them gives the same state as before, and the `replace` patches that only restated an unchanged draft at its original index are gone.
+- **Values.** A patch value that was a draft is now the object that the next state holds, not a deep copy, so auto-freeze freezes it too. Copy a patch value before you change it.
+- **Moved drafts.** A changed draft that `sort()` or an assignment moved, or that another value replaced, emits no patches under its old path; its parent's patches carry its value. In 1.x, such patches could fail to apply.
+- **Sets.** When a Set adds or removes items and also has a changed item, that item travels in the Set's own `remove` and `add` patches. 1.x also emitted patches that addressed the item by its position, so replaying them after the Set changed could update the wrong item or fail.
+- **Original objects assigned over drafts** are recorded like any other assignment. With 1.x, replaying such patches could drop the key or lose the element.
+
+Array patches are more exact too: they record a change between `0` and `-0`, skip an element that stays `NaN`, and cover the indices that an array exposes again after a recipe shortens and lengthens it.
+
+Some fixes change the next state itself. With patches on, when two or more items of a Set below the root changed below their first level, as `worker.stats.jobs` does here, 1.3.0 kept the change of only one of them. 2.0 keeps every change, and the patches replay in both directions:
 
 ```ts
 import { apply, create } from 'mutative';
 
 const baseState = {
-  members: new Set([
-    { name: 'Ada', stats: { posts: 1 } },
-    { name: 'Grace', stats: { posts: 2 } },
+  workers: new Set([
+    { name: 'build-1', stats: { jobs: 1 } },
+    { name: 'build-2', stats: { jobs: 2 } },
   ]),
 };
 
 const [nextState, patches, inversePatches] = create(
   baseState,
   (draft) => {
-    for (const member of draft.members) {
-      member.stats.posts += 1;
+    for (const worker of draft.workers) {
+      worker.stats.jobs += 1;
     }
   },
   { enablePatches: true }
 );
 
-expect([...nextState.members].map((member) => member.stats.posts)).toEqual([
+expect([...nextState.workers].map((worker) => worker.stats.jobs)).toEqual([
   2, 3,
 ]);
-expect([...baseState.members].map((member) => member.stats.posts)).toEqual([
+expect([...baseState.workers].map((worker) => worker.stats.jobs)).toEqual([
   1, 2,
 ]);
 expect(apply(baseState, patches)).toEqual(nextState);
 expect(apply(nextState, inversePatches)).toEqual(baseState);
 ```
 
-Arrays get the same care: patches record a change between `0` and `-0`, an element that stays `NaN` no longer yields a patch, and an array that a recipe shortens and lengthens again gets patches for the indices that the longer length exposes again.
-
-These fixes do not make patches preserve every property of a graph. When patches add objects to a Set, `apply()` copies those objects, so inverse patches cannot remove the copies by their original identity. Added items also go to the end, which can change the positions that later patches address. For repeated undo/redo or synchronization of such collections, use a Map keyed by an id or an array; [Sets of objects](/docs/advanced-guides/patches#sets-of-objects) explains the limits. Sparse array holes are another existing limit: assigning index `3` of an empty array leaves holes in the next state, but applying the generated patches creates explicit `undefined` entries at indices `0` through `2`.
-
-By default, paths are arrays of keys, and a shorter array is recorded with a replacement of its `length`. For JSON Patch operations on JSON-compatible objects and arrays, set both `pathAsArray` and `arrayLengthAssignment` to `false` in `enablePatches`. Maps and Sets have no JSON Patch counterpart; see [JSON patches](/docs/advanced-guides/patches#json-patches).
+Patches still cannot capture everything about a graph. When patches add objects to a Set, `apply()` copies them, so inverse patches cannot remove the copies by their original identity, and added items go to the end, which can shift the positions that later patches address. For repeated undo and redo or synchronization of such collections, use a Map keyed by an id, or an array; see [Sets of objects](/docs/advanced-guides/patches#sets-of-objects). Applying the patches of a sparse array can also turn its holes into explicit `undefined` entries.
 
 ### Applying patches
 
-`apply()` rejects a path that ends in `__proto__`, as it already rejected `__proto__` earlier in a path, and reads an item of a Set only at its index, so a path can no longer reach `Array.prototype` through a Set. It copies the own symbol keys of patch values and keeps an own `__proto__` key, such as one that `JSON.parse()` creates, as a data property. It uses a Map key of a path as it is, where 1.x converted it to a string first. And with `mutable: true`, it throws for a patch that replaces the root state with another value, which it cannot do in place, where 1.x ignored the replacement and applied the patches after it to the replacing value. [Patches that apply() accepts](/docs/api-reference/apply#patches-that-apply-accepts) lists the rules.
+`apply()` is also stricter. It now rejects a path that ends in `__proto__`, as it already rejected `__proto__` earlier in a path, and reads a Set item only by its index, so a path can no longer reach `Array.prototype` through a Set. Map keys in a path are used as they are, without conversion to strings. Copies of patch values keep their own symbol keys, and an own `__proto__` key, such as one from `JSON.parse()`, stays a plain property. With `mutable: true`, a patch that replaces the root state now throws, since the state cannot be replaced in place. [Patches that apply() accepts](/docs/api-reference/apply#patches-that-apply-accepts) lists the rules.
 
-### Collections and failed producers
+### Collections, iterators and failed producers
 
-- A draft of a Set subclass changes its copy, an instance of the subclass, as Map drafts already did, so the subclass's own `add()`, `has()`, `delete()` and `clear()` take effect during the recipe. Such an `add()` must store the value that it receives.
-- A Set draft that the recipe moves to another place, such as another key or a new object, keeps its added, deleted and changed items there.
-- With auto-freeze, Map and Set instances are frozen, where 1.x only replaced their mutators, so adding a property to one or replacing one of its methods fails, as on any frozen object.
-- The iterators of Map and Set drafts behave like built-in iterators: one that was partly consumed continues where it stopped, and iterator helpers such as `toArray()` are available where the engine has them. Map value and entry iterators and all Set iterators also follow their draft's lifetime, with the exceptions that [the next section](#lifetimes) explains.
-- A producer that fails after its recipe returned, for example because the recipe changed the draft and also returned another value, revokes its drafts as a recipe that throws does, and keeps the original error.
+Set and Map drafts now behave more like the built-ins they stand for. A draft of a Set subclass changes an instance of the subclass, so the subclass's own `add()`, `has()`, `delete()` and `clear()` take effect during the recipe; its `add()` must store the value it receives. A Set draft that the recipe moves elsewhere, such as to another key, keeps its changes there. And the iterators of Map and Set drafts work like built-in ones: a partly consumed iterator continues where it stopped, and iterator helpers such as `toArray()` are available where the engine has them.
 
-### New development checks
+These iterators now also end with their draft. A draft lives until its synchronous recipe finishes, until the Promise of its async recipe settles, or until a manual draft's `finalize()` succeeds. After that, Map value and entry iterators and all Set iterators throw a `TypeError` instead of yielding another value. Exhausted iterators stay exhausted, and `Map.keys()` keeps its native iterator, because Map keys are not drafted. Consume these iterators while their draft is active.
 
-Development builds report more mistakes. Production builds skip these checks, so run your tests with the development build:
+A producer that fails after its recipe returned, for example because the recipe changed the draft and also returned another value, now revokes its drafts as a throwing recipe does, and keeps the original error. Manual drafts differ: if `finalize()` throws, the draft can stay writable, so start a new draft from the base state instead of reusing it; see [manual drafts](/docs/api-reference/create#currying).
 
-- Using a draft as a Map key, as in `draft.map.set(draft.key, value)`, throws, since the next state would keep a revoked draft as the key. Use `original(draft)`, `current(draft)` or an id as the key.
-- With `enablePatches: { pathAsArray: false }`, a patch path that would hold a Map key that is not a string, or a symbol key, throws, since a JSON Pointer string cannot name it. Keep the default array paths for such keys.
-- In strict mode, a recipe that leaves 1,000 or more drafts unchanged warns once. The usual cause is a search through a large draft array, which a `current()` snapshot can replace.
-- With auto-freeze, a draft in a frozen object of a returned value throws, since production builds no longer look for drafts there.
-- Also with auto-freeze, the check for circular references reports only an object that holds itself: a changed draft that holds its original, as `draft.prev = original(draft)` makes it, no longer throws.
+### Auto-freeze and returned values
 
-The [errors page](/docs/extra-topics/errors#development-only-errors) lists the messages of these checks.
+With `enableAutoFreeze: true`, 2.0 freezes Map and Set instances themselves, as Immer does; 1.x only replaced their mutating methods. Later producers skip a frozen collection instead of walking it again, but adding a property to a frozen Map or Set, or replacing one of its methods, now fails.
 
-## Draft lifetimes, shared references and other rules
+A recipe can also return a new state. That value may hold drafts, as `{ ...draft, count: 0 }` does, so Mutative searches it for them. With auto-freeze, the production build of 2.0 skips frozen objects in the returned value and everything below them, which makes returning an earlier, frozen state cheap. Development builds still search there and throw when they find a draft, so never put a draft inside a frozen object, or inside anything that a frozen object holds. [`rawReturn()`](/docs/api-reference/rawreturn), which 1.x already had, skips the search for a value that holds no drafts; never wrap one that does.
 
-The internals of 2.0 changed, but the rules that drafts follow did not, and development builds now enforce more of them.
+This search explains the 3 cells in which 2.0 at its defaults was slower than Immer at its defaults. Each returns a new state of rows that were frozen earlier. Immer, which freezes by default, skips those rows, while 2.0 without auto-freeze searches all of them, taking 2.60 ms at 10,000 rows where Immer took 0.79 µs. `rawReturn()` avoids the search, and with auto-freeze, the production build of 2.0 skips the frozen rows, taking 0.53 µs. Fresh data reverses the result: in a [separate run][fresh] on October 13, 2026, with the same production build, returning 10,000 rows that each call creates took 9.2 ms with Immer's default auto-freeze, 3.1 ms with 2.0 at its defaults, and 0.23 ms with `rawReturn()`.
 
-### Lifetimes
+## Predictable builds and types
 
-A draft lives until its synchronous recipe finishes, until the Promise of an async recipe settles, or until a manual draft's `finalize()` succeeds. Recipe-based producers also revoke their drafts when they fail. Reading a revoked draft throws. In 2.0, Map value and entry iterators and all Set iterators follow the same lifetime: an iterator that could yield another value throws after its draft ends. Exhausted iterators stay exhausted. Map keys are not drafted, so `Map.keys()` keeps its native iterator and is exempt from this rule:
+The package contains a development build, with full error messages, warnings and extra checks, and a minified production build. In 2.0, `process.env.NODE_ENV` selects between them wherever Mutative is loaded:
 
-```ts
-import { create } from 'mutative';
-
-const baseState = { users: new Map([['ada', { name: 'Ada' }]]) };
-
-let iterator: Iterator<unknown> | undefined;
-
-const nextState = create(baseState, (draft) => {
-  iterator = draft.users.values();
-  draft.users.set('grace', { name: 'Grace' });
-});
-
-expect([...nextState.users.keys()]).toEqual(['ada', 'grace']);
-// The iterator ended with its draft.
-expect(() => iterator!.next()).toThrow(TypeError);
-```
-
-For a manual draft from `create(base)`, call `finalize()` only once. If it throws, cleanup differs from a recipe-based producer: the draft can remain writable. Start a new draft from the base state instead of reusing it or calling `finalize()` again; see [manual drafts](/docs/api-reference/create#currying).
-
-Keep `current(draft)`, the original object or the next state instead of a draft or an iterator. A draft also belongs to the call that made it: do not store it in the draft of another `create()` call, and do not use it as a Map key. A helper that calls `create()` on a draft gets a draft of `current(draft)`, whose unchanged values are objects of the base state, where Immer's `produce()` drafts the draft itself; development builds warn about it once, and [create() on a draft](/docs/api-reference/create#create-on-a-draft) shows how to write such helpers.
-
-### Shared references
-
-The state can reach one object through several paths, as long as there are no cycles. Each path then gets a draft of its own, as in Immer, so a change through one path does not show through the other. Assign one draft to the other path to keep the object shared:
-
-```ts
-import { create } from 'mutative';
-
-const red = { name: 'Red' };
-const baseState = { primary: red, accent: red };
-
-// Each path gets a draft of its own.
-const separate = create(baseState, (draft) => {
-  draft.primary.name = 'Blue';
-});
-expect(separate.primary).toEqual({ name: 'Blue' });
-expect(separate.accent).toBe(red);
-
-// Assigning one draft to the other path keeps the object shared.
-const shared = create(baseState, (draft) => {
-  draft.primary.name = 'Blue';
-  draft.accent = draft.primary;
-});
-expect(shared.accent).toBe(shared.primary);
-expect(shared.primary).toEqual({ name: 'Blue' });
-```
-
-Cycles are not supported. Development builds detect them only with auto-freeze, where 2.0 reports an object that holds itself; see [Shared references](/docs/extra-topics/shared-references).
-
-### Values that are not drafted
-
-Mutative drafts plain objects, arrays, Maps and Sets. Other objects, such as class instances, dates and objects without a prototype, are shared by the draft, the base state and the next state, so a recipe that changes one of them in place changes the base state too. [Mark](/docs/advanced-guides/mark) such classes as `immutable` so that Mutative drafts and copies their instances, use [`markSimpleObject()`](/docs/api-reference/marksimpleobject) for objects without a prototype, or replace such values instead of changing them. In development, [strict mode](/docs/advanced-guides/strict-mode) makes every read of such a value explicit with [`unsafe()`](/docs/api-reference/unsafe), and auto-freeze makes accidental writes to the state fail:
-
-```ts
-import { makeCreator } from 'mutative';
-
-const isDevelopment = process.env.NODE_ENV !== 'production';
-
-export const create = makeCreator({
-  strict: isDevelopment,
-  enableAutoFreeze: isDevelopment,
-});
-```
-
-### Returned values
-
-A recipe can return a new state, which Mutative searches for drafts, so that it can hold some, as `{ ...draft, count: 0 }` does. [`rawReturn()`](/docs/api-reference/rawreturn) skips that search for a value that holds no drafts; never wrap one that does. With auto-freeze, the production builds of 2.0 also skip the frozen objects of a returned value, which makes returning an earlier, frozen state cheap, while development builds search them and throw when they find a draft there. Never put a draft in a frozen object or in a value that it holds.
-
-For example, reset to a known state that contains no drafts:
-
-```ts
-import { create, rawReturn } from 'mutative';
-
-const initialState = { todos: [] as string[] };
-const baseState = { todos: ['Learn Mutative'] };
-
-const nextState = create(baseState, () => rawReturn(initialState));
-
-expect(nextState).toBe(initialState);
-expect(baseState.todos).toEqual(['Learn Mutative']);
-```
-
-The [Pitfalls](/docs/advanced-guides/pitfalls) guide collects these rules, with examples.
-
-## The API, unchanged
-
-2.0 has the same functions as 1.3.0. For newcomers, this is the whole toolbox:
-
-| Function | What it does |
-| --- | --- |
-| [`create()`](/docs/api-reference/create) | Produces the next state from a recipe. With a recipe alone, it returns a producer, which works as a reducer; with a base state alone, a draft and a `finalize()` function. Recipes can be async. |
-| [`apply()`](/docs/api-reference/apply) | Applies patches and returns the next state, or with `mutable: true`, available since 1.2.0, changes the state in place. Inside a recipe, it applies patches to the draft. |
-| [`makeCreator()`](/docs/api-reference/makecreator) | Returns a `create()` with default options. |
-| [`current()`](/docs/api-reference/current) | Takes a snapshot of a draft, of plain values. |
-| [`original()`](/docs/api-reference/original) | Returns the value that a draft was created from. |
-| [`rawReturn()`](/docs/api-reference/rawreturn) | Returns a value from a recipe without searching it for drafts, or makes `undefined` the next state. |
-| [`unsafe()`](/docs/api-reference/unsafe) | Allows reads of values that are not drafted in strict mode. |
-| [`isDraft()`](/docs/api-reference/isdraft), [`isDraftable()`](/docs/api-reference/isdraftable) | Tell whether a value is a draft, and whether Mutative drafts it, optionally with a mark. |
-| [`markSimpleObject()`](/docs/api-reference/marksimpleobject) | A mark that drafts objects without a prototype and plain objects of other realms. |
-| [`castDraft()`, `castImmutable()`, `castMutable()`](/docs/api-reference/casts) | Change the TypeScript type of a value, and return the value as it is. |
-
-`create()` takes its options per call, and `makeCreator()` sets defaults for them. A creator keeps its own options, unlike Immer's global settings, so a library and an application that both use Mutative do not change each other's behavior. A recipe can also be async, and its draft stays usable until its Promise settles:
-
-```ts
-import { makeCreator } from 'mutative';
-
-// A create() with its own defaults; other creators keep theirs.
-const create = makeCreator({ enablePatches: true });
-
-const baseState = { user: { id: 1, name: '' } };
-
-const [nextState, patches] = await create(baseState, async (draft) => {
-  draft.user.name = await Promise.resolve('Ada');
-});
-
-expect(nextState.user).toEqual({ id: 1, name: 'Ada' });
-expect(patches).toEqual([
-  { op: 'replace', path: ['user', 'name'], value: 'Ada' },
-]);
-```
-
-## Builds, packages and TypeScript
-
-### Build output
-
-Every build targets ES2018 instead of ES2015, so object spread stays native, which lets V8 copy an object in one step. Engines that support `Proxy` but not ES2018 syntax, such as Chrome 49–59, Firefox 18–54, Safari 10–11.0 and Edge 12–18, need Mutative transpiled by your build. The oldest Node.js version that the package declares is still 14.0, and CI installs the packed package on Node.js 14.0.0 and runs a short runtime test there, through both its CommonJS and its ESM entry, in development and in production.
-
-### Development and production builds
-
-The package holds a development build, with full error messages, warnings and extra checks, and a minified production build. 2.0 selects between them the same way wherever Mutative is loaded:
-
-- **Bundlers** resolve the ESM build, in which every development check compares `process.env.NODE_ENV` with `'production'`. Configure the production build to replace `process.env.NODE_ENV` with the string literal `'production'`, so that the bundler can drop the development code. In 1.x, the ESM build always ran its development code.
-- **Bundles for Node.js**, such as those of esbuild with `platform: 'node'`, go through the CommonJS entry, which selects its build when it loads. A bundle that does not define `process.env.NODE_ENV` therefore keeps both builds: a minified esbuild 0.24.0 bundle of `create()` grows from 26.8 KB to 58.0 KB, or from 8.8 KB to 13.4 KB with Brotli. Define the variable, or leave Mutative external.
+- **Bundlers** resolve the ESM build, whose development checks now test `process.env.NODE_ENV`. When your production build replaces it with `'production'`, the bundler drops the development code; in 1.x, the ESM build always ran it.
+- **Bundles for Node.js**, such as esbuild's with `platform: 'node'`, use the CommonJS entry, which selects a build when it loads. If such a bundle does not define `process.env.NODE_ENV`, it includes both builds, which more than doubles a minified bundle of `create()`. Define the variable, or keep Mutative external.
 - **Node.js** resolves `import` to a module that re-exports the CommonJS build, so `import` and `require` share one instance, which reads `NODE_ENV` once when it loads. In 1.x, `import` always ran the development ESM build, as a separate instance.
-- **Browsers without a bundler** have no `process`, so `dist/mutative.esm.mjs` fails there with `process is not defined`. Load `dist/mutative.esm.production.min.mjs`, or the UMD build that the `unpkg` and `jsdelivr` fields of the package point to; see [Installation](/docs/getting-started/installation#development-and-production-builds).
-- **Errors** of production builds read `Minified Mutative error #<code>`, with a link to the [errors page](/docs/extra-topics/errors), which decodes each code. In 2.0, this also holds for the errors of `apply()`, `original()` and `rawReturn()`.
+- **Browsers without a bundler** have no `process`, so loading `dist/mutative.esm.mjs` directly fails with `process is not defined`. Load `dist/mutative.esm.production.min.mjs` or the UMD build instead; see [Installation](/docs/getting-started/installation#development-and-production-builds).
 
-Reading `process.env` takes about 170 ns in Node.js 24, and some development checks run for every draft or frozen value, which is why Node.js goes through the CommonJS entry instead of the ESM build that bundlers resolve. [BUILDING.md][building] describes the build pipeline.
+Production builds throw `Minified Mutative error #<code>` with a link to the [errors page](/docs/extra-topics/errors), which decodes the code. CommonJS consumers already got these errors in 1.x; in 2.0, production bundles get them too, and the errors of `apply()`, `original()` and `rawReturn()` are now coded as well. [BUILDING.md][building] describes the build pipeline.
 
-### Package entries and types
+### More checks in development
 
-The `exports` map of `package.json` now gives `import` and `require` declarations of their own, and adds a `node` condition for the Node.js entry:
+Production builds skip the development checks, so run your tests with the development build. In 2.0, it also catches these mistakes:
 
-```json
-{
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.mts",
-        "node": "./dist/index.mjs",
-        "default": "./dist/mutative.esm.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
-    },
-    "./*": "./*"
-  }
-}
-```
+- **Drafts as Map keys.** `draft.map.set(draft.key, value)` throws, since the next state would keep a revoked draft as the key. Use `original(draft)`, `current(draft)` or an id instead.
+- **Keys that string paths cannot name.** With `enablePatches: { pathAsArray: false }`, a patch path that would hold a non-string Map key or a symbol key throws. Keep the default array paths for such keys.
+- **Searches through large drafts.** In strict mode, a recipe that leaves 1,000 or more drafts unchanged warns once. A `current()` snapshot can usually replace the search that caused it.
 
-`dist/index.d.mts` re-exports the declarations of `dist/index.d.ts`, so that `NodeNext` resolution gets a declaration of the module kind that it imports. The [package checks][package-checks] install the packed tarball in a temporary project, run publint and Are the Types Wrong, and exercise CommonJS, ESM, browser UMD, `NodeNext` and `Bundler` type resolution. The declarations support TypeScript 5.0 and later, and the checks compile them with TypeScript 5.0.
+With auto-freeze, the check for circular references now reports only an object that holds itself, so a changed draft that holds its original, as `draft.prev = original(draft)` makes it, no longer throws. Cycles are still not supported. The [errors page](/docs/extra-topics/errors#development-only-errors) lists the messages.
 
-### TypeScript
+### Output and package entries
 
-- `create<State>(base, async (draft) => { … })` returns `Promise<State>`, as do curried producers of async recipes; 1.x typed the result as `State`. An explicit state type that is a type parameter, or that includes Promises, such as `object` or `unknown`, still gives the state type itself, so leave the type argument out in generic code.
-- `apply()` accepts `enableAutoFreeze: true` and returns `Immutable<State>`; the types of 1.x rejected the option and typed the frozen result as mutable. With `enableAutoFreeze` typed as `boolean`, the result is `State | Immutable<State>`, and with `mutable` typed as `boolean`, it is `State | void`.
-- A curried producer whose recipe annotates its draft and returns a new state, such as `create((draft: State) => ({ ...draft, count: 0 }))`, returns `State`. 1.x typed such a call as a manual draft, so calling the producer did not compile.
-- With an explicit state type, a recipe that may or may not return a Promise gives `State | Promise<State>`, where 1.x gave `State`.
+Every build now targets ES2018 instead of ES2015, which keeps object spread native. Mutative still needs `Proxy`, and engines that have `Proxy` but not ES2018 syntax, such as Chrome 49–59, Firefox 18–54, Safari 10–11.0 and Edge 12–18, need Mutative transpiled by your build. The package still declares Node.js 14.0 as its minimum, and CI runs a short test of the packed package on Node.js 14.0.0.
+
+The `exports` map now gives `import` and `require` their own type declarations, so `NodeNext` resolution gets declarations of the module kind it imports. The [package checks][package-checks] exercise the CommonJS, ESM and UMD builds and both `NodeNext` and `Bundler` type resolution. The declarations support TypeScript 5.0 and later.
+
+### Types
+
+Several types now match what the code returns. With an explicit state type, an async recipe gives `Promise<State>`, and so do curried producers of async recipes; 1.x typed the result as `State`. And `apply()` accepts `enableAutoFreeze: true` and returns `Immutable<State>`, where the types of 1.x rejected the option:
 
 ```ts
 import { apply, create, type Immutable, type Patches } from 'mutative';
@@ -532,7 +300,7 @@ expect(frozen.tags).toEqual(['v2']);
 expect(Object.isFrozen(frozen.tags)).toBe(true);
 ```
 
-The [TypeScript guide](/docs/advanced-guides/typescript) describes how drafts, results and producers are typed.
+Curried producers that annotate their draft and return a new state, and recipes that may or may not return a Promise, are also typed more precisely. Generic code has caveats, such as a state type that is itself a type parameter; see [TypeScript](/docs/advanced-guides/migration-v2#typescript) in the migration guide.
 
 ## Upgrading from 1.x
 
@@ -542,28 +310,24 @@ Install 2.0:
 npm install mutative@2
 ```
 
-Then go through these steps. Each links to the part of the [migration guide](/docs/advanced-guides/migration-v2) that lists the changes in full.
+Then work through these steps. The [migration guide](/docs/advanced-guides/migration-v2) lists the changes behind each one.
 
-1. **Run your tests with both builds.** Run them with the development build, which reports the most mistakes, and once with `NODE_ENV=production`, since production builds skip the development checks and throw coded errors, in 2.0 also when a bundler resolves the ESM build.
-2. **Check your targets and bundles.** Transpile Mutative for engines without ES2018 syntax. Define `process.env.NODE_ENV` in every bundle, bundles for Node.js included, or leave Mutative external, and load `dist/mutative.esm.production.min.mjs` or the UMD build in browsers without a bundler. See [Build output and package entries](/docs/advanced-guides/migration-v2#build-output-and-package-entries).
-3. **Match error codes, not messages, in production.** The [errors page](/docs/extra-topics/errors) lists each code with its development message.
-4. **Update code and tests that read patches.** Expect the patches of nested drafts before those of their parents, fewer redundant `replace` patches, and different patches for moved drafts, for Sets and for original objects assigned over drafts, so snapshots of patch arrays may need updating. Copy a patch value before you change it: it is now an object of the next state, frozen with it under auto-freeze. See [Patches](/docs/advanced-guides/migration-v2#patches).
-5. **Review code that relies on auto-freeze.** Map and Set instances are frozen now, so adding properties to them or replacing their methods fails. Production builds no longer search the frozen objects of a returned value for drafts, so never put a draft in a frozen object. See [Returned values](/docs/advanced-guides/migration-v2#returned-values).
-6. **Check arrays with accessors on their indices.** The native methods read them as data, so their getters can run a different number of times. See [Arrays](/docs/advanced-guides/migration-v2#arrays).
-7. **Consume collection iterators while their drafts are active.** The value and entry iterators of a Map draft, and every iterator of a Set draft, cannot yield another value once their draft has ended; exhausted iterators stay exhausted, and Map key iterators remain native. A Set subclass's `add()` must store the value that it receives, and a draft cannot be a Map key: use `original(draft)`, `current(draft)` or an id. See [Fixes that change results](/docs/advanced-guides/migration-v2#fixes-that-change-results).
-8. **Type-check with TypeScript 5.0 or later.** Async recipes with an explicit state type now give Promises, `apply()` with `enableAutoFreeze: true` gives `Immutable<State>`, and curried producers that return a new state are typed as producers, so casts and other workarounds for the types of 1.x may now be wrong or unnecessary. See [TypeScript](/docs/advanced-guides/migration-v2#typescript).
-9. **Act on the new development checks.** A strict-mode warning about 1,000 or more unchanged drafts points to a search through a draft array that a `current()` snapshot can replace, and `pathAsArray: false` with Map keys that are not strings now throws in development. See [Development builds](/docs/advanced-guides/migration-v2#development-builds).
-10. **Recheck tests that pin results of 1.x.** Where a test expects what 1.x returned for Sets, patches, `apply()` or `current()`, compare it with the [fixes that change results](/docs/advanced-guides/migration-v2#fixes-that-change-results): the new result may be the intended one.
+1. **Run your tests with both builds**: the development build, which reports the new checks, and once with `NODE_ENV=production`. In production, match errors by their codes, not their messages. See [Development builds](/docs/advanced-guides/migration-v2#development-builds).
+2. **Check your bundles and targets.** Define `process.env.NODE_ENV` in every bundle, including bundles for Node.js, or keep Mutative external. Load the production ESM or UMD build in browsers without a bundler, and transpile Mutative for engines without ES2018 syntax. See [Build output and package entries](/docs/advanced-guides/migration-v2#build-output-and-package-entries).
+3. **Update code and tests that read patches.** Expect a new order in patch snapshots, and copy a patch value before changing it. See [Patches](/docs/advanced-guides/migration-v2#patches).
+4. **Review code that relies on auto-freeze.** Frozen Maps and Sets no longer accept new properties or replaced methods, and a returned value must not hold drafts inside frozen objects. See [Returned values](/docs/advanced-guides/migration-v2#returned-values).
+5. **Observe draft lifetimes.** Consume value-producing iterators while their draft is active, and use `original(draft)`, `current(draft)` or an id rather than a draft as a Map key. A Set subclass's `add()` must store the value it receives; see [collection lifetimes](#collections-iterators-and-failed-producers).
+6. **Check arrays with getters on their indices**, which the native methods read as plain values. See [Arrays](/docs/advanced-guides/migration-v2#arrays).
+7. **Type-check with TypeScript 5.0 or later**, and revisit casts that worked around the async and `apply()` types of 1.x. See [TypeScript](/docs/advanced-guides/migration-v2#typescript).
+8. **Recheck tests that pin results of 1.x**, especially for Sets, patches, `apply()` and `current()`: the new result may be the intended one. See [Fixes that change results](/docs/advanced-guides/migration-v2#fixes-that-change-results).
 
 ## Coming from Immer
 
-Mutative passes Immer's test suite, adapted to its API, and most code moves from Immer by renaming its functions: `produce()` becomes `create()`, `produceWithPatches()` becomes `create()` with `enablePatches: true`, `applyPatches()` becomes `apply()`, and `nothing` becomes `rawReturn(undefined)`. Remove the calls of `enableMapSet()`, `enablePatches()` and `enableArrayMethods()`, since Mutative needs no plugins, and replace `[immerable]` on classes with a [mark](/docs/advanced-guides/mark). Then decide about freezing: Immer freezes the next state by default and Mutative does not, so code that relies on frozen state needs `enableAutoFreeze: true`, for example in a creator from `makeCreator()`.
-
-The [migration guide from Immer](/docs/advanced-guides/migration) walks through each step, and [Comparison with Immer](/docs/extra-topics/comparison-with-immer) lists every difference, checked against Immer 11.1.18, such as `create()` on a draft, which drafts a copy where Immer's `produce()` drafts the draft itself. For a quick switch before you migrate the calls, [mutative-compat](https://github.com/exuanbo/mutative-compat) wraps Mutative in Immer's API. Immer 11.0.0 also ported the finalization callbacks of Mutative, which replace a recursive traversal of the draft tree, in [immerjs/immer#1183](https://github.com/immerjs/immer/pull/1183), and the Immer 11.1.18 measured above includes them.
+Mutative passes Immer's test suite, adapted to its API, and most Immer code moves over by renaming: `produce()` becomes `create()`, `produceWithPatches()` becomes `create()` with `enablePatches: true`, `applyPatches()` becomes `apply()`, and `nothing` becomes `rawReturn(undefined)`. Drop the plugin calls, since Mutative has no plugins, and replace `[immerable]` with a [mark](/docs/advanced-guides/mark). The main decision is freezing: Immer freezes the next state by default and Mutative does not, so set `enableAutoFreeze: true`, for example with `makeCreator()`, if your code relies on frozen state. The [migration guide from Immer](/docs/advanced-guides/migration) walks through each step, [Comparison with Immer](/docs/extra-topics/comparison-with-immer) lists every difference, checked against Immer 11.1.18, and [mutative-compat](https://github.com/exuanbo/mutative-compat) wraps Mutative in Immer's API for a quicker switch.
 
 ## Thanks
 
-Thanks to everyone who reported issues, reviewed changes and built libraries on Mutative. The docs were revised alongside 2.0: their code examples run as tests of the library, and new guides cover [pitfalls](/docs/advanced-guides/pitfalls) and [performance tips](/docs/advanced-guides/performance-tips). If something behaves differently after you upgrade, or a case is missing from the [migration guide](/docs/advanced-guides/migration-v2), open an [issue](https://github.com/unadlib/mutative/issues) or start a [discussion](https://github.com/unadlib/mutative/discussions).
+Thanks to everyone who reported issues, reviewed changes and built libraries on Mutative. The docs were revised alongside 2.0: their code examples run as tests of the library, and new guides cover [pitfalls](/docs/advanced-guides/pitfalls) and [performance tips](/docs/advanced-guides/performance-tips). If something behaves differently after you upgrade, or the [migration guide](/docs/advanced-guides/migration-v2) misses a case, please open an [issue](https://github.com/unadlib/mutative/issues) or start a [discussion](https://github.com/unadlib/mutative/discussions).
 
 [summary]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/perf-testing/reports/SUMMARY.md
 [identity]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/perf-testing/reports/SUMMARY.md#source-and-artifact-identity
