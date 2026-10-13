@@ -167,7 +167,7 @@ Two other costs are worth knowing. With patches, a Set that adds or deletes item
 
 #### Bundle size
 
-Some of this speed is paid for in bytes. Patches, Map and Set support and the native array methods are built into `create()` rather than offered as plugins, so a bundler cannot drop them. Bundled for the browser in production mode, minified and compressed with Brotli, `create()` alone takes 7.9 kB, against 3.6 kB for `produce()` from Immer 11.1.21. `create()`, `apply()`, `current()` and `original()` together take 8.5 kB, against 6.4 kB for their Immer counterparts with its patch, Map/Set and array-method plugins enabled. The [README][readme-performance] records the setup.
+Some of this speed is paid for in bytes. Patches, Map and Set support and the native array methods are built into `create()` rather than offered as plugins, so a bundler cannot drop them. Bundled for the browser in production mode, minified and compressed with Brotli, `create()` alone takes 7.9 kB, 2.1 kB more than with 1.3.0, against 3.6 kB for `produce()` from Immer 11.1.21, the latest release when the sizes were measured. `create()`, `apply()`, `current()` and `original()` together take 8.5 kB, 2.2 kB more than with 1.3.0, against 6.4 kB for their Immer counterparts with its patch, Map/Set and array-method plugins enabled. The [README][readme-performance] records the setup; 1.3.0 was measured the same way.
 
 #### How the numbers were measured
 
