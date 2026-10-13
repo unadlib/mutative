@@ -8,6 +8,8 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/mutative)](https://npmtrends.com/mutative)
 ![license](https://img.shields.io/npm/l/mutative)
 
+**Mutative 2.0 is out.** Read the [release notes](https://github.com/unadlib/mutative/releases/tag/v2.0.0), the [announcement](https://mutative.js.org/blog/releases/2.0) and the [migration guide from v1 to v2](https://mutative.js.org/docs/advanced-guides/migration-v2).
+
 **Mutative** - A JavaScript library for efficient immutable updates ([documentation](https://mutative.js.org/)). In the [benchmark](./perf-testing/reports/SUMMARY.md), it was about 3.6x faster than Immer with the same settings and 6.6x faster with each library's defaults across 97 workloads.
 
 In that benchmark the gap widened on large arrays, where Mutative moved elements up to 1,052x faster than Immer. When copying dominates, such as updating objects with thousands of keys, inserting at the front of a large array or adding an item to a large Set, Mutative is even faster than hand-written reducers.
