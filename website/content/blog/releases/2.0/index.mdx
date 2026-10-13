@@ -138,7 +138,7 @@ Set and Map updates also do less work. As soon as a recipe read a Set, 1.3.0 map
 
 ### What the benchmark shows
 
-The numbers in this post come from one benchmark batch, run on October 12, 2026, that compared Mutative 2.0 with Mutative 1.3.0 and Immer 11.1.18 in 97 scenarios, with auto-freeze and patches each off and on. A cell is one scenario at one size in one mode; [How the numbers were measured](#how-the-numbers-were-measured) gives the rest of the setup.
+Unless noted, the numbers in this post come from one benchmark batch, run on October 12, 2026, that compared Mutative 2.0 with Mutative 1.3.0 and Immer 11.1.18 in 97 scenarios, with auto-freeze and patches each off and on. A cell is one scenario at one size in one mode; [How the numbers were measured](#how-the-numbers-were-measured) gives the rest of the setup.
 
 With matched settings, 2.0 was faster than Immer in 595 of 614 cells, within 5% in 13 and slower in 6, with a geometric mean speedup of 3.58. Against 1.3.0, it was faster in 535 cells, within 5% in 70 and slower in 9, with a geometric mean of 4.27. With each library's defaults, where Immer freezes the next state, Mutative does not, and neither generates patches, 2.0 was faster than Immer in 154 of 157 cells, with a geometric mean of 6.63. These means weight every cell equally, so they describe this suite, not the speed of your application.
 
