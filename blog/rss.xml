@@ -4,11 +4,19 @@
         <title>Mutative Blog</title>
         <link>https://mutative.js.org/blog</link>
         <description>Mutative Blog</description>
-        <lastBuildDate>Sat, 16 Dec 2023 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 13 Oct 2026 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
         <atom:link href="https://mutative.js.org/blog/rss.xml" rel="self" type="application/rss+xml"/>
+        <item>
+            <title><![CDATA[Announcing Mutative 2.0: Faster Updates and Safer Patches]]></title>
+            <link>https://mutative.js.org/blog/releases/2.0</link>
+            <guid isPermaLink="true">https://mutative.js.org/blog/releases/2.0</guid>
+            <pubDate>Tue, 13 Oct 2026 00:00:00 GMT</pubDate>
+            <description><![CDATA[Mutative 2.0 keeps the 1.x API, speeds up updates, fixes patches and Set drafts in edge cases, and makes production builds predictable. Here is how to upgrade.]]></description>
+            <category>release</category>
+        </item>
         <item>
             <title><![CDATA[Announcing Mutative 1.0 - A New Era in Efficient Immutable Updates]]></title>
             <link>https://mutative.js.org/blog/releases/1.0</link>

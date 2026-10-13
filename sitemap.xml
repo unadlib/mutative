@@ -17,6 +17,12 @@
 <priority>0.5</priority>
 </url>
 <url>
+<loc>https://mutative.js.org/blog/releases/2.0/</loc>
+<lastmod>2026-10-13T13:14:05.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
 <loc>https://mutative.js.org/docs/advanced-guides/auto-freeze/</loc>
 <lastmod>2026-10-12T11:51:14.000Z</lastmod>
 <changefreq>weekly</changefreq>
@@ -228,7 +234,7 @@
 </url>
 <url>
 <loc>https://mutative.js.org/docs/getting-started/performance/</loc>
-<lastmod>2026-10-12T17:02:05.000Z</lastmod>
+<lastmod>2026-10-13T09:01:45.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
