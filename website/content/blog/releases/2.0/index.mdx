@@ -134,7 +134,7 @@ With auto-freeze and patches off, the recipe above took 257 µs, against 15,717 
 
 ### Sets, Maps and applying patches
 
-Set and Map updates also do less work. As soon as a recipe read a Set, 1.3.0 mapped every item, and it copied the Set when a lookup missed. 2.0, like Immer, does neither until the recipe changes the Set. Even then, it edits the Set's copy directly and tracks only the items that have drafts, instead of copying every item into a Map and back. A Map draft's `forEach()` reads entries from the draft's state rather than through the proxy.
+Set and Map updates also do less work. As soon as a recipe read a Set, 1.3.0 mapped every item, and it copied the Set when a lookup missed. 2.0 does neither: like Immer, it answers lookups such as `has()` and `size` from the original Set until the recipe changes it. Even then, it edits the Set's copy directly and tracks only the items that have drafts, instead of copying every item into a Map and back. A Map draft's `forEach()` reads entries from the draft's state rather than through the proxy.
 
 `apply()` gains from the native array methods too, since it inserts and removes array elements with `splice()` on a draft. It also reads the type of each draft on a patch path once per step, where it used to ask the proxy twice.
 
