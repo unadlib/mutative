@@ -498,7 +498,7 @@ tar -xzf mutative-2.0.0.tgz package/dist/mutative.cjs.production.min.js
 shasum -a 256 package/dist/mutative.cjs.production.min.js
 ```
 
-The fresh-data scenarios of 2026-10-13 measured the source of `0faa4b8`, whose production artifact is the measured production artifact above. Its source hash, `f6069ebb7ebeaa25104f1cac218d6459bc97979d1c8fd4a184fe2a50e696bfdb`, differs from this batch's because later commits changed TSDoc comments and types in `src`, which the production artifact does not contain.
+The fresh-data scenarios of 2026-10-13 measured the source of `0faa4b8`, whose production artifact is the measured production artifact above. Its source hash, `f6069ebb7ebeaa25104f1cac218d6459bc97979d1c8fd4a184fe2a50e696bfdb`, is also that of `src` at the `v2.0.0` tag and in the npm package, so these scenarios measured the published source itself. It differs from this batch's because later commits changed TSDoc comments in `src`, which the production artifact does not contain.
 
 The Set scenarios of 2026-10-09 measured the production artifact of PR #195, which its head builds unchanged, and compared it with `main` at `e6af4b0`:
 
