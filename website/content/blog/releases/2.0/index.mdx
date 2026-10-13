@@ -60,7 +60,7 @@ expect(apply(baseState, patches)).toEqual(nextState);
 expect(apply(nextState, inversePatches)).toEqual(baseState);
 ```
 
-A draft is a `Proxy`. Mutative copies an object shallowly the first time the recipe changes it, so each object is copied at most once per update, and every unchanged object is shared with the base state. Reference checks, such as React's memoization or a store's selectors, can then skip what did not change.
+A draft is a `Proxy`. The next state holds a shallow copy of each object that the recipe changed and of the objects that lead to it, made at most once per update, and shares every other object with the base state. Reference checks, such as React's memoization or a store's selectors, can then skip what did not change.
 
 When two paths lead to the same base object, each path gets an independent draft. To keep them shared after a change, assign one draft to the other path; see [Shared references](/docs/extra-topics/shared-references).
 
