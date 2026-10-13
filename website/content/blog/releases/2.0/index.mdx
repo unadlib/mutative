@@ -229,7 +229,7 @@ Patches still cannot capture everything about a graph. When patches add objects 
 
 ### Applying patches
 
-`apply()` is also stricter. It now rejects a path that ends in `__proto__`, as it already rejected `__proto__` earlier in a path, and reads a Set item only by its index, so a path can no longer reach `Array.prototype` through a Set. Map keys in a path are used as they are, without conversion to strings. Copies of patch values keep their own symbol keys, and an own `__proto__` key, such as one from `JSON.parse()`, stays a plain property. With `mutable: true`, a patch that replaces the root state now throws, since the state cannot be replaced in place. [Patches that apply() accepts](/docs/api-reference/apply#patches-that-apply-accepts) lists the rules.
+`apply()` is also stricter. It now rejects a path that ends in `__proto__`, as it already rejected `__proto__` earlier in a path, and reads a Set item only by its index, so a path can no longer reach `Array.prototype` through a Set. If you apply patches from sources that you do not control, such as other clients, these checks are a reason to upgrade. Map keys in a path are used as they are, without conversion to strings. Copies of patch values keep their own symbol keys, and an own `__proto__` key, such as one from `JSON.parse()`, stays a plain property. With `mutable: true`, a patch that replaces the root state now throws, since the state cannot be replaced in place. [Patches that apply() accepts](/docs/api-reference/apply#patches-that-apply-accepts) lists the rules.
 
 ### Collections, iterators and failed producers
 
