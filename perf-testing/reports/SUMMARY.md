@@ -57,7 +57,7 @@ For a replacement value that contains no drafts, Mutative's `rawReturn()` skips 
 
 Microseconds per call, using the same batch's medians of three independent-process means. The source cells are in `isolated-rest-default.json`, `isolated-1000.json`, and `isolated-10000.json`. Ratios and time reductions are calculated from the unrounded values.
 
-| Rows | Mutative `rawReturn()`, freeze off | Immer ordinary return, freeze on | Immer/Mutative | Mutative time reduction |
+| Rows | Mutative 2.0.0 `rawReturn()`, freeze off | Immer ordinary return, freeze on | Immer/2.0.0 | Mutative 2.0.0 time reduction |
 | ---: | ---: | ---: | ---: | ---: |
 | 100 | 0.257 | 0.776 | 3.02 | 66.9% |
 | 1,000 | 0.258 | 0.784 | 3.03 | 67.0% |
@@ -73,7 +73,7 @@ The `return-*` scenarios of this batch return rows that the harness creates befo
 
 Microseconds per call, medians of three runs:
 
-| Scenario | Rows | Freeze | Mutative | Mutative 1.3.0 | Immer | Hand-written |
+| Scenario | Rows | Freeze | Mutative 2.0.0 | Mutative 1.3.0 | Immer | Hand-written |
 | --- | ---: | --- | ---: | ---: | ---: | ---: |
 | return-fresh | 100 | off | 30.0 | 29.8 | 64.1 | 1.48 |
 | return-fresh | 1,000 | off | 299 | 299 | 607 | 15.6 |
@@ -193,7 +193,7 @@ Of 4,913 three-step operation sequences, 123 violate at least one of these contr
 
 The `search-*` scenarios find the last row of an array of nested rows and update it after the producer changed the array: `search-draft` searches the draft after updating the first row, `search-current` searches a `current()` snapshot after the same update, and `search-current-shifted` searches a snapshot after `shift()`. Microseconds per scenario, medians of three runs, patches off:
 
-| Scenario | Rows | Freeze | Mutative | Mutative 1.3.0 | Immer | Hand-written | Immer/Mutative |
+| Scenario | Rows | Freeze | Mutative 2.0.0 | Mutative 1.3.0 | Immer | Hand-written | Immer/2.0.0 |
 | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
 | search-draft | 100 | off | 20.6 | 36.8 | 29.6 | 0.14 | 1.44 |
 | search-draft | 100 | on | 23.2 | 39.7 | 37.6 | — | 1.62 |
@@ -315,7 +315,7 @@ The backward search covers at most the last doubled step, which a long run of co
 
 PRs #183 and #184 measured four of their improvements with micro-benchmarks only, so [PR #198](https://github.com/unadlib/mutative/pull/198) added a scenario for each. Microseconds per scenario, medians of three runs, patches off:
 
-| Scenario | Rows | Freeze | Mutative | Mutative 1.3.0 | Immer | Hand-written | Immer/Mutative | 1.3.0/Mutative |
+| Scenario | Rows | Freeze | Mutative 2.0.0 | Mutative 1.3.0 | Immer | Hand-written | Immer/2.0.0 | 1.3.0/2.0.0 |
 | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | set-read | 100 | off | 0.62 | 4.75 | 0.66 | 0.03 | 1.07 | 7.71 |
 | set-read | 1,000 | off | 0.61 | 39.5 | 0.66 | 0.04 | 1.08 | 64.52 |
@@ -347,7 +347,7 @@ Each scenario detects the loss of the improvement it covers. Built from the comm
 
 Microseconds per complete scenario, medians of three runs.
 
-| Scenario | Rows | Freeze | Patches | Mutative | Mutative 1.3.0 | Immer | Hand-written | Immer/Mutative |
+| Scenario | Rows | Freeze | Patches | Mutative 2.0.0 | Mutative 1.3.0 | Immer | Hand-written | Immer/2.0.0 |
 | --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | small-object-update | 100 | off | off | 0.51 | 0.80 | 0.69 | 0.02 | 1.37 |
 | read-index | 100 | off | off | 45.8 | 61.3 | 86.4 | 0.14 | 1.89 |
