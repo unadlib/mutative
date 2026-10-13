@@ -9,7 +9,7 @@ date: 2026-10-13
 
 Mutative lets you write immutable updates as ordinary mutations. A recipe changes a draft of the state, and Mutative returns the next state, copying only what the recipe changed and sharing the rest with the previous state.
 
-Mutative 2.0 keeps the API of 1.x and changes the work behind it. Picture a worker that takes the first job off a queue of 10,000 jobs and puts it back at the end when it fails. In 1.x, that `shift()` call moved each of the 9,999 remaining jobs through the draft's proxy. In 2.0, it moves them natively on the draft's copy. With auto-freeze and patches off, removing the first of 10,000 rows measured 7 µs in 2.0 versus 8.2 ms in 1.3.0.
+Mutative 2.0 keeps the API of 1.x and changes the work behind it. Picture a worker that takes the first job off a queue of 10,000 jobs and puts it back at the end when it fails. In 1.x, that `shift()` call moved each of the 9,999 remaining jobs through the draft's proxy. In 2.0, it moves them natively on the draft's copy: with auto-freeze and patches off, removing the first of 10,000 jobs took 7 µs, against 8.2 ms with 1.3.0.
 
 Most workloads gain far less. Across the 97 scenarios of the [benchmark](#what-the-benchmark-shows), 2.0 was 3.6 times as fast as Immer 11.1.18 with matched settings and 4.3 times as fast as 1.3.0, on geometric mean, and slower than Immer in 6 of 614 measured cases.
 
@@ -72,7 +72,7 @@ Drafts are revoked when the recipe ends, so keep the next state or a [`current()
 
 In 1.x, array methods ran through the draft's proxy, so `shift()` read and wrote every remaining element through it. In 2.0, `shift()`, `unshift()`, `splice()` and `reverse()` move the elements of a plain array directly on the draft's copy. `indexOf()`, `lastIndexOf()` and `includes()` search the current array natively, and `sort()` and `join()` run natively on arrays of primitives.
 
-On these data arrays, a removed draftable object from the base state comes back as a draft, so changing it leaves the base state alone. An element that only moves keeps its identity, and the patches replay in both directions. Here is the retry from the introduction, on a short queue:
+An object of the base state that these methods remove comes back as a draft, so changing it leaves the base state alone. An element that only moves keeps its identity, and the patches replay in both directions. Here is the retry from the introduction, on a short queue:
 
 ```ts
 import { apply, create, isDraft } from 'mutative';
@@ -191,7 +191,7 @@ If you record patches for undo, redo or synchronization, expect these difference
 - **Values.** A patch value that was a draft is now the object that the next state holds, not a deep copy, so auto-freeze freezes it too. Copy a patch value before you change it.
 - **Moved drafts.** A changed draft that `sort()` or an assignment moved, or that another value replaced, emits no patches under its old path; its parent's patches carry its value. In 1.x, such patches could fail to apply.
 - **Sets.** When a Set adds or removes items and also has a changed item, that item travels in the Set's own `remove` and `add` patches. 1.x also emitted patches that addressed the item by its position, so replaying them after the Set changed could update the wrong item or fail.
-- **Original objects assigned over drafts** are recorded like any other assignment. With 1.x, replaying such patches could drop the key or lose the element.
+- **Original objects assigned over drafts.** Assigning a draft's original object to the key that holds the draft is recorded like any other assignment. With 1.x, replaying such patches could drop the key or lose the element.
 
 Array patches are more exact too: they record a change between `0` and `-0`, skip an element that stays `NaN`, and cover the indices that an array exposes again after a recipe shortens and lengthens it.
 
@@ -227,7 +227,7 @@ expect(apply(baseState, patches)).toEqual(nextState);
 expect(apply(nextState, inversePatches)).toEqual(baseState);
 ```
 
-Patches still cannot capture everything about a graph. When patches add objects to a Set, `apply()` copies them, so inverse patches cannot remove the copies by their original identity, and added items go to the end, which can shift the positions that later patches address. For repeated undo and redo or synchronization of such collections, use a Map keyed by an id, or an array; see [Sets of objects](/docs/advanced-guides/patches#sets-of-objects). Applying the patches of a sparse array can also turn its holes into explicit `undefined` entries.
+Some limits remain. When patches add objects to a Set, `apply()` copies them, so inverse patches cannot remove the copies by their original identity, and added items go to the end, which can shift the positions that later patches address. For repeated undo and redo or synchronization of such collections, use a Map keyed by an id, or an array; see [Sets of objects](/docs/advanced-guides/patches#sets-of-objects). Applying the patches of a sparse array can also turn its holes into explicit `undefined` entries.
 
 ### Applying patches
 
@@ -317,11 +317,11 @@ Libraries built on Mutative that declare `mutative` 1.x as a peer dependency mak
 
 Then work through these steps. The [migration guide](/docs/advanced-guides/migration-v2) lists the changes behind each one.
 
-1. **Run your tests with both builds**: the development build, which reports the new checks, and once with `NODE_ENV=production`. In production, match errors by their codes, not their messages. See [Development builds](/docs/advanced-guides/migration-v2#development-builds).
+1. **Run your tests with both builds**: the development build, which reports the new checks, and the production build, with `NODE_ENV=production`. In production, match errors by their codes, not their messages. See [Development builds](/docs/advanced-guides/migration-v2#development-builds).
 2. **Check your bundles and targets.** Define `process.env.NODE_ENV` in every bundle, including bundles for Node.js, or keep Mutative external. Load the production ESM or UMD build in browsers without a bundler, and transpile Mutative for engines without ES2018 syntax. See [Build output and package entries](/docs/advanced-guides/migration-v2#build-output-and-package-entries).
 3. **Update code and tests that read patches.** Expect a new order in patch snapshots, and copy a patch value before changing it. See [Patches](/docs/advanced-guides/migration-v2#patches).
 4. **Review code that relies on auto-freeze.** Frozen Maps and Sets no longer accept new properties or replaced methods, and a returned value must not hold drafts inside frozen objects. See [Returned values](/docs/advanced-guides/migration-v2#returned-values).
-5. **Observe draft lifetimes.** Consume value-producing iterators while their draft is active, and use `original(draft)`, `current(draft)` or an id rather than a draft as a Map key. A Set subclass's `add()` must store the value it receives; see [collection lifetimes](#collections-iterators-and-failed-producers).
+5. **Respect draft lifetimes.** Consume value-producing iterators while their draft is active, and use `original(draft)`, `current(draft)` or an id rather than a draft as a Map key. A Set subclass's `add()` must store the value it receives; see [collection lifetimes](#collections-iterators-and-failed-producers).
 6. **Check arrays with getters on their indices**, which the native methods read as plain values. See [Arrays](/docs/advanced-guides/migration-v2#arrays).
 7. **Type-check your code**, and revisit casts that worked around the async and `apply()` types of 1.x. The declarations support TypeScript 5.0 and later. See [TypeScript](/docs/advanced-guides/migration-v2#typescript).
 8. **Recheck tests that pin results of 1.x**, especially for Sets, patches, `apply()` and `current()`: the new result may be the intended one. See [Fixes that change results](/docs/advanced-guides/migration-v2#fixes-that-change-results).
