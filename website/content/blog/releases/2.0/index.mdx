@@ -321,7 +321,7 @@ Then work through these steps. The [migration guide](/docs/advanced-guides/migra
 4. **Review code that relies on auto-freeze.** Frozen Maps and Sets no longer accept new properties or replaced methods, and a returned value must not hold drafts inside frozen objects. See [Returned values](/docs/advanced-guides/migration-v2#returned-values).
 5. **Observe draft lifetimes.** Consume value-producing iterators while their draft is active, and use `original(draft)`, `current(draft)` or an id rather than a draft as a Map key. A Set subclass's `add()` must store the value it receives; see [collection lifetimes](#collections-iterators-and-failed-producers).
 6. **Check arrays with getters on their indices**, which the native methods read as plain values. See [Arrays](/docs/advanced-guides/migration-v2#arrays).
-7. **Type-check with TypeScript 5.0 or later**, and revisit casts that worked around the async and `apply()` types of 1.x. See [TypeScript](/docs/advanced-guides/migration-v2#typescript).
+7. **Type-check your code**, and revisit casts that worked around the async and `apply()` types of 1.x. The declarations support TypeScript 5.0 and later. See [TypeScript](/docs/advanced-guides/migration-v2#typescript).
 8. **Recheck tests that pin results of 1.x**, especially for Sets, patches, `apply()` and `current()`: the new result may be the intended one. See [Fixes that change results](/docs/advanced-guides/migration-v2#fixes-that-change-results).
 
 ## Coming from Immer
