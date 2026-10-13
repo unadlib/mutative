@@ -1,6 +1,6 @@
 # Performance summary
 
-Measurements from 2026-10-12 UTC of the source of `main` after PR #204, which [source and artifact identity](#source-and-artifact-identity) identifies. Since the previous batch, which measured `main` after PR #198, `main` has changed how array drafts look up moved elements in [PR #200](https://github.com/unadlib/mutative/pull/200) and [PR #202](https://github.com/unadlib/mutative/pull/202) and hardened `apply()` and the development checks in [PR #201](https://github.com/unadlib/mutative/pull/201); PRs #199, #203 and #204 changed only documentation and types. The candidate and the pinned npm baseline both report Mutative 1.3.0. Immer is pinned to 11.1.18 and Mitata to 1.0.34. The main comparison runs Immer without its array-method plugin; a separate dataset below enables `enableArrayMethods`. The raw datasets of this batch were not archived; the identities and commands below reproduce them, and the [archive index](./README.md) describes the retention policy for batches that are.
+Measurements from 2026-10-12 UTC of Mutative 2.0.0: the source of `main` after PR #204, whose production artifact is the one that npm publishes as `mutative@2.0.0`, as [source and artifact identity](#source-and-artifact-identity) shows. Since the previous batch, which measured `main` after PR #198, `main` has changed how array drafts look up moved elements in [PR #200](https://github.com/unadlib/mutative/pull/200) and [PR #202](https://github.com/unadlib/mutative/pull/202) and hardened `apply()` and the development checks in [PR #201](https://github.com/unadlib/mutative/pull/201); PRs #199, #203 and #204 changed only documentation and types. The datasets of this batch report the measured source as version 1.3.0, which `package.json` declared until the release, and the pinned npm baseline is Mutative 1.3.0. Immer is pinned to 11.1.18 and Mitata to 1.0.34. The main comparison runs Immer without its array-method plugin; a separate dataset below enables `enableArrayMethods`. The raw datasets of this batch were not archived; the identities and commands below reproduce them, and the [archive index](./README.md) describes the retention policy for batches that are.
 
 This batch remeasures every scenario with the method of the previous one: every timing below comes from processes that each run one scenario with one library, and the shared-process matrices are kept as a control, which [shared and isolated processes](#shared-and-isolated-processes) compares. It replaces the batch of 2026-10-09 and 2026-10-10 together with the `shift-and-update` cells that PR #200 measured again, which the [history](#history) summarizes; [changes since the previous batch](#changes-since-the-previous-batch) compares them with this batch.
 
@@ -488,6 +488,14 @@ Candidate source:     bd2e2520c12c53c389eb5a44cbf5e0cbc47361819c974ad360f53028fe
 Candidate production: cb6464f37085cebc64ecbe97ee73551c81999c1d356e491dab97d7df032965ea
 Pinned v1 production: 15ad9df11178c64f80e66797ffe784a4eeedfb03759ca59ef61a64f4142fde41
 Immer production:     30fec64eb16c235f5fe771ed7e4be08eb0f67cb46c44917424a6e643f3d677b9
+```
+
+The published package contains the measured production artifact. npm published `mutative@2.0.0` on 2026-10-12 from the `v2.0.0` tag, [`7bd3fcf`](https://github.com/unadlib/mutative/commit/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3), with a provenance attestation of the GitHub Actions build, and its `dist/mutative.cjs.production.min.js` has the SHA-256 above, `cb6464f3…`. Between `40f3a42` and `7bd3fcf`, `src` changed only in TSDoc comments, so the times of this batch and of the fresh-data scenarios are those of the published 2.0.0. To check the published artifact:
+
+```sh
+npm pack mutative@2.0.0
+tar -xzf mutative-2.0.0.tgz package/dist/mutative.cjs.production.min.js
+shasum -a 256 package/dist/mutative.cjs.production.min.js
 ```
 
 The fresh-data scenarios of 2026-10-13 measured the source of `0faa4b8`, whose production artifact is the candidate production above. Its source hash, `f6069ebb7ebeaa25104f1cac218d6459bc97979d1c8fd4a184fe2a50e696bfdb`, differs from this batch's because later commits changed TSDoc comments and types in `src`, which the production artifact does not contain.
