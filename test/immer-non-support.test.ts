@@ -1062,3 +1062,85 @@ test('assigning a draft from an inner scope to an outer draft', () => {
     expect(apply(inner, innerInversePatches)).toEqual(innerBase);
   }
 });
+
+test('symbol keys on array drafts', () => {
+  const tag = Symbol('tag');
+  const makeBase = () => {
+    const list: any = [1];
+    list[tag] = 'kept';
+    return { list };
+  };
+  enablePatches();
+  {
+    // Immer validates array keys with parseInt() in development, which
+    // cannot convert a symbol.
+    // ! it should reject the key with Immer's own error
+    expect(() =>
+      produceWithPatches(makeBase(), (draft: any) => {
+        draft.list[tag] = 'changed';
+      })
+    ).toThrow(TypeError);
+    expect(() =>
+      produceWithPatches(makeBase(), (draft: any) => {
+        delete draft.list[tag];
+      })
+    ).toThrow(TypeError);
+  }
+  {
+    // The production build skips that check, so the write reaches the next
+    // state. Array patches record only indices and length: they stay empty
+    // and replaying them does not reproduce the state.
+    // ! it should reject the key in production as in development
+    const nodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      const base = makeBase();
+      const [state, patches] = produceWithPatches(base, (draft: any) => {
+        draft.list[tag] = 'changed';
+      });
+      expect(state.list[tag]).toBe('changed');
+      expect(base.list[tag]).toBe('kept');
+      expect(patches).toEqual([]);
+      expect(applyPatches(base, patches).list[tag]).toBe('kept');
+    } finally {
+      process.env.NODE_ENV = nodeEnv;
+    }
+  }
+  {
+    const message =
+      "Only supports setting array indices and the 'length' property.";
+    expect(() =>
+      create(
+        makeBase(),
+        (draft: any) => {
+          draft.list[tag] = 'changed';
+        },
+        { enablePatches: true }
+      )
+    ).toThrow(message);
+    expect(() =>
+      create(
+        makeBase(),
+        (draft: any) => {
+          delete draft.list[tag];
+        },
+        { enablePatches: true }
+      )
+    ).toThrow(message);
+    // Production builds reject it with the same error code.
+    globalThis.__DEV__ = false;
+    try {
+      expect(() =>
+        create(
+          makeBase(),
+          (draft: any) => {
+            draft.list[tag] = 'changed';
+          },
+          { enablePatches: true }
+        )
+      ).toThrow('Minified Mutative error #2');
+    } finally {
+      globalThis.__DEV__ = true;
+    }
+  }
+});
