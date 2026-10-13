@@ -4,9 +4,10 @@ import { transformSync } from 'esbuild';
 import * as immer from 'immer';
 import * as mutative from '../src';
 
-// Run the code examples of the README and of the website docs. An example
-// that imports from `mutative` or `immer`, and from no other module, must run
-// as it is written, so that the docs cannot drift from the library.
+// Run the code examples of the README, of the website docs and of the 2.0
+// announcement. An example that imports from `mutative` or `immer`, and from
+// no other module, must run as it is written, so that the docs cannot drift
+// from the library.
 
 const root = resolve(__dirname, '..');
 
@@ -23,6 +24,8 @@ function listDocs(dir: string): string[] {
 const files = [
   join(root, 'README.md'),
   ...listDocs(join(root, 'website/content/docs')),
+  // Earlier posts describe the library as it was when they were published.
+  join(root, 'website/content/blog/releases/2.0/index.mdx'),
 ];
 
 interface Example {
