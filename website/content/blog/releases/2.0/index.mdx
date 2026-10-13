@@ -189,11 +189,7 @@ If you record patches for undo, redo or synchronization, expect these difference
 
 - **Order.** Patches of a nested draft come before those of its parents, as in Immer. Applying them gives the same state as before, and the `replace` patches that only restated an unchanged draft at its original index are gone.
 - **Values.** A patch value that was a draft is now the object that the next state holds, not a deep copy, so auto-freeze freezes it too. Copy a patch value before you change it.
-- **Moved drafts.** A changed draft that `sort()` or an assignment moved, or that another value replaced, emits no patches under its old path; its parent's patches carry its value. In 1.x, such patches could fail to apply.
-- **Sets.** When a Set adds or removes items and also has a changed item, that item travels in the Set's own `remove` and `add` patches. 1.x also emitted patches that addressed the item by its position, so replaying them after the Set changed could update the wrong item or fail.
-- **Original objects assigned over drafts.** Assigning a draft's original object to the key that holds the draft is recorded like any other assignment. With 1.x, replaying such patches could drop the key or lose the element.
-
-Array patches are more exact too: they record a change between `0` and `-0`, skip an element that stays `NaN`, and cover the indices that an array exposes again after a recipe shortens and lengthens it.
+- **Replay.** Patches now replay correctly where those of 1.x could fail or produce a wrong state: after `sort()` or an assignment moved or replaced a changed draft, when a Set added or removed items and also changed one, when a recipe assigned a draft's original object to the key that holds the draft, and when an array changed between `0` and `-0` or shrank and grew again. The [migration guide](/docs/advanced-guides/migration-v2#patches) describes each case.
 
 Some fixes change the next state itself. With patches on, when two or more items of a Set below the root changed below their first level, as `worker.stats.jobs` does here, 1.3.0 kept the change of only one of them. 2.0 keeps every change, and the patches replay in both directions:
 
