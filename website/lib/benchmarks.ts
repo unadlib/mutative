@@ -1,8 +1,7 @@
 /**
- * The benchmark figures of the home page, which a new benchmark run updates
- * here alone. They come from the performance summary of the repository,
- * `perf-testing/reports/SUMMARY.md`, and the tests of the repository check
- * them against it.
+ * Shared figures for the home and performance charts, from
+ * `perf-testing/reports/SUMMARY.md` and the performance page's rounded tables.
+ * Keep these figures and the documentation aligned when updating a run.
  */
 
 /** The run that the figures come from. */
@@ -19,10 +18,50 @@ export const benchmarkRun = {
  */
 export const speedups = {
   /** Both libraries freezing or not, and both generating patches or not. */
-  matched: { factor: 3.6, faster: 595, cases: 614 },
+  matched: { factor: 3.6, faster: 595, within: 13, slower: 6, cases: 614 },
   /** Mutative without auto-freeze, and Immer with it, both without patches. */
-  defaults: { factor: 6.6, faster: 154, cases: 157 },
+  defaults: { factor: 6.6, faster: 154, within: 0, slower: 3, cases: 157 },
 };
+
+/** Rounded geometric means from the performance page's large-array table. */
+export const arraySpeedups = [
+  { freeze: false, patches: false, all: [8.7, 10.8], moves: [209, 430] },
+  { freeze: false, patches: true, all: [4.1, 4.5], moves: [7.1, 7.3] },
+  { freeze: true, patches: false, all: [3.9, 4.2], moves: [32, 39] },
+  { freeze: true, patches: true, all: [2.7, 2.8], moves: [6.6, 6.8] },
+] as const;
+
+/** Selected rows of the performance page's patches-on, freeze-off table, in µs. */
+export const patchWorkloads = [
+  {
+    name: 'Push a row and insert a property',
+    rows: '10,000',
+    mutative: 63.2,
+    immer: 360,
+    mutativeV1: 210,
+  },
+  {
+    name: 'Remove the first row with shift',
+    rows: '10,000',
+    mutative: 1063,
+    immer: 8943,
+    mutativeV1: 265439,
+  },
+  {
+    name: 'Update every row',
+    rows: '10,000',
+    mutative: 8555,
+    immer: 21767,
+    mutativeV1: 22549,
+  },
+  {
+    name: 'Update one of 10,000 records',
+    rows: '10,000',
+    mutative: 1184,
+    immer: 2104,
+    mutativeV1: 1181,
+  },
+] as const;
 
 /** A workload of the home page chart, as the README's table names it. */
 export interface ChartWorkload {
