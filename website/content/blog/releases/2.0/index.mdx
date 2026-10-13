@@ -310,6 +310,8 @@ Install 2.0:
 npm install mutative@2
 ```
 
+Libraries built on Mutative that declare `mutative` 1.x as a peer dependency make npm 7 and later stop with `ERESOLVE` when it installs `mutative@2` beside them. Install versions of them that accept 2.0, or stay on 1.3.0 until they do.
+
 Then work through these steps. The [migration guide](/docs/advanced-guides/migration-v2) lists the changes behind each one.
 
 1. **Run your tests with both builds**: the development build, which reports the new checks, and once with `NODE_ENV=production`. In production, match errors by their codes, not their messages. See [Development builds](/docs/advanced-guides/migration-v2#development-builds).
@@ -323,7 +325,7 @@ Then work through these steps. The [migration guide](/docs/advanced-guides/migra
 
 ## Coming from Immer
 
-Mutative passes Immer's test suite, adapted to its API, and most Immer code moves over by renaming: `produce()` becomes `create()`, `produceWithPatches()` becomes `create()` with `enablePatches: true`, `applyPatches()` becomes `apply()`, and `nothing` becomes `rawReturn(undefined)`. Drop the plugin calls, since Mutative has no plugins, and replace `[immerable]` with a [mark](/docs/advanced-guides/mark). The main decision is freezing: Immer freezes the next state by default and Mutative does not, so set `enableAutoFreeze: true`, for example with `makeCreator()`, if your code relies on frozen state. The [migration guide from Immer](/docs/advanced-guides/migration) walks through each step, [Comparison with Immer](/docs/extra-topics/comparison-with-immer) lists every difference, checked against Immer 11.1.18, and [mutative-compat](https://github.com/exuanbo/mutative-compat) wraps Mutative in Immer's API for a quicker switch.
+Mutative passes Immer's test suite, adapted to its API, and most Immer code moves over by renaming: `produce()` becomes `create()`, `produceWithPatches()` becomes `create()` with `enablePatches: true`, `applyPatches()` becomes `apply()`, and `nothing` becomes `rawReturn(undefined)`. Drop the plugin calls, since Mutative has no plugins, and replace `[immerable]` with a [mark](/docs/advanced-guides/mark). The main decision is freezing: Immer freezes the next state by default and Mutative does not, so set `enableAutoFreeze: true`, for example with `makeCreator()`, if your code relies on frozen state. The [migration guide from Immer](/docs/advanced-guides/migration) walks through each step, [Comparison with Immer](/docs/extra-topics/comparison-with-immer) lists every difference, checked against Immer 11.1.18, and [mutative-compat](https://github.com/exuanbo/mutative-compat) wraps Mutative in Immer's API for a quicker switch; at the time of writing, it declares Mutative 1.x as its peer dependency.
 
 ## Thanks
 
