@@ -62,9 +62,7 @@ expect(apply(nextState, inversePatches)).toEqual(baseState);
 
 A draft is a `Proxy`. The next state holds a shallow copy of each object that the recipe changed and of the objects that lead to it, made at most once per update, and shares every other object with the base state. Reference checks, such as React's memoization or a store's selectors, can then skip what did not change.
 
-When two paths lead to the same base object, each path gets an independent draft. To keep them shared after a change, assign one draft to the other path; see [Shared references](/docs/extra-topics/shared-references).
-
-A recipe either changes the draft or returns a new state, and its drafts are revoked when it ends, so keep the next state or a [`current()`](/docs/api-reference/current) snapshot rather than a draft. Mutative drafts plain objects, arrays, Maps and Sets, plus values that a [mark](/docs/advanced-guides/mark) makes draftable, such as class instances; other objects are shared as they are. Options are passed per call or set once with [`makeCreator()`](/docs/api-reference/makecreator), and the next state is frozen only with `enableAutoFreeze: true`. [Concepts](/docs/getting-started/concepts) explains the model in depth, and [Pitfalls](/docs/advanced-guides/pitfalls) collects its rules.
+Drafts are revoked when the recipe ends, so keep the next state or a [`current()`](/docs/api-reference/current) snapshot, not a draft. The next state is frozen only with `enableAutoFreeze: true`. [Concepts](/docs/getting-started/concepts) explains the model, and [Pitfalls](/docs/advanced-guides/pitfalls) collects its rules.
 
 ## Less work on arrays, collections and snapshots
 
