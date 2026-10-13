@@ -249,12 +249,13 @@ This search explains the 3 cells in which 2.0 at its defaults was slower than Im
 
 ## Predictable builds and types
 
-The package contains a development build, with full error messages, warnings and extra checks, and a minified production build. In 2.0, `process.env.NODE_ENV` selects between them wherever Mutative is loaded:
+The package contains a development build, with full error messages, warnings and extra checks, and a minified production build. In 2.0, `process.env.NODE_ENV` selects between them in bundlers and Node.js:
 
 - **Bundlers** resolve the ESM build, whose development checks now test `process.env.NODE_ENV`. When your production build replaces it with `'production'`, the bundler drops the development code; in 1.x, the ESM build always ran it.
 - **Bundles for Node.js**, such as esbuild's with `platform: 'node'`, use the CommonJS entry, which selects a build when it loads. If such a bundle does not define `process.env.NODE_ENV`, it includes both builds, which more than doubles a minified bundle of `create()`. Define the variable, or keep Mutative external.
 - **Node.js** resolves `import` to a module that re-exports the CommonJS build, so `import` and `require` share one instance, which reads `NODE_ENV` once when it loads. In 1.x, `import` always ran the development ESM build, as a separate instance.
-- **Browsers without a bundler** have no `process`, so loading `dist/mutative.esm.mjs` directly fails with `process is not defined`. Load `dist/mutative.esm.production.min.mjs` or the UMD build instead; see [Installation](/docs/getting-started/installation#development-and-production-builds).
+
+Browsers, and other environments without a `process` global, fail with `process is not defined` when they load `dist/mutative.esm.mjs` directly. Load `dist/mutative.esm.production.min.mjs` or the UMD build there instead; see [Installation](/docs/getting-started/installation#development-and-production-builds).
 
 Production builds throw `Minified Mutative error #<code>` with a link to the [errors page](/docs/extra-topics/errors), which decodes the code. CommonJS consumers already got these errors in 1.x; in 2.0, production bundles get them too, and the errors of `apply()`, `original()` and `rawReturn()` are now coded as well. [BUILDING.md][building] describes the build pipeline.
 
