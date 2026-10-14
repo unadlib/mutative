@@ -206,8 +206,8 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1
       immer:
-        specifier: 11.1.18
-        version: 11.1.18
+        specifier: 11.1.21
+        version: 11.1.21
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -1879,8 +1879,8 @@ packages:
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
-  immer@11.1.18:
-    resolution: {integrity: sha512-EQyQtLiYW029lyoczMl/Hh4Xu7cDecSc58JRYpHyL4tIAu3eqd1yJzQX04d2BZHDkzFFvm6qJEJWOtfDSWAXbQ==}
+  immer@11.1.21:
+    resolution: {integrity: sha512-bZSadeCPGdaY5/qRLgr6mDSH1ra21rD3rqpiWk7+QTr4ayYPTE9qZYdLh/NdPhMe0wSrTvHD/Lk8q5EwhUs0aw==}
 
   import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
@@ -4482,7 +4482,7 @@ snapshots:
 
   ieee754@1.2.1: {}
 
-  immer@11.1.18: {}
+  immer@11.1.21: {}
 
   import-fresh@3.3.0:
     dependencies:
@@ -5221,7 +5221,7 @@ snapshots:
 
   terser-webpack-plugin@5.3.10(esbuild@0.24.0)(uglify-js@3.19.3)(webpack@5.95.0(esbuild@0.24.0)(uglify-js@3.19.3)):
     dependencies:
-      '@jridgewell/trace-mapping': 0.3.29
+      '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 3.3.0
       serialize-javascript: 6.0.1
