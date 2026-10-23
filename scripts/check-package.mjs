@@ -82,6 +82,15 @@ try {
     }
   }
 
+  // The build replaces its feature constants in every bundle.
+  for (const name of bundles) {
+    assert.doesNotMatch(
+      readFileSync(join(root, 'dist', name), 'utf8'),
+      /__MAP_SET__|__PATCHES__|__ARRAY_METHODS__/,
+      name
+    );
+  }
+
   for (const name of bundles.filter((name) => name.includes('production'))) {
     const code = readFileSync(join(root, 'dist', name), 'utf8');
     assert.doesNotMatch(

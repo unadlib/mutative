@@ -3,6 +3,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   define: {
     __DEV__: true,
+    __MAP_SET__: true,
+    __PATCHES__: true,
+    __ARRAY_METHODS__: true,
   },
   test: {
     globals: true,

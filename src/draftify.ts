@@ -25,7 +25,7 @@ export function draftify<
   };
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
-  if (options.enablePatches) {
+  if (__PATCHES__ && options.enablePatches) {
     patches = [];
     inversePatches = [];
   }
@@ -47,7 +47,7 @@ export function draftify<
           options.enableAutoFreeze
         );
       return (
-        options.enablePatches
+        __PATCHES__ && options.enablePatches
           ? [finalizedState, finalizedPatches, finalizedInversePatches]
           : finalizedState
       ) as Result<T, O, F>;

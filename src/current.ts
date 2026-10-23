@@ -119,7 +119,7 @@ function getCurrent(target: any, rootOptions?: Options<any, any>) {
           ? new (Object.getPrototypeOf(target).constructor)(target)
           : new Map(target)
         : type === DraftType.Set
-          ? proxyDraft
+          ? __MAP_SET__ && proxyDraft
             ? // The items in order, with the drafts that stand for some.
               Array.from(iterateSet(latest(proxyDraft)), (item) =>
                 setItemValue(proxyDraft, item)

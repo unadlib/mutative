@@ -313,7 +313,7 @@ export const makeCreator: MakeCreator = (arg) => {
     // method cache, which must not keep it alive.
     function fail(error: unknown): never {
       revokeProxy(finalities);
-      releaseArrayMethods(finalities.revoke);
+      if (__ARRAY_METHODS__) releaseArrayMethods(finalities.revoke);
       throw error;
     }
     let result: any;
@@ -369,7 +369,7 @@ export const makeCreator: MakeCreator = (arg) => {
       } catch (error) {
         return fail(error);
       } finally {
-        releaseArrayMethods(finalities.revoke);
+        if (__ARRAY_METHODS__) releaseArrayMethods(finalities.revoke);
       }
     };
     try {

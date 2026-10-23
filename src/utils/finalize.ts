@@ -54,7 +54,9 @@ export function handleValue(
 export function finalizeAssigned(proxyDraft: ProxyDraft, key: PropertyKey) {
   // handle the draftable assigned values， and the value is not a draft
   const copy =
-    proxyDraft.type === DraftType.Set ? proxyDraft.setMap : proxyDraft.copy;
+    __MAP_SET__ && proxyDraft.type === DraftType.Set
+      ? proxyDraft.setMap
+      : proxyDraft.copy;
   if (
     proxyDraft.finalities.revoke.length > 1 &&
     proxyDraft.assignedMap!.get(key) &&
@@ -112,9 +114,10 @@ export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
   });
 }
 
+// Builds without patches pass no generator, and leave out patch paths too.
 export function finalizePatches(
   target: ProxyDraft,
-  generatePatches: GeneratePatches,
+  generatePatches: GeneratePatches | undefined,
   patches?: Patches,
   inversePatches?: Patches
 ) {
@@ -124,7 +127,7 @@ export function finalizePatches(
       (target.assignedMap !== undefined && target.assignedMap.size > 0)) &&
     !target.finalized;
   if (shouldFinalize) {
-    if (patches && inversePatches) {
+    if (__PATCHES__ && generatePatches && patches && inversePatches) {
       const basePath = getPath(target);
       if (basePath) {
         generatePatches(target, basePath, patches, inversePatches);
@@ -141,7 +144,7 @@ export function finalizePatches(
  */
 export function finalizeNode(
   node: ProxyDraft,
-  generatePatches: GeneratePatches,
+  generatePatches: GeneratePatches | undefined,
   patches?: Patches,
   inversePatches?: Patches
 ) {
@@ -149,17 +152,19 @@ export function finalizeNode(
   if (parent) {
     const parentType = parent.type;
     // if the parent is a Set draft, `setMap` is the real Set copies proxy mapping.
-    const copy = parentType === DraftType.Set ? parent.setMap : parent.copy;
+    const copy =
+      __MAP_SET__ && parentType === DraftType.Set ? parent.setMap : parent.copy;
     const key = node.key!;
     const isMapLike =
-      parentType === DraftType.Set || parentType === DraftType.Map;
+      __MAP_SET__ &&
+      (parentType === DraftType.Set || parentType === DraftType.Map);
     const draft = isMapLike ? copy.get(key) : copy[key];
     // Fast path: the node is still at its own key. Otherwise another draft
     // may have been moved here, e.g. by `reverse()`, and is finalized instead.
     const proxyDraft = draft === node.proxy ? node : getProxyDraft(draft);
     // A draft that left its key reaches its new place as a value, through a
     // callback or a value assigned there, so a Set finalizes its items here.
-    if (proxyDraft !== node) finalizeSetValue(node);
+    if (__MAP_SET__ && proxyDraft !== node) finalizeSetValue(node);
     if (proxyDraft) {
       // assign the updated value to the copy object
       const updatedValue = proxyDraft.operated
@@ -167,7 +172,7 @@ export function finalizeNode(
         : proxyDraft.original;
       // A draft of another producer, which a recipe placed here, is
       // finalized by that producer.
-      if (proxyDraft.finalities === node.finalities)
+      if (__MAP_SET__ && proxyDraft.finalities === node.finalities)
         finalizeSetValue(proxyDraft);
       finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
       // final update value
@@ -179,7 +184,7 @@ export function finalizeNode(
     }
   } else {
     // !case: handle the root draft
-    finalizeSetValue(node);
+    if (__MAP_SET__) finalizeSetValue(node);
     finalizePatches(node, generatePatches, patches, inversePatches);
   }
   // !case: handle the deleted key
@@ -199,7 +204,10 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
       proxyDraft.callbacks = [];
     }
     proxyDraft.callbacks.push(() => {
-      const copy = target.type === DraftType.Set ? target.setMap : target.copy;
+      const copy =
+        __MAP_SET__ && target.type === DraftType.Set
+          ? target.setMap
+          : target.copy;
       if (isEqual(get(copy, key), value)) {
         // The target generates its own patches once all drafts it holds have
         // been finalized, so its patch values never need deep cloning.
@@ -208,7 +216,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
           : proxyDraft.original;
         // The drafts of a Set's own producer are done changing when it rebuilds
         // the Set; a draft of another producer may change after that.
-        if (proxyDraft.finalities !== target.finalities)
+        if (__MAP_SET__ && proxyDraft.finalities !== target.finalities)
           finalizeSetValue(target, true);
         // final update value
         set(copy, key, updatedValue);
@@ -223,7 +231,10 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
   } else if (isDraftable(value, target.options)) {
     // !case: assign the non-draft value
     target.finalities.draft.push(() => {
-      const copy = target.type === DraftType.Set ? target.setMap : target.copy;
+      const copy =
+        __MAP_SET__ && target.type === DraftType.Set
+          ? target.setMap
+          : target.copy;
       if (isEqual(get(copy, key), value)) {
         finalizeAssigned(target, key);
       }

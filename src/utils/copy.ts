@@ -127,7 +127,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
     return options?.enableAutoFreeze && !Object.isExtensible(original)
       ? copyLockedArray(original)
       : concatCopy(original);
-  } else if (original instanceof Set) {
+  } else if (__MAP_SET__ && original instanceof Set) {
     if (!isBaseSetInstance(original)) {
       const SubClass = Object.getPrototypeOf(original).constructor;
       const copy = new SubClass(original.values());
@@ -142,7 +142,7 @@ export function shallowCopy(original: any, options?: Options<any, any>) {
     return !isDraft(original) && Set.prototype.difference
       ? Set.prototype.difference.call(original, new Set())
       : new Set(original.values());
-  } else if (original instanceof Map) {
+  } else if (__MAP_SET__ && original instanceof Map) {
     if (!isBaseMapInstance(original)) {
       const SubClass = Object.getPrototypeOf(original).constructor;
       return new SubClass(original);

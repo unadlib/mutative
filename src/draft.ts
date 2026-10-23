@@ -79,7 +79,9 @@ function getTrap(
     // recipe assigned is read back as assigned. `size` is read without the
     // proxy as receiver: the Map and Set getters reject any other receiver.
     const value =
-      key === 'size' && (source instanceof Map || source instanceof Set)
+      __MAP_SET__ &&
+      key === 'size' &&
+      (source instanceof Map || source instanceof Set)
         ? Reflect.get(source, key)
         : Reflect.get(source, key, receiver);
     markResult = options.mark(value, dataTypes);
@@ -91,7 +93,7 @@ function getTrap(
     }
   }
 
-  if (type === DraftType.Map) {
+  if (__MAP_SET__ && type === DraftType.Map) {
     if (mapHandlerKeys.includes(key as any)) {
       if (key === 'size') {
         return Object.getOwnPropertyDescriptor(mapHandler, 'size')!.get!.call(
@@ -101,7 +103,7 @@ function getTrap(
       const handle = mapHandler[key as keyof typeof mapHandler] as Function;
       return handle.bind(target.proxy);
     }
-  } else if (type === DraftType.Set) {
+  } else if (__MAP_SET__ && type === DraftType.Set) {
     if (setHandlerKeys.includes(key as any)) {
       if (key === 'size') {
         return Object.getOwnPropertyDescriptor(setHandler, 'size')!.get!.call(
@@ -114,11 +116,12 @@ function getTrap(
   }
 
   if (
-    type === DraftType.Map
+    __MAP_SET__ && type === DraftType.Map
       ? !(source as Map<any, any>).has(key)
       : !hasOwn.call(source, key)
   ) {
     if (
+      __ARRAY_METHODS__ &&
       type === DraftType.Array &&
       Object.getPrototypeOf(target.original) === Array.prototype
     ) {
@@ -164,10 +167,11 @@ function getTrap(
   // original, differ from the original at this key and are not drafted. After
   // a native array operation moved elements, an original element may sit at
   // any index, so membership in the original array decides instead, except
-  // for a value the recipe assigned at this index; see `baseIndex`.
+  // for a value the recipe assigned at this index; see `baseIndex`. Without
+  // native array methods, only assignments move elements.
   let draftKey: any = key;
   if (value !== target.original[key]) {
-    draftKey = baseIndex(target, value, key as number);
+    draftKey = __ARRAY_METHODS__ ? baseIndex(target, value, key as number) : -1;
     if (draftKey === -1) return value;
   }
   ensureShallowCopy(target);
@@ -206,7 +210,10 @@ function setTrap(
   key: string | number | symbol,
   value: any
 ) {
-  if (target.type === DraftType.Set || target.type === DraftType.Map) {
+  if (
+    __MAP_SET__ &&
+    (target.type === DraftType.Set || target.type === DraftType.Map)
+  ) {
     die(ErrorCode.CannotAssignToMapOrSet);
   }
   if (
@@ -252,13 +259,16 @@ function setTrap(
   if (
     isEqual(value, current) &&
     (value !== undefined || hasOwn.call(source, key)) &&
-    (target.arrayState === null || !isMovedElement(target, value, key))
+    (!__ARRAY_METHODS__ ||
+      target.arrayState === null ||
+      !isMovedElement(target, value, key))
   )
     return true;
   ensureShallowCopy(target);
   markChanged(target);
   const arrayState = target.arrayState;
   if (
+    __ARRAY_METHODS__ &&
     arrayState !== null &&
     ((typeof value === 'object' && value !== null) ||
       typeof value === 'function')
@@ -271,10 +281,12 @@ function setTrap(
   } else {
     target.assignedMap!.set(key, true);
   }
-  // A longer length, or an index past the end, leaves holes behind.
+  // A longer length, or an index past the end, leaves holes behind, which
+  // native array methods and patches keep track of.
   const length = target.type === DraftType.Array ? target.copy!.length : -1;
   target.copy![key] = value;
   if (
+    (__ARRAY_METHODS__ || __PATCHES__) &&
     length !== -1 &&
     target.copy!.length > length + (key === 'length' ? 0 : 1)
   ) {
@@ -457,7 +469,12 @@ export function finalizeDraft<T>(
       if (typeof entry === 'function') {
         entry(patches, inversePatches);
       } else {
-        finalizeNode(entry, generatePatches, patches, inversePatches);
+        finalizeNode(
+          entry,
+          __PATCHES__ ? generatePatches : undefined,
+          patches,
+          inversePatches
+        );
       }
     }
   }
@@ -474,10 +491,10 @@ export function finalizeDraft<T>(
   }
   return [
     state,
-    patches && hasReturnedValue
+    __PATCHES__ && patches && hasReturnedValue
       ? [{ op: Operation.Replace, path: [], value: returnedValue[0] }]
       : patches,
-    inversePatches && hasReturnedValue
+    __PATCHES__ && inversePatches && hasReturnedValue
       ? [{ op: Operation.Replace, path: [], value: original }]
       : inversePatches,
   ] as [T, Patches | undefined, Patches | undefined];

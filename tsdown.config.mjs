@@ -39,6 +39,9 @@ export default defineConfig(
         development === null
           ? '(process.env.NODE_ENV !== "production")'
           : String(development),
+      __MAP_SET__: 'true',
+      __PATCHES__: 'true',
+      __ARRAY_METHODS__: 'true',
     },
     globalName: format === 'umd' ? 'Mutative' : undefined,
     outputOptions: {
