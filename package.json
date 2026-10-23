@@ -11,6 +11,7 @@
   "react-native": "dist/mutative.esm.js",
   "source": "src/index.ts",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": {
