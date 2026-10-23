@@ -11,6 +11,7 @@ pnpm test:build-watch
 pnpm type-check
 pnpm test:api-docs
 pnpm test
+pnpm test:lite
 pnpm lint
 pnpm format --check
 ```
@@ -79,6 +80,10 @@ After changing the compiler or minifier, run these checks as well as the source 
 pnpm pack --pack-destination /tmp
 PATH=/path/to/node-v14.0.0/bin:$PATH node scripts/check-minimum-node.mjs /tmp/mutative-*.tgz
 ```
+
+## Lite tests
+
+`pnpm test:lite` runs the test suite with the constants of `mutative/lite` through `vitest.lite.config.mts`, and `scripts/check-lite-tests.mjs` checks every failure: a test must pass, fail with an error that the lite build throws for Map and Set drafts or for patches, in a message, a snapshot or an assertion, or be one of the tests of guarantees that only native array methods give, which the script lists. Any other failure, or an unhandled error, fails the run. `test/lite.test.ts` tests the lite build itself, and `pnpm test` skips those tests. Test filters run part of the suite, for example `pnpm test:lite test/lite.test.ts`. Push, pull request and release workflows run this check.
 
 ## API docs
 

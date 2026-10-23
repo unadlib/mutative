@@ -27,6 +27,7 @@ jobs:
       - run: pnpm test:package
       - run: pnpm test:build-watch
       - run: pnpm test
+      - run: pnpm test:lite
       - run: npm publish
         env:
           CI: true

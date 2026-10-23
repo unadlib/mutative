@@ -50,6 +50,7 @@ describe.each([
               const expected = structuredClone(before);
               recipe(expected);
               let passed = false;
+              let thrown = '';
               try {
                 const base = makeBase();
                 const [state, patches, inversePatches] = create(base, recipe, {
@@ -67,12 +68,14 @@ describe.each([
                   ) &&
                   isDeepStrictEqual(apply(base, patches), expected) &&
                   isDeepStrictEqual(apply(state, inversePatches), before);
-              } catch {
-                // A sequence that throws fails like one with a wrong result.
+              } catch (error) {
+                // A sequence that throws fails like one with a wrong result,
+                // and its failure names the error.
+                thrown = `: ${(error as Error).message}`;
               }
               if (!passed) {
                 failures.push(
-                  `${first.name} -> ${second.name} -> ${third.name}`
+                  `${first.name} -> ${second.name} -> ${third.name}${thrown}`
                 );
               }
             }
