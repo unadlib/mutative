@@ -355,7 +355,9 @@ export const makeCreator: MakeCreator = (arg) => {
         if (returnedProxyDraft.operated) {
           die(ErrorCode.CannotReturnModifiedChildDraft);
         }
-        return finalize([current(value)]);
+        // An unchanged child draft stands for its original, which current()
+        // would return for it.
+        return finalize([returnedProxyDraft.original]);
       }
       return finalize([value]);
     };
