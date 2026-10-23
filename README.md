@@ -165,7 +165,7 @@ CDN
 
 The package's other ESM files read `process.env.NODE_ENV`, which bundlers and Node.js provide; a browser without a bundler needs the production file above.
 
-Mutative has no dependencies. A production bundle of `create` alone is about 7.9 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.5 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
+Mutative has no dependencies. A production bundle of `create` alone is about 7.9 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.5 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins. [`mutative/lite`](#mutativelite) is a smaller entry of the same package for recipes that change objects and arrays, without Map and Set drafts, patches and native array methods.
 
 ## Usage
 
@@ -188,6 +188,26 @@ expect(state.list).not.toBe(baseState.list);
 `create(baseState, recipe, options?)` drafts the base state and passes the draft to the recipe. The recipe changes the draft with ordinary JavaScript, and `create()` returns the next state, which copies the objects that the recipe changed and shares all the others with the base state. The base state does not change.
 
 Use `create()` for more advanced features by [setting `options`](#createstate-fn-options). The [documentation](https://mutative.js.org/docs/getting-started/usages) shows common updates of objects, arrays, Maps and Sets.
+
+## `mutative/lite`
+
+`mutative/lite` is a smaller entry of the same package for recipes that change plain objects and arrays. It exports the API of `mutative` without `apply()`, and its `create()` drafts like the `create()` of `mutative`, with three features left out:
+
+- **Map and Set drafts.** Reading a Map or Set through a draft, or creating from a Map or Set base state, throws. Maps and Sets in the state are kept, replaced, frozen and copied as values.
+- **Patches.** The options of `create()` and `makeCreator()` have no `enablePatches`, and `create()` throws when it gets one.
+- **Native array methods.** Array methods run through the draft proxy and return the same results, but moving the elements of an array of thousands of objects takes hundreds of times as long.
+
+```ts
+import { create } from 'mutative/lite';
+
+const state = create({ list: [{ id: 1 }] }, (draft) => {
+  draft.list.push({ id: 2 });
+});
+
+expect(state.list).toEqual([{ id: 1 }, { id: 2 }]);
+```
+
+Import every function of an application from one entry: the two entries are separate builds, so an application that imports both bundles both, and `unsafe()` from one does not apply to the drafts of the other. [`mutative/lite`](https://mutative.js.org/docs/advanced-guides/lite) describes its errors and limits.
 
 ## APIs
 

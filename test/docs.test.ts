@@ -3,15 +3,20 @@ import { join, relative, resolve } from 'path';
 import { transformSync } from 'esbuild';
 import * as immer from 'immer';
 import * as mutative from '../src';
+import * as lite from '../src/lite';
 
 // Run the code examples of the README, of the website docs and of the 2.0
 // announcement. An example that imports from `mutative` or `immer`, and from
 // no other module, must run as it is written, so that the docs cannot drift
-// from the library.
+// from the library. Examples that import `mutative/lite` run with its
+// constants, in `pnpm test:lite`.
 
 const root = resolve(__dirname, '..');
 
 const modules: Record<string, unknown> = { mutative, immer };
+if (!__MAP_SET__ && !__PATCHES__ && !__ARRAY_METHODS__) {
+  modules['mutative/lite'] = lite;
+}
 
 function listDocs(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

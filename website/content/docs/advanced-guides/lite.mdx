@@ -1,0 +1,71 @@
+---
+title: mutative/lite
+description: A smaller entry of Mutative for recipes that change objects and arrays, without Map and Set drafts, patches and native array methods.
+---
+
+`mutative/lite` is a second entry of the `mutative` package for recipes that change plain objects and arrays. It exports the API of `mutative` without [`apply()`](/docs/api-reference/apply), and its `create()` drafts like the `create()` of `mutative`, with three features left out:
+
+| Feature | In `mutative/lite` |
+| --- | --- |
+| Map and Set drafts | Reading a Map or Set through a draft, or creating from a Map or Set base state, throws. Maps and Sets in the state are kept, replaced, frozen and copied as values. |
+| Patches | The options of `create()` and `makeCreator()` have no `enablePatches`, and `create()` throws when it gets one. |
+| Native array methods | Array methods run through the draft proxy and return the same results, but moving the elements of a large array takes far longer. |
+
+Everything else works as in `mutative`: [auto-freeze](/docs/advanced-guides/auto-freeze), [strict mode](/docs/advanced-guides/strict-mode) and `unsafe()`, [marks](/docs/advanced-guides/mark) and custom copies, `current()`, `original()`, `rawReturn()`, [curried](/docs/advanced-guides/currying) and async recipes, and `create(base)` without a recipe.
+
+```ts
+import { create } from 'mutative/lite';
+
+const baseState = { todos: [{ text: 'learn', done: false }] };
+
+const state = create(baseState, (draft) => {
+  draft.todos[0].done = true;
+  draft.todos.push({ text: 'ship', done: false });
+});
+
+expect(state.todos).toEqual([
+  { text: 'learn', done: true },
+  { text: 'ship', done: false },
+]);
+expect(baseState.todos[0].done).toBe(false);
+```
+
+## Maps and Sets
+
+`mutative/lite` does not draft Maps and Sets, and throws instead of handing the recipe a Map or Set that it could change in place. Maps and Sets that a recipe does not read stay in the next state, and a recipe can replace one with a new one.
+
+```ts
+import { create, original } from 'mutative/lite';
+
+const baseState = { tags: new Set(['a']), count: 0 };
+
+const state = create(baseState, (draft) => {
+  draft.count += 1;
+});
+expect(state.tags).toBe(baseState.tags);
+
+expect(() =>
+  create(baseState, (draft) => {
+    draft.tags.add('b');
+  })
+).toThrow('mutative/lite does not draft Maps or Sets');
+
+const replaced = create(baseState, (draft) => {
+  draft.tags = new Set([...original(draft).tags, 'b']);
+});
+expect([...replaced.tags]).toEqual(['a', 'b']);
+```
+
+Production builds throw [error 22](/docs/extra-topics/errors) instead of the message.
+
+## Patches
+
+`create()` throws [error 23](/docs/extra-topics/errors) for `enablePatches`, which the types of its options leave out. Use `create()` and [`apply()`](/docs/api-reference/apply) from `mutative` for [patches](/docs/advanced-guides/patches).
+
+## Array methods
+
+Methods such as `shift()`, `unshift()`, `splice()`, `reverse()` and `indexOf()` run through the draft proxy, as in Immer without its array-method plugin: they read each element that they visit through the draft, and assign each element that they move. They return what the native array methods of `mutative` return. Updates that move no elements, such as assigning or pushing an element, take as long as in `mutative`, but moving the elements of an array of thousands of objects takes hundreds of times as long. Keep `mutative` for recipes that move the elements of large arrays.
+
+## One entry per application
+
+The two entries are separate builds. An application that imports both bundles both, and `unsafe()` from one entry does not allow strict-mode reads of the drafts of the other. Import every function from the same entry, including in the libraries that share the application's state.

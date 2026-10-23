@@ -11,6 +11,7 @@
     "typescript",
     "pitfalls",
     "performance-tips",
+    "lite",
     "migration",
     "migration-v2"
   ]

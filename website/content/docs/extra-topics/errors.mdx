@@ -50,7 +50,7 @@ What the errors mean:
 - **11**: code called `set()`, `add()`, `delete()` or `clear()` on a Map or Set that [auto-freeze](/docs/advanced-guides/auto-freeze) froze.
 - **13–17** and **21**: `apply()` received a patch that it cannot apply; see [Patches that apply() accepts](/docs/api-reference/apply#patches-that-apply-accepts).
 - **19** and **20**: `rawReturn()` was called without an argument or with more than one.
-- **22** and **23**: `create()` from `mutative/lite`, which leaves out Map and Set drafts and patches, would have drafted a Map or Set, because a recipe read one through a draft or the base state is one, or received `enablePatches`.
+- **22** and **23**: `create()` from [`mutative/lite`](/docs/advanced-guides/lite), which leaves out Map and Set drafts and patches, would have drafted a Map or Set, because a recipe read one through a draft or the base state is one, or received `enablePatches`.
 
 ## Development-only errors
 
