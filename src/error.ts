@@ -27,6 +27,8 @@ export const enum ErrorCode {
   RawReturnWithoutValue = 19,
   RawReturnWithExtraArguments = 20,
   ReplaceMutableRoot = 21,
+  UnsupportedMapOrSetDraft = 22,
+  UnsupportedPatches = 23,
 }
 
 type ErrorArguments = {
@@ -51,6 +53,8 @@ type ErrorArguments = {
   [ErrorCode.RawReturnWithoutValue]: [];
   [ErrorCode.RawReturnWithExtraArguments]: [];
   [ErrorCode.ReplaceMutableRoot]: [];
+  [ErrorCode.UnsupportedMapOrSetDraft]: [];
+  [ErrorCode.UnsupportedPatches]: [];
 };
 
 type ErrorBuilders = {
@@ -109,6 +113,12 @@ const errors: ErrorBuilders = __DEV__
       // ErrorCode.ReplaceMutableRoot
       () =>
         'apply() with the mutable option changes the state in place, so a patch cannot replace the root state with another value.',
+      // ErrorCode.UnsupportedMapOrSetDraft
+      () =>
+        "mutative/lite does not draft Maps or Sets: read and change them in recipes of create() from 'mutative'.",
+      // ErrorCode.UnsupportedPatches
+      () =>
+        "mutative/lite does not generate patches: use enablePatches with create() from 'mutative'.",
     ]
   : ([] as unknown as ErrorBuilders);
 

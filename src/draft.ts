@@ -383,6 +383,11 @@ export function createDraft<T extends object>(
   options: Options<any, any>
 ): T {
   const type = getType(original);
+  // A build without Map and Set drafts still recognizes Maps and Sets, so that
+  // a recipe cannot change one in place through a draft.
+  if (!__MAP_SET__ && (type === DraftType.Map || type === DraftType.Set)) {
+    die(ErrorCode.UnsupportedMapOrSetDraft);
+  }
   // Every field is initialized here so all draft states share one shape.
   const proxyDraft: ProxyDraft = {
     type,

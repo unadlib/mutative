@@ -285,6 +285,7 @@ export const makeCreator: MakeCreator = (arg) => {
         }) as Mark<any, any>)
       : options.mark;
     const enablePatches = options.enablePatches ?? false;
+    if (!__PATCHES__ && enablePatches) die(ErrorCode.UnsupportedPatches);
     const strict = options.strict ?? false;
     const enableAutoFreeze = options.enableAutoFreeze ?? false;
     const _options: Options<any, any> = {

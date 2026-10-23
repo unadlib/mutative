@@ -35,6 +35,8 @@ Numeric codes remain stable when an error is removed. Retired codes are reserved
 | 19 | `RawReturnWithoutValue` | `rawReturn() must be called with a value.` |
 | 20 | `RawReturnWithExtraArguments` | `rawReturn() must be called with one argument.` |
 | 21 | `ReplaceMutableRoot` | `apply() with the mutable option changes the state in place, so a patch cannot replace the root state with another value.` |
+| 22 | `UnsupportedMapOrSetDraft` | `mutative/lite does not draft Maps or Sets: read and change them in recipes of create() from 'mutative'.` |
+| 23 | `UnsupportedPatches` | `mutative/lite does not generate patches: use enablePatches with create() from 'mutative'.` |
 
 What the errors mean:
 
@@ -48,6 +50,7 @@ What the errors mean:
 - **11**: code called `set()`, `add()`, `delete()` or `clear()` on a Map or Set that [auto-freeze](/docs/advanced-guides/auto-freeze) froze.
 - **13–17** and **21**: `apply()` received a patch that it cannot apply; see [Patches that apply() accepts](/docs/api-reference/apply#patches-that-apply-accepts).
 - **19** and **20**: `rawReturn()` was called without an argument or with more than one.
+- **22** and **23**: `create()` from `mutative/lite`, which leaves out Map and Set drafts and patches, would have drafted a Map or Set, because a recipe read one through a draft or the base state is one, or received `enablePatches`.
 
 ## Development-only errors
 
