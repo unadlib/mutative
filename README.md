@@ -109,14 +109,17 @@ Immer's optional `enableArrayMethods()` plugin also runs array methods on the dr
 <details>
 <summary><strong>Bundle size compared with Immer</strong></summary>
 
-Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins. The following Brotli sizes were measured with esbuild 0.24.0 from the ESM entry that bundlers resolve for each library (Immer 11.1.21 `dist/immer.mjs`; Mutative 2.0.0), with `process.env.NODE_ENV` defined as `production`, bundled for the browser with `--minify --target=es2018 --format=esm`. The first row imports `create`, `apply`, `current` and `original` for Mutative, and `produce`, `applyPatches`, `current` and `original` with Immer's `enablePatches`, `enableMapSet` and `enableArrayMethods`. The second imports only `create` or `produce`.
+Mutative ships patches, `Map`/`Set` support and native array methods built in; Immer provides them as opt-in plugins, and [`mutative/lite`](#mutativelite) leaves them out. The following Brotli sizes were measured with esbuild 0.24.0 from the ESM entry that bundlers resolve for each library (Immer 11.2.9 `dist/immer.mjs`; Mutative 2.0.0 `dist/mutative.esm.mjs`; `dist/mutative.lite.esm.mjs` built from the current source, which no release includes yet), with `process.env.NODE_ENV` defined as `production`, bundled for the browser with `--minify --target=es2018 --format=esm`. The first row imports `create`, `apply`, `current` and `original` for Mutative, and `produce`, `applyPatches`, `current` and `original` with Immer's `enablePatches`, `enableMapSet` and `enableArrayMethods`. The second imports only `create` or `produce`, and the third `create` from `mutative/lite` or `produce` without plugins, neither of which drafts Maps and Sets, generates patches or runs native array methods.
 
 | Bundle                                      |  Immer | Mutative |
 | ------------------------------------------- | -----: | -------: |
 | With patches, `Map`/`Set` and array methods | 6.4 kB |   8.5 kB |
 | `produce` / `create` only                   | 3.6 kB |   7.9 kB |
+| `produce` / `create` of `mutative/lite`     | 3.6 kB |   3.8 kB |
 
 Mutative's `create` includes patches, `Map`/`Set` support and the native array methods even when a recipe does not use them: they are part of `create`, not separate imports, so bundlers cannot drop them. The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
+
+`mutative/lite` leaves the three out of `create`, which then takes 3.8 kB, half of the `create` of `mutative` and 0.2 kB more than `produce` without plugins. Like `produce` without `enableMapSet` and `enableArrayMethods`, it throws where it would draft a Map or Set, and runs array methods through the draft proxy, which moves the elements of large arrays hundreds of times more slowly than the native array methods; see [`mutative/lite`](#mutativelite).
 
 </details>
 
@@ -165,7 +168,7 @@ CDN
 
 The package's other ESM files read `process.env.NODE_ENV`, which bundlers and Node.js provide; a browser without a bundler needs the production file above.
 
-Mutative has no dependencies. A production bundle of `create` alone is about 7.9 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.5 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins. [`mutative/lite`](#mutativelite) is a smaller entry of the same package for recipes that change objects and arrays, without Map and Set drafts, patches and native array methods.
+Mutative has no dependencies. A production bundle of `create` alone is about 7.9 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.5 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins. [`mutative/lite`](#mutativelite) is a smaller entry of the same package for recipes that change objects and arrays, without Map and Set drafts, patches and native array methods: its `create` alone is about 3.8 kB.
 
 ## Usage
 

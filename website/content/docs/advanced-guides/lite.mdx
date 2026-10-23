@@ -30,6 +30,10 @@ expect(state.todos).toEqual([
 expect(baseState.todos[0].done).toBe(false);
 ```
 
+## Bundle size
+
+Bundled for the browser in production mode, minified and compressed with Brotli, `create()` alone takes about 3.8 kB from `mutative/lite`, against 7.9 kB from `mutative` and 3.6 kB for `produce()` from Immer without plugins, which also leaves out Map and Set drafts, patches and native array methods. `create()`, `current()` and `original()` together take 3.9 kB. The [README](https://github.com/unadlib/mutative#performance) describes how the sizes were measured.
+
 ## Maps and Sets
 
 `mutative/lite` does not draft Maps and Sets, and throws instead of handing the recipe a Map or Set that it could change in place. Maps and Sets that a recipe does not read stay in the next state, and a recipe can replace one with a new one.
