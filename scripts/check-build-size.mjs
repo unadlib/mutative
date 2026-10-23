@@ -28,6 +28,10 @@ const scenarios = {
       console.log(next, apply(base, patches), apply(next, inverse));`,
   },
   all: { imports: '* as api', body: 'console.log(api);' },
+  // Bundlers drop the rest of the library from these imports only while
+  // module initialization has no side effects.
+  isDraft: { imports: '{ isDraft }', body: 'console.log(isDraft({}));' },
+  current: { imports: '{ current }', body: 'console.log(current);' },
 };
 
 function sizes(code) {

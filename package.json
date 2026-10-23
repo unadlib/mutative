@@ -76,6 +76,18 @@
       "path": "dist/mutative.esm.mjs",
       "import": "*",
       "limit": "8.6 KB"
+    },
+    {
+      "name": "ESM, isDraft",
+      "path": "dist/mutative.esm.mjs",
+      "import": "{ isDraft }",
+      "limit": "0.1 KB"
+    },
+    {
+      "name": "ESM, current",
+      "path": "dist/mutative.esm.mjs",
+      "import": "{ current }",
+      "limit": "1.6 KB"
     }
   ],
   "repository": {

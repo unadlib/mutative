@@ -64,6 +64,16 @@
       "gzip": 9578,
       "brotli": 8783
     },
+    "consumer/import/isDraft": {
+      "raw": 200,
+      "gzip": 178,
+      "brotli": 143
+    },
+    "consumer/import/current": {
+      "raw": 4244,
+      "gzip": 1723,
+      "brotli": 1597
+    },
     "consumer/require/create": {
       "raw": 26924,
       "gzip": 9555,
@@ -78,6 +88,16 @@
       "raw": 26889,
       "gzip": 9534,
       "brotli": 8740
+    },
+    "consumer/require/isDraft": {
+      "raw": 26902,
+      "gzip": 9541,
+      "brotli": 8747
+    },
+    "consumer/require/current": {
+      "raw": 26898,
+      "gzip": 9538,
+      "brotli": 8744
     }
   }
 }
