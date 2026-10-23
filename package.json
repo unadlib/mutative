@@ -24,11 +24,23 @@
         "default": "./dist/index.js"
       }
     },
+    "./lite": {
+      "import": {
+        "types": "./dist/lite.d.mts",
+        "node": "./dist/lite.mjs",
+        "default": "./dist/mutative.lite.esm.mjs"
+      },
+      "require": {
+        "types": "./dist/lite.d.ts",
+        "default": "./dist/lite.js"
+      }
+    },
     "./*": "./*"
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "lite"
   ],
   "scripts": {
     "test": "vitest run",

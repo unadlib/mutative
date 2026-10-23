@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "main": "../dist/lite.js",
+  "module": "../dist/mutative.lite.esm.mjs",
+  "types": "../dist/lite.d.ts",
+  "sideEffects": false
+}

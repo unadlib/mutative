@@ -40,6 +40,10 @@ try {
     'mutative.esm.js',
     'mutative.esm.mjs',
     'mutative.umd.development.js',
+    'mutative.lite.cjs.production.min.js',
+    'mutative.lite.esm.production.min.mjs',
+    'mutative.lite.cjs.development.js',
+    'mutative.lite.esm.mjs',
   ];
   const declarations = walk(join(root, 'src'))
     .filter((path) => path.endsWith('.ts'))
@@ -48,6 +52,9 @@ try {
     'index.js',
     'index.mjs',
     'index.d.mts',
+    'lite.js',
+    'lite.mjs',
+    'lite.d.mts',
     ...declarations,
     ...bundles.flatMap((name) => [name, `${name}.map`]),
   ].sort();
@@ -72,14 +79,27 @@ try {
   ]) {
     assert.ok(existsSync(join(root, manifest[field])), `${field} must exist`);
   }
-  for (const branch of ['import', 'require']) {
-    for (const condition of ['types', 'default']) {
-      const target = manifest.exports['.'][branch][condition];
-      assert.ok(
-        existsSync(join(root, target)),
-        `${branch}.${condition} must exist`
-      );
+  for (const entry of ['.', './lite']) {
+    for (const branch of ['import', 'require']) {
+      for (const condition of ['types', 'default']) {
+        const target = manifest.exports[entry][branch][condition];
+        assert.ok(
+          existsSync(join(root, target)),
+          `${entry} ${branch}.${condition} must exist`
+        );
+      }
     }
+  }
+  // Resolution that ignores `exports`, such as TypeScript's `node10`, finds
+  // `mutative/lite` through the fields of `lite/package.json`.
+  const liteManifest = JSON.parse(
+    readFileSync(join(root, 'lite/package.json'), 'utf8')
+  );
+  for (const field of ['main', 'module', 'types']) {
+    assert.ok(
+      existsSync(join(root, 'lite', liteManifest[field])),
+      `lite ${field} must exist`
+    );
   }
 
   // The build replaces its feature constants in every bundle.
@@ -104,7 +124,8 @@ try {
   // consumer: every development check compares `process.env.NODE_ENV`, which
   // bundlers replace, and nothing else reads `process`.
   for (const name of bundles.filter(
-    (name) => name.startsWith('mutative.esm.') && !name.includes('production')
+    (name) =>
+      /^mutative\.(lite\.)?esm\./.test(name) && !name.includes('production')
   )) {
     const code = readFileSync(join(root, 'dist', name), 'utf8');
     const checks = code.match(/process\.env\.NODE_ENV !== "production"/g);
@@ -163,6 +184,10 @@ try {
   for (const path of expected) {
     assert.ok(packedFiles.has(`dist/${path}`), `${path} must be packed`);
   }
+  assert.ok(
+    packedFiles.has('lite/package.json'),
+    'lite/package.json must be packed'
+  );
   for (const path of walk(join(root, 'src'))) {
     assert.ok(
       packedFiles.has(`src/${relative(join(root, 'src'), path)}`),
@@ -345,6 +370,109 @@ console.log(create({ count: 1 }, (draft) => { draft.count = 2; }).count);`,
     );
   }
 
+  // `mutative/lite` resolves like `mutative` and throws for the Map and Set
+  // drafts and the patches that it leaves out.
+  const expectedLiteExports = expectedExports.filter(
+    (name) => name !== 'apply'
+  );
+  for (const mode of ['development', 'production']) {
+    const [mapSetError, patchesError] =
+      mode === 'production'
+        ? ['Minified Mutative error #22', 'Minified Mutative error #23']
+        : [
+            'mutative/lite does not draft Maps or Sets',
+            'mutative/lite does not generate patches',
+          ];
+    const checks = `assert.deepEqual(Object.keys(lite).sort(), ${JSON.stringify(expectedLiteExports)});
+         const base = { count: 1, list: [{ id: 1 }, { id: 2 }], map: new Map() };
+         const next = lite.create(base, (draft) => { draft.count = 2; draft.list.reverse(); draft.list[0].id = 3; });
+         assert.deepEqual([next.count, next.list[0].id, base.list[1].id], [2, 3, 2]);
+         assert.equal(next.map, base.map);
+         assert.throws(() => lite.create(base, (draft) => { draft.map.set(1, 1); }), { message: new RegExp(${JSON.stringify(mapSetError)}) });
+         assert.throws(() => lite.create(base, () => {}, { enablePatches: true }), { message: new RegExp(${JSON.stringify(patchesError)}) });
+         assert.throws(() => lite.current({}), /${mode === 'production' ? 'Minified Mutative error #7' : 'current\\(\\) is only used for Draft'}/);`;
+    run(
+      process.execPath,
+      [
+        '-e',
+        `const assert = require('node:assert/strict');
+         const lite = require('mutative/lite');
+         ${checks}
+         assert.equal(require('mutative/dist/mutative.lite.cjs.production.min.js').create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);`,
+      ],
+      consumer,
+      { ...process.env, NODE_ENV: mode }
+    );
+    run(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        `import assert from 'node:assert/strict';
+         import * as lite from 'mutative/lite';
+         import { createRequire } from 'node:module';
+         // Node.js resolves the CJS entry, so import and require share one instance.
+         assert.equal(createRequire(import.meta.url)('mutative/lite').create, lite.create);
+         ${checks}
+         const deep = await import('mutative/dist/mutative.lite.esm.mjs');
+         assert.equal(deep.create({ count: 1 }, (draft) => { draft.count = 2; }).count, 2);
+         const browser = await import('mutative/dist/mutative.lite.esm.production.min.mjs');
+         assert.deepEqual(Object.keys(browser).sort(), ${JSON.stringify(expectedLiteExports)});
+         assert.throws(() => browser.current({}), /Minified Mutative error #7/);`,
+      ],
+      consumer,
+      { ...process.env, NODE_ENV: mode }
+    );
+
+    const { outputFiles } = await build({
+      stdin: {
+        contents:
+          "import { current } from 'mutative/lite';\nconsole.log(current);",
+        resolveDir: consumer,
+      },
+      bundle: true,
+      write: false,
+      minify: true,
+      format: 'esm',
+      platform: 'browser',
+      define: { 'process.env.NODE_ENV': JSON.stringify(mode) },
+    });
+    const bundle = outputFiles[0].text;
+    assert.doesNotMatch(bundle, /\bprocess\b/);
+    assert.equal(
+      bundle.includes('current() is only used for Draft'),
+      mode === 'development',
+      `${mode} bundle of the lite ESM entry`
+    );
+
+    const nodeBundle = await build({
+      stdin: {
+        contents: `import * as lite from 'mutative/lite';
+import { create } from 'mutative/lite';
+if (lite.create !== create || Object.keys(lite).length !== ${expectedLiteExports.length}) throw new Error('exports');
+console.log(create({ count: 1 }, (draft) => { draft.count = 2; }).count);`,
+        resolveDir: consumer,
+      },
+      bundle: true,
+      write: false,
+      format: 'esm',
+      platform: 'node',
+    });
+    writeFileSync(
+      join(consumer, 'node-lite-bundle.mjs'),
+      nodeBundle.outputFiles[0].text
+    );
+    assert.equal(
+      execFileSync(process.execPath, ['node-lite-bundle.mjs'], {
+        cwd: consumer,
+        encoding: 'utf8',
+        env: { ...process.env, NODE_ENV: mode },
+      }).trim(),
+      '2',
+      `${mode} Node.js bundle of the lite ESM entry`
+    );
+  }
+
   const example = `import { create, makeCreator, type Draft, type Immutable, type Patch, type Patches } from 'mutative';
 const next = create({ count: 1 }, (draft: Draft<{ count: number }>) => {
   draft.count = 2;
@@ -378,6 +506,22 @@ void [sync, asyncVoid, asyncReplacement, curriedResult, primitive, resetResult, 
   writeFileSync(join(consumer, 'consumer.mts'), example);
   writeFileSync(join(consumer, 'consumer.cts'), example);
   writeFileSync(join(consumer, 'consumer.ts'), example);
+  const liteExample = `import { create, makeCreator, type Draft, type Immutable, type Options } from 'mutative/lite';
+type State = { count: number; list: number[] };
+const base: State = { count: 0, list: [] };
+const next: State = create(base, (draft: Draft<State>) => { draft.count++; });
+const asyncNext: Promise<State> = create<State>(base, async (draft) => { draft.count++; });
+const frozen: Immutable<State> = create(base, (draft) => { draft.count++; }, { enableAutoFreeze: true });
+const creator = makeCreator({ enableAutoFreeze: true });
+const created: Immutable<State> = creator(base, (draft) => { draft.list.push(1); });
+const options: Options<false> = { strict: true };
+// @ts-expect-error mutative/lite generates no patches.
+create(base, (draft) => { draft.count++; }, { enablePatches: true });
+void [next, asyncNext, frozen, created, options];
+`;
+  writeFileSync(join(consumer, 'consumer-lite.mts'), liteExample);
+  writeFileSync(join(consumer, 'consumer-lite.cts'), liteExample);
+  writeFileSync(join(consumer, 'consumer-lite.ts'), liteExample);
   const compiler = join(root, 'node_modules', 'typescript', 'bin', 'tsc');
   run(
     process.execPath,
@@ -393,6 +537,8 @@ void [sync, asyncVoid, asyncReplacement, curriedResult, primitive, resetResult, 
       'NodeNext',
       'consumer.mts',
       'consumer.cts',
+      'consumer-lite.mts',
+      'consumer-lite.cts',
     ],
     consumer
   );
@@ -412,6 +558,8 @@ void [sync, asyncVoid, asyncReplacement, curriedResult, primitive, resetResult, 
       'NodeNext',
       'consumer.mts',
       'consumer.cts',
+      'consumer-lite.mts',
+      'consumer-lite.cts',
     ],
     consumer
   );
@@ -433,6 +581,8 @@ void [sync, asyncVoid, asyncReplacement, curriedResult, primitive, resetResult, 
       'NodeNext',
       'consumer.mts',
       'consumer.cts',
+      'consumer-lite.mts',
+      'consumer-lite.cts',
     ],
     consumer
   );
@@ -449,6 +599,7 @@ void [sync, asyncVoid, asyncReplacement, curriedResult, primitive, resetResult, 
       '--moduleResolution',
       'Bundler',
       'consumer.ts',
+      'consumer-lite.ts',
     ],
     consumer
   );

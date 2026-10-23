@@ -10,7 +10,10 @@ const compiler = typescript();
 // the development code. A constant read once is not enough, as webpack keeps
 // the development code of namespace and dynamic imports when the checks go
 // through it. Node.js reads the variable once through the CJS entry instead,
-// and browsers without a bundler load the production ESM artifact.
+// and browsers without a bundler load the production ESM artifact. The
+// `lite-` variants build `mutative/lite` from `src/lite.ts`, without Map and
+// Set drafts, patches and native array methods, in the same formats except
+// UMD and the legacy `.js` ESM file.
 const variants = [
   ['cjs-production', 'cjs', 'mutative.cjs.production.min.js', false, true],
   ['umd-production', 'umd', 'mutative.umd.production.min.js', false, true],
@@ -19,12 +22,28 @@ const variants = [
   ['esm', 'esm', 'mutative.esm.js', null, false],
   ['esm-mjs', 'esm', 'mutative.esm.mjs', null, false],
   ['umd-development', 'umd', 'mutative.umd.development.js', true, false],
+  [
+    'lite-cjs-production',
+    'cjs',
+    'mutative.lite.cjs.production.min.js',
+    false,
+    true,
+  ],
+  [
+    'lite-esm-production',
+    'esm',
+    'mutative.lite.esm.production.min.mjs',
+    false,
+    true,
+  ],
+  ['lite-cjs-development', 'cjs', 'mutative.lite.cjs.development.js', true, false],
+  ['lite-esm-mjs', 'esm', 'mutative.lite.esm.mjs', null, false],
 ];
 
 export default defineConfig(
   variants.map(([name, format, fileName, development, minify]) => ({
     name,
-    entry: 'src/index.ts',
+    entry: name.startsWith('lite-') ? 'src/lite.ts' : 'src/index.ts',
     format,
     outDir: 'dist',
     clean: false,
@@ -39,9 +58,9 @@ export default defineConfig(
         development === null
           ? '(process.env.NODE_ENV !== "production")'
           : String(development),
-      __MAP_SET__: 'true',
-      __PATCHES__: 'true',
-      __ARRAY_METHODS__: 'true',
+      __MAP_SET__: String(!name.startsWith('lite-')),
+      __PATCHES__: String(!name.startsWith('lite-')),
+      __ARRAY_METHODS__: String(!name.startsWith('lite-')),
     },
     globalName: format === 'umd' ? 'Mutative' : undefined,
     outputOptions: {

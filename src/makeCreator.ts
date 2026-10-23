@@ -4,6 +4,7 @@ import {
   Mark,
   Options,
   ExternalOptions,
+  LiteOptions,
   PatchesOptions,
   Result,
 } from './interface';
@@ -57,11 +58,17 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
     ? ExplicitRecipe<T, P, ExplicitReturn<T>>
     : never;
 
-/** @inline */ type MakeCreator = <
+// The options of a creator. Those of `mutative/lite` leave out patches.
+type CreatorOptions<
+  O extends PatchesOptions,
+  F extends boolean,
+  Lite extends boolean,
+> = Lite extends true ? LiteOptions<F> : ExternalOptions<O, F>;
+/** @inline */ export type MakeCreatorOf<Lite extends boolean> = <
   _F extends boolean = false,
   _O extends PatchesOptions = false,
 >(
-  options?: ExternalOptions<_O, _F>
+  options?: CreatorOptions<_O, _F, Lite>
 ) => {
   // With an explicit state type, TypeScript infers no other type argument, and
   // the default return type `void` of the overloads below also accepts an
@@ -70,18 +77,18 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
   <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
     base: ExplicitState<T>,
     mutate: ExplicitRecipe<T, [], ExplicitSyncReturn<T>>,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): Result<ExplicitState<T>, O, F>;
   <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
     base: ExplicitState<T>,
     mutate: ExplicitRecipe<T, [], Promise<ExplicitReturn<T>>>,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): Promise<Result<ExplicitState<T>, O, F>>;
   // A synchronous recipe of a primitive state.
   <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
     base: ExplicitState<T>,
     mutate: ExplicitPrimitiveRecipe<T, []>,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): Result<ExplicitState<T>, O, F>;
   // A recipe that may or may not return a Promise gives either result.
   <T = never, F extends boolean = _F, O extends PatchesOptions = _O>(
@@ -91,7 +98,7 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
       [],
       ExplicitReturn<T> | Promise<ExplicitReturn<T>>
     >,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): Result<ExplicitState<T>, O, F> | Promise<Result<ExplicitState<T>, O, F>>;
   <
     T extends any,
@@ -101,7 +108,7 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
   >(
     base: T,
     mutate: (draft: Draft<T>) => R,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): CreateResult<T, O, F, R>;
   <
     T extends any,
@@ -111,7 +118,7 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
   >(
     base: T,
     mutate: (draft: T) => R,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): CreateResult<T, O, F, R>;
   <
     T = never,
@@ -120,7 +127,7 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
     O extends PatchesOptions = _O,
   >(
     mutate: ExplicitRecipe<T, P, ExplicitSyncReturn<T>>,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): (base: ExplicitState<T>, ...args: P) => Result<ExplicitState<T>, O, F>;
   <
     T = never,
@@ -129,7 +136,7 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
     O extends PatchesOptions = _O,
   >(
     mutate: ExplicitRecipe<T, P, Promise<ExplicitReturn<T>>>,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): (
     base: ExplicitState<T>,
     ...args: P
@@ -141,7 +148,7 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
     O extends PatchesOptions = _O,
   >(
     mutate: ExplicitPrimitiveRecipe<T, P>,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): (base: ExplicitState<T>, ...args: P) => Result<ExplicitState<T>, O, F>;
   <
     T = never,
@@ -154,7 +161,7 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
       P,
       ExplicitReturn<T> | Promise<ExplicitReturn<T>>
     >,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): (
     base: ExplicitState<T>,
     ...args: P
@@ -167,7 +174,7 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
     R extends void | Promise<void> | T | Promise<T> = void,
   >(
     mutate: (draft: Draft<T>, ...args: P) => R,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): (base: T, ...args: P) => CreateResult<T, O, F, R>;
   // A recipe that annotates its draft with the state type itself, such as a
   // type parameter, which TypeScript cannot match against `Draft<T>`.
@@ -179,13 +186,15 @@ type ExplicitPrimitiveRecipe<T, P extends any[]> =
     R extends void | Promise<void> | T | Promise<T> = void,
   >(
     mutate: (draft: T, ...args: P) => R,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): (base: T, ...args: P) => CreateResult<T, O, F, R>;
   <T extends any, O extends PatchesOptions = _O, F extends boolean = _F>(
     base: T,
-    options?: ExternalOptions<O, F>
+    options?: CreatorOptions<O, F, Lite>
   ): [Draft<T>, () => Result<T, O, F>];
 };
+
+/** @inline */ type MakeCreator = MakeCreatorOf<false>;
 
 // Development builds warn once about a draft base, see `makeCreator`.
 let draftBaseWarned = false;

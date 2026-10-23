@@ -1,7 +1,7 @@
 // Checks a packed tarball on the oldest Node.js version that `engines`
 // allows: the CJS entry with `require`, the Node.js ESM entry with static and
 // dynamic `import`, one shared instance, and a runtime test, in development
-// and production. It only uses what Node.js 14.0 provides: no `node:`
+// and production, for `mutative` and for `mutative/lite`. It only uses what Node.js 14.0 provides: no `node:`
 // specifiers, no `assert/strict`, no top-level `await` and no `fs.rmSync`.
 //
 // Usage: node scripts/check-minimum-node.mjs <mutative-x.y.z.tgz>
@@ -133,6 +133,83 @@ require('./runtime-test.cjs')(api, process.env.NODE_ENV).catch((error) => {
   process.exitCode = 1;
 });
 `,
+  'runtime-lite-test.cjs': `'use strict';
+const assert = require('assert').strict;
+
+module.exports = (lite, mode) => {
+  const base = {
+    a: { b: 1 },
+    list: [{ id: 0 }, { id: 1 }, { id: 2 }],
+    map: new Map([['k', { v: 1 }]]),
+  };
+  const state = lite.create(base, (draft) => {
+    draft.a.b = 2;
+    draft.list.shift();
+    draft.list.reverse();
+    draft.list[0].id = 9;
+    assert.deepEqual(lite.current(draft.a), { b: 2 });
+    assert.equal(lite.original(draft.a), base.a);
+  });
+  assert.equal(state.a.b, 2);
+  assert.deepEqual(state.list, [{ id: 9 }, { id: 1 }]);
+  assert.equal(base.list[2].id, 2);
+  assert.equal(state.map, base.map);
+  assert.throws(
+    () =>
+      lite.create(base, (draft) => {
+        draft.map.get('k').v = 2;
+      }),
+    mode === 'production'
+      ? /Minified Mutative error #22/
+      : /mutative\\/lite does not draft Maps or Sets/
+  );
+  assert.throws(
+    () => lite.create(base, () => {}, { enablePatches: true }),
+    mode === 'production'
+      ? /Minified Mutative error #23/
+      : /mutative\\/lite does not generate patches/
+  );
+  const frozen = lite.create(
+    base,
+    (draft) => {
+      draft.a.b = 3;
+    },
+    { enableAutoFreeze: true }
+  );
+  assert.ok(Object.isFrozen(frozen.a) && Object.isFrozen(frozen.map));
+  return lite
+    .create({ a: { b: 1 } }, async (draft) => {
+      await Promise.resolve();
+      draft.a.b = 2;
+    })
+    .then((result) => assert.equal(result.a.b, 2));
+};
+`,
+  'check-lite.cjs': `'use strict';
+const lite = require('mutative/lite');
+
+require('./runtime-lite-test.cjs')(lite, process.env.NODE_ENV).catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+`,
+  'check-lite.mjs': `import assert from 'assert';
+import { createRequire } from 'module';
+import * as lite from 'mutative/lite';
+
+const require = createRequire(import.meta.url);
+const cjs = require('mutative/lite');
+assert.deepStrictEqual(Object.keys(lite).sort(), Object.keys(cjs).sort());
+for (const name of Object.keys(cjs)) assert.strictEqual(lite[name], cjs[name]);
+assert.ok(!('apply' in cjs));
+require('./runtime-lite-test.cjs')(lite, process.env.NODE_ENV)
+  .then(() => import('mutative/lite'))
+  .then((dynamic) => assert.strictEqual(dynamic.create, cjs.create))
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+`,
   'check.mjs': `import assert from 'assert';
 import { createRequire } from 'module';
 import * as api from 'mutative';
@@ -188,7 +265,12 @@ try {
     fs.writeFileSync(path.join(consumer, name), content);
   }
   for (const mode of ['development', 'production']) {
-    for (const file of ['check.cjs', 'check.mjs']) {
+    for (const file of [
+      'check.cjs',
+      'check.mjs',
+      'check-lite.cjs',
+      'check-lite.mjs',
+    ]) {
       execFileSync(process.execPath, [file], {
         cwd: consumer,
         env: { ...process.env, NODE_ENV: mode },

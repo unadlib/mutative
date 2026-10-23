@@ -222,6 +222,15 @@ export interface ExternalOptions<O extends PatchesOptions, F extends boolean> {
   mark?: Mark<O, F>[] | Mark<O, F>;
 }
 
+/**
+ * The options of `create()` and `makeCreator()` from `mutative/lite`, which
+ * generates no patches.
+ */
+export type LiteOptions<F extends boolean> = Omit<
+  ExternalOptions<false, F>,
+  'enablePatches'
+>;
+
 // Exclude `symbol`
 type Primitive = string | number | bigint | boolean | null | undefined;
 
