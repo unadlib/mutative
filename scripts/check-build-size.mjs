@@ -15,6 +15,10 @@ const artifacts = [
   'mutative.umd.development.js',
   'mutative.esm.js',
   'mutative.esm.mjs',
+  'mutative.lite.cjs.production.min.js',
+  'mutative.lite.esm.production.min.mjs',
+  'mutative.lite.cjs.development.js',
+  'mutative.lite.esm.mjs',
 ];
 const scenarios = {
   create: {
@@ -33,6 +37,12 @@ const scenarios = {
   isDraft: { imports: '{ isDraft }', body: 'console.log(isDraft({}));' },
   current: { imports: '{ current }', body: 'console.log(current);' },
 };
+// `mutative/lite` generates no patches, and its other exports are those of
+// `mutative`.
+const entries = [
+  ['.', '', scenarios],
+  ['./lite', 'lite/', { create: scenarios.create, all: scenarios.all }],
+];
 
 function sizes(code) {
   const bytes = Buffer.from(code);
@@ -53,35 +63,37 @@ async function measure(directory) {
   const manifest = JSON.parse(
     readFileSync(join(directory, 'package.json'), 'utf8')
   );
-  for (const mode of ['import', 'require']) {
-    const condition = manifest.exports['.'][mode];
-    const entry = resolve(
-      directory,
-      typeof condition === 'string' ? condition : condition.default
-    );
-    for (const [name, scenario] of Object.entries(scenarios)) {
-      const imports =
-        mode === 'import'
-          ? `import ${scenario.imports} from ${JSON.stringify(entry)};`
-          : `const ${name === 'all' ? 'api' : scenario.imports} = require(${JSON.stringify(entry)});`;
-      const result = await build({
-        stdin: {
-          contents: `${imports}\n${scenario.body}`,
-          resolveDir: directory,
-        },
-        bundle: true,
-        write: false,
-        minify: true,
-        treeShaking: true,
-        target: 'es2018',
-        platform: 'browser',
-        format: 'esm',
-        legalComments: 'none',
-        define: { 'process.env.NODE_ENV': '"production"' },
-      });
-      results[`consumer/${mode}/${name}`] = sizes(
-        result.outputFiles[0].contents
+  for (const [path, prefix, entryScenarios] of entries) {
+    for (const mode of ['import', 'require']) {
+      const condition = manifest.exports[path][mode];
+      const entry = resolve(
+        directory,
+        typeof condition === 'string' ? condition : condition.default
       );
+      for (const [name, scenario] of Object.entries(entryScenarios)) {
+        const imports =
+          mode === 'import'
+            ? `import ${scenario.imports} from ${JSON.stringify(entry)};`
+            : `const ${name === 'all' ? 'api' : scenario.imports} = require(${JSON.stringify(entry)});`;
+        const result = await build({
+          stdin: {
+            contents: `${imports}\n${scenario.body}`,
+            resolveDir: directory,
+          },
+          bundle: true,
+          write: false,
+          minify: true,
+          treeShaking: true,
+          target: 'es2018',
+          platform: 'browser',
+          format: 'esm',
+          legalComments: 'none',
+          define: { 'process.env.NODE_ENV': '"production"' },
+        });
+        results[`consumer/${prefix}${mode}/${name}`] = sizes(
+          result.outputFiles[0].contents
+        );
+      }
     }
   }
   return results;

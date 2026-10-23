@@ -41,13 +41,13 @@ Bundlers that target Node.js resolve the same CJS entry, for example esbuild wit
 
 `pnpm size` runs both checks below, including in push, pull request and release workflows:
 
-1. `size-limit` bundles what a consumer imports with webpack in production mode and checks its Brotli size against the limit in `package.json`: all exports of the production CJS artifact, and `create`, all exports, `isDraft` alone and `current` alone of the ESM entry. Each check names its imports: without them, webpack drops the unused exports of the entry and measures only module initialization. Each limit is the size at its last refresh plus 1%, rounded up to 0.1 kB.
+1. `size-limit` bundles what a consumer imports with webpack in production mode and checks its Brotli size against the limit in `package.json`: all exports of the production CJS artifact, `create`, all exports, `isDraft` alone and `current` alone of the ESM entry, and `create` and all exports of the `mutative/lite` ESM entry. Each check names its imports: without them, webpack drops the unused exports of the entry and measures only module initialization. Each limit is the size at its last refresh plus 1%, rounded up to 0.1 kB.
 2. `pnpm size:compare` compares the build with the measurements of a reference revision in `scripts/build-size-baseline.json`, the revision of the last change that accepted a size difference.
 
 The baseline comparison measures:
 
-- All seven JavaScript artifacts, using raw bytes, gzip level 9 and Brotli.
-- ESM import and production CJS require consumers using the declared package entry points. Each mode covers `create`, patch generation/application, the complete API, `isDraft` alone and `current` alone. The imports are used so bundlers cannot discard the application. The ESM imports of `isDraft` and `current` stay small only while module initialization has no side effects; the CJS requires bundle the whole production artifact.
+- All eleven JavaScript artifacts, using raw bytes, gzip level 9 and Brotli.
+- ESM import and production CJS require consumers using the declared package entry points. Each mode covers `create`, patch generation/application, the complete API, `isDraft` alone and `current` alone. The imports are used so bundlers cannot discard the application. The ESM imports of `isDraft` and `current` stay small only while module initialization has no side effects; the CJS requires bundle the whole production artifact. The entry of `mutative/lite` is measured the same way with `create` and its complete API.
 - Consumer bundles produced by a pinned esbuild version, with identical ES2018 targets, minification and production environment definitions.
 
 Every measurement must stay within **both 1% and 64 bytes** of its baseline; the smaller allowance applies. This tolerates minor code-generation differences while preventing a substantial regression from being hidden by a larger absolute limit. It does not promise byte-identical output. `size-limit` reports the result of its own bundling pipeline, so its numbers are not interchangeable with direct artifact gzip sizes or the consumer measurements.

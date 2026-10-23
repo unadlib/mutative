@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "f496eb678b95017e220a6d7b6bdeefe0818fc5dd",
-    "description": "Builds guard Map and Set drafts, patch generation and native array methods with build-time constants, and development builds carry the messages of the errors that mutative/lite throws for them",
+    "revision": "6309c2158a2b3a9f2e1bc55e252d7935e2019882",
+    "description": "Adds mutative/lite, which its builds leave without Map and Set drafts, patch generation and native array methods; the builds of mutative are unchanged",
     "node": "v24.22.0",
     "commands": [
       "pnpm install --frozen-lockfile",
@@ -48,6 +48,26 @@
       "raw": 74647,
       "gzip": 18065,
       "brotli": 15633
+    },
+    "artifact/mutative.lite.cjs.production.min.js": {
+      "raw": 11840,
+      "gzip": 4367,
+      "brotli": 4044
+    },
+    "artifact/mutative.lite.esm.production.min.mjs": {
+      "raw": 11804,
+      "gzip": 4390,
+      "brotli": 4060
+    },
+    "artifact/mutative.lite.cjs.development.js": {
+      "raw": 35599,
+      "gzip": 9421,
+      "brotli": 8328
+    },
+    "artifact/mutative.lite.esm.mjs": {
+      "raw": 36272,
+      "gzip": 9516,
+      "brotli": 8395
     },
     "consumer/import/create": {
       "raw": 24537,
@@ -98,6 +118,26 @@
       "raw": 26901,
       "gzip": 9538,
       "brotli": 8794
+    },
+    "consumer/lite/import/create": {
+      "raw": 10969,
+      "gzip": 4180,
+      "brotli": 3856
+    },
+    "consumer/lite/import/all": {
+      "raw": 11849,
+      "gzip": 4476,
+      "brotli": 4131
+    },
+    "consumer/lite/require/create": {
+      "raw": 11644,
+      "gzip": 4470,
+      "brotli": 4132
+    },
+    "consumer/lite/require/all": {
+      "raw": 11609,
+      "gzip": 4448,
+      "brotli": 4113
     }
   }
 }

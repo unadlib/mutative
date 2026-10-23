@@ -101,6 +101,18 @@
       "path": "dist/mutative.esm.mjs",
       "import": "{ current }",
       "limit": "1.6 KB"
+    },
+    {
+      "name": "lite ESM, create",
+      "path": "dist/mutative.lite.esm.mjs",
+      "import": "{ create }",
+      "limit": "3.8 KB"
+    },
+    {
+      "name": "lite ESM, all exports",
+      "path": "dist/mutative.lite.esm.mjs",
+      "import": "*",
+      "limit": "4.1 KB"
     }
   ],
   "repository": {
