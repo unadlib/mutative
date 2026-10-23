@@ -17,7 +17,7 @@ export function setItemValue(target: ProxyDraft, item: any) {
   return value === undefined ? item : value;
 }
 
-const setValues = Set.prototype.values;
+const setValues = /* @__PURE__ */ (() => Set.prototype.values)();
 
 // The items of a Set in the order in which it holds them, also for a subclass
 // that iterates them otherwise, so that the positions in patch paths are those

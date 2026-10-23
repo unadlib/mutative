@@ -1,6 +1,6 @@
 import type { ProxyDraft } from './interface';
 import { PROXY_DRAFT } from './constant';
-import { internal } from './internal';
+import { createDraft } from './draft';
 import {
   ensureShallowCopy,
   getProxyDraft,
@@ -13,8 +13,8 @@ import {
 } from './utils';
 import { checksReads } from './unsafe';
 
-const arrayProto = Array.prototype;
-const arrayIncludes = arrayProto.includes;
+const arrayProto = /* @__PURE__ */ (() => Array.prototype)();
+const arrayIncludes = /* @__PURE__ */ (() => arrayProto.includes)();
 const hasOwn = Object.prototype.hasOwnProperty;
 
 // Receivers are recognized by identity only, so a borrowed method never reads
@@ -375,13 +375,7 @@ function removed(target: ProxyDraft, value: any, key: any) {
   if (key < 0) return value;
   // The draft is finalized against the parent's copy, which must exist.
   ensureShallowCopy(target);
-  return internal.createDraft(
-    value,
-    target,
-    key,
-    target.finalities,
-    target.options
-  );
+  return createDraft(value, target, key, target.finalities, target.options);
 }
 
 function prepare(target: ProxyDraft) {
@@ -495,9 +489,8 @@ function search(method: 'indexOf' | 'lastIndexOf' | 'includes') {
  * Array methods without callbacks run natively on the draft's copy instead
  * of moving every element through the proxy traps.
  */
-export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
-  Object.create(null),
-  {
+export const arrayMethods: Record<PropertyKey, Native> = /* @__PURE__ */ (() =>
+  Object.assign(Object.create(null), {
     indexOf: search('indexOf'),
     lastIndexOf: search('lastIndexOf'),
     includes: search('includes'),
@@ -675,5 +668,4 @@ export const arrayMethods: Record<PropertyKey, Native> = Object.assign(
       }
       return self;
     }),
-  }
-);
+  }))();

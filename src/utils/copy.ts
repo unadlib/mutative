@@ -36,7 +36,8 @@ function strictCopy(target: any) {
   return copy;
 }
 
-const propIsEnum = Object.prototype.propertyIsEnumerable;
+const propIsEnum = /* @__PURE__ */ (() =>
+  Object.prototype.propertyIsEnumerable)();
 
 /**
  * Plain objects with at most this many own enumerable string keys are copied
@@ -96,9 +97,10 @@ function concatCopy(original: any[]) {
     : copy;
 }
 
-const arrayValues = Array.prototype[Symbol.iterator];
-const arrayIterator = Object.getPrototypeOf(arrayValues.call([]));
-const arrayIteratorNext = arrayIterator.next;
+const arrayValues = /* @__PURE__ */ (() => Array.prototype[Symbol.iterator])();
+const arrayIterator = /* @__PURE__ */ (() =>
+  Object.getPrototypeOf(arrayValues.call([])))();
+const arrayIteratorNext = /* @__PURE__ */ (() => arrayIterator.next)();
 
 /**
  * `concat` leaves V8's fast path for frozen, sealed and non-extensible arrays

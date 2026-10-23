@@ -1,6 +1,7 @@
 import { dataTypes } from '../constant';
 
-const constructorString = Object.prototype.constructor.toString();
+const constructorString = /* @__PURE__ */ (() =>
+  Object.prototype.constructor.toString())();
 // Whether a value is a plain object, an object without a prototype, or a plain
 // object of another realm, such as a same-origin iframe, whose constructor is
 // that realm's `Object`.

@@ -7,9 +7,8 @@ export const iteratorSymbol: typeof Symbol.iterator = Symbol.iterator;
 // The prototype of built-in iterators. An iterator that inherits from it
 // returns itself when iterated, and has the iterator helpers, such as
 // `toArray()`, where the engine provides them.
-export const iteratorPrototype = Object.getPrototypeOf(
-  Object.getPrototypeOf([][iteratorSymbol]())
-);
+export const iteratorPrototype = /* @__PURE__ */ (() =>
+  Object.getPrototypeOf(Object.getPrototypeOf([][iteratorSymbol]())))();
 
 export const dataTypes = {
   mutable: 'mutable',

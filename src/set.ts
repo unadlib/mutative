@@ -1,6 +1,6 @@
 import { ProxyDraft } from './interface';
 import { dataTypes, iteratorPrototype, iteratorSymbol } from './constant';
-import { internal } from './internal';
+import { createDraft } from './draft';
 import {
   assertDraftActive,
   ensureShallowCopy,
@@ -49,7 +49,7 @@ const getNextIterator =
       target.original!.has(key)
     ) {
       // draft a draftable original set item
-      const proxy = internal.createDraft(
+      const proxy = createDraft(
         key,
         target,
         key,
@@ -68,134 +68,140 @@ const getNextIterator =
     };
   };
 
-export const setHandler = {
-  get size() {
-    return latest(getProxyDraft(this)!).size;
-  },
-  has(value: any) {
-    const items: Set<any> = latest(getProxyDraft(this)!);
-    let valueProxyDraft: ProxyDraft | null;
-    // The value itself, which may be a draft that its producer revoked, or the
-    // item that a draft of it stands for.
-    return (
-      items.has(value) ||
-      (!!(valueProxyDraft = getProxyDraft(value)) &&
-        items.has(valueProxyDraft.original))
-    );
-  },
-  add(value: any) {
-    const target = getProxyDraft(this)!;
-    if (!this.has(value)) {
+// Created in a pure call: bundlers keep an object literal with a computed key,
+// and everything that it references, even where nothing imports it.
+export const setHandler = /* @__PURE__ */ (() => {
+  const handler = {
+    get size() {
+      return latest(getProxyDraft(this)!).size;
+    },
+    has(value: any) {
+      const items: Set<any> = latest(getProxyDraft(this)!);
+      let valueProxyDraft: ProxyDraft | null;
+      // The value itself, which may be a draft that its producer revoked, or
+      // the item that a draft of it stands for.
+      return (
+        items.has(value) ||
+        (!!(valueProxyDraft = getProxyDraft(value)) &&
+          items.has(valueProxyDraft.original))
+      );
+    },
+    add(value: any) {
+      const target = getProxyDraft(this)!;
+      if (!this.has(value)) {
+        ensureShallowCopy(target);
+        markChanged(target);
+        target.assignedMap!.set(value, true);
+        target.copy!.add(value);
+        // An added draft is replaced by its final value when finalizing, and an
+        // added object is finalized for the drafts it may hold.
+        if (value && typeof value === 'object')
+          getSetMap(target).set(value, value);
+        markFinalization(target, value, value);
+      }
+      return this;
+    },
+    delete(value: any): boolean {
+      if (!this.has(value)) {
+        return false;
+      }
+      const target = getProxyDraft(this)!;
       ensureShallowCopy(target);
       markChanged(target);
-      target.assignedMap!.set(value, true);
-      target.copy!.add(value);
-      // An added draft is replaced by its final value when finalizing, and an
-      // added object is finalized for the drafts it may hold.
-      if (value && typeof value === 'object')
-        getSetMap(target).set(value, value);
-      markFinalization(target, value, value);
-    }
-    return this;
-  },
-  delete(value: any): boolean {
-    if (!this.has(value)) {
-      return false;
-    }
-    const target = getProxyDraft(this)!;
-    ensureShallowCopy(target);
-    markChanged(target);
-    const copy: Set<any> = target.copy!;
-    const valueProxyDraft = getProxyDraft(value);
-    // A draft of an item stands for the item; an added draft is an item.
-    const item =
-      valueProxyDraft && copy.has(valueProxyDraft.original)
-        ? valueProxyDraft.original
-        : value;
-    if (valueProxyDraft && item === value) {
-      // reassigned
-      target.assignedMap!.delete(value);
-    } else {
-      target.assignedMap!.set(item, false);
-    }
-    if (target.setMap) target.setMap.delete(item);
-    return copy.delete(item);
-  },
-  clear() {
-    if (!this.size) return;
-    const target = getProxyDraft(this)!;
-    ensureShallowCopy(target);
-    markChanged(target);
-    for (const value of target.original) {
-      target.assignedMap!.set(value, false);
-    }
-    if (target.setMap) target.setMap.clear();
-    target.copy!.clear();
-  },
-  values(): IterableIterator<any> {
-    const target = getProxyDraft(this)!;
-    ensureShallowCopy(target);
-    const iterator = iterateSet(target.copy!);
-    return {
-      __proto__: iteratorPrototype,
-      next: getNextIterator(target, iterator, true),
-    } as any;
-  },
-  entries(): IterableIterator<[any, any]> {
-    const target = getProxyDraft(this)!;
-    ensureShallowCopy(target);
-    const iterator = iterateSet(target.copy!);
-    return {
-      __proto__: iteratorPrototype,
-      next: getNextIterator(
-        target,
-        iterator,
-        false
-      ) as () => IteratorReturnResult<any>,
-    } as any;
-  },
-  keys(): IterableIterator<any> {
-    return this.values();
-  },
-  [iteratorSymbol]() {
-    return this.values();
-  },
-  forEach(callback: any, thisArg?: any) {
-    const iterator = this.values();
-    let result = iterator.next();
-    while (!result.done) {
-      callback.call(thisArg, result.value, result.value, this);
-      result = iterator.next();
-    }
-  },
-};
+      const copy: Set<any> = target.copy!;
+      const valueProxyDraft = getProxyDraft(value);
+      // A draft of an item stands for the item; an added draft is an item.
+      const item =
+        valueProxyDraft && copy.has(valueProxyDraft.original)
+          ? valueProxyDraft.original
+          : value;
+      if (valueProxyDraft && item === value) {
+        // reassigned
+        target.assignedMap!.delete(value);
+      } else {
+        target.assignedMap!.set(item, false);
+      }
+      if (target.setMap) target.setMap.delete(item);
+      return copy.delete(item);
+    },
+    clear() {
+      if (!this.size) return;
+      const target = getProxyDraft(this)!;
+      ensureShallowCopy(target);
+      markChanged(target);
+      for (const value of target.original) {
+        target.assignedMap!.set(value, false);
+      }
+      if (target.setMap) target.setMap.clear();
+      target.copy!.clear();
+    },
+    values(): IterableIterator<any> {
+      const target = getProxyDraft(this)!;
+      ensureShallowCopy(target);
+      const iterator = iterateSet(target.copy!);
+      return {
+        __proto__: iteratorPrototype,
+        next: getNextIterator(target, iterator, true),
+      } as any;
+    },
+    entries(): IterableIterator<[any, any]> {
+      const target = getProxyDraft(this)!;
+      ensureShallowCopy(target);
+      const iterator = iterateSet(target.copy!);
+      return {
+        __proto__: iteratorPrototype,
+        next: getNextIterator(
+          target,
+          iterator,
+          false
+        ) as () => IteratorReturnResult<any>,
+      } as any;
+    },
+    keys(): IterableIterator<any> {
+      return this.values();
+    },
+    [iteratorSymbol]() {
+      return this.values();
+    },
+    forEach(callback: any, thisArg?: any) {
+      const iterator = this.values();
+      let result = iterator.next();
+      while (!result.done) {
+        callback.call(thisArg, result.value, result.value, this);
+        result = iterator.next();
+      }
+    },
+  };
 
-if ('difference' in Set.prototype) {
-  // for compatibility with new Set methods
-  // https://github.com/tc39/proposal-set-methods
-  // And `https://github.com/tc39/proposal-set-methods/blob/main/details.md#symbolspecies` has some details about the `@@species` symbol.
-  // So we can't use SubSet instance constructor to get the constructor of the SubSet instance.
-  (
-    [
-      'intersection',
-      'union',
-      'difference',
-      'symmetricDifference',
-      'isSubsetOf',
-      'isSupersetOf',
-      'isDisjointFrom',
-    ] as const
-  ).forEach((method) => {
-    (setHandler as any)[method] = function (
-      this: Set<any>,
-      other: ReadonlySetLike<any>
-    ) {
-      return (Set.prototype[method] as Function).call(
-        new Set(this.values()),
-        other
-      );
-    };
-  });
-}
+  if ('difference' in Set.prototype) {
+    // for compatibility with new Set methods
+    // https://github.com/tc39/proposal-set-methods
+    // And `https://github.com/tc39/proposal-set-methods/blob/main/details.md#symbolspecies` has some details about the `@@species` symbol.
+    // So we can't use SubSet instance constructor to get the constructor of the SubSet instance.
+    (
+      [
+        'intersection',
+        'union',
+        'difference',
+        'symmetricDifference',
+        'isSubsetOf',
+        'isSupersetOf',
+        'isDisjointFrom',
+      ] as const
+    ).forEach((method) => {
+      (handler as any)[method] = function (
+        this: Set<any>,
+        other: ReadonlySetLike<any>
+      ) {
+        return (Set.prototype[method] as Function).call(
+          new Set(this.values()),
+          other
+        );
+      };
+    });
+  }
 
-export const setHandlerKeys = Reflect.ownKeys(setHandler);
+  return handler;
+})();
+
+export const setHandlerKeys = /* @__PURE__ */ Reflect.ownKeys(setHandler);

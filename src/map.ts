@@ -1,6 +1,6 @@
 import type { ProxyDraft } from './interface';
 import { dataTypes, iteratorPrototype, iteratorSymbol } from './constant';
-import { internal } from './internal';
+import { createDraft } from './draft';
 import { checkReadable } from './unsafe';
 import {
   assertDraftActive,
@@ -33,7 +33,7 @@ function getEntry(target: ProxyDraft, key: any) {
   if (value !== target.original.get(key)) {
     return value;
   }
-  const draft = internal.createDraft(
+  const draft = createDraft(
     value,
     target,
     key,
@@ -45,7 +45,9 @@ function getEntry(target: ProxyDraft, key: any) {
   return draft;
 }
 
-export const mapHandler = {
+// Created in a pure call: bundlers keep an object literal with a computed key,
+// and everything that it references, even where nothing imports it.
+export const mapHandler = /* @__PURE__ */ (() => ({
   get size() {
     const current: Map<any, any> = latest(getProxyDraft(this)!);
     return current.size;
@@ -155,6 +157,6 @@ export const mapHandler = {
   [iteratorSymbol]() {
     return this.entries();
   },
-};
+}))();
 
-export const mapHandlerKeys = Reflect.ownKeys(mapHandler);
+export const mapHandlerKeys = /* @__PURE__ */ Reflect.ownKeys(mapHandler);

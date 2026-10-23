@@ -22,6 +22,6 @@ import { makeCreator } from './makeCreator';
  * expect(state.arr).toBe(baseState.arr);
  * ```
  */
-const create = makeCreator();
+const create = /* @__PURE__ */ makeCreator();
 
 export { create };

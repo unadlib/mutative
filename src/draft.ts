@@ -16,7 +16,6 @@ import {
   resized,
   trackArrayMethod,
 } from './array';
-import { internal } from './internal';
 import {
   deepFreeze,
   ensureShallowCopy,
@@ -352,14 +351,17 @@ const objectHandler: ProxyHandler<ProxyDraft> = {
 
 // Array drafts use a one-element array as the proxy target so that
 // `Array.isArray(draft)` holds; these wrappers unwrap the state from it.
-const arrayHandler: ProxyHandler<[ProxyDraft]> = {};
-Object.keys(objectHandler).forEach((name) => {
-  const trap = objectHandler[name as keyof ProxyHandler<ProxyDraft>] as (
-    ...args: any[]
-  ) => any;
-  (arrayHandler as any)[name] = (target: [ProxyDraft], key: any, value: any) =>
-    trap(target[0], key, value);
-});
+const arrayHandler: ProxyHandler<[ProxyDraft]> = /* @__PURE__ */ (() => {
+  const handler = {};
+  Object.keys(objectHandler).forEach((name) => {
+    const trap = objectHandler[name as keyof ProxyHandler<ProxyDraft>] as (
+      ...args: any[]
+    ) => any;
+    (handler as any)[name] = (target: [ProxyDraft], key: any, value: any) =>
+      trap(target[0], key, value);
+  });
+  return handler;
+})();
 
 export function createDraft<T extends object>(
   original: T,
@@ -400,8 +402,6 @@ export function createDraft<T extends object>(
   finalities.draft.push(proxyDraft);
   return proxy;
 }
-
-internal.createDraft = createDraft;
 
 // Development builds warn once, in strict mode, when a producer leaves at
 // least this many drafts unchanged.
