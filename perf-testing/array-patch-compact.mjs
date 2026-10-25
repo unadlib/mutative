@@ -593,8 +593,7 @@ function runParent(values) {
     const output = resolve(values.output);
     mkdirSync(dirname(output), { recursive: true });
     writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
-    if (!values.check)
-      writeFileSync(markdownPath(output), markdown(report));
+    if (!values.check) writeFileSync(markdownPath(output), markdown(report));
   }
   if (values.check) {
     console.log(
