@@ -33,7 +33,9 @@ function sameElement(value: any, original: any) {
 // Compact array patches keep the common prefix and suffix of one contiguous
 // insertion or deletion, and carry only elements, like the default generator.
 // Anything with independent nested edits, holes, reordering or an ambiguous
-// shape uses the default generator.
+// shape uses the default generator. The final elements decide, so the patches
+// do not depend on how the recipe changed the array: through native methods,
+// the proxy path of strict mode or a mark, index assignments or `length`.
 function tryGenerateCompactArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
   basePath: any[],
@@ -49,21 +51,24 @@ function tryGenerateCompactArrayPatches(
     return false;
   const original = proxyState.original;
   const copy = proxyState.copy!;
-  const arrayState = proxyState.arrayState;
   const oldLength = original.length;
   const newLength = copy.length;
   const shortest = Math.min(oldLength, newLength);
   // Patches that a child already emitted under this path decide the fallback
   // before any element is compared.
-  if (
-    oldLength === newLength ||
-    proxyState.patched ||
-    arrayState === null ||
-    !arrayState.relocated ||
-    arrayState.diffStart >= shortest ||
-    proxyState.assignedMap?.has('length')
-  )
-    return false;
+  if (oldLength === newLength || proxyState.patched) return false;
+  // Elements change places only at indices that native methods moved or the
+  // recipe assigned. When none lies below the shorter length, the change is
+  // an append or a truncation, which the default generator patches as such.
+  const arrayState = proxyState.arrayState;
+  let first =
+    arrayState !== null && arrayState.relocated
+      ? arrayState.diffStart
+      : shortest;
+  proxyState.assignedMap!.forEach((_flag, key) => {
+    if (key !== 'length') first = Math.min(first, Number(key));
+  });
+  if (first >= shortest) return false;
 
   let prefix = 0;
   while (prefix < shortest && sameElement(copy[prefix], original[prefix]))
