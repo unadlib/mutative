@@ -254,25 +254,34 @@ describe.each([false, true])('enableArrayMethods = %s', (optimized) => {
           }
         }
 
-        test('Mutative preserves the base and replays both patch directions', () => {
-          const mutativeBase = structuredClone(before);
-          if (preFrozen) immer.freeze(mutativeBase, true);
-          const [state, patches, inversePatches] = create(
-            mutativeBase,
-            recipe,
-            {
-              enablePatches: true,
-              enableAutoFreeze: autoFreeze,
-            }
-          );
-          expect(mutativeBase).toStrictEqual(before);
-          expect(state).toStrictEqual(expected);
-          expect(apply(mutativeBase, patches)).toStrictEqual(expected);
-          expect(apply(state, inversePatches)).toStrictEqual(before);
-          expect(() =>
-            JSON.stringify([state, patches, inversePatches])
-          ).not.toThrow();
-        });
+        test.each([
+          { name: 'default', enablePatches: true as const },
+          {
+            name: 'compact',
+            enablePatches: { arrayPatchStrategy: 'compact' as const },
+          },
+        ])(
+          'Mutative preserves the base and replays both directions with $name patches',
+          ({ enablePatches }) => {
+            const mutativeBase = structuredClone(before);
+            if (preFrozen) immer.freeze(mutativeBase, true);
+            const [state, patches, inversePatches] = create(
+              mutativeBase,
+              recipe,
+              {
+                enablePatches,
+                enableAutoFreeze: autoFreeze,
+              }
+            );
+            expect(mutativeBase).toStrictEqual(before);
+            expect(state).toStrictEqual(expected);
+            expect(apply(mutativeBase, patches)).toStrictEqual(expected);
+            expect(apply(state, inversePatches)).toStrictEqual(before);
+            expect(() =>
+              JSON.stringify([state, patches, inversePatches])
+            ).not.toThrow();
+          }
+        );
       });
     }
   );

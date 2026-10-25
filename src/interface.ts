@@ -33,6 +33,18 @@ export type PatchesOptions =
        * loses, as JSON Patch requires.
        */
       arrayLengthAssignment?: boolean;
+      /**
+       * How to represent array changes. The default `'index'` compares the
+       * values at each index. `'compact'` expresses one contiguous, non-tail
+       * insertion or deletion as `add` or `remove` patches when all retained
+       * elements are unchanged, and otherwise falls back to `'index'`.
+       *
+       * Both strategies generate value-based patches. Compact patches do not
+       * record the recipe's operations or preserve JavaScript object aliases.
+       *
+       * @default 'index'
+       */
+      arrayPatchStrategy?: 'index' | 'compact';
     };
 
 export type FinalizeCallback = (

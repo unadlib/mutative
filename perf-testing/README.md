@@ -173,6 +173,23 @@ node perf-testing/check-budgets.mjs perf-testing/results/ci/core/report.json
 
 The gate is a workload-specific regression guard, not a universal performance ranking. Enforcing it as a required merge check additionally depends on the repository's GitHub branch-protection settings.
 
+## Compact array patch benchmark
+
+`array-patch-compact.mjs` is a targeted production-artifact benchmark for `arrayPatchStrategy`. It compares the default `'index'` strategy with `'compact'` in independent processes and validates forward/inverse replay before measuring. Its 13 scenarios cover 10,000-element head/middle edits, contiguous blocks, coalesced and disjoint insertion plans, nested edits, reordering fallback, and append/local-edit controls. Use `--array-size` and `--batch-size` for smaller checks or other scales.
+
+```sh
+# Correctness matrix on the production build, with both freeze modes
+pnpm benchmark:array-patches:check
+
+# Build, then measure both freeze modes in isolated processes
+pnpm benchmark:array-patches --freeze both --runs 5 --output perf-testing/results/array-patch-compact.json
+
+# Optionally compare a separate build of the historical arraySplice prototype
+node --expose-gc perf-testing/array-patch-compact.mjs --compare-dir /absolute/path/to/prototype-checkout --freeze off --runs 3 --output perf-testing/results/array-patch-prototype.json
+```
+
+Each record includes forward/inverse operation counts and JSON bytes, retained base references after replay, create/apply/inverse-apply timings, the complete `create → stringify → parse → apply` replay path, retained output heap, and process-maximum RSS. Timing uses the median within each process and then the median across independent processes. Memory snapshots use three explicit GC readings; max RSS includes the harness and is not an allocation budget. There are no wall-clock pass/fail thresholds. Reports are written to the ignored `perf-testing/results/` directory, and every report records the production artifact hash and methodology. This is a synthetic operation matrix, not real-application telemetry or a claim about insertion-plan hit rates in user workloads.
+
 ## Memory measurement
 
 ```sh

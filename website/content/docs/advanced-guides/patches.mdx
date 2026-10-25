@@ -46,7 +46,7 @@ expect(apply(state, inversePatches)).toEqual(baseState);
 - **Operations and paths.** Patches use `add`, `remove` and `replace`. A path leads from the root to the changed value through object keys, array indices, Map keys as they are, objects and arrays included, and the positions of Set items. A recipe that returns a new state gets one `replace` patch with an empty path.
 - **Order.** The patches of a nested draft come before those of its parents, as in Immer.
 - **Values.** A patch value is the object that the next state holds, frozen with it when `enableAutoFreeze` is on, so copy a patch value before changing it. `apply()` copies patch values before applying them.
-- **Arrays.** `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. An array that a recipe shortens and lengthens again also gets patches for the indices that the longer length exposes again.
+- **Arrays.** By default, `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. An array that a recipe shortens and lengthens again also gets patches for the indices that the longer length exposes again. With `arrayPatchStrategy: 'compact'`, a supported contiguous insertion or deletion instead uses structural `add` or `remove` patches; see [Compact array patches](#compact-array-patches).
 - **Maps.** `set()` emits an `add` patch for a new key and a `replace` patch for an existing one, and `delete()` a `remove` patch.
 - **Sets.** Patches add an item by its value and remove one by the value it holds; see [Sets of objects](#sets-of-objects).
 - **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, emits no patches under its old path; the patches of its parent carry its value.
@@ -57,7 +57,7 @@ expect(apply(state, inversePatches)).toEqual(baseState);
 
 ## JSON patches
 
-`enablePatches` takes `true`, or an object with two options that set the shape of the patches. With both set to `false`, the patches of objects and arrays are [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) operations, which other JSON Patch libraries can apply ([related discussion](https://github.com/unadlib/mutative/issues/6)).
+`enablePatches` takes `true`, or an object that sets the shape and array representation of the patches. With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) operations, which other JSON Patch libraries can apply ([related discussion](https://github.com/unadlib/mutative/issues/6)).
 
 ### pathAsArray - default: true
 
@@ -123,6 +123,53 @@ expect(inversePatches).toEqual([
 
 <Callout type="idea">
 A `remove` patch per index takes more time and more patches for large arrays than one `replace` patch of the `length`, so leave `arrayLengthAssignment` on unless the patches must be JSON Patch operations.
+</Callout>
+
+## Compact array patches
+
+The default `arrayPatchStrategy: 'index'` compares array slots. Consequently, removing the first element can replace every element that moved to a new index. Opt in to `arrayPatchStrategy: 'compact'` to represent a supported insertion or deletion structurally instead:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { list: [1, 2, 3, 4] };
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.list.splice(1, 1);
+  },
+  {
+    enablePatches: {
+      arrayPatchStrategy: 'compact',
+    },
+  }
+);
+
+expect(state).toEqual({ list: [1, 3, 4] });
+expect(patches).toEqual([{ op: 'remove', path: ['list', 1] }]);
+expect(inversePatches).toEqual([
+  { op: 'add', path: ['list', 1], value: 2 },
+]);
+```
+
+The compact strategy handles a dense array whose length changes through one contiguous insertion or deletion when every retained element is unchanged. It emits `remove` operations in descending index order and `add` operations in ascending index order; inverse patches are planned independently for the opposite direction. For a contiguous change of `k` inserted or removed elements, it emits **O(k)** patches rather than one patch for every moved tail element. Finding the common prefix and suffix still takes **O(n)** time, and array copying retains its existing cost.
+
+Ordinary appends, pops and tail truncations keep the existing efficient patch forms. The generator falls back to `'index'` when it cannot prove the compact form safe, including same-length reordering, sparse arrays, direct `length` writes, multiple disconnected changes and independent edits within retained elements. Thus compact mode does not promise the smallest possible patch sequence or record the recipe's exact operations.
+
+Compact patches use the same `add`, `remove` and `replace` operations and work with array paths or JSON Pointer paths. For a strict [RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902) consumer, combine the strategy with both JSON options:
+
+```ts
+const options = {
+  enablePatches: {
+    arrayPatchStrategy: 'compact',
+    pathAsArray: false,
+    arrayLengthAssignment: false,
+  },
+} as const;
+```
+
+<Callout type="warn">
+Patches replay final values; they do not preserve a JavaScript alias graph between inserted values and other paths. For CRDT integration, structural patches can avoid rewriting unchanged elements, but they do not provide element identities or concurrent conflict resolution. Apply index patches to their matching base snapshot in a local CRDT transaction and synchronize native CRDT updates, rather than broadcasting the index patches as a merge protocol.
 </Callout>
 
 ## Undo and redo

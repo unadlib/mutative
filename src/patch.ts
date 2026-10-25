@@ -21,6 +21,162 @@ function cloneIfNeeded<T>(target: T): T {
   return proxyDraft.operated ? current(target as any) : proxyDraft.original;
 }
 
+// Compact array patches keep the common prefix and suffix of one contiguous
+// insertion or deletion. Anything with independent nested edits, special array
+// properties, holes, reordering or an ambiguous shape uses the default generator.
+const arrayIncludes = Array.prototype.includes;
+
+function hasHoles(array: any[]) {
+  if (!arrayIncludes.call(array, undefined)) return false;
+  for (let index = 0; index < array.length; index += 1) {
+    if (!(index in array)) return true;
+  }
+  return false;
+}
+
+// Identity matching alone is not enough: an operated draft can stand for the
+// same base element while its final value differs. Only unchanged drafts match.
+function sameElement(value: any, original: any) {
+  if (isEqual(value, original)) return true;
+  const draft = getProxyDraft(value);
+  return !!draft && !draft.operated && isEqual(draft.original, original);
+}
+
+// Child patches precede their array's patches. A compact structural operation
+// would change their coordinates, so any existing patch at or below this array
+// makes the fast path unsafe. Sibling subtrees do not affect it.
+function hasNestedPatches(
+  patches: Patches,
+  basePath: any[],
+  pathAsArray: boolean
+) {
+  const base = pathAsArray ? null : (escapePath(basePath, false) as string);
+  for (const { path } of patches) {
+    if (pathAsArray) {
+      const actual = path as any[];
+      if (actual.length >= basePath.length) {
+        let index = 0;
+        while (
+          index < basePath.length &&
+          isEqual(actual[index], basePath[index])
+        )
+          index += 1;
+        if (index === basePath.length) return true;
+      }
+    } else if (
+      path === base ||
+      (base === '' ? path !== '' : (path as string).startsWith(`${base}/`))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function tryGenerateCompactArrayPatches(
+  proxyState: ProxyDraft<Array<any>>,
+  basePath: any[],
+  patches: Patches,
+  inversePatches: Patches,
+  pathAsArray: boolean
+) {
+  const { enablePatches } = proxyState.options;
+  if (
+    typeof enablePatches !== 'object' ||
+    enablePatches.arrayPatchStrategy !== 'compact'
+  )
+    return false;
+  const original = proxyState.original;
+  const copy = proxyState.copy!;
+  const arrayState = proxyState.arrayState;
+  const oldLength = original.length;
+  const newLength = copy.length;
+  const shortest = Math.min(oldLength, newLength);
+  if (
+    oldLength === newLength ||
+    arrayState === null ||
+    !arrayState.relocated ||
+    arrayState.diffStart >= shortest ||
+    proxyState.assignedMap?.has('length')
+  )
+    return false;
+
+  // Native array bookkeeping covers indexed values. A custom property needs
+  // the default generator rather than a structural-only patch sequence.
+  let supported = true;
+  proxyState.assignedMap?.forEach((_flag, key) => {
+    if (typeof key === 'symbol') {
+      supported = false;
+      return;
+    }
+    const index = Number(key);
+    if (
+      !Number.isInteger(index) ||
+      index < 0 ||
+      index >= 0xffffffff ||
+      String(index) !== String(key)
+    )
+      supported = false;
+  });
+  if (!supported || hasHoles(original) || hasHoles(copy)) return false;
+
+  let prefix = 0;
+  while (prefix < shortest && sameElement(copy[prefix], original[prefix]))
+    prefix += 1;
+  let suffix = 0;
+  while (
+    suffix < shortest - prefix &&
+    sameElement(copy[newLength - 1 - suffix], original[oldLength - 1 - suffix])
+  )
+    suffix += 1;
+
+  // A full shorter side proves one contiguous insertion or deletion. Tail
+  // changes already use the default generator's efficient append/truncate form.
+  if (prefix + suffix !== shortest || prefix === shortest) return false;
+  if (
+    hasNestedPatches(patches, basePath, pathAsArray) ||
+    hasNestedPatches(inversePatches, basePath, pathAsArray)
+  )
+    return false;
+
+  const removed = oldLength - prefix - suffix;
+  const added = newLength - prefix - suffix;
+  // Inserting a draft from another location introduces alias and finalization
+  // dependencies. Leave those to the default value-based patches in this phase.
+  for (let index = prefix; index < prefix + added; index += 1) {
+    if (getProxyDraft(copy[index])) return false;
+  }
+
+  for (let index = prefix + removed - 1; index >= prefix; index -= 1) {
+    patches.push(removePatch(basePath.concat([index]), pathAsArray));
+  }
+  for (let index = prefix; index < prefix + added; index += 1) {
+    patches.push({
+      op: Operation.Add,
+      path: escapePath(basePath.concat([index]), pathAsArray),
+      value: cloneIfNeeded(copy[index]),
+    });
+  }
+  for (let index = prefix + added - 1; index >= prefix; index -= 1) {
+    inversePatches.push(removePatch(basePath.concat([index]), pathAsArray));
+  }
+  for (let index = prefix; index < prefix + removed; index += 1) {
+    inversePatches.push({
+      op: Operation.Add,
+      path: escapePath(basePath.concat([index]), pathAsArray),
+      value: cloneIfNeeded(original[index]),
+    });
+  }
+  return true;
+}
+
+function removePatch(path: any, pathAsArray: boolean): any {
+  return {
+    op: Operation.Remove,
+    path: escapePath(path, pathAsArray),
+  };
+}
+
 function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
   basePath: any[],
@@ -28,6 +184,16 @@ function generateArrayPatches(
   inversePatches: Patches,
   pathAsArray: boolean
 ) {
+  if (
+    tryGenerateCompactArrayPatches(
+      proxyState,
+      basePath,
+      patches,
+      inversePatches,
+      pathAsArray
+    )
+  )
+    return;
   let { original, assignedMap, options } = proxyState;
   let copy = proxyState.copy!;
   if (copy.length < original.length) {
