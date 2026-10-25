@@ -61,8 +61,11 @@ function tryGenerateCompactArrayPatches(
   const oldLength = original.length;
   const newLength = copy.length;
   const shortest = Math.min(oldLength, newLength);
+  // Patches that a child already emitted under this path decide the fallback
+  // before any element is compared.
   if (
     oldLength === newLength ||
+    proxyState.patched ||
     arrayState === null ||
     !arrayState.relocated ||
     arrayState.diffStart >= shortest ||
@@ -87,7 +90,7 @@ function tryGenerateCompactArrayPatches(
     )
       supported = false;
   });
-  if (!supported || hasHoles(original) || hasHoles(copy)) return false;
+  if (!supported) return false;
 
   let prefix = 0;
   while (prefix < shortest && sameElement(copy[prefix], original[prefix]))
@@ -102,7 +105,9 @@ function tryGenerateCompactArrayPatches(
   // A full shorter side proves one contiguous insertion or deletion. Tail
   // changes already use the default generator's efficient append/truncate form.
   if (prefix + suffix !== shortest || prefix === shortest) return false;
-  if (proxyState.patched) return false;
+  // A hole compares like an undefined element, which the patches would make
+  // explicit. Only an array that has the compact shape is searched for holes.
+  if (hasHoles(original) || hasHoles(copy)) return false;
 
   const removed = oldLength - prefix - suffix;
   const added = newLength - prefix - suffix;
