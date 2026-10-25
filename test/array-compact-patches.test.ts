@@ -137,21 +137,71 @@ describe('compact array patches', () => {
   });
 
   test('tail edits keep the existing efficient patch forms', () => {
-    expectFallback([1, 2, 3], (draft) => {
-      draft.push(4);
-    });
-    expectFallback([1, 2, 3], (draft) => {
-      draft.splice(3, 0, 4, 5);
-    });
-    expectFallback([1, 2, 3], (draft) => {
-      draft.pop();
-    });
-    expectFallback([1, 2, 3], (draft) => {
-      draft.splice(1, 2);
-    });
-    expectFallback([1, 2, 3], (draft) => {
-      draft.length = 1;
-    });
+    // A mark moves elements through the proxy instead of the native methods.
+    for (const options of [{}, { mark: () => undefined }]) {
+      const fallback = (recipe: (draft: any[]) => void) =>
+        expectFallback([1, 2, 3], recipe, compactOptions({}, options));
+      fallback((draft) => {
+        draft.push(4);
+      });
+      fallback((draft) => {
+        draft.splice(3, 0, 4, 5);
+      });
+      fallback((draft) => {
+        draft.pop();
+      });
+      fallback((draft) => {
+        draft.splice(1, 2);
+      });
+      fallback((draft) => {
+        draft.length = 1;
+      });
+    }
+  });
+
+  test('compact patches do not depend on how the recipe changed the array', () => {
+    class List<T> extends Array<T> {}
+    const items = () => [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }];
+    const inserted = { id: 9 };
+    const removals = [
+      (draft: any[]) => {
+        draft.splice(1, 1);
+      },
+      (draft: any[]) => {
+        Array.prototype.splice.call(draft, 1, 1);
+      },
+      (draft: any[]) => {
+        for (let index = 1; index < draft.length - 1; index += 1) {
+          draft[index] = draft[index + 1];
+        }
+        draft.length -= 1;
+      },
+    ];
+    // Strict mode and marks move object elements through the proxy instead of
+    // the native array methods, and so do the methods of a subclass.
+    for (const options of [{}, { strict: true }, { mark: () => undefined }]) {
+      for (const makeBase of [items, () => List.from(items())]) {
+        for (const recipe of removals) {
+          const base = makeBase();
+          const { patches, inverse } = roundtrip(
+            base,
+            recipe,
+            compactOptions({}, options)
+          );
+          expect(patches).toEqual([{ op: 'remove', path: [1] }]);
+          expect(inverse).toEqual([{ op: 'add', path: [1], value: base[1] }]);
+        }
+        const { patches, inverse } = roundtrip(
+          makeBase(),
+          (draft) => {
+            draft.unshift(inserted);
+          },
+          compactOptions({}, options)
+        );
+        expect(patches).toEqual([{ op: 'add', path: [0], value: inserted }]);
+        expect(inverse).toEqual([{ op: 'remove', path: [0] }]);
+      }
+    }
   });
 
   test('reorders and multi-segment changes fall back without a diff', () => {
