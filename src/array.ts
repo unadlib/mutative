@@ -118,8 +118,8 @@ function arrayState(target: ProxyDraft) {
 // checked index by index with `in`, the HasProperty check of the native
 // algorithms, which costs several times more per element once many array
 // shapes have passed through it. Elements that are `undefined` are ordinary
-// values and move natively.
-function hasHoles(array: any[]) {
+// values and move natively. Compact array patches rule out holes the same way.
+export function hasHoles(array: any[]) {
   if (!arrayIncludes.call(array, undefined)) return false;
   for (let index = 0; index < array.length; index += 1) {
     if (!(index in array)) return true;

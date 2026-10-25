@@ -9,6 +9,7 @@ import {
   isEqual,
 } from './utils';
 import { current } from './current';
+import { hasHoles } from './array';
 
 /**
  * Patch values must not contain drafts. A draft that is still present when its
@@ -21,19 +22,6 @@ function cloneIfNeeded<T>(target: T): T {
   return proxyDraft.operated ? current(target as any) : proxyDraft.original;
 }
 
-// Compact array patches keep the common prefix and suffix of one contiguous
-// insertion or deletion. Anything with independent nested edits, special array
-// properties, holes, reordering or an ambiguous shape uses the default generator.
-const arrayIncludes = Array.prototype.includes;
-
-function hasHoles(array: any[]) {
-  if (!arrayIncludes.call(array, undefined)) return false;
-  for (let index = 0; index < array.length; index += 1) {
-    if (!(index in array)) return true;
-  }
-  return false;
-}
-
 // Identity matching alone is not enough: an operated draft can stand for the
 // same base element while its final value differs. Only unchanged drafts match.
 function sameElement(value: any, original: any) {
@@ -42,6 +30,10 @@ function sameElement(value: any, original: any) {
   return !!draft && !draft.operated && isEqual(draft.original, original);
 }
 
+// Compact array patches keep the common prefix and suffix of one contiguous
+// insertion or deletion, and carry only elements, like the default generator.
+// Anything with independent nested edits, holes, reordering or an ambiguous
+// shape uses the default generator.
 function tryGenerateCompactArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
   basePath: any[],
@@ -72,25 +64,6 @@ function tryGenerateCompactArrayPatches(
     proxyState.assignedMap?.has('length')
   )
     return false;
-
-  // Native array bookkeeping covers indexed values. A custom property needs
-  // the default generator rather than a structural-only patch sequence.
-  let supported = true;
-  proxyState.assignedMap?.forEach((_flag, key) => {
-    if (typeof key === 'symbol') {
-      supported = false;
-      return;
-    }
-    const index = Number(key);
-    if (
-      !Number.isInteger(index) ||
-      index < 0 ||
-      index >= 0xffffffff ||
-      String(index) !== String(key)
-    )
-      supported = false;
-  });
-  if (!supported) return false;
 
   let prefix = 0;
   while (prefix < shortest && sameElement(copy[prefix], original[prefix]))
