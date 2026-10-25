@@ -183,9 +183,6 @@ pnpm benchmark:array-patches:check
 
 # Build, then measure both freeze modes in isolated processes
 pnpm benchmark:array-patches --freeze both --runs 5 --output perf-testing/results/array-patch-compact.json
-
-# Optionally compare a separate build of the historical arraySplice prototype
-node --expose-gc perf-testing/array-patch-compact.mjs --compare-dir /absolute/path/to/prototype-checkout --freeze off --runs 3 --output perf-testing/results/array-patch-prototype.json
 ```
 
 Each record includes forward/inverse operation counts and JSON bytes, retained base references after replay, create/apply/inverse-apply timings, the complete `create → stringify → parse → apply` replay path, retained output heap, and process-maximum RSS. Timing uses the median within each process and then the median across independent processes. Memory snapshots use three explicit GC readings; max RSS includes the harness and is not an allocation budget. There are no wall-clock pass/fail thresholds. Reports are written to the ignored `perf-testing/results/` directory, and every report records the production artifact hash and methodology. This is a synthetic operation matrix, not real-application telemetry or a claim about insertion-plan hit rates in user workloads.

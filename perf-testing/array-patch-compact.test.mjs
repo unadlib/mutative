@@ -70,8 +70,8 @@ test('benchmark options select only the requested implementation', () => {
     makeOptions('compact', true).enablePatches.arrayPatchStrategy,
     'compact'
   );
-  assert.equal(makeOptions('prototype', false).enablePatches.arraySplice, true);
   assert.equal(makeOptions('compact', true).enableAutoFreeze, true);
+  assert.throws(() => makeOptions('prototype', false));
   assert.throws(() => makeOptions('unknown', false));
 });
 
