@@ -928,24 +928,27 @@ const nestedSteps: ((draft: any, random: () => number) => void)[] = [
   },
 ];
 
-test('compact patches differential fuzz across nested arrays, moves and aliases', () => {
-  const freeze = (value: any) => {
-    if (value && typeof value === 'object' && !Object.isFrozen(value)) {
-      Object.freeze(value);
-      Object.values(value).forEach(freeze);
-    }
-    return value;
-  };
-  // Strict mode and marks move object elements through the proxy instead of
-  // the native array methods. The index patches of each recipe are the
-  // reference: both strategies give the same state, and both patch sets
-  // replay in either direction.
-  for (const { name, options, frozen } of [
-    { name: 'native', options: {}, frozen: false },
-    { name: 'frozen', options: { enableAutoFreeze: true }, frozen: true },
-    { name: 'strict', options: { strict: true }, frozen: false },
-    { name: 'mark', options: { mark: () => undefined }, frozen: false },
-  ]) {
+const freezeDeep = (value: any) => {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    Object.values(value).forEach(freezeDeep);
+  }
+  return value;
+};
+
+// Strict mode and marks move object elements through the proxy instead of the
+// native array methods. The index patches of each recipe are the reference:
+// both strategies give the same state, and both patch sets replay in either
+// direction. Each path is a test of its own, which stays well within the
+// default timeout under coverage.
+test.each([
+  { name: 'native', options: {}, frozen: false },
+  { name: 'frozen', options: { enableAutoFreeze: true }, frozen: true },
+  { name: 'strict', options: { strict: true }, frozen: false },
+  { name: 'mark', options: { mark: () => undefined }, frozen: false },
+])(
+  'compact patches differential fuzz across nested arrays, moves and aliases on the $name path',
+  ({ options, frozen }) => {
     const failures: number[] = [];
     let compactCases = 0;
     for (let caseIndex = 0; caseIndex < 1500; caseIndex += 1) {
@@ -964,7 +967,7 @@ test('compact patches differential fuzz across nested arrays, moves and aliases'
       if (a.length > 2 && random() < 0.2) a[2] = a[1];
       const shared = a.length > 0 && random() < 0.5 ? a[0] : makeRow(random);
       const base = { a, b, shared, meta: { c: 0 } };
-      if (frozen) freeze(base);
+      if (frozen) freezeDeep(base);
       const recipe = (draft: any) => {
         const stepRandom = mulberry32(caseIndex + 2);
         for (const step of steps) step(draft, stepRandom);
@@ -994,8 +997,8 @@ test('compact patches differential fuzz across nested arrays, moves and aliases'
       }
       if (!passed) failures.push(caseIndex);
     }
-    expect(failures.slice(0, 3), name).toEqual([]);
+    expect(failures.slice(0, 3)).toEqual([]);
     // About 39% of the recipes get compact patches, whichever path they take.
-    expect(compactCases, name).toBeGreaterThanOrEqual(580);
+    expect(compactCases).toBeGreaterThanOrEqual(580);
   }
-});
+);
