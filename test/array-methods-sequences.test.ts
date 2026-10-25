@@ -20,6 +20,14 @@ const deepFreeze = <T>(value: T): T => {
   return value;
 };
 
+// Index patches never remove an element and add one only past the end of the
+// base array, so such a patch of `items` shows that compact patches applied.
+const baseLength = makeArrayState().items.length;
+const isCompactPatch = ({ op, path }: { op: string; path: any }) =>
+  path.length === 2 &&
+  path[0] === 'items' &&
+  (op === 'remove' || (op === 'add' && path[1] < baseLength));
+
 describe.each([
   { name: 'default', enablePatches: true as const },
   {
@@ -45,6 +53,7 @@ describe.each([
         'all 4913 three-operation combinations on the $path path match plain JS and replay patches',
         ({ mark }) => {
           const failures: string[] = [];
+          let compactSequences = 0;
           for (const first of arrayMethodOperations) {
             for (const second of arrayMethodOperations) {
               for (const third of arrayMethodOperations) {
@@ -68,6 +77,7 @@ describe.each([
                       mark,
                     }
                   );
+                  if (patches.some(isCompactPatch)) compactSequences += 1;
                   passed =
                     isDeepStrictEqual(base, before) &&
                     isDeepStrictEqual(state, expected) &&
@@ -90,6 +100,10 @@ describe.each([
             }
           }
           expect(failures.length, failures.slice(0, 3).join('\n')).toBe(0);
+          // On either path, 570 sequences get compact patches and none get them
+          // by default, so the compact runs do not repeat the default ones.
+          if (enablePatches === true) expect(compactSequences).toBe(0);
+          else expect(compactSequences).toBeGreaterThanOrEqual(570);
         }
       );
     }
