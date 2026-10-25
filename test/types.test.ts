@@ -661,3 +661,27 @@ test('apply() keeps mutable result types when freezing cannot be enabled', () =>
   const optional: { enableAutoFreeze?: false } = {};
   expectTypeOf(apply(base(), [], optional)).toEqualTypeOf<State>();
 });
+
+test('arrayPatchStrategy accepts its strategies, also in options declared as const', () => {
+  const recipe = (draft: Draft<State>) => {
+    draft.list.unshift(0);
+  };
+  const [, patches] = create(base(), recipe, {
+    enablePatches: { arrayPatchStrategy: 'compact' },
+  });
+  expectTypeOf(patches[0].path).toEqualTypeOf<(string | number)[]>();
+  expect(patches).toEqual([{ op: 'add', path: ['list', 0], value: 0 }]);
+
+  const options = {
+    enablePatches: { arrayPatchStrategy: 'compact', pathAsArray: false },
+  } as const;
+  const [, pointerPatches] = create(base(), recipe, options);
+  expectTypeOf(pointerPatches[0].path).toEqualTypeOf<string>();
+  expect(pointerPatches).toEqual([{ op: 'add', path: '/list/0', value: 0 }]);
+
+  // @ts-expect-error Only 'index' and 'compact' are strategies.
+  create(base(), recipe, { enablePatches: { arrayPatchStrategy: 'splice' } });
+  const widened = { enablePatches: { arrayPatchStrategy: 'compact' } };
+  // @ts-expect-error Without `as const`, the strategy widens to string.
+  create(base(), recipe, widened);
+});
