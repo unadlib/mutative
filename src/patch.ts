@@ -5,6 +5,7 @@ import {
   get,
   getProxyDraft,
   getType,
+  getWrittenDrafts,
   has,
   isEqual,
 } from './utils';
@@ -22,18 +23,43 @@ function cloneIfNeeded<T>(target: T): T {
   return proxyDraft.operated ? current(target as any) : proxyDraft.original;
 }
 
-// Identity matching alone is not enough: an operated draft can stand for the
-// same base element while its final value differs. Only unchanged drafts match.
-function sameElement(value: any, original: any) {
-  if (isEqual(value, original)) return true;
-  const draft = getProxyDraft(value);
-  return !!draft && !draft.operated && isEqual(draft.original, original);
+// Whether `value`, at `index` of an array, is `base` or an unchanged draft of
+// it (1), a changed draft of it (2), or another value (0). A draft that the
+// array still holds, read before it or of another producer, and one that
+// finalization wrote into the index stand for their originals.
+function retained(
+  value: any,
+  base: any,
+  drafts: Map<number, ProxyDraft> | undefined,
+  index: number
+) {
+  if (isEqual(value, base)) return 1;
+  const draft = getProxyDraft(value) ?? drafts?.get(index);
+  if (!draft || !isEqual(draft.original, base)) return 0;
+  return draft.operated ? 2 : 1;
+}
+
+// A child emits patches under its array only at its own index.
+function ownPatches(
+  draft: ProxyDraft | undefined,
+  parent: ProxyDraft,
+  index: number
+) {
+  return (
+    draft !== undefined &&
+    draft.patched &&
+    draft.parent === parent &&
+    draft.key === index
+  );
 }
 
 // Compact array patches keep the common prefix and suffix of one contiguous
 // insertion or deletion, and carry only elements, like the default generator.
-// Anything with independent nested edits, holes, reordering or an ambiguous
-// shape uses the default generator. The final elements decide, so the patches
+// A retained element may also have changed in place: where it keeps its index,
+// the patches of its own draft carry the change, and a replace patch at its
+// final index does where the insertion or deletion moved it. Anything else,
+// such as a new value at a retained index, holes, reordering or an ambiguous
+// shape, uses the default generator. The final elements decide, so the patches
 // do not depend on how the recipe changed the array: through native methods,
 // the proxy path of strict mode or a mark, index assignments or `length`.
 function tryGenerateCompactArrayPatches(
@@ -54,9 +80,7 @@ function tryGenerateCompactArrayPatches(
   const oldLength = original.length;
   const newLength = copy.length;
   const shortest = Math.min(oldLength, newLength);
-  // Patches that a child already emitted under this path decide the fallback
-  // before any element is compared.
-  if (oldLength === newLength || proxyState.patched) return false;
+  if (oldLength === newLength) return false;
   // Elements change places only at indices that native methods moved or the
   // recipe assigned. When none lies below the shorter length, the change is
   // an append or a truncation, which the default generator patches as such.
@@ -70,42 +94,97 @@ function tryGenerateCompactArrayPatches(
   });
   if (first >= shortest) return false;
 
+  // Identity alone is not enough: a draft of a base element may have
+  // changed, and the indices of such elements are collected.
+  const drafts = getWrittenDrafts(proxyState);
+  let changed: number[] | undefined;
   let prefix = 0;
-  while (prefix < shortest && sameElement(copy[prefix], original[prefix]))
+  let state;
+  while (
+    prefix < shortest &&
+    (state = retained(copy[prefix], original[prefix], drafts, prefix))
+  ) {
+    if (state === 2) (changed ??= []).push(prefix);
     prefix += 1;
+  }
   let suffix = 0;
+  let index = newLength - 1;
   while (
     suffix < shortest - prefix &&
-    sameElement(copy[newLength - 1 - suffix], original[oldLength - 1 - suffix])
-  )
+    (state = retained(
+      copy[index],
+      original[oldLength - 1 - suffix],
+      drafts,
+      index
+    ))
+  ) {
+    if (state === 2) (changed ??= []).push(index);
     suffix += 1;
+    index -= 1;
+  }
 
   // A full shorter side proves one contiguous insertion or deletion. Tail
   // changes already use the default generator's efficient append/truncate form.
   if (prefix + suffix !== shortest || prefix === shortest) return false;
+  // Before the insertion or deletion, an element keeps its index, and the
+  // patches of its own child carry its change; anywhere else, they would
+  // change another element.
+  if (proxyState.patched) {
+    let moved = drafts === undefined;
+    drafts?.forEach((draft, index) => {
+      if (index >= prefix && ownPatches(draft, proxyState, index)) moved = true;
+    });
+    if (moved) return false;
+  }
   // A hole compares like an undefined element, which the patches would make
   // explicit. Only an array that has the compact shape is searched for holes.
   if (hasHoles(original) || hasHoles(copy)) return false;
 
   const removed = oldLength - prefix - suffix;
   const added = newLength - prefix - suffix;
-  for (let index = prefix + removed - 1; index >= prefix; index -= 1) {
-    patches.push(removePatch(basePath.concat([index]), pathAsArray));
+  for (index = prefix + removed - 1; index >= prefix; index -= 1) {
+    patches.push({
+      op: Operation.Remove,
+      path: escapePath(basePath.concat([index]), pathAsArray),
+    });
   }
   // An inserted draft that is finalized after this array, because the recipe
   // read it first or another producer owns it, is still a draft here. It is
   // represented as in the default generator's patches.
-  for (let index = prefix; index < prefix + added; index += 1) {
+  for (index = prefix; index < prefix + added; index += 1) {
     patches.push({
       op: Operation.Add,
       path: escapePath(basePath.concat([index]), pathAsArray),
       value: cloneIfNeeded(copy[index]),
     });
   }
-  for (let index = prefix + added - 1; index >= prefix; index -= 1) {
-    inversePatches.push(removePatch(basePath.concat([index]), pathAsArray));
+  // A changed element that its own patches do not carry is replaced at its
+  // final index once the insertion or deletion is done, and restored before
+  // it is undone.
+  changed?.forEach((index) => {
+    if (!ownPatches(drafts?.get(index), proxyState, index)) {
+      const path = escapePath(basePath.concat([index]), pathAsArray);
+      patches.push({
+        op: Operation.Replace,
+        path,
+        value: cloneIfNeeded(copy[index]),
+      });
+      inversePatches.push({
+        op: Operation.Replace,
+        path,
+        value: cloneIfNeeded(
+          original[index < prefix ? index : index - added + removed]
+        ),
+      });
+    }
+  });
+  for (index = prefix + added - 1; index >= prefix; index -= 1) {
+    inversePatches.push({
+      op: Operation.Remove,
+      path: escapePath(basePath.concat([index]), pathAsArray),
+    });
   }
-  for (let index = prefix; index < prefix + removed; index += 1) {
+  for (index = prefix; index < prefix + removed; index += 1) {
     inversePatches.push({
       op: Operation.Add,
       path: escapePath(basePath.concat([index]), pathAsArray),
@@ -113,13 +192,6 @@ function tryGenerateCompactArrayPatches(
     });
   }
   return true;
-}
-
-function removePatch(path: any, pathAsArray: boolean): any {
-  return {
-    op: Operation.Remove,
-    path: escapePath(path, pathAsArray),
-  };
 }
 
 function generateArrayPatches(

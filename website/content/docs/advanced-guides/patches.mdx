@@ -152,9 +152,36 @@ expect(inversePatches).toEqual([
 ]);
 ```
 
-The compact strategy handles a dense array whose length changes through one contiguous insertion or deletion when every retained element is unchanged. It compares the final array with the base array, so the patches are the same however the recipe made the change: with array methods, index assignments or `length` writes, in strict mode or with `mark`. It emits `remove` operations in descending index order and `add` operations in ascending index order; inverse patches are planned independently for the opposite direction. For a contiguous change of `k` inserted or removed elements, it emits **O(k)** patches rather than one patch for every moved tail element. Finding the common prefix and suffix still takes **O(n)** time, and array copying retains its existing cost.
+The compact strategy handles a dense array whose length changes through one contiguous insertion or deletion. Retained elements may also change in place: where an element keeps its index, the patches of its own draft carry the change, and where the insertion or deletion moved it, a `replace` patch at its new index does. It compares the final array with the base array, so the patches are the same however the recipe made the change: with array methods, index assignments or `length` writes, in strict mode or with `mark`. It emits `remove` operations in descending index order and `add` operations in ascending index order; inverse patches are planned independently for the opposite direction. For a contiguous change of `k` inserted or removed elements, it emits **O(k)** patches, plus the patches of the retained elements that changed, rather than one patch for every moved tail element. Finding the common prefix and suffix still takes **O(n)** time, and array copying retains its existing cost.
 
-Ordinary appends, pops and tail truncations keep the existing efficient patch forms. The generator falls back to `'index'` when it cannot prove the compact form safe, including same-length reordering, sparse arrays, multiple disconnected changes and independent edits within retained elements. Thus compact mode does not promise the smallest possible patch sequence or record the recipe's exact operations.
+Ordinary appends, pops and tail truncations keep the existing efficient patch forms. The generator falls back to `'index'` when it cannot prove the compact form safe, including same-length reordering, sparse arrays, multiple disconnected changes and new values assigned to retained indices. Thus compact mode does not promise the smallest possible patch sequence or record the recipe's exact operations.
+
+An element edited before the deletion below keeps its index, so its own patch carries the edit:
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  todos: [
+    { id: 0, done: false },
+    { id: 1, done: false },
+    { id: 2, done: false },
+  ],
+};
+const [, patches] = create(
+  baseState,
+  (draft) => {
+    draft.todos[0].done = true;
+    draft.todos.splice(1, 1);
+  },
+  { enablePatches: { arrayPatchStrategy: 'compact' } }
+);
+
+expect(patches).toEqual([
+  { op: 'replace', path: ['todos', 0, 'done'], value: true },
+  { op: 'remove', path: ['todos', 1] },
+]);
+```
 
 Compact patches use the same `add`, `remove` and `replace` operations and work with array paths or JSON Pointer paths. For a strict [RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902) consumer, combine the strategy with both JSON options:
 

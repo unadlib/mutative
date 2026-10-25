@@ -112,6 +112,30 @@ export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
   });
 }
 
+// The changed drafts that finalization wrote into the indices of an array
+// whose producer generates compact array patches, once its length changed.
+// The original of such a draft tells those patches which base element the
+// final value at an index stands for.
+const writtenDrafts = new WeakMap<ProxyDraft, Map<number, ProxyDraft>>();
+
+function recordWrittenDraft(target: ProxyDraft, key: any, draft: ProxyDraft) {
+  const { enablePatches } = target.options;
+  if (
+    !draft.operated ||
+    typeof enablePatches !== 'object' ||
+    enablePatches.arrayPatchStrategy !== 'compact' ||
+    target.copy.length === target.original.length
+  )
+    return;
+  let drafts = writtenDrafts.get(target);
+  if (drafts === undefined) writtenDrafts.set(target, (drafts = new Map()));
+  drafts.set(Number(key), draft);
+}
+
+export function getWrittenDrafts(target: ProxyDraft) {
+  return writtenDrafts.get(target);
+}
+
 export function finalizePatches(
   target: ProxyDraft,
   generatePatches: GeneratePatches,
@@ -134,8 +158,8 @@ export function finalizePatches(
           patches.length !== patchCount ||
           inversePatches.length !== inversePatchCount
         ) {
-          // A compact array must fall back when a child already emitted patches.
-          // Mark this subtree chain once instead of scanning every accumulated
+          // A compact array checks where its children emitted patches. Mark
+          // this subtree chain once instead of scanning every accumulated
           // patch for every array. A marked node already marked its ancestors.
           let node: ProxyDraft | null = target;
           while (node !== null && !node.patched) {
@@ -190,6 +214,8 @@ export function finalizeNode(
         copy.set(key, updatedValue);
       } else {
         copy[key] = updatedValue;
+        if (patches && parentType === DraftType.Array)
+          recordWrittenDraft(parent, key, proxyDraft);
       }
     }
   } else {
@@ -213,7 +239,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
     if (!proxyDraft.callbacks) {
       proxyDraft.callbacks = [];
     }
-    proxyDraft.callbacks.push(() => {
+    proxyDraft.callbacks.push((patches) => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
       if (isEqual(get(copy, key), value)) {
         // The target generates its own patches once all drafts it holds have
@@ -227,6 +253,8 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
           finalizeSetValue(target, true);
         // final update value
         set(copy, key, updatedValue);
+        if (patches && target.type === DraftType.Array)
+          recordWrittenDraft(target, key, proxyDraft);
       }
     });
     if (target.options.enableAutoFreeze) {

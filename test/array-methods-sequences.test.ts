@@ -100,10 +100,10 @@ describe.each([
             }
           }
           expect(failures.length, failures.slice(0, 3).join('\n')).toBe(0);
-          // On either path, 570 sequences get compact patches and none get them
-          // by default, so the compact runs do not repeat the default ones.
+          // On either path, 1028 sequences get compact patches and none get
+          // them by default, so the compact runs do not repeat the default ones.
           if (enablePatches === true) expect(compactSequences).toBe(0);
-          else expect(compactSequences).toBeGreaterThanOrEqual(570);
+          else expect(compactSequences).toBeGreaterThanOrEqual(1028);
         }
       );
     }
