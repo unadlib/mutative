@@ -3,7 +3,9 @@ import test from 'node:test';
 import { measureMemory } from './memory.mjs';
 
 test('allocation and retained heap distinguish copied outputs from shared inputs', async () => {
-  const shared = new Array(4096).fill(17);
+  // Double arrays have an 8-byte backing store on supported V8 builds; Smi
+  // arrays may be only half as large, leaving these thresholds too fragile.
+  const shared = new Array(4096).fill(17.5);
   const options = { iterations: 64, samplingInterval: 256, warmup: 5 };
   const identity = await measureMemory(() => shared, options);
   const copying = await measureMemory(() => shared.slice(), options);
@@ -41,7 +43,7 @@ test('retained-output heap excludes persistent cache growth during the pass', as
   let cache;
   const metrics = await measureMemory(
     () => {
-      if (++calls === 22) cache = new Array(65536).fill(17); // after warmup + allocation pass
+      if (++calls === 22) cache = new Array(65536).fill(17.5); // after warmup + allocation pass
       return shared;
     },
     { iterations: 16, samplingInterval: 256, warmup: 5 }
