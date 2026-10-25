@@ -3,7 +3,7 @@ import { isDeepStrictEqual } from 'node:util';
 import jsonPatch, {
   type Operation as JsonPatchOperation,
 } from 'fast-json-patch';
-import { apply, create, makeCreator, rawReturn } from '../src';
+import { apply, create, makeCreator, original, rawReturn } from '../src';
 
 const compactOptions = (
   patches: Record<string, unknown> = {},
@@ -223,6 +223,37 @@ describe('compact array patches', () => {
         path: pathAsArray ? ['rows', 0] : '/rows/0',
       });
     }
+  });
+
+  test('a child that emitted patches at an inserted index blocks compact patches', () => {
+    // The child is back at its own key, so it emits patches under the array's
+    // path, which an insertion before it would redirect to the shifted base
+    // element.
+    expectFallback(
+      { list: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] },
+      (draft) => {
+        const child = draft.list[1];
+        draft.list[1] = original(draft.list)[1];
+        draft.list.splice(1, 0, child);
+        child.v = 1;
+      }
+    );
+  });
+
+  test('a modified alias draft at a retained index is not unchanged', () => {
+    // A draft read through another path before the array is finalized after
+    // it, so the array still holds the draft. It stands for its original only
+    // while it is unchanged.
+    const shared = { id: 'x' };
+    expectFallback(
+      { other: shared, list: [shared, { id: 'y' }, { id: 'z' }] },
+      (draft) => {
+        const other = draft.other;
+        draft.list[0] = other;
+        other.v = 1;
+        draft.list.splice(1, 1);
+      }
+    );
   });
 
   test('sibling arrays produce compact patches independently', () => {
