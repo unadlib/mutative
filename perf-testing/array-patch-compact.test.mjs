@@ -22,9 +22,13 @@ test('compact benchmark scenarios are unique and cover hits, fallbacks and contr
   assert.ok(
     SCENARIOS.some(({ compactPatches }) => typeof compactPatches === 'function')
   );
+  assert.equal(
+    SCENARIOS.find(({ name }) => name === 'nested-edit-after-shift')
+      .compactPatches,
+    2
+  );
   for (const name of [
     'disjoint-insert-plan',
-    'nested-edit-after-shift',
     'reverse-fallback',
     'sort-fallback',
     'append-control',

@@ -77,7 +77,8 @@ export const SCENARIOS = [
   },
   {
     name: 'nested-edit-after-shift',
-    fallback: true,
+    // The edited element moved, so it is replaced at its new index.
+    compactPatches: 2,
     mutate(draft) {
       draft.shift();
       draft[Math.floor(draft.length / 2)].value += 1;

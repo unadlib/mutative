@@ -225,14 +225,22 @@ describe('compact array patches', () => {
     });
   });
 
-  test('nested edits are handled without blocking on sibling patches', () => {
+  test('nested edits keep compact patches without blocking on sibling patches', () => {
     const nested = {
       rows: [{ x: 0 }, { x: 0 }, { x: 0 }],
     };
-    expectFallback(nested, (draft) => {
+    const shifted = roundtrip(nested, (draft) => {
       draft.rows.shift();
       draft.rows[0].x = 1;
     });
+    expect(shifted.patches).toEqual([
+      { op: 'remove', path: ['rows', 0] },
+      { op: 'replace', path: ['rows', 0], value: { x: 1 } },
+    ]);
+    expect(shifted.inverse).toEqual([
+      { op: 'replace', path: ['rows', 0], value: { x: 0 } },
+      { op: 'add', path: ['rows', 0], value: { x: 0 } },
+    ]);
     const inserted = roundtrip(nested, (draft) => {
       draft.rows.unshift({ x: -1 });
       draft.rows[0].x = 1;
@@ -240,7 +248,7 @@ describe('compact array patches', () => {
     expect(inserted.patches).toEqual([
       { op: 'add', path: ['rows', 0], value: { x: 1 } },
     ]);
-    expectFallback(
+    const rows = roundtrip(
       {
         rows: [
           [1, 2],
@@ -252,6 +260,10 @@ describe('compact array patches', () => {
         draft.rows.shift();
       }
     );
+    expect(rows.patches).toEqual([
+      { op: 'remove', path: ['rows', 0] },
+      { op: 'replace', path: ['rows', 0], value: [2, 3, 4] },
+    ]);
 
     for (const pathAsArray of [true, false]) {
       const base = {
@@ -275,11 +287,23 @@ describe('compact array patches', () => {
     }
   });
 
-  test('a child that emitted patches at an inserted index blocks compact patches', () => {
-    // The child is back at its own key, so it emits patches under the array's
-    // path, which an insertion before it would redirect to the shifted base
-    // element.
-    expectFallback(
+  test('a child that emitted patches at its own index after the change falls back', () => {
+    // The child is at its own key, so it emits patches under the array's path.
+    // Past the insertion, its element is the base array's second reference to
+    // the same object, and the child's patches would change the first one.
+    const shared = { id: 's' };
+    expectFallback({ list: [{ id: 'a' }, shared, shared] }, (draft) => {
+      const child = draft.list[2];
+      draft.list.unshift({ id: 'n' });
+      draft.list[2] = child;
+      child.v = 1;
+    });
+  });
+
+  test('a child back at its own index before the insertion keeps its patches', () => {
+    // The insertion is aligned after the child, whose patches change the
+    // base element at its index, and the inserted value is the base element.
+    const { patches, inverse } = roundtrip(
       { list: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] },
       (draft) => {
         const child = draft.list[1];
@@ -288,14 +312,58 @@ describe('compact array patches', () => {
         child.v = 1;
       }
     );
+    expect(patches).toEqual([
+      { op: 'add', path: ['list', 1, 'v'], value: 1 },
+      { op: 'add', path: ['list', 2], value: { id: 'b' } },
+    ]);
+    expect(inverse).toEqual([
+      { op: 'remove', path: ['list', 1, 'v'] },
+      { op: 'remove', path: ['list', 2] },
+    ]);
   });
 
-  test('a modified alias draft at a retained index is not unchanged', () => {
+  test("only an element's own child at its own index carries its change", () => {
+    // `b[0]` emits its patches under `b`. Placed into `a`, where the base
+    // array holds the same object, its change reaches `a` only by a replace.
+    const shared = { id: 's' };
+    const moved = roundtrip(
+      { a: [shared, { id: 'x1' }, { id: 'x2' }], b: [shared, { id: 'y1' }] },
+      (draft) => {
+        draft.a.splice(1, 1);
+        const item = draft.b[0];
+        item.v = 1;
+        draft.a[0] = item;
+      }
+    );
+    expect(moved.patches).toEqual([
+      { op: 'add', path: ['b', 0, 'v'], value: 1 },
+      { op: 'remove', path: ['a', 1] },
+      { op: 'replace', path: ['a', 0], value: { id: 's', v: 1 } },
+    ]);
+    // The child also placed at the next index, where the base array holds the
+    // same object, emits its patches only at its own one.
+    const copied = roundtrip(
+      { list: [shared, shared, { id: 'x' }, { id: 'y' }] },
+      (draft) => {
+        const child = draft.list[0];
+        draft.list[1] = child;
+        child.v = 1;
+        draft.list.splice(2, 1);
+      }
+    );
+    expect(copied.patches).toEqual([
+      { op: 'add', path: ['list', 0, 'v'], value: 1 },
+      { op: 'remove', path: ['list', 2] },
+      { op: 'replace', path: ['list', 1], value: { id: 's', v: 1 } },
+    ]);
+  });
+
+  test('a changed alias draft at a retained index is replaced', () => {
     // A draft read through another path before the array is finalized after
     // it, so the array still holds the draft. It stands for its original only
-    // while it is unchanged.
+    // while it is unchanged; changed, its element is replaced.
     const shared = { id: 'x' };
-    expectFallback(
+    const { patches, inverse } = roundtrip(
       { other: shared, list: [shared, { id: 'y' }, { id: 'z' }] },
       (draft) => {
         const other = draft.other;
@@ -304,6 +372,100 @@ describe('compact array patches', () => {
         draft.list.splice(1, 1);
       }
     );
+    expect(patches).toEqual([
+      { op: 'remove', path: ['list', 1] },
+      { op: 'replace', path: ['list', 0], value: { id: 'x', v: 1 } },
+      { op: 'add', path: ['other', 'v'], value: 1 },
+    ]);
+    expect(inverse).toEqual([
+      { op: 'replace', path: ['list', 0], value: { id: 'x' } },
+      { op: 'add', path: ['list', 1], value: { id: 'y' } },
+      { op: 'remove', path: ['other', 'v'] },
+    ]);
+  });
+
+  test('elements changed before or after an insertion or deletion keep compact patches', () => {
+    const makeBase = () => ({
+      todos: Array.from({ length: 8 }, (_, id) => ({ id, done: false })),
+    });
+    // Strict mode and marks move object elements through the proxy instead of
+    // the native array methods.
+    for (const options of [{}, { strict: true }, { mark: () => undefined }]) {
+      // Before the deletion, the element keeps its index, and its own patch
+      // carries the change.
+      const before = roundtrip(
+        makeBase(),
+        (draft) => {
+          draft.todos[0].done = true;
+          draft.todos.splice(5, 1);
+        },
+        compactOptions({}, options)
+      );
+      expect(before.patches).toEqual([
+        { op: 'replace', path: ['todos', 0, 'done'], value: true },
+        { op: 'remove', path: ['todos', 5] },
+      ]);
+      expect(before.inverse).toEqual([
+        { op: 'replace', path: ['todos', 0, 'done'], value: false },
+        { op: 'add', path: ['todos', 5], value: { id: 5, done: false } },
+      ]);
+      // After it, the element moved, and it is replaced at its new index.
+      const after = roundtrip(
+        makeBase(),
+        (draft) => {
+          draft.todos[6].done = true;
+          draft.todos.splice(2, 1);
+        },
+        compactOptions({}, options)
+      );
+      expect(after.patches).toEqual([
+        { op: 'remove', path: ['todos', 2] },
+        { op: 'replace', path: ['todos', 5], value: { id: 6, done: true } },
+      ]);
+      expect(after.inverse).toEqual([
+        { op: 'replace', path: ['todos', 5], value: { id: 6, done: false } },
+        { op: 'add', path: ['todos', 2], value: { id: 2, done: false } },
+      ]);
+      const inserted = roundtrip(
+        makeBase(),
+        (draft) => {
+          draft.todos.unshift({ id: -1, done: false });
+          draft.todos[1].done = true;
+        },
+        compactOptions({}, options)
+      );
+      expect(inserted.patches).toEqual([
+        { op: 'add', path: ['todos', 0], value: { id: -1, done: false } },
+        { op: 'replace', path: ['todos', 1], value: { id: 0, done: true } },
+      ]);
+      expect(inserted.inverse).toEqual([
+        { op: 'replace', path: ['todos', 1], value: { id: 0, done: false } },
+        { op: 'remove', path: ['todos', 0] },
+      ]);
+      // A nested array that keeps its index has compact patches of its own.
+      const nested = roundtrip(
+        {
+          rows: [
+            [0, 1],
+            [2, 3],
+            [4, 5],
+          ],
+        },
+        (draft) => {
+          draft.rows[0].shift();
+          draft.rows.splice(1, 1);
+        },
+        compactOptions({}, options)
+      );
+      expect(nested.patches).toEqual([
+        { op: 'remove', path: ['rows', 0, 0] },
+        { op: 'remove', path: ['rows', 1] },
+      ]);
+      expect(nested.inverse).toEqual([
+        { op: 'add', path: ['rows', 0, 0], value: 0 },
+        { op: 'add', path: ['rows', 1], value: [2, 3] },
+      ]);
+    }
   });
 
   test('sibling arrays produce compact patches independently', () => {
@@ -812,8 +974,8 @@ test('compact patches deterministic differential fuzz', () => {
     }) as any;
     if (!isDeepStrictEqual(patches, indexPatches)) compactCases += 1;
   }
-  // Most recipes here end in a fallback shape; 22 of them get compact patches.
-  expect(compactCases).toBeGreaterThanOrEqual(22);
+  // Most recipes here end in a fallback shape; 25 of them get compact patches.
+  expect(compactCases).toBeGreaterThanOrEqual(25);
 });
 
 function mulberry32(seed: number) {
@@ -998,7 +1160,7 @@ test.each([
       if (!passed) failures.push(caseIndex);
     }
     expect(failures.slice(0, 3)).toEqual([]);
-    // About 39% of the recipes get compact patches, whichever path they take.
-    expect(compactCases).toBeGreaterThanOrEqual(580);
+    // 643 of the recipes get compact patches, whichever path they take.
+    expect(compactCases).toBeGreaterThanOrEqual(643);
   }
 );
