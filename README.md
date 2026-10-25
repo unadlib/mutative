@@ -234,12 +234,13 @@ The `options` argument is optional; [`makeCreator()`](#makecreator) sets default
 
   Strict mode checks every value that the recipe reads, so enable it in development and disable it in production, for example with `strict: process.env.NODE_ENV !== 'production'`.
 
-- `enablePatches` - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean }`, the default is `false`.
+- `enablePatches` - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean; arrayPatchStrategy?: 'index' | 'compact' }`, the default is `false`.
 
   `true` makes `create()` return `[nextState, patches, inversePatches]`. An object sets the shape of the patches as well:
 
   - `pathAsArray`, `true` by default: a path is an array of keys, such as `['list', 0]`. With `false`, it is a JSON Pointer string, such as `'/list/0'`. A string path holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
   - `arrayLengthAssignment`, `true` by default: an array that gets shorter gets a `replace` patch of its `length`. With `false`, it gets a `remove` patch for each index that it loses, which takes more time for large arrays.
+  - `arrayPatchStrategy`, `'index'` by default: `'index'` preserves the existing per-index patches. `'compact'` represents a supported contiguous, non-tail insertion or deletion with `add` or `remove` patches and falls back to `'index'` when it cannot prove that the transformation is safe. See [Compact array patches](https://mutative.js.org/docs/advanced-guides/patches#compact-array-patches).
 
   With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)); see the [related discussion](https://github.com/unadlib/mutative/issues/6).
 
