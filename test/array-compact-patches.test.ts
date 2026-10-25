@@ -431,6 +431,55 @@ describe('compact array patches', () => {
     expect(replayed.arr[0]).not.toBe(replayed.a);
   });
 
+  test('an inserted draft gives the same patches whichever the recipe read first', () => {
+    for (const readFirst of [false, true]) {
+      for (const change of [false, true]) {
+        const base = { a: { x: 1 }, arr: [{ x: 2 }, { x: 3 }] };
+        const { state, patches, inverse } = roundtrip(base, (draft) => {
+          // Reading `a` before `arr` finalizes its draft after the array.
+          const first = readFirst ? draft.a : null;
+          const arr = draft.arr;
+          const item = first ?? draft.a;
+          arr.splice(1, 0, item);
+          if (change) item.x = 9;
+        });
+        const added = { op: 'add', path: ['arr', 1], value: state.a };
+        const removed = { op: 'remove', path: ['arr', 1] };
+        if (change) {
+          expect(patches).toHaveLength(2);
+          expect(patches).toContainEqual(added);
+          expect(patches).toContainEqual({
+            op: 'replace',
+            path: ['a', 'x'],
+            value: 9,
+          });
+          expect(inverse).toHaveLength(2);
+          expect(inverse).toContainEqual(removed);
+        } else {
+          expect(patches).toEqual([added]);
+          expect(inverse).toEqual([removed]);
+        }
+      }
+    }
+  });
+
+  test('a draft of another producer is inserted by value', () => {
+    create({ item: { v: 1 } }, (outer) => {
+      const base = [0, 1];
+      const [, patches, inverse] = create(
+        base,
+        (draft: any[]) => {
+          draft.splice(1, 0, outer.item);
+        },
+        compactOptions()
+      ) as any;
+      expect(patches).toEqual([{ op: 'add', path: [1], value: { v: 1 } }]);
+      expect(inverse).toEqual([{ op: 'remove', path: [1] }]);
+      expect(apply(base, patches)).toEqual([0, { v: 1 }, 1]);
+      expect(apply([0, { v: 1 }, 1], inverse)).toEqual(base);
+    });
+  });
+
   test('makeCreator, manual drafts, frozen input and mutable apply work', () => {
     const creator = makeCreator(compactOptions());
     const base = [{ id: 0 }, { id: 1 }, { id: 2 }];

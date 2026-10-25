@@ -89,15 +89,12 @@ function tryGenerateCompactArrayPatches(
 
   const removed = oldLength - prefix - suffix;
   const added = newLength - prefix - suffix;
-  // Inserting a draft from another location introduces alias and finalization
-  // dependencies. Leave those to the default value-based patches in this phase.
-  for (let index = prefix; index < prefix + added; index += 1) {
-    if (getProxyDraft(copy[index])) return false;
-  }
-
   for (let index = prefix + removed - 1; index >= prefix; index -= 1) {
     patches.push(removePatch(basePath.concat([index]), pathAsArray));
   }
+  // An inserted draft that is finalized after this array, because the recipe
+  // read it first or another producer owns it, is still a draft here. It is
+  // represented as in the default generator's patches.
   for (let index = prefix; index < prefix + added; index += 1) {
     patches.push({
       op: Operation.Add,
