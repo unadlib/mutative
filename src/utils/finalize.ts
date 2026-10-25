@@ -127,7 +127,22 @@ export function finalizePatches(
     if (patches && inversePatches) {
       const basePath = getPath(target);
       if (basePath) {
+        const patchCount = patches.length;
+        const inversePatchCount = inversePatches.length;
         generatePatches(target, basePath, patches, inversePatches);
+        if (
+          patches.length !== patchCount ||
+          inversePatches.length !== inversePatchCount
+        ) {
+          // A compact array must fall back when a child already emitted patches.
+          // Mark this subtree chain once instead of scanning every accumulated
+          // patch for every array. A marked node already marked its ancestors.
+          let node: ProxyDraft | null = target;
+          while (node !== null && !node.patched) {
+            node.patched = true;
+            node = node.parent;
+          }
+        }
       }
     }
     target.finalized = true;

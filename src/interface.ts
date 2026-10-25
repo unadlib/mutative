@@ -28,9 +28,10 @@ export type PatchesOptions =
        */
       pathAsArray?: boolean;
       /**
-       * Whether an array that gets shorter gets a `replace` patch of its
-       * `length`, as by default, or a `remove` patch for each index that it
-       * loses, as JSON Patch requires.
+       * Under the default `'index'` strategy, whether an array that gets shorter
+       * gets a `replace` patch of its `length`, as by default, or a `remove`
+       * patch for each index that it loses, as JSON Patch requires. Structural
+       * patches emitted by the `'compact'` strategy are not affected.
        * Recreating holes in a sparse array still uses length patches;
        * JSON cannot represent holes.
        */
@@ -69,6 +70,8 @@ export interface ProxyDraft<T = any> {
   type: DraftType;
   operated: boolean;
   finalized: boolean;
+  // Whether this node or a finalized descendant emitted patches.
+  patched: boolean;
   original: T;
   copy: T | null;
   proxy: T | null;

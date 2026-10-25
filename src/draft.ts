@@ -379,6 +379,7 @@ export function createDraft<T extends object>(
     type,
     finalized: false,
     operated: false,
+    patched: false,
     parent: parentDraft,
     key,
     original,

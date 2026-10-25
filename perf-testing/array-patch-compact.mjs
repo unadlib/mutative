@@ -111,6 +111,13 @@ export const SCENARIOS = [
       draft[Math.floor(draft.length / 2)].value += 1;
     },
   },
+  {
+    name: 'many-small-arrays',
+    compactPatches: (context) => context.arraySize,
+    mutate(draft) {
+      for (const row of draft) row.shift();
+    },
+  },
 ];
 
 const scenarioByName = (name) => {
@@ -120,6 +127,9 @@ const scenarioByName = (name) => {
 };
 
 export function makeBase(name, size) {
+  if (name === 'many-small-arrays') {
+    return Array.from({ length: size }, () => [0, 1, 2]);
+  }
   const base = Array.from({ length: size }, (_, id) => ({ id, value: id }));
   if (name === 'sort-fallback') {
     let seed = 42;
@@ -148,6 +158,7 @@ export function createContext(arraySize, batchSize, autoFreeze = false) {
     }));
   const planSize = Math.max(1, Math.floor(batchSize / 4));
   const context = {
+    arraySize,
     one: makeItems(1, 0),
     batch: makeItems(batchSize, 0),
     first: makeItems(planSize, batchSize),
@@ -460,6 +471,12 @@ function markdown(report) {
   return `${lines.join('\n')}\n`;
 }
 
+export function markdownPath(output) {
+  return output.endsWith('.json')
+    ? output.replace(/\.json$/, '.md')
+    : `${output}.md`;
+}
+
 function runParent(values) {
   const runs = integer(values, 'runs');
   const arraySize = integer(values, 'array-size', 10);
@@ -577,7 +594,7 @@ function runParent(values) {
     mkdirSync(dirname(output), { recursive: true });
     writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
     if (!values.check)
-      writeFileSync(output.replace(/\.json$/, '.md'), markdown(report));
+      writeFileSync(markdownPath(output), markdown(report));
   }
   if (values.check) {
     console.log(
