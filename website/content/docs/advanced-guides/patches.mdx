@@ -91,7 +91,7 @@ A string path holds only strings, so it cannot name a Map key that is not a stri
 
 ### arrayLengthAssignment - default: true
 
-With `arrayLengthAssignment: false`, an array that gets shorter gets a `remove` patch for each index that it loses, instead of a `replace` patch of its `length`:
+With the default `arrayPatchStrategy: 'index'`, setting `arrayLengthAssignment: false` makes an array that gets shorter get a `remove` patch for each index that it loses, instead of a `replace` patch of its `length`. Structural patches emitted by the `'compact'` strategy are not affected by this option:
 
 ```ts
 import { create } from 'mutative';

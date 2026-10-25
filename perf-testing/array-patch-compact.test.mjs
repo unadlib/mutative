@@ -4,10 +4,16 @@ import {
   createContext,
   makeBase,
   makeOptions,
+  markdownPath,
   median,
   SCENARIOS,
   summarize,
 } from './array-patch-compact.mjs';
+
+test('markdown reports never overwrite the JSON output', () => {
+  assert.equal(markdownPath('/tmp/report.json'), '/tmp/report.md');
+  assert.equal(markdownPath('/tmp/report'), '/tmp/report.md');
+});
 
 test('compact benchmark scenarios are unique and cover hits, fallbacks and controls', () => {
   const names = SCENARIOS.map(({ name }) => name);

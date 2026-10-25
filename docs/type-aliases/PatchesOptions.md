@@ -21,9 +21,10 @@ does not.
 
 > `optional` **arrayLengthAssignment**: `boolean`
 
-Whether an array that gets shorter gets a `replace` patch of its
-`length`, as by default, or a `remove` patch for each index that it
-loses, as JSON Patch requires.
+Under the default `'index'` strategy, whether an array that gets shorter
+gets a `replace` patch of its `length`, as by default, or a `remove`
+patch for each index that it loses, as JSON Patch requires. Structural
+patches emitted by the `'compact'` strategy are not affected.
 
 ### arrayPatchStrategy?
 

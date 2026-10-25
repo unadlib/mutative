@@ -225,6 +225,83 @@ describe('compact array patches', () => {
     }
   });
 
+  test('sibling arrays produce compact patches independently', () => {
+    const length = 100;
+    const base = { rows: Array.from({ length }, () => [0, 1, 2]) };
+    const { patches, inverse } = roundtrip(base, (draft) => {
+      for (const row of draft.rows) row.shift();
+    });
+    expect(patches).toHaveLength(length);
+    expect(inverse).toHaveLength(length);
+    expect(patches).toContainEqual({ op: 'remove', path: ['rows', 0, 0] });
+    expect(patches).toContainEqual({
+      op: 'remove',
+      path: ['rows', length - 1, 0],
+    });
+  });
+
+  test('cross-array moved drafts replay in either finalization order', () => {
+    for (const targetFirst of [false, true]) {
+      const base = {
+        a: [
+          { id: 'a0', n: 0 },
+          { id: 'a1', n: 0 },
+        ],
+        b: [{ id: 'b0', n: 0 }],
+      };
+      const { state, patches } = roundtrip(base, (draft) => {
+        const target = targetFirst ? draft.b : null;
+        const item = draft.a.shift()!;
+        item.n += 1;
+        (target ?? draft.b).unshift(item);
+      });
+      expect(state).toEqual({
+        a: [{ id: 'a1', n: 0 }],
+        b: [
+          { id: 'a0', n: 1 },
+          { id: 'b0', n: 0 },
+        ],
+      });
+      expect(() => JSON.stringify(patches)).not.toThrow();
+    }
+  });
+
+  test('compact arrays retain their Map and Set parent paths', () => {
+    const bases = [
+      new Map([
+        ['a', [0, 1, 2]],
+        ['b', [3]],
+      ]),
+      new Set([[0, 1, 2], [3]]),
+    ];
+    for (const base of bases) {
+      const { state, patches } = roundtrip(base, (draft) => {
+        const [a, b] = draft.values();
+        const item = a.shift()!;
+        b.unshift(item);
+      });
+      const firstKey = base instanceof Map ? 'a' : 0;
+      const secondKey = base instanceof Map ? 'b' : 1;
+      expect(state).toEqual(
+        base instanceof Map
+          ? new Map([
+              ['a', [1, 2]],
+              ['b', [0, 3]],
+            ])
+          : new Set([
+              [1, 2],
+              [0, 3],
+            ])
+      );
+      expect(patches).toContainEqual({ op: 'remove', path: [firstKey, 0] });
+      expect(patches).toContainEqual({
+        op: 'add',
+        path: [secondKey, 0],
+        value: 0,
+      });
+    }
+  });
+
   test('sparse arrays and direct length changes preserve default behavior', () => {
     const sparse: any[] = [1, undefined, 3, 4];
     delete sparse[1];

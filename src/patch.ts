@@ -42,37 +42,6 @@ function sameElement(value: any, original: any) {
   return !!draft && !draft.operated && isEqual(draft.original, original);
 }
 
-// Child patches precede their array's patches. A compact structural operation
-// would change their coordinates, so any existing patch at or below this array
-// makes the fast path unsafe. Sibling subtrees do not affect it.
-function hasNestedPatches(
-  patches: Patches,
-  basePath: any[],
-  pathAsArray: boolean
-) {
-  const base = pathAsArray ? null : (escapePath(basePath, false) as string);
-  for (const { path } of patches) {
-    if (pathAsArray) {
-      const actual = path as any[];
-      if (actual.length >= basePath.length) {
-        let index = 0;
-        while (
-          index < basePath.length &&
-          isEqual(actual[index], basePath[index])
-        )
-          index += 1;
-        if (index === basePath.length) return true;
-      }
-    } else if (
-      path === base ||
-      (base === '' ? path !== '' : (path as string).startsWith(`${base}/`))
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
 function tryGenerateCompactArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
   basePath: any[],
@@ -133,11 +102,7 @@ function tryGenerateCompactArrayPatches(
   // A full shorter side proves one contiguous insertion or deletion. Tail
   // changes already use the default generator's efficient append/truncate form.
   if (prefix + suffix !== shortest || prefix === shortest) return false;
-  if (
-    hasNestedPatches(patches, basePath, pathAsArray) ||
-    hasNestedPatches(inversePatches, basePath, pathAsArray)
-  )
-    return false;
+  if (proxyState.patched) return false;
 
   const removed = oldLength - prefix - suffix;
   const added = newLength - prefix - suffix;
