@@ -174,7 +174,6 @@ export function makeOptions(strategy, autoFreeze) {
     arrayLengthAssignment: false,
   };
   if (strategy === 'compact') enablePatches.arrayPatchStrategy = 'compact';
-  else if (strategy === 'prototype') enablePatches.arraySplice = true;
   else assert.equal(strategy, 'index');
   return { enableAutoFreeze: autoFreeze, enablePatches };
 }
@@ -493,15 +492,9 @@ function runParent(values) {
   const scenarios = SCENARIOS.filter(({ name }) => filter.test(name));
   assert.ok(scenarios.length > 0, 'No scenarios selected');
   const candidateDir = resolve(values['candidate-dir']);
-  const comparisonDir = values['compare-dir']
-    ? resolve(values['compare-dir'])
-    : null;
   const variants = [
     { strategy: 'index', directory: candidateDir },
     { strategy: 'compact', directory: candidateDir },
-    ...(comparisonDir
-      ? [{ strategy: 'prototype', directory: comparisonDir }]
-      : []),
   ];
   const records = [];
   for (let run = 0; run < runs; run += 1) {
@@ -561,7 +554,6 @@ function runParent(values) {
       cpu: cpus()[0]?.model,
     },
     candidate: identity(candidateDir),
-    comparison: comparisonDir ? identity(comparisonDir) : null,
     methodology: {
       processIsolation: 'one scenario/strategy/freeze/run per process',
       ordering: 'variant order alternates by run and scenario',
@@ -609,7 +601,6 @@ const optionDefinitions = {
   worker: { type: 'boolean', default: false },
   check: { type: 'boolean', default: false },
   'candidate-dir': { type: 'string', default: root },
-  'compare-dir': { type: 'string' },
   scenario: { type: 'string', default: '' },
   strategy: { type: 'string', default: 'index' },
   freeze: { type: 'string', default: 'off' },
@@ -628,7 +619,7 @@ const optionDefinitions = {
 if (resolve(process.argv[1] || '') === scriptPath) {
   const { values } = parseArgs({ options: optionDefinitions });
   if (values.worker) {
-    assert.ok(['index', 'compact', 'prototype'].includes(values.strategy));
+    assert.ok(['index', 'compact'].includes(values.strategy));
     assert.ok(['off', 'on'].includes(values.freeze));
     runWorker(values);
   } else {
