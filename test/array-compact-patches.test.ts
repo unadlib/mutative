@@ -761,6 +761,7 @@ test('compact patches deterministic differential fuzz', () => {
     'copyWithin',
     'reverse',
   ];
+  let compactCases = 0;
   for (let caseIndex = 0; caseIndex < 400; caseIndex += 1) {
     const length = Math.floor(random() * 10);
     const base = Array.from({ length }, (_, i) =>
@@ -784,27 +785,217 @@ test('compact patches deterministic differential fuzz', () => {
         return [kind] as Op;
       }
     );
-    let expectedSeed = caseIndex * 7919 + 1;
-    const expectedRandom = () => {
-      expectedSeed = (expectedSeed * 1664525 + 1013904223) >>> 0;
-      return expectedSeed / 4294967296;
+    // The plain run and each producer pick the same indices.
+    const indexRandom = () => {
+      let opSeed = caseIndex * 7919 + 1;
+      return () => {
+        opSeed = (opSeed * 1664525 + 1013904223) >>> 0;
+        return opSeed / 4294967296;
+      };
     };
     const expected = structuredClone(base);
-    runOps(expected, ops, expectedRandom);
-    let draftSeed = caseIndex * 7919 + 1;
-    const draftRandom = () => {
-      draftSeed = (draftSeed * 1664525 + 1013904223) >>> 0;
-      return draftSeed / 4294967296;
+    runOps(expected, ops, indexRandom());
+    const recipe = (draft: any) => {
+      runOps(draft, ops, indexRandom());
     };
     const [state, patches, inverse] = create(
       base,
-      (draft: any) => {
-        runOps(draft, ops, draftRandom);
-      },
+      recipe,
       compactOptions()
     ) as any;
     expect(state).toEqual(expected);
     expect(apply(base, patches)).toEqual(expected);
     expect(apply(state, inverse)).toEqual(base);
+    const [, indexPatches] = create(base, recipe, {
+      enableAutoFreeze: false,
+      enablePatches: true,
+    }) as any;
+    if (!isDeepStrictEqual(patches, indexPatches)) compactCases += 1;
+  }
+  // Most recipes here end in a fallback shape; 22 of them get compact patches.
+  expect(compactCases).toBeGreaterThanOrEqual(22);
+});
+
+function mulberry32(seed: number) {
+  return () => {
+    seed = (seed + 0x6d2b79f5) >>> 0;
+    let t = seed;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const makeRow = (random: () => number) => ({
+  id: Math.floor(random() * 1e9),
+  n: 0,
+  sub: { k: 0 },
+  kids: Array.from({ length: Math.floor(random() * 4) }, (_, index) =>
+    random() < 0.5 ? index : { v: index }
+  ),
+});
+
+const pick = (list: any[], random: () => number) =>
+  Math.floor(random() * Math.max(list.length, 1));
+
+// Steps on `{ a, b, shared, meta }`: rows with nested arrays in two arrays,
+// moves between them, and `shared`, which may be the first row of `a` too.
+const nestedSteps: ((draft: any, random: () => number) => void)[] = [
+  (draft) => {
+    draft.a.shift();
+  },
+  (draft, random) => {
+    draft.b.unshift(makeRow(random));
+  },
+  (draft, random) => {
+    draft.a.splice(
+      pick(draft.a, random),
+      Math.floor(random() * 3),
+      ...Array.from({ length: Math.floor(random() * 3) }, () => makeRow(random))
+    );
+  },
+  (draft, random) => {
+    if (draft.b.length)
+      draft.a.splice(pick(draft.a, random), 0, draft.b[pick(draft.b, random)]);
+  },
+  (draft, random) => {
+    if (draft.a.length) {
+      const [row] = draft.a.splice(pick(draft.a, random), 1);
+      draft.b.splice(pick(draft.b, random), 0, row);
+    }
+  },
+  (draft, random) => {
+    if (draft.a.length) draft.a[pick(draft.a, random)].n += 1;
+  },
+  (draft, random) => {
+    if (draft.b.length) draft.b[pick(draft.b, random)].sub.k += 1;
+  },
+  (draft, random) => {
+    if (draft.a.length) draft.a[pick(draft.a, random)].kids.shift();
+  },
+  (draft, random) => {
+    if (draft.a.length)
+      draft.a[pick(draft.a, random)].kids.unshift(
+        random() < 0.5 ? 9 : { v: 9 }
+      );
+  },
+  (draft, random) => {
+    if (draft.b.length) {
+      const kids = draft.b[pick(draft.b, random)].kids;
+      kids.splice(pick(kids, random), 1);
+    }
+  },
+  (draft, random) => {
+    draft.a.push(makeRow(random));
+  },
+  (draft) => {
+    draft.b.pop();
+  },
+  (draft) => {
+    draft.a.reverse();
+  },
+  (draft, random) => {
+    if (draft.a.length) draft.a[pick(draft.a, random)] = makeRow(random);
+  },
+  (draft) => {
+    draft.shared.n += 1;
+  },
+  (draft, random) => {
+    draft.a.splice(pick(draft.a, random), 0, draft.shared);
+  },
+  (draft, random) => {
+    if (draft.a.length) Reflect.get(draft.a, pick(draft.a, random));
+  },
+  (draft, random) => {
+    draft.a.length = Math.min(draft.a.length, Math.floor(random() * 4));
+  },
+  (draft) => {
+    draft.b.sort((x: any, y: any) => x.id - y.id);
+  },
+  (draft) => {
+    draft.meta.c += 1;
+  },
+  (draft, random) => {
+    if (draft.a.length) {
+      const row = draft.a[pick(draft.a, random)];
+      draft.b.unshift(row);
+      row.n += 5;
+    }
+  },
+  (draft, random) => {
+    const shared = draft.shared;
+    draft.b.splice(pick(draft.b, random), 0, shared);
+  },
+];
+
+test('compact patches differential fuzz across nested arrays, moves and aliases', () => {
+  const freeze = (value: any) => {
+    if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+      Object.freeze(value);
+      Object.values(value).forEach(freeze);
+    }
+    return value;
+  };
+  // Strict mode and marks move object elements through the proxy instead of
+  // the native array methods. The index patches of each recipe are the
+  // reference: both strategies give the same state, and both patch sets
+  // replay in either direction.
+  for (const { name, options, frozen } of [
+    { name: 'native', options: {}, frozen: false },
+    { name: 'frozen', options: { enableAutoFreeze: true }, frozen: true },
+    { name: 'strict', options: { strict: true }, frozen: false },
+    { name: 'mark', options: { mark: () => undefined }, frozen: false },
+  ]) {
+    const failures: number[] = [];
+    let compactCases = 0;
+    for (let caseIndex = 0; caseIndex < 1500; caseIndex += 1) {
+      const plan = mulberry32(caseIndex * 2654435761 + 17);
+      const steps = Array.from(
+        { length: 1 + Math.floor(plan() * 3) },
+        () => nestedSteps[Math.floor(plan() * nestedSteps.length)]
+      );
+      const random = mulberry32(caseIndex + 1);
+      const a = Array.from({ length: Math.floor(random() * 7) }, () =>
+        makeRow(random)
+      );
+      const b = Array.from({ length: Math.floor(random() * 5) }, () =>
+        makeRow(random)
+      );
+      if (a.length > 2 && random() < 0.2) a[2] = a[1];
+      const shared = a.length > 0 && random() < 0.5 ? a[0] : makeRow(random);
+      const base = { a, b, shared, meta: { c: 0 } };
+      if (frozen) freeze(base);
+      const recipe = (draft: any) => {
+        const stepRandom = mulberry32(caseIndex + 2);
+        for (const step of steps) step(draft, stepRandom);
+      };
+      let passed = false;
+      try {
+        const before = structuredClone(base);
+        const [indexState, indexPatches, indexInverse] = create(base, recipe, {
+          ...options,
+          enablePatches: true,
+        }) as any;
+        const [state, patches, inverse] = create(
+          base,
+          recipe,
+          compactOptions({}, options)
+        ) as any;
+        if (!isDeepStrictEqual(patches, indexPatches)) compactCases += 1;
+        passed =
+          isDeepStrictEqual(base, before) &&
+          isDeepStrictEqual(state, indexState) &&
+          isDeepStrictEqual(apply(base, indexPatches), indexState) &&
+          isDeepStrictEqual(apply(indexState, indexInverse), base) &&
+          isDeepStrictEqual(apply(base, patches), state) &&
+          isDeepStrictEqual(apply(state, inverse), base);
+      } catch {
+        // A recipe that throws fails like one with a wrong result.
+      }
+      if (!passed) failures.push(caseIndex);
+    }
+    expect(failures.slice(0, 3), name).toEqual([]);
+    // About 39% of the recipes get compact patches, whichever path they take.
+    expect(compactCases, name).toBeGreaterThanOrEqual(580);
   }
 });
