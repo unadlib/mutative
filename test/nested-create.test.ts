@@ -1,4 +1,4 @@
-import { create } from '../src';
+import { apply, create } from '../src';
 
 describe('drafts whose original is a draft of an outer create() call', () => {
   test('a Set draft is copied through the outer draft', () => {
@@ -40,5 +40,73 @@ describe('drafts whose original is a draft of an outer create() call', () => {
       expect([...draft.map]).toEqual([['a', 1]]);
     });
     expect(state).toBe(base);
+  });
+});
+
+describe('drafts that the recipe of another create() call holds', () => {
+  test('the patches of an outer draft at the key of a nested draft stay with the outer producer', () => {
+    const base = { items: [{ n: 0, sub: { x: 1 } }] };
+    const innerBase = { obj: { a: { x: 1 } as object } };
+    let inner: any;
+    const [state, patches, inversePatches] = create(
+      base,
+      (draft) => {
+        const item = draft.items[0];
+        item.n = 1;
+        inner = create(
+          innerBase,
+          (innerDraft) => {
+            // Reading `a` drafts it before the outer draft takes its key.
+            expect(innerDraft.obj.a).toEqual({ x: 1 });
+            innerDraft.obj.a = item;
+          },
+          { enablePatches: true }
+        );
+        // The outer draft still drafts what the recipe reads through it.
+        item.sub.x = 2;
+      },
+      { enablePatches: true }
+    );
+    expect(base).toEqual({ items: [{ n: 0, sub: { x: 1 } }] });
+    expect(state).toEqual({ items: [{ n: 1, sub: { x: 2 } }] });
+    expect(apply(base, patches)).toEqual(state);
+    expect(apply(state, inversePatches)).toEqual(base);
+    const [innerState, innerPatches, innerInversePatches] = inner;
+    expect(innerState).toEqual({ obj: { a: state.items[0] } });
+    expect(innerPatches).toEqual([
+      { op: 'replace', path: ['obj', 'a'], value: state.items[0] },
+    ]);
+    expect(apply(innerBase, innerPatches)).toEqual(innerState);
+    expect(apply(innerState, innerInversePatches)).toEqual(innerBase);
+  });
+
+  test('the patches of an outer draft that an array method moved to the index of a nested draft stay with the outer producer', () => {
+    const base = { items: [{ n: 0 }] };
+    const innerBase = { list: [{ x: 1 }] as object[] };
+    let inner: any;
+    const [state, patches, inversePatches] = create(
+      base,
+      (draft) => {
+        const item = draft.items[0];
+        item.n = 1;
+        inner = create(
+          innerBase,
+          (innerDraft) => {
+            expect(innerDraft.list[0]).toEqual({ x: 1 });
+            innerDraft.list.unshift(item);
+          },
+          { enablePatches: true }
+        );
+      },
+      { enablePatches: true }
+    );
+    expect(patches).toEqual([
+      { op: 'replace', path: ['items', 0, 'n'], value: 1 },
+    ]);
+    expect(apply(state, inversePatches)).toEqual(base);
+    const [innerState, innerPatches, innerInversePatches] = inner;
+    expect(innerState).toEqual({ list: [{ n: 1 }, { x: 1 }] });
+    expect(apply(innerBase, innerPatches)).toEqual(innerState);
+    expect(apply(innerState, innerInversePatches)).toEqual(innerBase);
   });
 });
