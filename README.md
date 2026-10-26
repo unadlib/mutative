@@ -113,7 +113,7 @@ Mutative ships patches, `Map`/`Set` support and native array methods built in; I
 
 | Bundle                                      |  Immer | Mutative |
 | ------------------------------------------- | -----: | -------: |
-| With patches, `Map`/`Set` and array methods | 6.4 kB |   9.1 kB |
+| With patches, `Map`/`Set` and array methods | 6.4 kB |   9.2 kB |
 | `produce` / `create` only                   | 3.6 kB |   8.5 kB |
 
 Mutative's `create` includes patches, `Map`/`Set` support and the native array methods even when a recipe does not use them: they are part of `create`, not separate imports, so bundlers cannot drop them. The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
@@ -165,7 +165,7 @@ CDN
 
 The package's other ESM files read `process.env.NODE_ENV`, which bundlers and Node.js provide; a browser without a bundler needs the production file above.
 
-Mutative has no dependencies. A production bundle of `create` alone is about 8.5 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 9.1 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
+Mutative has no dependencies. A production bundle of `create` alone is about 8.5 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 9.2 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
 
 ## Usage
 
