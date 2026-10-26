@@ -78,53 +78,45 @@ function restoreSuffix(
 }
 
 // Index patches carry values, so neither an undefined value nor an index
-// removal can represent a hole. Rebuild the affected suffix in each direction:
-// truncate it, grow the length to leave holes, then restore only own indices.
-// Keeping the array itself supports mutable application and arrays inside Sets.
-// `added`, when known, holds every own index that the copy has from `start` on.
-function generateSparseArrayPatches(
-  original: any[],
-  copy: any[],
+// removal can represent a hole. Patches that turn an own index of `from` into
+// a hole of `to` rebuild the suffix from there: they truncate it, grow the
+// length to leave holes, then restore only own indices. Filling a hole takes
+// an index patch, so only that direction rebuilds. Keeping the array itself
+// supports mutable application and arrays inside Sets. `indices`, when known,
+// holds every own index that `to` has from `start` on.
+function rebuildSuffix(
+  from: any[],
+  to: any[],
   start: number,
-  added: number[] | null,
+  indices: number[] | null,
   basePath: any[],
-  patches: Patches,
-  inversePatches: Patches,
+  result: Patches,
   pathAsArray: boolean,
   arrayLengthAssignment: boolean
 ) {
   const lengthPath = escapePath(basePath.concat(['length']), pathAsArray);
-  const rebuild = (
-    from: any[],
-    to: any[],
-    result: Patches,
-    indices: number[] | null
-  ) => {
-    const cut = Math.min(start, to.length);
-    if (arrayLengthAssignment) {
-      if (from.length > cut) {
-        result.push({ op: Operation.Replace, path: lengthPath, value: cut });
-      }
-    } else {
-      for (let index = from.length - 1; index >= cut; index -= 1) {
-        result.push({
-          op: Operation.Remove,
-          path: escapePath(basePath.concat([index]), pathAsArray),
-        });
-      }
+  const cut = Math.min(start, to.length);
+  if (arrayLengthAssignment) {
+    if (from.length > cut) {
+      result.push({ op: Operation.Replace, path: lengthPath, value: cut });
     }
-    if (to.length <= cut) return;
-    // JSON cannot encode holes. Growing a sparse array needs a length patch
-    // even when shrinking arrays use per-index removals.
-    result.push({
-      op: Operation.Replace,
-      path: lengthPath,
-      value: to.length,
-    });
-    restoreSuffix(to, cut, indices, basePath, result, pathAsArray);
-  };
-  rebuild(original, copy, patches, added);
-  rebuild(copy, original, inversePatches, null);
+  } else {
+    for (let index = from.length - 1; index >= cut; index -= 1) {
+      result.push({
+        op: Operation.Remove,
+        path: escapePath(basePath.concat([index]), pathAsArray),
+      });
+    }
+  }
+  if (to.length <= cut) return;
+  // JSON cannot encode holes. Growing a sparse array needs a length patch
+  // even when shrinking arrays use per-index removals.
+  result.push({
+    op: Operation.Replace,
+    path: lengthPath,
+    value: to.length,
+  });
+  restoreSuffix(to, cut, indices, basePath, result, pathAsArray);
 }
 
 function generateArrayPatches(
@@ -169,72 +161,94 @@ function generateArrayPatches(
   for (let index = diffStart; index < diffEnd; index += 1) indices.push(index);
   for (; position < assigned.length; position += 1)
     indices.push(assigned[position]);
+  // The first index at which each direction turns an own index into a hole.
+  let forward = -1;
+  let inverse = -1;
   for (let position = 0; position < indices.length; position += 1) {
     const index = indices[position];
-    if (index < original.length) {
-      const value = copy[index];
-      const previous = original[index];
-      if (
-        (value === undefined || previous === undefined) &&
-        hasOwn.call(copy, index) !== hasOwn.call(original, index)
-      ) {
-        return generateSparseArrayPatches(
-          original,
-          copy,
-          index,
-          null,
-          basePath,
-          patches,
-          inversePatches,
-          pathAsArray,
-          arrayLengthAssignment
-        );
-      }
-      // As the set trap compares, so 0 and -0 differ and NaN equals itself.
-      if (!isEqual(value, previous)) {
-        const _path = basePath.concat([index]);
-        const path = escapePath(_path, pathAsArray);
-        patches.push({
-          op: Operation.Replace,
-          path,
-          value: cloneIfNeeded(value),
-        });
-        inversePatches.push({
-          op: Operation.Replace,
-          path,
-          value: cloneIfNeeded(previous),
-        });
-      }
-    }
-  }
-  for (let index = original.length; index < copy.length; index += 1) {
+    if (index >= original.length) break;
     const value = copy[index];
-    if (value === undefined && !hasOwn.call(copy, index)) {
-      // Every index that the copy has past the end of the original was set
-      // by the recipe, so `indices` holds it. A shorter copy was swapped,
-      // which makes `copy` the original array.
-      return generateSparseArrayPatches(
-        original,
-        copy,
-        index,
-        shorter ? null : indices,
-        basePath,
-        patches,
-        inversePatches,
-        pathAsArray,
-        arrayLengthAssignment
-      );
+    const previous = original[index];
+    // A hole reads as `undefined`.
+    let inCopy = true;
+    let inOriginal = true;
+    if (value === undefined || previous === undefined) {
+      inCopy = hasOwn.call(copy, index);
+      inOriginal = hasOwn.call(original, index);
     }
-    const _path = basePath.concat([index]);
-    const path = escapePath(_path, pathAsArray);
-    patches.push({
-      op: Operation.Add,
-      path,
-      // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
-      value: cloneIfNeeded(value),
-    });
+    // As the set trap compares, so 0 and -0 differ and NaN equals itself.
+    if (inCopy !== inOriginal || !isEqual(value, previous)) {
+      const _path = basePath.concat([index]);
+      const path = escapePath(_path, pathAsArray);
+      if (forward === -1) {
+        if (inCopy) {
+          patches.push({
+            op: Operation.Replace,
+            path,
+            value: cloneIfNeeded(value),
+          });
+        } else {
+          forward = index;
+        }
+      }
+      if (inverse === -1) {
+        if (inOriginal) {
+          inversePatches.push({
+            op: Operation.Replace,
+            path,
+            value: cloneIfNeeded(previous),
+          });
+        } else {
+          inverse = index;
+        }
+      }
+      if (forward !== -1 && inverse !== -1) break;
+    }
   }
-  if (original.length < copy.length) {
+  if (forward === -1) {
+    for (let index = original.length; index < copy.length; index += 1) {
+      const value = copy[index];
+      if (value === undefined && !hasOwn.call(copy, index)) {
+        forward = index;
+        break;
+      }
+      const _path = basePath.concat([index]);
+      const path = escapePath(_path, pathAsArray);
+      patches.push({
+        op: Operation.Add,
+        path,
+        // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
+        value: cloneIfNeeded(value),
+      });
+    }
+  }
+  if (forward !== -1) {
+    // Every index that the copy has past the end of the original was set by
+    // the recipe, so `indices` holds it. A shorter copy was swapped, which
+    // makes `copy` the original array.
+    rebuildSuffix(
+      original,
+      copy,
+      forward,
+      shorter || forward < original.length ? null : indices,
+      basePath,
+      patches,
+      pathAsArray,
+      arrayLengthAssignment
+    );
+  }
+  if (inverse !== -1) {
+    rebuildSuffix(
+      copy,
+      original,
+      inverse,
+      null,
+      basePath,
+      inversePatches,
+      pathAsArray,
+      arrayLengthAssignment
+    );
+  } else if (original.length < copy.length) {
     // https://www.rfc-editor.org/rfc/rfc6902#appendix-A.4
     // For performance, here we only generate an operation that replaces the length of the array,
     // which is inconsistent with JSON Patch specification
