@@ -322,6 +322,11 @@ function definePropertyTrap(): never {
 
 function deletePropertyTrap(target: ProxyDraft, key: string | symbol) {
   if (target.type === DraftType.Array) {
+    // A deleted index holds `undefined` afterwards. Deleting an index the
+    // array does not have changes nothing, as in JavaScript; assigning
+    // `undefined` to it would lengthen an array that the recipe shortened.
+    // Other keys reach the set trap, which rejects them.
+    if (!hasOwn.call(latest(target), key) && isArrayIndexKey(key)) return true;
     return setTrap(target, key, undefined);
   }
   if (target.original[key] !== undefined || key in target.original) {
