@@ -134,6 +134,14 @@ describe('deleting an array index the draft does not have', () => {
     expect(state).toBe(base);
   });
 
+  test('still rejects a key that is not an index', () => {
+    expect(() =>
+      create({ list: [1] }, (draft) => {
+        delete (draft.list as any).foo;
+      })
+    ).toThrow("Only supports setting array indices and the 'length' property.");
+  });
+
   test('still assigns undefined to an index the array has', () => {
     const base = [1, 2, 3];
     const [state, patches, inverse] = create(
