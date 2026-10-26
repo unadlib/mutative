@@ -31,6 +31,8 @@ export type PatchesOptions =
        * Whether an array that gets shorter gets a `replace` patch of its
        * `length`, as by default, or a `remove` patch for each index that it
        * loses, as JSON Patch requires.
+       * Recreating holes in a sparse array still uses length patches;
+       * JSON cannot represent holes.
        */
       arrayLengthAssignment?: boolean;
     };

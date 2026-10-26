@@ -21,6 +21,63 @@ function cloneIfNeeded<T>(target: T): T {
   return proxyDraft.operated ? current(target as any) : proxyDraft.original;
 }
 
+const hasOwn = Object.prototype.hasOwnProperty;
+
+// Index patches carry values, so neither an undefined value nor an index
+// removal can represent a hole. Rebuild the affected suffix in each direction:
+// truncate it, grow the length to leave holes, then restore only own indices.
+// Keeping the array itself supports mutable application and arrays inside Sets.
+function generateSparseArrayPatches(
+  original: any[],
+  copy: any[],
+  start: number,
+  basePath: any[],
+  patches: Patches,
+  inversePatches: Patches,
+  pathAsArray: boolean,
+  arrayLengthAssignment: boolean
+) {
+  const lengthPath = escapePath(basePath.concat(['length']), pathAsArray);
+  const rebuild = (from: any[], to: any[], result: Patches) => {
+    const cut = Math.min(start, to.length);
+    if (arrayLengthAssignment) {
+      if (from.length > cut) {
+        result.push({ op: Operation.Replace, path: lengthPath, value: cut });
+      }
+    } else {
+      for (let index = from.length - 1; index >= cut; index -= 1) {
+        result.push({
+          op: Operation.Remove,
+          path: escapePath(basePath.concat([index]), pathAsArray),
+        });
+      }
+    }
+    // JSON cannot encode holes. Growing a sparse array needs a length patch
+    // even when shrinking arrays use per-index removals.
+    if (to.length > cut) {
+      result.push({
+        op: Operation.Replace,
+        path: lengthPath,
+        value: to.length,
+      });
+    }
+    // Enumerate own indices instead of walking potentially huge gaps. Include
+    // non-enumerable indices too, but not length or custom array properties.
+    for (const key of Object.getOwnPropertyNames(to)) {
+      const index = Number(key);
+      if (index >= start && index < to.length && String(index) === key) {
+        result.push({
+          op: Operation.Replace,
+          path: escapePath(basePath.concat([index]), pathAsArray),
+          value: cloneIfNeeded(to[index]),
+        });
+      }
+    }
+  };
+  rebuild(original, copy, patches);
+  rebuild(copy, original, inversePatches);
+}
+
 function generateArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
   basePath: any[],
@@ -30,6 +87,7 @@ function generateArrayPatches(
 ) {
   let { original, assignedMap, options } = proxyState;
   let copy = proxyState.copy!;
+  const { arrayLengthAssignment = true } = options.enablePatches;
   if (copy.length < original.length) {
     [original, copy] = [copy, original];
     [patches, inversePatches] = [inversePatches, patches];
@@ -63,37 +121,68 @@ function generateArrayPatches(
     indices.push(assigned[position]);
   for (let position = 0; position < indices.length; position += 1) {
     const index = indices[position];
-    // As the set trap compares, so 0 and -0 differ and NaN equals itself.
-    if (index < original.length && !isEqual(copy[index], original[index])) {
-      const _path = basePath.concat([index]);
-      const path = escapePath(_path, pathAsArray);
-      patches.push({
-        op: Operation.Replace,
-        path,
-        value: cloneIfNeeded(copy[index]),
-      });
-      inversePatches.push({
-        op: Operation.Replace,
-        path,
-        value: cloneIfNeeded(original[index]),
-      });
+    if (index < original.length) {
+      const value = copy[index];
+      const previous = original[index];
+      if (
+        (value === undefined || previous === undefined) &&
+        hasOwn.call(copy, index) !== hasOwn.call(original, index)
+      ) {
+        return generateSparseArrayPatches(
+          original,
+          copy,
+          index,
+          basePath,
+          patches,
+          inversePatches,
+          pathAsArray,
+          arrayLengthAssignment
+        );
+      }
+      // As the set trap compares, so 0 and -0 differ and NaN equals itself.
+      if (!isEqual(value, previous)) {
+        const _path = basePath.concat([index]);
+        const path = escapePath(_path, pathAsArray);
+        patches.push({
+          op: Operation.Replace,
+          path,
+          value: cloneIfNeeded(value),
+        });
+        inversePatches.push({
+          op: Operation.Replace,
+          path,
+          value: cloneIfNeeded(previous),
+        });
+      }
     }
   }
   for (let index = original.length; index < copy.length; index += 1) {
+    const value = copy[index];
+    if (value === undefined && !hasOwn.call(copy, index)) {
+      return generateSparseArrayPatches(
+        original,
+        copy,
+        index,
+        basePath,
+        patches,
+        inversePatches,
+        pathAsArray,
+        arrayLengthAssignment
+      );
+    }
     const _path = basePath.concat([index]);
     const path = escapePath(_path, pathAsArray);
     patches.push({
       op: Operation.Add,
       path,
       // If it is a draft, it needs to be deep cloned, and it may also be non-draft.
-      value: cloneIfNeeded(copy[index]),
+      value: cloneIfNeeded(value),
     });
   }
   if (original.length < copy.length) {
     // https://www.rfc-editor.org/rfc/rfc6902#appendix-A.4
     // For performance, here we only generate an operation that replaces the length of the array,
     // which is inconsistent with JSON Patch specification
-    const { arrayLengthAssignment = true } = options.enablePatches;
     if (arrayLengthAssignment) {
       const _path = basePath.concat(['length']);
       const path = escapePath(_path, pathAsArray);

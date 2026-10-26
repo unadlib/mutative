@@ -46,18 +46,18 @@ expect(apply(state, inversePatches)).toEqual(baseState);
 - **Operations and paths.** Patches use `add`, `remove` and `replace`. A path leads from the root to the changed value through object keys, array indices, Map keys as they are, objects and arrays included, and the positions of Set items. A recipe that returns a new state gets one `replace` patch with an empty path.
 - **Order.** The patches of a nested draft come before those of its parents, as in Immer.
 - **Values.** A patch value is the object that the next state holds, frozen with it when `enableAutoFreeze` is on, so copy a patch value before changing it. `apply()` copies patch values before applying them.
-- **Arrays.** `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. An array that a recipe shortens and lengthens again also gets patches for the indices that the longer length exposes again.
+- **Arrays.** `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. When holes change, patches rebuild the affected suffix to preserve them in both directions; see [Sparse arrays](#sparse-arrays).
 - **Maps.** `set()` emits an `add` patch for a new key and a `replace` patch for an existing one, and `delete()` a `remove` patch.
 - **Sets.** Patches add an item by its value and remove one by the value it holds; see [Sets of objects](#sets-of-objects).
 - **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, emits no patches under its old path; the patches of its parent carry its value.
 - **Applying patches.** `apply()` applies `add`, `remove` and `replace` patches and accepts `-` as the index that appends to an array. It throws for other operations and for paths through `__proto__` or `constructor`. It takes the `enableAutoFreeze`, `strict` and `mark` options, or `mutable: true` to change the state in place, which throws for a patch that replaces the root state with another value, and it changes a draft in place.
-- **JSON Patch.** With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations. Maps and Sets have no JSON Patch counterpart.
+- **JSON Patch.** With `pathAsArray: false` and `arrayLengthAssignment: false`, patches of JSON-compatible objects and arrays are JSON Patch operations. Maps, Sets and array holes have no JSON counterpart.
 
 [Comparison with Immer](/docs/extra-topics/comparison-with-immer#patches) lists where these patches differ from Immer's.
 
 ## JSON patches
 
-`enablePatches` takes `true`, or an object with two options that set the shape of the patches. With both set to `false`, the patches of objects and arrays are [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) operations, which other JSON Patch libraries can apply ([related discussion](https://github.com/unadlib/mutative/issues/6)).
+`enablePatches` takes `true`, or an object with two options that set the shape of the patches. With both set to `false`, patches of JSON-compatible objects and arrays are [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) operations, which other JSON Patch libraries can apply ([related discussion](https://github.com/unadlib/mutative/issues/6)).
 
 ### pathAsArray - default: true
 
@@ -124,6 +124,27 @@ expect(inversePatches).toEqual([
 <Callout type="idea">
 A `remove` patch per index takes more time and more patches for large arrays than one `replace` patch of the `length`, so leave `arrayLengthAssignment` on unless the patches must be JSON Patch operations.
 </Callout>
+
+## Sparse arrays
+
+A hole is an absent index, which differs from an own index whose value is `undefined`: array methods such as `map()` and `forEach()` skip holes. Patches and inverse patches preserve this distinction, including when a recipe lengthens an array, fills a hole with `undefined`, or moves holes with an array method.
+
+```ts
+const base = new Array<number>(2);
+base[0] = 1;
+
+const [state, patches, inverse] = create(base, (draft) => {
+  draft.unshift(0);
+}, { enablePatches: true });
+
+expect(2 in state).toBe(false);
+expect(2 in apply(base, patches)).toBe(false);
+expect(1 in apply(state, inverse)).toBe(false);
+```
+
+An index patch carries a value, so it cannot represent a hole. When an update changes holes, patches truncate the affected suffix, grow `length` to leave holes, and restore its own indices. This can produce more patches than the number of changed values, while preserving the array itself for mutable application and application on a draft, also inside a Set.
+
+With `arrayLengthAssignment: false`, truncation still uses per-index `remove` patches, but recreating holes needs a `replace` patch of `length`. Apply these patches with Mutative's `apply()`: sparse arrays are JavaScript data, not JSON data, so their patches are not portable JSON Patch operations. JSON serialization turns array holes into `null` and cannot preserve their structure.
 
 ## Undo and redo
 

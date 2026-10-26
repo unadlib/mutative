@@ -13716,63 +13716,15 @@ exports[`array 3`] = `
     "value": undefined,
   },
   {
-    "op": "add",
+    "op": "replace",
     "path": [
       "arr9",
-      3,
+      "length",
     ],
-    "value": undefined,
+    "value": 11,
   },
   {
-    "op": "add",
-    "path": [
-      "arr9",
-      4,
-    ],
-    "value": undefined,
-  },
-  {
-    "op": "add",
-    "path": [
-      "arr9",
-      5,
-    ],
-    "value": undefined,
-  },
-  {
-    "op": "add",
-    "path": [
-      "arr9",
-      6,
-    ],
-    "value": undefined,
-  },
-  {
-    "op": "add",
-    "path": [
-      "arr9",
-      7,
-    ],
-    "value": undefined,
-  },
-  {
-    "op": "add",
-    "path": [
-      "arr9",
-      8,
-    ],
-    "value": undefined,
-  },
-  {
-    "op": "add",
-    "path": [
-      "arr9",
-      9,
-    ],
-    "value": undefined,
-  },
-  {
-    "op": "add",
+    "op": "replace",
     "path": [
       "arr9",
       10,
