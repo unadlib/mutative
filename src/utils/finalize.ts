@@ -199,17 +199,16 @@ export function finalizeNode(
     // A draft that left its key reaches its new place as a value, through a
     // callback or a value assigned there, so a Set finalizes its items here.
     if (proxyDraft !== node) finalizeSetValue(node);
-    if (proxyDraft) {
+    // A draft of another producer, which a recipe placed here, is finalized
+    // by that producer, which then writes its final value here, as at a key
+    // that held no draft of this producer.
+    if (proxyDraft && proxyDraft.finalities === node.finalities) {
       // assign the updated value to the copy object
       const updatedValue = proxyDraft.operated
         ? proxyDraft.copy
         : proxyDraft.original;
-      // A draft of another producer, which a recipe placed here, is
-      // finalized by that producer, and its patches are that producer's.
-      if (proxyDraft.finalities === node.finalities) {
-        finalizeSetValue(proxyDraft);
-        finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
-      }
+      finalizeSetValue(proxyDraft);
+      finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
       // final update value
       if (isMapLike) {
         copy.set(key, updatedValue);

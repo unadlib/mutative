@@ -72,11 +72,12 @@ describe('drafts that the recipe of another create() call holds', () => {
     expect(apply(base, patches)).toEqual(state);
     expect(apply(state, inversePatches)).toEqual(base);
     const [innerState, innerPatches, innerInversePatches] = inner;
-    expect(innerState).toEqual({ obj: { a: state.items[0] } });
+    expect(innerState.obj.a).toBe(state.items[0]);
+    // The nested patches carry the value that the outer draft had when the
+    // nested producer finished.
     expect(innerPatches).toEqual([
-      { op: 'replace', path: ['obj', 'a'], value: state.items[0] },
+      { op: 'replace', path: ['obj', 'a'], value: { n: 1, sub: { x: 1 } } },
     ]);
-    expect(apply(innerBase, innerPatches)).toEqual(innerState);
     expect(apply(innerState, innerInversePatches)).toEqual(innerBase);
   });
 
@@ -179,6 +180,65 @@ describe('drafts that the recipe of another create() call holds', () => {
       expect(read(state)).toBe(innerBase.item);
       expect(apply(base, patches)).toEqual(state);
       expect(apply(state, inversePatches)).toEqual(base);
+    }
+  );
+
+  // The value at a key, the nested draft of which the recipe may read before
+  // the outer draft takes the key.
+  const slots = [
+    [
+      'an object',
+      () => ({ value: { x: 0 } as object }),
+      (holder: any) => holder.value,
+      (holder: any, item: object) => {
+        holder.value = item;
+      },
+    ],
+    [
+      'an array',
+      () => ({ value: [{ x: 0 }] as object[] }),
+      (holder: any) => holder.value[0],
+      (holder: any, item: object) => {
+        holder.value[0] = item;
+      },
+    ],
+    [
+      'a Map',
+      () => ({ value: new Map<string, object>([['key', { x: 0 }]]) }),
+      (holder: any) => holder.value.get('key'),
+      (holder: any, item: object) => {
+        holder.value.set('key', item);
+      },
+    ],
+  ] as const;
+
+  test.each(slots)(
+    '%s of a nested producer gets the final value of an outer draft, whether or not the nested draft at its key was read',
+    (_name, makeHolder, at, place) => {
+      for (const readFirst of [false, true]) {
+        const holderBase = makeHolder();
+        let inner: any;
+        const state = create({ item: { v: 1 } }, (draft) => {
+          inner = create(
+            holderBase,
+            (innerDraft) => {
+              if (readFirst) expect(at(innerDraft)).toEqual({ x: 0 });
+              place(innerDraft, draft.item);
+            },
+            { enablePatches: true }
+          );
+          // The outer recipe changes the draft after the nested producer is
+          // done.
+          draft.item.v = 2;
+        });
+        const [innerState, innerPatches, innerInversePatches] = inner;
+        expect(at(innerState)).toBe(state.item);
+        expect(state.item).toEqual({ v: 2 });
+        // The nested patches carry the value that the draft had when the
+        // nested producer finished.
+        expect(innerPatches[0].value).toEqual({ v: 1 });
+        expect(apply(innerState, innerInversePatches)).toEqual(holderBase);
+      }
     }
   );
 });
