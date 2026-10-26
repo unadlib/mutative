@@ -642,6 +642,37 @@ describe('compact array patches', () => {
     });
   });
 
+  test('a draft of another producer at a retained index is replaced', () => {
+    // The other producer may change its draft after this one is done, and
+    // then writes the final value into this result, so the draft does not
+    // stand for its original even while it is unchanged.
+    const item: { id: string; v?: number } = { id: 'a' };
+    const base = [item, { id: 'b' }, { id: 'c' }];
+    let result: any;
+    create({ item }, (outer) => {
+      result = create(
+        base,
+        (draft: any[]) => {
+          draft[0] = outer.item;
+          draft.splice(1, 1);
+        },
+        compactOptions()
+      );
+      outer.item.v = 1;
+    });
+    const [state, patches, inverse] = result;
+    expect(state).toEqual([{ id: 'a', v: 1 }, { id: 'c' }]);
+    expect(patches).toEqual([
+      { op: 'remove', path: [1] },
+      { op: 'replace', path: [0], value: { id: 'a' } },
+    ]);
+    expect(inverse).toEqual([
+      { op: 'replace', path: [0], value: { id: 'a' } },
+      { op: 'add', path: [1], value: { id: 'b' } },
+    ]);
+    expect(apply(state, inverse)).toEqual(base);
+  });
+
   test('makeCreator, manual drafts, frozen input and mutable apply work', () => {
     const creator = makeCreator(compactOptions());
     const base = [{ id: 0 }, { id: 1 }, { id: 2 }];
