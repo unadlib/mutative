@@ -123,18 +123,21 @@ function rebuildSuffix(
 
 // Whether `value`, at `index` of an array, is `base` or an unchanged draft of
 // it (1), a changed draft of it (2), or another value (0). A draft that the
-// array still holds, read before it or of another producer, and one that
-// finalization wrote into the index stand for their originals.
+// array still holds because the recipe read it first, and one that
+// finalization wrote into the index, stand for their originals. A draft of
+// another producer counts as changed: that producer may still change it, and
+// then writes its final value into the index.
 function retained(
   value: any,
   base: any,
   drafts: Map<number, ProxyDraft> | undefined,
-  index: number
+  index: number,
+  target: ProxyDraft
 ) {
   if (isEqual(value, base)) return 1;
   const draft = getProxyDraft(value) ?? drafts?.get(index);
   if (!draft || !isEqual(draft.original, base)) return 0;
-  return draft.operated ? 2 : 1;
+  return draft.operated || draft.finalities !== target.finalities ? 2 : 1;
 }
 
 // A child emits patches under its array only at its own index.
@@ -200,7 +203,13 @@ function tryGenerateCompactArrayPatches(
   let state;
   while (
     prefix < shortest &&
-    (state = retained(copy[prefix], original[prefix], drafts, prefix))
+    (state = retained(
+      copy[prefix],
+      original[prefix],
+      drafts,
+      prefix,
+      proxyState
+    ))
   ) {
     if (state === 2) (changed ??= []).push(prefix);
     prefix += 1;
@@ -213,7 +222,8 @@ function tryGenerateCompactArrayPatches(
       copy[index],
       original[oldLength - 1 - suffix],
       drafts,
-      index
+      index,
+      proxyState
     ))
   ) {
     if (state === 2) (changed ??= []).push(index);
