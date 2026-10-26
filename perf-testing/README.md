@@ -175,7 +175,7 @@ The gate is a workload-specific regression guard, not a universal performance ra
 
 ## Compact array patch benchmark
 
-`array-patch-compact.mjs` is a targeted production-artifact benchmark for `arrayPatchStrategy`. It compares the default `'index'` strategy with `'compact'` in independent processes and validates forward/inverse replay before measuring. Its 14 scenarios cover 10,000-element head/middle edits, contiguous blocks, coalesced and disjoint insertion plans, nested edits, reordering fallback, append/local-edit controls, and many small sibling arrays whose patch generation must not scan other subtrees. Use `--array-size` and `--batch-size` for smaller checks or other scales; for `many-small-arrays`, `--array-size` sets the number of three-element arrays.
+`array-patch-compact.mjs` is a targeted production-artifact benchmark for `arrayPatchStrategy`. It compares the default `'index'` strategy with `'compact'` in independent processes and validates forward/inverse replay before measuring. Its 14 scenarios cover 10,000-element head/middle edits, contiguous blocks, coalesced and disjoint insertion plans, nested edits, reordering fallback, append/local-edit controls, and many small sibling arrays whose patch generation must not scan other subtrees. Use `--array-size` and `--batch-size` for smaller checks or other scales; for `many-small-arrays`, `--array-size` sets the number of three-element arrays. The Node 22/24 build workflow runs the correctness matrix below on the production build.
 
 ```sh
 # Correctness matrix on the production build, with both freeze modes

@@ -29,6 +29,7 @@ jobs:
         pnpm benchmark:immer:build
         node --expose-gc --enable-source-maps perf-testing/dist/immutability-benchmarks.mjs --check --patches both --object-size-1 10 --object-size-2 30 --rtkq-count 10
         node --expose-gc --enable-source-maps perf-testing/dist/immutability-benchmarks.mjs --check --patches off --filter '^apply-'
+        node --expose-gc perf-testing/array-patch-compact.mjs --check --runs 1 --array-size 40 --batch-size 8 --freeze both --output perf-testing/results/array-patch-compact-check.json
         pnpm test:benchmarks
         pnpm size
         pnpm test:package
