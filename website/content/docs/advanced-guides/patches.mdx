@@ -91,7 +91,7 @@ A string path holds only strings, so it cannot name a Map key that is not a stri
 
 ### arrayLengthAssignment - default: true
 
-With the default `arrayPatchStrategy: 'index'`, setting `arrayLengthAssignment: false` makes an array that gets shorter get a `remove` patch for each index that it loses, instead of a `replace` patch of its `length`. Structural patches emitted by the `'compact'` strategy are not affected by this option:
+Setting `arrayLengthAssignment: false` makes an array that gets shorter get a `remove` patch for each index that it loses, instead of a `replace` patch of its `length`:
 
 ```ts
 import { create } from 'mutative';
@@ -120,6 +120,8 @@ expect(inversePatches).toEqual([
   { op: 'add', path: ['list', 2], value: 3 },
 ]);
 ```
+
+With `arrayPatchStrategy: 'compact'`, the option applies where an array loses elements at its end or the strategy falls back to `'index'`; the `remove` patches of a deletion before the end do not depend on it.
 
 <Callout type="idea">
 A `remove` patch per index takes more time and more patches for large arrays than one `replace` patch of the `length`, so leave `arrayLengthAssignment` on unless the patches must be JSON Patch operations.
