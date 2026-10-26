@@ -116,9 +116,9 @@ function arrayState(target: ProxyDraft) {
 // reads as `undefined`, so an array in which the `includes` builtin finds no
 // `undefined` has none; that scan is fast for every kind of array. Arrays that
 // hold `undefined` are checked index by index with `in`, the HasProperty check
-// of the native algorithms, which costs several times more per element once many array
-// shapes have passed through it. Elements that are `undefined` are ordinary
-// values and move natively.
+// of the native algorithms, which costs several times more per element once
+// many array shapes have passed through it. Elements that are `undefined` are
+// ordinary values and move natively.
 function hasHoles(array: any[]) {
   if (!arrayIncludes.call(array, undefined)) return false;
   for (let index = 0; index < array.length; index += 1) {
