@@ -461,6 +461,12 @@ export function finalizeDraft<T>(
         finalizeNode(entry, generatePatches, patches, inversePatches);
       }
     }
+  } else {
+    // Unchanged drafts that drafts of other producers hold still need their
+    // originals written there before they are revoked.
+    proxyDraft?.finalities.foreignCallbacks?.forEach((callback) =>
+      callback(patches, inversePatches)
+    );
   }
   const state = hasReturnedValue
     ? returnedValue[0]

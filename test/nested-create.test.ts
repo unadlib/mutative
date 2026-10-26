@@ -109,4 +109,76 @@ describe('drafts that the recipe of another create() call holds', () => {
     expect(apply(innerBase, innerPatches)).toEqual(innerState);
     expect(apply(innerState, innerInversePatches)).toEqual(innerBase);
   });
+
+  // A recipe can place a draft of another producer as a property, an array
+  // element, a Map value or a Set item.
+  const holders = [
+    [
+      'an object',
+      () => ({ value: null as any }),
+      (holder: any, item: object) => {
+        holder.value = item;
+      },
+      (state: any) => state.value,
+    ],
+    [
+      'an array',
+      () => ({ value: [] as any[] }),
+      (holder: any, item: object) => {
+        holder.value.push(item);
+      },
+      (state: any) => state.value[0],
+    ],
+    [
+      'a Map',
+      () => ({ value: new Map<string, any>() }),
+      (holder: any, item: object) => {
+        holder.value.set('key', item);
+      },
+      (state: any) => state.value.get('key'),
+    ],
+    [
+      'a Set',
+      () => ({ value: new Set<any>() }),
+      (holder: any, item: object) => {
+        holder.value.add(item);
+      },
+      (state: any) => [...state.value][0],
+    ],
+  ] as const;
+
+  test.each(holders)(
+    '%s of a nested producer holds the original of an outer draft whose recipe changes nothing',
+    (_name, makeHolder, place, read) => {
+      const base = { item: { v: 1 } };
+      let inner: any;
+      const state = create(base, (draft) => {
+        inner = create(makeHolder(), (innerDraft) => {
+          place(innerDraft, draft.item);
+        });
+      });
+      expect(state).toBe(base);
+      expect(read(inner)).toBe(base.item);
+    }
+  );
+
+  test.each(holders)(
+    '%s of an outer producer holds the original of a nested draft whose recipe changes nothing',
+    (_name, makeHolder, place, read) => {
+      const innerBase = { item: { v: 1 } };
+      const base = makeHolder();
+      const [state, patches, inversePatches] = create(
+        base,
+        (draft) => {
+          create(innerBase, (innerDraft) => {
+            place(draft, innerDraft.item);
+          });
+        },
+        { enablePatches: true }
+      );
+      expect(read(state)).toBe(innerBase.item);
+      expect(apply(base, patches)).toEqual(state);
+      expect(apply(state, inversePatches)).toEqual(base);
+    }
+  );
 });

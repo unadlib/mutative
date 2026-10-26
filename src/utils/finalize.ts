@@ -240,7 +240,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
     if (!proxyDraft.callbacks) {
       proxyDraft.callbacks = [];
     }
-    proxyDraft.callbacks.push((patches) => {
+    const callback = (patches?: Patches) => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
       if (isEqual(get(copy, key), value)) {
         // The target generates its own patches once all drafts it holds have
@@ -257,12 +257,14 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         if (patches && target.type === DraftType.Array)
           recordWrittenDraft(target, key, proxyDraft);
       }
-    });
-    if (target.options.enableAutoFreeze) {
-      // !case: assign the draft value in cross draft tree
-      if (proxyDraft.finalities !== target.finalities) {
-        target.options.enableAutoFreeze = false;
-      }
+    };
+    proxyDraft.callbacks.push(callback);
+    // !case: assign the draft value in cross draft tree
+    if (proxyDraft.finalities !== target.finalities) {
+      // The producer of the draft writes its value here even when its
+      // recipe changes nothing, after this producer may have finished.
+      (proxyDraft.finalities.foreignCallbacks ??= []).push(callback);
+      target.options.enableAutoFreeze = false;
     }
   } else if (isDraftable(value, target.options)) {
     // !case: assign the non-draft value

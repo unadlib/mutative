@@ -63,6 +63,10 @@ export interface Finalities {
   // and releases module-level references to its drafts. False for drafts
   // returned by `create(base)` without a recipe.
   scoped: boolean;
+  // The callbacks that write drafts of this producer into drafts of other
+  // producers. They also run when the recipe changed nothing, which skips
+  // finalizing `draft`.
+  foreignCallbacks: FinalizeCallback[] | undefined;
 }
 
 export interface ProxyDraft<T = any> {
