@@ -23,14 +23,70 @@ function cloneIfNeeded<T>(target: T): T {
 
 const hasOwn = Object.prototype.hasOwnProperty;
 
+// In Node.js 24, checking an index takes about 7 ns, or 30 ns in a
+// dictionary-mode array, and enumerating an own key about 150 ns. A suffix is
+// checked index by index until this many holes have passed, and the rest of a
+// long gap is crossed by enumerating own keys.
+const SPARSE_HOLE_LIMIT = 65536;
+
+// Patches that restore the own indices of `to` from `start` on, including
+// non-enumerable ones. `indices`, if given, holds all of them, among others,
+// in ascending order.
+function restoreSuffix(
+  to: any[],
+  start: number,
+  indices: number[] | null,
+  basePath: any[],
+  result: Patches,
+  pathAsArray: boolean
+) {
+  const restore = (index: number) =>
+    result.push({
+      op: Operation.Replace,
+      path: escapePath(basePath.concat([index]), pathAsArray),
+      value: cloneIfNeeded(to[index]),
+    });
+  if (indices !== null) {
+    for (let position = 0; position < indices.length; position += 1) {
+      const index = indices[position];
+      if (index >= start && index < to.length && hasOwn.call(to, index)) {
+        restore(index);
+      }
+    }
+    return;
+  }
+  let index = start;
+  let holes = 0;
+  while (index < to.length && holes <= SPARSE_HOLE_LIMIT) {
+    if (hasOwn.call(to, index)) restore(index);
+    else holes += 1;
+    index += 1;
+  }
+  if (index === to.length) return;
+  // Array indices only, not length or custom properties such as '1.5'.
+  for (const key of Object.getOwnPropertyNames(to)) {
+    const own = Number(key);
+    if (
+      Number.isInteger(own) &&
+      own >= index &&
+      own < to.length &&
+      String(own) === key
+    ) {
+      restore(own);
+    }
+  }
+}
+
 // Index patches carry values, so neither an undefined value nor an index
 // removal can represent a hole. Rebuild the affected suffix in each direction:
 // truncate it, grow the length to leave holes, then restore only own indices.
 // Keeping the array itself supports mutable application and arrays inside Sets.
+// `added`, when known, holds every own index that the copy has from `start` on.
 function generateSparseArrayPatches(
   original: any[],
   copy: any[],
   start: number,
+  added: number[] | null,
   basePath: any[],
   patches: Patches,
   inversePatches: Patches,
@@ -38,7 +94,12 @@ function generateSparseArrayPatches(
   arrayLengthAssignment: boolean
 ) {
   const lengthPath = escapePath(basePath.concat(['length']), pathAsArray);
-  const rebuild = (from: any[], to: any[], result: Patches) => {
+  const rebuild = (
+    from: any[],
+    to: any[],
+    result: Patches,
+    indices: number[] | null
+  ) => {
     const cut = Math.min(start, to.length);
     if (arrayLengthAssignment) {
       if (from.length > cut) {
@@ -52,30 +113,18 @@ function generateSparseArrayPatches(
         });
       }
     }
+    if (to.length <= cut) return;
     // JSON cannot encode holes. Growing a sparse array needs a length patch
     // even when shrinking arrays use per-index removals.
-    if (to.length > cut) {
-      result.push({
-        op: Operation.Replace,
-        path: lengthPath,
-        value: to.length,
-      });
-    }
-    // Enumerate own indices instead of walking potentially huge gaps. Include
-    // non-enumerable indices too, but not length or custom array properties.
-    for (const key of Object.getOwnPropertyNames(to)) {
-      const index = Number(key);
-      if (index >= start && index < to.length && String(index) === key) {
-        result.push({
-          op: Operation.Replace,
-          path: escapePath(basePath.concat([index]), pathAsArray),
-          value: cloneIfNeeded(to[index]),
-        });
-      }
-    }
+    result.push({
+      op: Operation.Replace,
+      path: lengthPath,
+      value: to.length,
+    });
+    restoreSuffix(to, cut, indices, basePath, result, pathAsArray);
   };
-  rebuild(original, copy, patches);
-  rebuild(copy, original, inversePatches);
+  rebuild(original, copy, patches, added);
+  rebuild(copy, original, inversePatches, null);
 }
 
 function generateArrayPatches(
@@ -88,7 +137,8 @@ function generateArrayPatches(
   let { original, assignedMap, options } = proxyState;
   let copy = proxyState.copy!;
   const { arrayLengthAssignment = true } = options.enablePatches;
-  if (copy.length < original.length) {
+  const shorter = copy.length < original.length;
+  if (shorter) {
     [original, copy] = [copy, original];
     [patches, inversePatches] = [inversePatches, patches];
   }
@@ -132,6 +182,7 @@ function generateArrayPatches(
           original,
           copy,
           index,
+          null,
           basePath,
           patches,
           inversePatches,
@@ -159,10 +210,14 @@ function generateArrayPatches(
   for (let index = original.length; index < copy.length; index += 1) {
     const value = copy[index];
     if (value === undefined && !hasOwn.call(copy, index)) {
+      // Every index that the copy has past the end of the original was set
+      // by the recipe, so `indices` holds it. A shorter copy was swapped,
+      // which makes `copy` the original array.
       return generateSparseArrayPatches(
         original,
         copy,
         index,
+        shorter ? null : indices,
         basePath,
         patches,
         inversePatches,
