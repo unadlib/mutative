@@ -451,7 +451,12 @@ export function finalizeDraft<T>(
   }
   const original = proxyDraft?.original ?? result;
   const hasReturnedValue = !!returnedValue.length;
-  if (proxyDraft?.operated) {
+  // Unchanged drafts need no finalization, unless other producers hold some,
+  // which then need their originals written there.
+  if (
+    proxyDraft &&
+    (proxyDraft.operated || proxyDraft.finalities.heldElsewhere)
+  ) {
     const list = proxyDraft.finalities.draft;
     while (list.length > 0) {
       const entry = list.pop()!;
@@ -461,12 +466,6 @@ export function finalizeDraft<T>(
         finalizeNode(entry, generatePatches, patches, inversePatches);
       }
     }
-  } else {
-    // Unchanged drafts that drafts of other producers hold still need their
-    // originals written there before they are revoked.
-    proxyDraft?.finalities.foreignCallbacks?.forEach((callback) =>
-      callback(patches, inversePatches)
-    );
   }
   const state = hasReturnedValue
     ? returnedValue[0]

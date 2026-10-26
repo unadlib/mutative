@@ -22,7 +22,7 @@ export function draftify<
     revoke: [],
     handledSet: new WeakSet<any>(),
     scoped: true,
-    foreignCallbacks: undefined,
+    heldElsewhere: false,
   };
   let patches: Patches | undefined;
   let inversePatches: Patches | undefined;
