@@ -60,7 +60,8 @@ function ownPatches(
 // insertion or deletion, and carry only elements, like the default generator.
 // A retained element may also have changed in place: where it keeps its index,
 // the patches of its own draft carry the change, and a replace patch at its
-// final index does where the insertion or deletion moved it. Anything else,
+// final index does where the insertion or deletion moved it, or for a draft
+// that the array holds from another path or producer. Anything else,
 // such as a new value at a retained index, holes, reordering or an ambiguous
 // shape, uses the default generator. The final elements decide, so the patches
 // do not depend on how the recipe changed the array: through native methods,

@@ -39,7 +39,7 @@ export type PatchesOptions =
        * values at each index. `'compact'` expresses one contiguous, non-tail
        * insertion or deletion as `add` or `remove` patches, and a retained
        * element that changed in place by its own patches or a `replace` patch
-       * at its new index. Otherwise it falls back to `'index'`.
+       * at its final index. Otherwise it falls back to `'index'`.
        *
        * Both strategies generate value-based patches. Compact patches do not
        * record the recipe's operations or preserve JavaScript object aliases.
