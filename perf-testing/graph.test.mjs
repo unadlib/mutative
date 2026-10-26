@@ -164,3 +164,17 @@ test('replayPatches rejects patches whose target does not exist', () => {
     replayPatches(base, [{ op: 'replace', path: ['ids', 0], value: 1 }])
   );
 });
+
+test('replayPatches leaves holes where a length patch lengthens an array', () => {
+  const next = replayPatches({ rows: [0, 1] }, [
+    { op: 'replace', path: ['rows', 'length'], value: 4 },
+    { op: 'replace', path: ['rows', 3], value: 3 },
+  ]);
+  assert.equal(next.rows.length, 4);
+  assert.deepEqual(Object.keys(next.rows), ['0', '1', '3']);
+  assert.throws(() =>
+    replayPatches({ rows: [] }, [
+      { op: 'add', path: ['rows', 'length'], value: 1 },
+    ])
+  );
+});

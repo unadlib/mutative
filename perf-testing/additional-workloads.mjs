@@ -52,6 +52,33 @@ export function createAdditionalScenarios(config) {
       createBase: () =>
         createArrayState({ ...config, arraySize: size, nestedArraySize: 1 }),
     })),
+    // An assignment one index past the end of an array leaves a hole before
+    // it; producers fill the slots of a preallocated array one by one.
+    {
+      name: 'sparse-append-gap',
+      steps: [
+        {
+          type: 'bench/sparse-set',
+          index: config.arraySize + 1,
+          payload: { value: config.arraySize + 1 },
+        },
+      ],
+      createBase: () => createArrayState(config, 'shallow'),
+      holes: true,
+    },
+    {
+      name: 'sparse-fill-slots',
+      steps: Array.from({ length: config.reuseStateIterations }, (_, i) => ({
+        type: 'bench/sparse-set',
+        index: i,
+        payload: { value: i },
+      })),
+      createBase: () => ({
+        rows: new Array(config.arraySize),
+        stable: { value: 'untouched' },
+      }),
+      holes: true,
+    },
     ...[1, 10, 100].map((percent) => ({
       name: `mutation-density-${percent}pct`,
       steps: [
@@ -178,6 +205,12 @@ export function reduceAdditional(state, action) {
       }
       return { ...state, rows: next };
     }
+    case 'bench/sparse-set': {
+      // `slice` keeps the holes that the assignment does not fill.
+      const rows = state.rows.slice();
+      rows[action.index] = action.payload;
+      return { ...state, rows };
+    }
     case 'bench/small-object-update':
       return {
         ...state,
@@ -274,6 +307,9 @@ export function applyAdditionalRecipe(
       break;
     case 'bench/read-length':
       consumeRead(draft.rows.length);
+      break;
+    case 'bench/sparse-set':
+      draft.rows[action.index] = action.payload;
       break;
     case 'bench/noop-empty':
       break;

@@ -364,6 +364,56 @@ test('rebuilds non-enumerable array indices too', () => {
   expect(restored[3]).toBe(9);
 });
 
+test('restores indices but no custom properties named like numbers', () => {
+  // A short suffix is checked index by index; across more than 65,536 holes,
+  // own keys are enumerated, where only a key past that point would count.
+  for (const length of [3, 70_000]) {
+    const base: any[] = new Array(length);
+    base[0] = 1;
+    base[length - 1] = 9;
+    const key = String(length - 1.5);
+    (base as any)[key] = 'custom';
+    const [state, patches, inverse] = create(
+      base,
+      (draft) => {
+        draft[1] = 2;
+      },
+      { enablePatches: true }
+    );
+    expect(
+      [...patches, ...inverse].some((patch) => patch.path.includes(Number(key)))
+    ).toBe(false);
+    expect(apply(base, patches)).toStrictEqual(state);
+    const restored = apply(state, inverse);
+    expect(restored.length).toBe(length);
+    expect(Object.keys(restored)).toStrictEqual(['0', String(length - 1)]);
+    expect(restored[length - 1]).toBe(9);
+  }
+});
+
+test('filling a hole takes one patch, and its inverse patches rebuild', () => {
+  const base = Array.from({ length: 10 }, (_, index) => ({ index }));
+  delete base[0];
+  const [state, patches, inverse] = create(
+    base,
+    (draft) => {
+      draft[0] = { index: 0 };
+    },
+    { enablePatches: true }
+  );
+  expect(patches).toStrictEqual([
+    { op: 'replace', path: [0], value: { index: 0 } },
+  ]);
+  // Shorten to the hole, lengthen again, and restore the nine elements.
+  expect(inverse).toHaveLength(11);
+  const replay = apply(base, patches);
+  expect(replay).toStrictEqual(state);
+  for (let index = 1; index < 10; index += 1) {
+    expect(replay[index]).toBe(base[index]);
+  }
+  expect(apply(state, inverse)).toStrictEqual(base);
+});
+
 test('manual, async and nested producers preserve sparse patches', async () => {
   for (const enablePatches of modes) {
     const base = [1, ,];

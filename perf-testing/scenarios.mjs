@@ -17,12 +17,13 @@ import { deepFreeze } from './graph.mjs';
 export function createScenarios(config, filter = '.*') {
   const actions = createActions(config);
   // kind 'apply' times patch application instead of a producer; mark is
-  // Mutative's option for class instances; mapSet needs Immer's MapSet plugin.
+  // Mutative's option for class instances; mapSet needs Immer's MapSet plugin;
+  // holes marks producers that leave or fill array holes.
   const scenario = (
     name,
     steps,
     createBase = createInitialState,
-    { kind = 'producer', mark, mapSet = false } = {}
+    { kind = 'producer', mark, mapSet = false, holes = false } = {}
   ) => ({
     name,
     steps,
@@ -30,6 +31,7 @@ export function createScenarios(config, filter = '.*') {
     kind,
     mark,
     mapSet,
+    holes,
     operations: steps.length,
     execute(reducer, base) {
       let state = base;
@@ -52,7 +54,7 @@ export function createScenarios(config, filter = '.*') {
   );
   scenarios.push(
     ...createAdditionalScenarios(config).map((entry) =>
-      scenario(entry.name, entry.steps, entry.createBase)
+      scenario(entry.name, entry.steps, entry.createBase, entry)
     )
   );
   for (const name of [
@@ -102,9 +104,12 @@ export function createScenarios(config, filter = '.*') {
 }
 
 // The hand-written reducer never freezes or generates patches, and patch
-// application scenarios produce no patches of their own.
+// application scenarios produce no patches of their own. The patches of Immer
+// and Mutative v1 put `undefined` where holes were, so with patches, only the
+// candidate runs the scenarios that leave or fill holes.
 export function supportsMode(scenario, library, autoFreeze, enablePatches) {
   if (scenario.kind === 'apply' && enablePatches) return false;
+  if (scenario.holes && enablePatches && library !== 'mutative') return false;
   return (
     library !== 'vanilla' ||
     (!autoFreeze && !enablePatches && scenario.kind !== 'apply')
