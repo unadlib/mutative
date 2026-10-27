@@ -1,6 +1,6 @@
 import { apply, create } from '../src';
 
-const shape = (array: unknown[]) => ({
+const shape = (array: readonly unknown[]) => ({
   length: array.length,
   own: Array.from(array, (_value, index) => index in array),
 });
@@ -62,5 +62,99 @@ describe('assigning undefined to a removed key', () => {
       draft.list[0] = undefined;
     });
     expect(state).toBe(base);
+  });
+});
+
+// Deleting an array index assigns `undefined` to it, but deleting an index
+// that the array does not have changes nothing, as in plain JS.
+describe('deleting an array index the draft does not have', () => {
+  const cases: [string, unknown[], (list: unknown[]) => void][] = [
+    [
+      'pop',
+      ['y', 'y'],
+      (list) => {
+        list.pop();
+        delete list[1];
+      },
+    ],
+    [
+      'length',
+      [null, null],
+      (list) => {
+        list.length = 0;
+        delete list[1];
+      },
+    ],
+    [
+      'shift',
+      [1, 2, 3],
+      (list) => {
+        list.shift();
+        delete list[2];
+      },
+    ],
+    [
+      'splice',
+      [1, 2, 3],
+      (list) => {
+        list.splice(1);
+        delete list[2];
+      },
+    ],
+  ];
+
+  test.each(cases)(
+    'leaves an array shortened by %s short',
+    (_name, items, recipe) => {
+      const expected = items.slice();
+      recipe(expected);
+      for (const enableAutoFreeze of [false, true]) {
+        const base = { list: items.slice() };
+        const [state, patches, inverse] = create(
+          base,
+          (draft) => recipe(draft.list),
+          { enablePatches: true, enableAutoFreeze }
+        );
+        expect(shape(state.list)).toStrictEqual(shape(expected));
+        expect(state.list).toStrictEqual(expected);
+        expect(apply(base, patches)).toStrictEqual(state);
+        expect(apply(state, inverse)).toStrictEqual(base);
+      }
+    }
+  );
+
+  test('changes nothing at a hole or past the end', () => {
+    const list = [1, 2, 3];
+    delete list[1];
+    const base = { list };
+    const state = create(base, (draft) => {
+      delete draft.list[1];
+      delete draft.list[5];
+    });
+    expect(state).toBe(base);
+  });
+
+  test('still rejects a key that is not an index', () => {
+    expect(() =>
+      create({ list: [1] }, (draft) => {
+        delete (draft.list as any).foo;
+      })
+    ).toThrow("Only supports setting array indices and the 'length' property.");
+  });
+
+  test('still assigns undefined to an index the array has', () => {
+    const base = [1, 2, 3];
+    const [state, patches, inverse] = create(
+      base,
+      (draft) => {
+        draft.pop();
+        delete draft[1];
+      },
+      { enablePatches: true }
+    );
+    expect(shape(state)).toStrictEqual({ length: 2, own: [true, true] });
+    expect(state).toStrictEqual([1, undefined]);
+    expect(apply(base, patches)).toStrictEqual(state);
+    expect(apply(state, inverse)).toStrictEqual(base);
   });
 });

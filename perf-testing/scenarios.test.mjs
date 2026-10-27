@@ -30,7 +30,24 @@ test('scenario names are unique and carry their requirements', () => {
       scenario.name.startsWith('class-'),
       `${scenario.name} mark`
     );
+    assert.equal(
+      scenario.holes,
+      scenario.name.startsWith('sparse-'),
+      `${scenario.name} holes`
+    );
   }
+});
+
+test('supportsMode runs hole scenarios with patches for the candidate only', () => {
+  const sparse = byName('sparse-fill-slots');
+  for (const autoFreeze of [false, true]) {
+    for (const library of ['mutative', 'mutative-v1', 'immer'])
+      assert.equal(supportsMode(sparse, library, autoFreeze, false), true);
+    assert.equal(supportsMode(sparse, 'mutative', autoFreeze, true), true);
+    for (const library of ['mutative-v1', 'immer', 'vanilla'])
+      assert.equal(supportsMode(sparse, library, autoFreeze, true), false);
+  }
+  assert.equal(supportsMode(sparse, 'vanilla', false, false), true);
 });
 
 test('supportsMode limits the vanilla reducer and patch application', () => {

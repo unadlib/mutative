@@ -111,14 +111,14 @@ function arrayState(target: ProxyDraft) {
   });
 }
 
-// Holes are the one thing a move cannot replay through patches, so moving
-// methods leave sparse arrays to the proxy. A hole reads as `undefined`, so an
-// array in which the `includes` builtin finds no `undefined` has none; that
-// scan is fast for every kind of array. Only arrays that hold `undefined` are
-// checked index by index with `in`, the HasProperty check of the native
-// algorithms, which costs several times more per element once many array
-// shapes have passed through it. Elements that are `undefined` are ordinary
-// values and move natively.
+// Moving methods leave sparse arrays to the proxy, where deleting a present
+// index assigns undefined; patches rebuild changed holes separately. A hole
+// reads as `undefined`, so an array in which the `includes` builtin finds no
+// `undefined` has none; that scan is fast for every kind of array. Arrays that
+// hold `undefined` are checked index by index with `in`, the HasProperty check
+// of the native algorithms, which costs several times more per element once
+// many array shapes have passed through it. Elements that are `undefined` are
+// ordinary values and move natively.
 function hasHoles(array: any[]) {
   if (!arrayIncludes.call(array, undefined)) return false;
   for (let index = 0; index < array.length; index += 1) {

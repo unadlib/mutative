@@ -48,9 +48,9 @@ function checkPatches<T>(data: T, fn: (checkPatches: T) => void) {
   expect(patches).toMatchSnapshot();
   expect(inversePatches).toMatchSnapshot();
   const prevState = apply(state, inversePatches);
-  expect(prevState).toEqual(data);
+  expect(prevState).toStrictEqual(data);
   const nextState = apply(data as any, patches);
-  expect(nextState).toEqual(state);
+  expect(nextState).toStrictEqual(state);
 }
 
 test('array', () => {

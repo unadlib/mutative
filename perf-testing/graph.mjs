@@ -99,7 +99,12 @@ function childAt(parent, key) {
 }
 
 function applyLeaf(parent, op, key, patch) {
-  if (Array.isArray(parent)) {
+  if (Array.isArray(parent) && key === 'length') {
+    // Mutative lengthens an array with a length patch to leave holes.
+    assert.equal(op, 'replace', 'array lengths are replaced');
+    assert.ok(Number.isSafeInteger(patch.value) && patch.value >= 0);
+    parent.length = patch.value;
+  } else if (Array.isArray(parent)) {
     const index = Number(key);
     assert.ok(Number.isSafeInteger(index) && index >= 0);
     assert.ok(

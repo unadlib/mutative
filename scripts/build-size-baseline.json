@@ -1,8 +1,8 @@
 {
   "reference": {
-    "revision": "22e7114d920186a0b752dade2ac3bd3b7a74fca5",
-    "description": "A repeated moved array element is searched for with doubling steps and backward from the first step past its last copy",
-    "node": "v24.16.0",
+    "revision": "eba635a9289a9ddf9a65221059cd9f51d97d8c42",
+    "description": "Rebuild a sparse array only in the direction that makes a hole, and restore only its suffix",
+    "node": "v24.22.0",
     "commands": [
       "pnpm install --frozen-lockfile",
       "pnpm build"
@@ -15,69 +15,69 @@
   "esbuild": "0.24.0",
   "measurements": {
     "artifact/mutative.cjs.production.min.js": {
-      "raw": 27437,
-      "gzip": 9226,
-      "brotli": 8472
+      "raw": 28489,
+      "gzip": 9621,
+      "brotli": 8816
     },
     "artifact/mutative.umd.production.min.js": {
-      "raw": 27592,
-      "gzip": 9292,
-      "brotli": 8515
+      "raw": 28644,
+      "gzip": 9696,
+      "brotli": 8863
     },
     "artifact/mutative.esm.production.min.mjs": {
-      "raw": 27409,
-      "gzip": 9252,
-      "brotli": 8492
+      "raw": 28461,
+      "gzip": 9644,
+      "brotli": 8838
     },
     "artifact/mutative.cjs.development.js": {
-      "raw": 73119,
-      "gzip": 17810,
-      "brotli": 15473
+      "raw": 75852,
+      "gzip": 18457,
+      "brotli": 15984
     },
     "artifact/mutative.umd.development.js": {
-      "raw": 75403,
-      "gzip": 18014,
-      "brotli": 15646
+      "raw": 78214,
+      "gzip": 18668,
+      "brotli": 16166
     },
     "artifact/mutative.esm.js": {
-      "raw": 73954,
-      "gzip": 17904,
-      "brotli": 15526
+      "raw": 76687,
+      "gzip": 18552,
+      "brotli": 16050
     },
     "artifact/mutative.esm.mjs": {
-      "raw": 73955,
-      "gzip": 17906,
-      "brotli": 15527
+      "raw": 76688,
+      "gzip": 18554,
+      "brotli": 16052
     },
     "consumer/import/create": {
-      "raw": 24594,
-      "gzip": 8609,
-      "brotli": 7924
+      "raw": 25665,
+      "gzip": 9037,
+      "brotli": 8337
     },
     "consumer/import/patches": {
-      "raw": 26657,
-      "gzip": 9313,
-      "brotli": 8550
+      "raw": 27729,
+      "gzip": 9725,
+      "brotli": 8927
     },
     "consumer/import/all": {
-      "raw": 27442,
-      "gzip": 9576,
-      "brotli": 8778
+      "raw": 28515,
+      "gzip": 9985,
+      "brotli": 9170
     },
     "consumer/require/create": {
-      "raw": 26936,
-      "gzip": 9556,
-      "brotli": 8749
+      "raw": 27977,
+      "gzip": 9994,
+      "brotli": 9182
     },
     "consumer/require/patches": {
-      "raw": 27004,
-      "gzip": 9591,
-      "brotli": 8792
+      "raw": 28045,
+      "gzip": 10029,
+      "brotli": 9211
     },
     "consumer/require/all": {
-      "raw": 26901,
-      "gzip": 9534,
-      "brotli": 8777
+      "raw": 27942,
+      "gzip": 9973,
+      "brotli": 9165
     }
   }
 }
