@@ -13,7 +13,7 @@ castMutable<T>(draft: Draft<T>): T
 
 ## castDraft() [#castdraft]
 
-`castDraft(value)` 将值视为属性非只读的草稿类型 [`Draft<T>`](/zh/docs/advanced-guides/typescript#draftt-and-immutablet)，适合将只读类型的值赋入草稿：
+`castDraft(value)` 将值视为 [`Draft<T>`](/zh/docs/advanced-guides/typescript#draftt-and-immutablet)，其属性不是只读的，适合将只读类型的值赋入草稿：
 
 ```ts
 import { castDraft, create, type Immutable } from 'mutative';
