@@ -1,0 +1,75 @@
+---
+title: 类型转换
+description: castDraft()、castImmutable() 和 castMutable() 改变 TypeScript 类型，并原样返回值。
+---
+
+`castDraft()`、`castImmutable()` 和 `castMutable()` 是 TypeScript 辅助函数，只将参数视为另一种类型并原样返回，不进行运行时数据转换。
+
+```ts
+castDraft<T>(value: T): Draft<T>
+castImmutable<T>(value: T): Immutable<T>
+castMutable<T>(draft: Draft<T>): T
+```
+
+## castDraft() [#castdraft]
+
+`castDraft(value)` 将值视为属性非只读的草稿类型 [`Draft<T>`](/zh/docs/advanced-guides/typescript#draftt-and-immutablet)，适合将只读类型的值赋入草稿：
+
+```ts
+import { castDraft, create, type Immutable } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const defaults: Immutable<Todo[]> = [{ text: 'learn', done: false }];
+
+const state = create({ todos: [] as Todo[] }, (draft) => {
+  draft.todos = castDraft(defaults);
+});
+
+expect(state.todos).toBe(defaults);
+```
+
+这不会真正创建草稿，下一个状态仍原样持有该值。
+
+## castImmutable() [#castimmutable]
+
+`castImmutable(value)` 将值视为深度只读的 [`Immutable<T>`](/zh/docs/advanced-guides/typescript#draftt-and-immutablet)，例如只应读取的初始状态。它不会冻结值，冻结需使用[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+
+```ts
+import { castImmutable, create } from 'mutative';
+
+const initialState = castImmutable({ todos: [{ text: 'learn', done: false }] });
+
+const state = create(initialState, (draft) => {
+  draft.todos[0].done = true;
+});
+
+expect(state.todos[0].done).toBe(true);
+expect(Object.isFrozen(initialState)).toBe(false);
+```
+
+## castMutable() [#castmutable]
+
+`castMutable<T>(draft)` 将草稿视为 `T`，适用于函数要求 `T` 而 `Draft<T>` 不兼容的情况。例如草稿类型不包含类的私有成员，传给要求类本身的函数时需要转换：
+
+```ts
+import { castMutable, create } from 'mutative';
+
+class Point {
+  constructor(
+    private x: number,
+    private y: number
+  ) {}
+  distanceTo(other: Point) {
+    return Math.hypot(other.x - this.x, other.y - this.y);
+  }
+}
+
+const origin = new Point(0, 0);
+
+create({ point: new Point(3, 4) }, (draft) => {
+  expect(origin.distanceTo(castMutable<Point>(draft.point))).toBe(5);
+});
+```
+
+TypeScript 无法从 `Draft<T>` 反向推断 `T`，需像上例一样显式传入类型参数。

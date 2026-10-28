@@ -1,0 +1,18 @@
+{
+  "title": "API 参考",
+  "defaultOpen": true,
+  "collapsible": false,
+  "pages": [
+    "create",
+    "apply",
+    "makecreator",
+    "current",
+    "original",
+    "rawreturn",
+    "unsafe",
+    "isdraftable",
+    "isdraft",
+    "marksimpleobject",
+    "casts"
+  ]
+}
