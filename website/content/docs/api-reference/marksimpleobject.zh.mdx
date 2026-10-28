@@ -3,7 +3,7 @@ title: markSimpleObject()
 description: 允许无原型对象和跨 realm 普通对象创建草稿的标记。
 ---
 
-`markSimpleObject` 是一个[标记](/zh/docs/advanced-guides/mark)，支持普通对象、`Object.create(null)` 等无原型对象，以及同源 iframe 或 `vm` 上下文等其他 realm 中的普通对象（其原型为对应 realm 的 `Object.prototype`）。未使用它时，Mutative 只为当前 realm 的普通对象创建草稿，对其他类型的基础状态调用 `create()` 会抛错。
+`markSimpleObject` 是一个[标记](/zh/docs/advanced-guides/mark)，支持普通对象、由 `Object.create(null)` 创建的无原型对象，以及同源 iframe 或 `vm` 上下文等其他 realm 中的普通对象（其原型为对应 realm 的 `Object.prototype`）。未使用它时，Mutative 只为当前 realm 的普通对象创建草稿，对其他类型的基础状态调用 `create()` 会抛错。
 
 ```ts
 markSimpleObject(value: unknown): 'immutable' | undefined
