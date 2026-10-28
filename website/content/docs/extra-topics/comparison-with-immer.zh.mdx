@@ -71,7 +71,7 @@ Mutative 与 Immer 采用相同模型：更新函数修改草稿，库生成下�
 
 ## Mutative 正确处理的 Immer 边界情况 [#immer-behaviors-that-mutative-handles]
 
-Mutative 通过了适配到自身 API 的 Immer 测试套件。[差异测试](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts)固定了 Immer 11.1.18 处理错误而 Mutative 正确处理的案例，如草稿泄漏到最终状态、冻结后 Map 键仍可变等。[数组方法审计](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md)复现了 `enableArrayMethods()` 的补丁顺序、基础状态修改和草稿最终处理问题；[复现测试](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.test.ts)包含关闭插件的对照，并对 Mutative 运行相同更新函数。
+Mutative 通过了适配到自身 API 的 Immer 测试套件。[差异测试](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts)固定了 Immer 11.1.18 处理有误、而 Mutative 处理正确的案例，如草稿泄漏到最终状态、冻结后 Map 键仍可变等。[数组方法审计](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md)复现了 `enableArrayMethods()` 的补丁顺序、基础状态修改和草稿最终处理问题；[复现测试](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.test.ts)包含关闭插件的对照，并对 Mutative 运行相同更新函数。
 
 ## Mutative 与 Immer 的性能 [#mutative-vs-immer-performance]
 
