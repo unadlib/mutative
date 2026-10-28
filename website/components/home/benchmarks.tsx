@@ -55,9 +55,9 @@ export function Benchmarks({ locale = 'en' }: { locale?: Locale }) {
               <p className="mt-1 text-sm text-fd-muted-foreground">
                 {locale === 'zh'
                   ? stat === stats[0]
-                    ? `${speedups.matched.cases} 个测量案例中，${speedups.matched.faster} 个更快`
+                    ? `${speedups.matched.cases} 个测量案例中，Mutative 在 ${speedups.matched.faster} 个案例里更快`
                     : stat === stats[1]
-                      ? `${speedups.defaults.cases} 个测量案例中，${speedups.defaults.faster} 个更快`
+                      ? `${speedups.defaults.cases} 个测量案例中，Mutative 在 ${speedups.defaults.faster} 个案例里更快`
                       : t(stat.detail)
                   : stat.detail}
               </p>
