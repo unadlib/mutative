@@ -41,9 +41,12 @@ export function Hero({ locale = 'en' }: { locale?: Locale }) {
           className="size-18 drop-shadow-[0_8px_32px_rgba(255,136,0,0.35)] md:size-24"
         />
         <h1 className="mt-6 text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-          <span className={brandText}>{t('Better')}</span> {t('immutability')}
+          <span className={brandText}>{t('Better')}</span>
+          {locale === 'en' ? ' ' : null}
+          {t('immutability')}
           <br />
-          <span className={brandText}>{t('Faster')}</span>{' '}
+          <span className={brandText}>{t('Faster')}</span>
+          {locale === 'en' ? ' ' : null}
           {t('immutable updates')}
         </h1>
         <p className="mt-6 max-w-[640px] text-lg text-fd-muted-foreground md:text-xl">

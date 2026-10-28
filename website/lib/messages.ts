@@ -127,9 +127,9 @@ const zh: Record<string, string> = {
   'Everything immutable updates need': '不可变更新所需的功能',
   'Drafts for every data structure, with patches, freezing, marks and strict mode when you need them.':
     '为多种数据结构提供草稿，按需开启补丁、冻结、标记与严格模式。',
-  Better: '更易用的',
-  immutability: '不可变数据',
-  Faster: '更高效的',
+  Better: '更好的',
+  immutability: '不可变性',
+  Faster: '更快的',
   'immutable updates': '不可变更新',
   'A JavaScript library for efficient immutable updates. Write plain mutations on a draft, and get the next immutable state.':
     '高效的 JavaScript 不可变更新库。像修改普通数据一样修改草稿，即可得到下一个不可变状态。',
