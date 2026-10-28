@@ -3,7 +3,7 @@ title: rawReturn()
 description: 原样返回不含草稿的值并跳过搜索，或将状态设为 undefined。
 ---
 
-`rawReturn(value)` 包裹更新函数的返回值，使 `create()` 原样将它作为下一个状态，不再搜索其中的草稿。它也能将状态设为 `undefined`，而普通的不返回值无法表达此意图。
+`rawReturn(value)` 包裹更新函数的返回值，使 `create()` 原样将它作为下一个状态，不再搜索其中的草稿。它也能将状态设为 `undefined`，而直接不返回任何值无法表达此意图。
 
 ```ts
 rawReturn<T extends object | undefined>(value: T): T
