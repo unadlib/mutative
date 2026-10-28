@@ -1,0 +1,11 @@
+{
+  "title": "Mutative",
+  "description": "高效的 JavaScript 不可变更新库。通过普通 JavaScript 修改草稿，只复制变化的部分，生成下一个状态。",
+  "pages": [
+    "intro",
+    "getting-started",
+    "advanced-guides",
+    "api-reference",
+    "extra-topics"
+  ]
+}
