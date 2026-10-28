@@ -83,7 +83,7 @@ import {
 | 更新每一行 | 10,000 | 8,555 | 21,767 | 22,549 |
 | 更新 10,000 条记录中的一条 | 10,000 | 1,184 | 2,104 | 1,181 |
 
-Immer 可选的 `enableArrayMethods()` 插件也在草稿副本上执行数组方法。开启补丁时，移动 1,000 或 10,000 行的耗时可接近 Mutative 的 1.13–1.70 倍。本对比未开启该插件，因为在 Immer 11.1.18 中它破坏了通常成立的保证：`shift`、`pop` 和 `splice` 返回原始基础对象，修改移出的对象会改变之前的状态；重排序也可能暴露原始对象，并在结果中留下已撤销的草稿；正向补丁还可能无法正确重放。[审计](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md)中的 4,913 组三步操作序列，有 123 组在开启插件时出错，关闭时则全部通过。[性能报告](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md)单独列出了开启该插件的 Immer 结果。
+Immer 可选的 `enableArrayMethods()` 插件也在草稿副本上执行数组方法。开启补丁时，移动 1,000 或 10,000 行，Immer 的耗时为 Mutative 的 1.13–1.70 倍（即慢 13%–70%）。本对比未开启该插件，因为在 Immer 11.1.18 中它破坏了通常成立的保证：`shift`、`pop` 和 `splice` 返回原始基础对象，修改移出的对象会改变之前的状态；重排序也可能暴露原始对象，并在结果中留下已撤销的草稿；正向补丁还可能无法正确重放。[审计](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md)中的 4,913 组三步操作序列，有 123 组在开启插件时出错，关闭时则全部通过。[性能报告](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md)单独列出了开启该插件的 Immer 结果。
 
 ## Mutative 与手写 reducer 对比 [#mutative-vs-hand-written-reducers]
 
