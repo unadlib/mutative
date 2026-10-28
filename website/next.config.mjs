@@ -8,6 +8,8 @@ const config = {
   // GitHub Pages serves `/docs/intro/` from `docs/intro/index.html`.
   trailingSlash: true,
   reactStrictMode: true,
+  // Multiple root layouts need one shared 404 for the static host.
+  experimental: { globalNotFound: true },
   images: {
     unoptimized: true,
   },
