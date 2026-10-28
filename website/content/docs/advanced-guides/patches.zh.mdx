@@ -122,7 +122,7 @@ expect(inversePatches).toEqual([
 ```
 
 <Callout type="idea">
-对大数组逐索引生成 `remove` 比单个 `length` 的 `replace` 耗时更多、补丁更多。除非需要 JSON Patch 格式，否则应保留 `arrayLengthAssignment`。
+对大数组逐索引生成 `remove` 比单个 `length` 的 `replace` 耗时更多、补丁更多。除非需要 JSON Patch 格式，否则应保持 `arrayLengthAssignment: true`（即保留默认值）。
 </Callout>
 
 ## 稀疏数组 [#sparse-arrays]
