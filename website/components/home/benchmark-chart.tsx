@@ -127,10 +127,23 @@ export function BenchmarkChart({ locale = 'en' }: { locale?: Locale }) {
                 </p>
               </div>
               <p className="shrink-0 text-right text-sm">
-                <span className="font-semibold">
-                  {formatFactor(getFactor(workload))}
-                </span>{' '}
-                <span className="text-fd-muted-foreground">{t('faster')}</span>
+                {locale === 'zh' ? (
+                  <span className="text-fd-muted-foreground">
+                    {t('faster')}{' '}
+                    <span className="font-semibold text-fd-foreground">
+                      {formatFactor(getFactor(workload)).replace(/x$/, ' 倍')}
+                    </span>
+                  </span>
+                ) : (
+                  <>
+                    <span className="font-semibold">
+                      {formatFactor(getFactor(workload))}
+                    </span>{' '}
+                    <span className="text-fd-muted-foreground">
+                      {t('faster')}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
             <div

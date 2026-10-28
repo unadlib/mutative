@@ -43,7 +43,7 @@ const zh: Record<string, string> = {
   View: '视图',
   chart: '图表',
   table: '表格',
-  faster: '性能倍数',
+  faster: '相对 Immer 加速',
   'µs per update': 'µs / 次更新',
   'Microseconds per update, shorter is better':
     '每次更新耗时（微秒），越短越好',
