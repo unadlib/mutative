@@ -68,7 +68,7 @@ export function OverallComparison({ locale = 'en' }: { locale?: Locale }) {
                       : 'text-fd-muted-foreground'
                   }`}
                 >
-                  {`${factors[key]}x`}
+                  {locale === 'zh' ? `${factors[key]} 倍` : `${factors[key]}x`}
                 </span>
               </div>
             </li>

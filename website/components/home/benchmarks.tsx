@@ -49,7 +49,7 @@ export function Benchmarks({ locale = 'en' }: { locale?: Locale }) {
                 className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-fd-primary to-transparent"
               />
               <p className="text-4xl font-semibold tracking-tight md:text-5xl">
-                {stat.value}
+                {locale === 'zh' ? stat.value.replace(/x$/, ' 倍') : stat.value}
               </p>
               <p className="mt-3 font-medium">{t(stat.label)}</p>
               <p className="mt-1 text-sm text-fd-muted-foreground">
