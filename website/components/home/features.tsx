@@ -1,3 +1,5 @@
+import { translator } from '@/lib/messages';
+import { localePath, type Locale } from '@/lib/i18n';
 import {
   Copy,
   FileDiff,
@@ -77,30 +79,34 @@ const features: {
   },
 ];
 
-export function Features() {
+export function Features({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   return (
     <section className="border-y bg-fd-card/50">
       <div className="mx-auto w-full max-w-[1100px] px-4 py-20 md:py-28">
         <SectionHeading
-          eyebrow="Features"
-          title="Everything immutable updates need"
+          eyebrow={t('Features')}
+          title={t('Everything immutable updates need')}
         >
-          Drafts for every data structure, with patches, freezing, marks and
-          strict mode when you need them.
+          {t(
+            'Drafts for every data structure, with patches, freezing, marks and strict mode when you need them.'
+          )}
         </SectionHeading>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map(({ icon: Icon, title, description, href }) => (
             <Link
               key={title}
-              href={href}
+              href={localePath(href, locale)}
               className="group rounded-2xl border bg-fd-background p-6 transition-colors hover:border-fd-primary/50 hover:bg-fd-accent/40"
             >
               <div className="inline-flex size-10 items-center justify-center rounded-xl bg-fd-primary/10 text-fd-primary ring-1 ring-fd-primary/20">
                 <Icon className="size-5" />
               </div>
-              <h3 className="mt-5 font-semibold">{title}</h3>
+              <h3 className="mt-5 font-semibold">{t(title)}</h3>
               <p className="mt-2 text-sm text-fd-muted-foreground">
-                {description}
+                {locale === 'zh' && title === 'High performance'
+                  ? `默认配置下性能约为 Immer 的 ${speedups.defaults.factor} 倍；在含数千个键的对象上，也快于手写展开语法。`
+                  : t(description)}
               </p>
             </Link>
           ))}

@@ -1,3 +1,5 @@
+import { translator } from '@/lib/messages';
+import { localePath, type Locale } from '@/lib/i18n';
 import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,7 +11,8 @@ import { OverallComparison } from './overall-comparison';
 const brandText =
   'bg-linear-to-r from-[#c25e00] to-[#d96f00] bg-clip-text text-transparent dark:from-[#ff8800] dark:to-[#ffb24d]';
 
-export function Hero() {
+export function Hero({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   return (
     <section className="relative overflow-hidden border-b">
       {/* A grid that fades out, under a glow of the primary color. */}
@@ -38,26 +41,28 @@ export function Hero() {
           className="size-18 drop-shadow-[0_8px_32px_rgba(255,136,0,0.35)] md:size-24"
         />
         <h1 className="mt-6 text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-          <span className={brandText}>Better</span> immutability
+          <span className={brandText}>{t('Better')}</span> {t('immutability')}
           <br />
-          <span className={brandText}>Faster</span> immutable updates
+          <span className={brandText}>{t('Faster')}</span>{' '}
+          {t('immutable updates')}
         </h1>
         <p className="mt-6 max-w-[640px] text-lg text-fd-muted-foreground md:text-xl">
-          A JavaScript library for efficient immutable updates. Write plain
-          mutations on a draft, and get the next immutable state.
+          {t(
+            'A JavaScript library for efficient immutable updates. Write plain mutations on a draft, and get the next immutable state.'
+          )}
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
-            href="/docs/intro"
+            href={localePath('/docs/intro', locale)}
             className="inline-flex h-11 items-center gap-2 rounded-xl bg-fd-primary px-6 font-semibold text-fd-primary-foreground shadow-[0_8px_24px_-8px_rgba(255,136,0,0.6)] transition-colors hover:bg-fd-primary/90"
           >
-            Get Started
+            {t('Get Started')}
             <ArrowRight className="size-4" />
           </Link>
           <GitHubButton />
-          <InstallCommand />
+          <InstallCommand locale={locale} />
         </div>
-        <OverallComparison />
+        <OverallComparison locale={locale} />
       </div>
     </section>
   );

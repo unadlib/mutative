@@ -1,3 +1,5 @@
+import { translator } from '@/lib/messages';
+import { localePath, type Locale } from '@/lib/i18n';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { SectionHeading } from './section-heading';
@@ -81,19 +83,24 @@ const libraries = [
   },
 ];
 
-export function Ecosystem() {
+export function Ecosystem({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   return (
     <section className="mx-auto w-full max-w-[1100px] px-4 py-16 md:py-24">
-      <SectionHeading eyebrow="Ecosystem" title="Works with your stack">
-        Libraries built on Mutative for React, Zustand, Jotai, XState, Yjs and
-        more.
+      <SectionHeading
+        eyebrow={t('Ecosystem')}
+        title={t('Works with your stack')}
+      >
+        {t(
+          'Libraries built on Mutative for React, Zustand, Jotai, XState, Yjs and more.'
+        )}
       </SectionHeading>
       <div className="mx-auto mt-10 flex max-w-[860px] flex-wrap justify-center gap-3">
         {libraries.map((library) => (
           <a
             key={library.name}
             href={library.url}
-            title={library.description}
+            title={t(library.description)}
             target="_blank"
             rel="noreferrer noopener"
             className="inline-flex items-center gap-2 rounded-full border bg-fd-card px-4 py-2 transition-colors hover:border-fd-primary/50"
@@ -102,17 +109,17 @@ export function Ecosystem() {
               {library.name}
             </span>
             <span className="text-xs text-fd-muted-foreground">
-              {library.tag}
+              {t(library.tag)}
             </span>
           </a>
         ))}
       </div>
       <p className="mt-8 text-center text-sm">
         <Link
-          href="/docs/extra-topics/mutative-ecosystem"
+          href={localePath('/docs/extra-topics/mutative-ecosystem', locale)}
           className="inline-flex items-center gap-1 font-medium underline decoration-fd-primary underline-offset-4 transition-opacity hover:opacity-80"
         >
-          See the ecosystem
+          {t('See the ecosystem')}
           <ArrowRight className="size-3.5" />
         </Link>
       </p>

@@ -1,3 +1,5 @@
+import { translator } from '@/lib/messages';
+import { localePath, type Locale } from '@/lib/i18n';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { SectionHeading } from './section-heading';
@@ -63,12 +65,17 @@ const otherProjects = [
   { name: 'MSW Data', url: 'https://github.com/mswjs/data' },
 ];
 
-export function Adopters() {
+export function Adopters({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   return (
     <section className="mx-auto w-full max-w-[1100px] px-4 py-20 md:py-28">
-      <SectionHeading eyebrow="In production" title="From Immer to Mutative">
-        Open-source projects that replaced Immer with Mutative, in their own
-        words.
+      <SectionHeading
+        eyebrow={t('In production')}
+        title={t('From Immer to Mutative')}
+      >
+        {t(
+          'Open-source projects that replaced Immer with Mutative, in their own words.'
+        )}
       </SectionHeading>
       <div className="mt-12 grid gap-4 md:grid-cols-2">
         {projects.map((project) => (
@@ -77,10 +84,10 @@ export function Adopters() {
             className="flex flex-col rounded-2xl border bg-fd-card p-6 md:p-8"
           >
             <blockquote className="flex-1 text-lg font-medium leading-relaxed">
-              “{project.quote}”
+              “{t(project.quote)}”
             </blockquote>
             <p className="mt-3 text-sm text-fd-muted-foreground">
-              {project.context}
+              {t(project.context)}
             </p>
             <figcaption className="mt-6 border-t pt-4">
               <a
@@ -92,7 +99,7 @@ export function Adopters() {
                 {project.name}
               </a>
               <p className="text-sm text-fd-muted-foreground">
-                {project.description}
+                {t(project.description)}
               </p>
               <a
                 href={project.source.url}
@@ -100,7 +107,7 @@ export function Adopters() {
                 rel="noreferrer noopener"
                 className="mt-2 inline-flex items-center gap-1 text-sm text-fd-muted-foreground transition-colors hover:text-fd-foreground"
               >
-                {project.source.label}, {project.source.date}
+                {t(project.source.label)}, {t(project.source.date)}
                 <ArrowUpRight className="size-3.5" />
               </a>
             </figcaption>
@@ -108,10 +115,11 @@ export function Adopters() {
         ))}
       </div>
       <p className="mt-8 text-center text-sm text-fd-muted-foreground">
-        Also used by{' '}
+        {t('Also used by')}{' '}
         {otherProjects.map((project, index) => (
           <span key={project.name}>
-            {index > 0 && (index === otherProjects.length - 1 ? ' and ' : ', ')}
+            {index > 0 &&
+              (index === otherProjects.length - 1 ? t(' and ') : ', ')}
             <a
               href={project.url}
               target="_blank"
@@ -124,10 +132,10 @@ export function Adopters() {
         ))}
         .{' '}
         <Link
-          href="/docs/extra-topics/who-uses-mutative"
+          href={localePath('/docs/extra-topics/who-uses-mutative', locale)}
           className="inline-flex items-center gap-1 font-medium text-fd-foreground underline decoration-fd-primary underline-offset-4 transition-opacity hover:opacity-80"
         >
-          See who uses Mutative
+          {t('See who uses Mutative')}
           <ArrowRight className="size-3.5" />
         </Link>
       </p>

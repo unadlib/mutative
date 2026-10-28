@@ -1,11 +1,13 @@
 'use client';
 
+import { translator } from '@/lib/messages';
 import {
   arraySpeedups,
   benchmarkRun,
   patchWorkloads,
   speedups,
 } from '@/lib/benchmarks';
+import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { useId, useState, type ReactNode } from 'react';
 
 const number = (value: number) =>
@@ -87,37 +89,45 @@ function Toggle<T extends string>({
 }
 
 export function PerformanceOverview() {
+  const locale = useI18n().locale === 'zh' ? 'zh' : 'en';
+  const t = translator(locale);
   const comparisons = [
     {
-      label: 'Matched settings',
-      detail: 'Same auto-freeze and patch settings',
+      label: t('Matched settings'),
+      detail: t('Same auto-freeze and patch settings'),
       ...speedups.matched,
     },
     {
-      label: 'Each library’s defaults',
-      detail: 'Only Immer auto-freezes; patches off',
+      label: t('Each library’s defaults'),
+      detail: t('Only Immer auto-freezes; patches off'),
       ...speedups.defaults,
     },
   ];
   const outcomes = [
-    { key: 'faster', label: 'Mutative faster', color: orange },
+    { key: 'faster', label: t('Mutative faster'), color: orange },
     {
       key: 'within',
-      label: 'Within 5%',
+      label: t('Within 5%'),
       color: 'bg-neutral-400 forced-colors:bg-[GrayText]',
     },
     {
       key: 'slower',
-      label: 'Immer faster',
+      label: t('Immer faster'),
       color: 'bg-sky-600 dark:bg-sky-400 forced-colors:bg-[CanvasText]',
     },
   ] as const;
 
   return (
     <ChartFrame
-      title="The overall comparison"
-      description={`${benchmarkRun.workloads} workloads · geometric mean of Immer / Mutative time`}
-      caption="Each card covers a different set of measured cases. Faster means more than 5% less time; the factors are geometric means, not a speedup guaranteed for every workload."
+      title={t('The overall comparison')}
+      description={
+        locale === 'zh'
+          ? `${benchmarkRun.workloads} 项工作负载 · Immer / Mutative 耗时比的几何平均值`
+          : `${benchmarkRun.workloads} workloads · geometric mean of Immer / Mutative time`
+      }
+      caption={t(
+        'Each card covers a different set of measured cases. Faster means more than 5% less time; the factors are geometric means, not a speedup guaranteed for every workload.'
+      )}
     >
       <div className="grid gap-6 sm:grid-cols-2">
         {comparisons.map((comparison) => (
@@ -131,7 +141,7 @@ export function PerformanceOverview() {
                 {factor(comparison.factor)}
               </span>
               <span className="text-xs text-fd-muted-foreground">
-                faster on geometric mean
+                {t('faster on geometric mean')}
               </span>
             </p>
             <div
@@ -153,7 +163,7 @@ export function PerformanceOverview() {
                 {comparison.faster} / {comparison.cases}
               </span>{' '}
               <span className="text-fd-muted-foreground">
-                cases favor Mutative
+                {t('cases favor Mutative')}
               </span>
             </p>
             <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-fd-muted-foreground">
@@ -183,6 +193,8 @@ const modes = [
 ];
 
 export function ArrayScalingChart() {
+  const locale = useI18n().locale === 'zh' ? 'zh' : 'en';
+  const t = translator(locale);
   const [view, setView] = useState<'all' | 'moves'>('all');
   const id = useId();
   const ticks = view === 'all' ? [1, 2, 5, 10, 20] : [1, 10, 100, 1000];
@@ -192,29 +204,31 @@ export function ArrayScalingChart() {
 
   return (
     <ChartFrame
-      title="How the gap changes with array size"
-      description="Immer / Mutative time · higher is better for Mutative"
+      title={t('How the gap changes with array size')}
+      description={t('Immer / Mutative time · higher is better for Mutative')}
       controls={
         <Toggle
-          label="Array workload group"
+          label={t('Array workload group')}
           value={view}
           onChange={setView}
           options={[
-            { value: 'all', label: 'All workloads' },
-            { value: 'moves', label: 'Element moves' },
+            { value: 'all', label: t('All workloads') },
+            { value: 'moves', label: t('Element moves') },
           ]}
         />
       }
-      caption="Both libraries use the same settings. The vertical axis is logarithmic; 1× means equal time. Element moves cover shift, unshift, splice insertion, and reverse. Immer’s array-method plugin is off."
+      caption={t(
+        'Both libraries use the same settings. The vertical axis is logarithmic; 1× means equal time. Element moves cover shift, unshift, splice insertion, and reverse. Immer’s array-method plugin is off.'
+      )}
     >
       <div className="flex items-center justify-between gap-3 text-xs text-fd-muted-foreground">
         <span>
           {view === 'all'
-            ? 'All large-array workloads'
-            : 'Only workloads that move elements'}
+            ? t('All large-array workloads')
+            : t('Only workloads that move elements')}
         </span>
         <span className="shrink-0 rounded-full border px-2 py-0.5">
-          Log scale
+          {t('Log scale')}
         </span>
       </div>
       <svg
@@ -224,13 +238,16 @@ export function ArrayScalingChart() {
         className="mt-3 block w-full overflow-visible text-fd-muted-foreground forced-colors:text-[CanvasText]"
       >
         <title id={`${id}-title`}>
-          {`Large-array speedups: ${view === 'all' ? 'all workloads' : 'element moves'}`}
+          {locale === 'zh'
+            ? `大数组性能倍数：${view === 'all' ? '全部场景' : '元素移动'}`
+            : `Large-array speedups: ${view === 'all' ? 'all workloads' : 'element moves'}`}
         </title>
         <desc id={`${id}-description`}>
           {arraySpeedups
-            .map(
-              (mode) =>
-                `Freeze ${mode.freeze ? 'on' : 'off'}, patches ${mode.patches ? 'on' : 'off'}: ${factor(mode[view][0])} at 1,000 rows and ${factor(mode[view][1])} at 10,000 rows.`
+            .map((mode) =>
+              locale === 'zh'
+                ? `冻结${mode.freeze ? '开启' : '关闭'}，补丁${mode.patches ? '开启' : '关闭'}：1,000 行时 ${factor(mode[view][0])}，10,000 行时 ${factor(mode[view][1])}。`
+                : `Freeze ${mode.freeze ? 'on' : 'off'}, patches ${mode.patches ? 'on' : 'off'}: ${factor(mode[view][0])} at 1,000 rows and ${factor(mode[view][1])} at 10,000 rows.`
             )
             .join(' ')}
         </desc>
@@ -273,7 +290,7 @@ export function ArrayScalingChart() {
               fill="currentColor"
               fontSize="13"
             >
-              {index === 0 ? '1,000 rows' : '10,000 rows'}
+              {index === 0 ? t('1,000 rows') : t('10,000 rows')}
             </text>
           </g>
         ))}
@@ -299,7 +316,7 @@ export function ArrayScalingChart() {
                 stroke="var(--color-fd-background)"
                 strokeWidth="2"
               >
-                <title>{`Freeze ${mode.freeze ? 'on' : 'off'}, patches ${mode.patches ? 'on' : 'off'} · ${point === 0 ? '1,000' : '10,000'} rows: ${factor(value)}`}</title>
+                <title>{`${t('Freeze')} ${mode.freeze ? t('on') : t('off')}, ${t('· patches')} ${mode.patches ? t('on') : t('off')} · ${t(point === 0 ? '1,000 rows' : '10,000 rows')}: ${factor(value)}`}</title>
               </circle>
             ))}
           </g>
@@ -332,14 +349,16 @@ export function ArrayScalingChart() {
             </svg>
             <div className="min-w-0">
               <p className="font-medium">
-                Freeze {mode.freeze ? 'on' : 'off'} · patches{' '}
-                {mode.patches ? 'on' : 'off'}
+                {t('Freeze')} {mode.freeze ? t('on') : t('off')}{' '}
+                {t('· patches')} {mode.patches ? t('on') : t('off')}
               </p>
               <p className="mt-1 text-fd-muted-foreground">
                 <span className="tabular-nums">
                   {factor(mode[view][0])} → {factor(mode[view][1])}
                 </span>{' '}
-                <span className="whitespace-nowrap">at 1k → 10k rows</span>
+                <span className="whitespace-nowrap">
+                  {t('at 1k → 10k rows')}
+                </span>
               </p>
             </div>
           </li>
@@ -350,6 +369,8 @@ export function ArrayScalingChart() {
 }
 
 export function PatchComparisonChart() {
+  const locale = useI18n().locale === 'zh' ? 'zh' : 'en';
+  const t = translator(locale);
   const [comparator, setComparator] = useState<'immer' | 'mutativeV1'>('immer');
   const label = comparator === 'immer' ? 'Immer' : 'Mutative 1.3.0';
   const comparisonColor =
@@ -359,11 +380,11 @@ export function PatchComparisonChart() {
 
   return (
     <ChartFrame
-      title="The cost of updates with patches"
-      description="Microseconds per update · shorter is better"
+      title={t('The cost of updates with patches')}
+      description={t('Microseconds per update · shorter is better')}
       controls={
         <Toggle
-          label="Patch benchmark comparator"
+          label={t('Patch benchmark comparator')}
           value={comparator}
           onChange={setComparator}
           options={[
@@ -372,7 +393,11 @@ export function PatchComparisonChart() {
           ]}
         />
       }
-      caption={`Patches on, auto-freeze off, 10,000 rows. Each workload has its own linear scale. Medians of three runs on ${benchmarkRun.machine}, Node.js ${benchmarkRun.node}; Immer ${benchmarkRun.immer} with its array-method plugin off.`}
+      caption={
+        locale === 'zh'
+          ? `开启补丁，关闭自动冻结，10,000 行。每个场景独立使用线性刻度。数据为 ${benchmarkRun.machine}、Node.js ${benchmarkRun.node} 上三次运行的中位数；Immer ${benchmarkRun.immer} 未开启数组方法插件。`
+          : `Patches on, auto-freeze off, 10,000 rows. Each workload has its own linear scale. Medians of three runs on ${benchmarkRun.machine}, Node.js ${benchmarkRun.node}; Immer ${benchmarkRun.immer} with its array-method plugin off.`
+      }
     >
       <div className="space-y-6" aria-live="polite" aria-atomic="true">
         {patchWorkloads.map((workload) => {
@@ -381,13 +406,17 @@ export function PatchComparisonChart() {
           return (
             <div key={workload.name}>
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                <p className="text-sm font-medium">{workload.name}</p>
+                <p className="text-sm font-medium">{t(workload.name)}</p>
                 <p className="text-xs text-fd-muted-foreground">
                   {relativeTime < 0.95
-                    ? `${factor(1 / relativeTime)} faster than ${label}`
+                    ? locale === 'zh'
+                      ? `性能为 ${label} 的 ${factor(1 / relativeTime)}`
+                      : `${factor(1 / relativeTime)} faster than ${label}`
                     : relativeTime > 1.05
-                      ? `${factor(relativeTime)} slower than ${label}`
-                      : 'Within 5%'}
+                      ? locale === 'zh'
+                        ? `耗时为 ${label} 的 ${factor(relativeTime)}`
+                        : `${factor(relativeTime)} slower than ${label}`
+                      : t('Within 5%')}
                 </p>
               </div>
               {(['mutative', comparator] as const).map((key) => (

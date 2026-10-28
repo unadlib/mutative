@@ -1,7 +1,10 @@
+import { translator } from '@/lib/messages';
+import { localePath, type Locale } from '@/lib/i18n';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-export function CallToAction() {
+export function CallToAction({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   return (
     <section className="mx-auto w-full max-w-[1100px] px-4 py-16 md:py-24">
       <div className="relative overflow-hidden rounded-3xl border bg-fd-card px-6 py-16 text-center md:py-20">
@@ -22,24 +25,24 @@ export function CallToAction() {
         />
         <div className="relative">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Ready to try Mutative?
+            {t('Ready to try Mutative?')}
           </h2>
           <p className="mx-auto mt-4 max-w-[520px] text-lg text-fd-muted-foreground">
-            Learn the most important Mutative concepts in 5 minutes.
+            {t('Learn the most important Mutative concepts in 5 minutes.')}
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/docs/getting-started"
+              href={localePath('/docs/getting-started', locale)}
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-fd-primary px-6 font-semibold text-fd-primary-foreground shadow-[0_8px_24px_-8px_rgba(255,136,0,0.6)] transition-colors hover:bg-fd-primary/90"
             >
-              Get Started
+              {t('Get Started')}
               <ArrowRight className="size-4" />
             </Link>
             <Link
-              href="/docs/advanced-guides/migration"
+              href={localePath('/docs/advanced-guides/migration', locale)}
               className="inline-flex h-11 items-center rounded-xl border bg-fd-secondary/80 px-6 font-semibold text-fd-secondary-foreground shadow-sm transition-colors hover:bg-fd-accent"
             >
-              Migrate from Immer
+              {t('Migrate from Immer')}
             </Link>
           </div>
         </div>

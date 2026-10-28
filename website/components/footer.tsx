@@ -1,3 +1,4 @@
+import { translator } from '@/lib/messages';
 import { localePath, type Locale } from '@/lib/i18n';
 import { appName, githubUrl } from '@/lib/shared';
 import Image from 'next/image';
@@ -35,24 +36,25 @@ const columns = [
 ];
 
 export function Footer({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   return (
     <footer className="border-t bg-fd-card/50">
       <div className="mx-auto grid max-w-[1100px] gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <Link
-            href={localePath("/", locale)}
+            href={localePath('/', locale)}
             className="inline-flex items-center gap-2 text-lg font-semibold"
           >
             <Image src="/img/logo.svg" alt="" width={28} height={28} />
             {appName}
           </Link>
           <p className="mt-3 max-w-[280px] text-sm text-fd-muted-foreground">
-            A JavaScript library for efficient immutable updates.
+            {t('A JavaScript library for efficient immutable updates.')}
           </p>
         </div>
         {columns.map((column) => (
           <div key={column.title}>
-            <p className="mb-3 text-sm font-semibold">{column.title}</p>
+            <p className="mb-3 text-sm font-semibold">{t(column.title)}</p>
             <ul className="space-y-2 text-sm text-fd-muted-foreground">
               {column.links.map((link) => (
                 <li key={link.text}>
@@ -61,7 +63,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
                       href={localePath(link.href, locale)}
                       className="transition-colors hover:text-fd-primary"
                     >
-                      {link.text}
+                      {t(link.text)}
                     </Link>
                   ) : (
                     <a
@@ -70,7 +72,7 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
                       rel="noreferrer noopener"
                       className="transition-colors hover:text-fd-primary"
                     >
-                      {link.text}
+                      {t(link.text)}
                     </a>
                   )}
                 </li>
@@ -81,8 +83,10 @@ export function Footer({ locale = 'en' }: { locale?: Locale }) {
       </div>
       <div className="border-t">
         <div className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-2 px-4 py-6 text-sm text-fd-muted-foreground">
-          <p>Copyright © {new Date().getFullYear()} Mutative, Inc.</p>
-          <p>Released under the MIT License.</p>
+          <p>
+            {t('Copyright ©')} {new Date().getFullYear()} Mutative, Inc.
+          </p>
+          <p>{t('Released under the MIT License.')}</p>
         </div>
       </div>
     </footer>

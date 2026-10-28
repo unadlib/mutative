@@ -1,3 +1,5 @@
+import { translator } from '@/lib/messages';
+import { localePath, type Locale } from '@/lib/i18n';
 import { benchmarkRun, speedups } from '@/lib/benchmarks';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -24,12 +26,15 @@ const delay = 0.4;
  * without JavaScript and on the compositor; see `.race-bar` in
  * `app/global.css`.
  */
-export function OverallComparison() {
+export function OverallComparison({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   return (
     <figure className="mt-8 w-full max-w-[640px] rounded-2xl border bg-fd-card/90 p-5 text-left shadow-sm sm:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-        <p className="text-sm font-medium">Time for the same updates</p>
-        <p className="text-xs text-fd-muted-foreground">Shorter is better</p>
+        <p className="text-sm font-medium">{t('Time for the same updates')}</p>
+        <p className="text-xs text-fd-muted-foreground">
+          {t('Shorter is better')}
+        </p>
       </div>
       <ul className="mt-3">
         {series.map(({ key, label, color }) => {
@@ -44,7 +49,7 @@ export function OverallComparison() {
               className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-x-2 sm:grid-cols-[8.75rem_minmax(0,1fr)]"
             >
               <span className="whitespace-nowrap text-xs text-fd-muted-foreground sm:text-sm">
-                {label}
+                {t(label)}
               </span>
               <div className="flex h-7 items-center" style={timing}>
                 <div
@@ -71,12 +76,14 @@ export function OverallComparison() {
         })}
       </ul>
       <figcaption className="mt-3 text-xs text-fd-muted-foreground">
-        {`Geometric means over ${benchmarkRun.workloads} workloads, with the same settings for both libraries, and with each library's defaults, where only Immer freezes. Mutative was faster in ${speedups.matched.faster} of ${speedups.matched.cases} measured cases.`}{' '}
+        {locale === 'zh'
+          ? `基于 ${benchmarkRun.workloads} 项工作负载的几何平均值，分别比较相同配置和各自默认配置（仅 Immer 冻结）。相同配置的 ${speedups.matched.cases} 个测量案例中，Mutative 在 ${speedups.matched.faster} 个案例中更快。`
+          : `Geometric means over ${benchmarkRun.workloads} workloads, with the same settings for both libraries, and with each library's defaults, where only Immer freezes. Mutative was faster in ${speedups.matched.faster} of ${speedups.matched.cases} measured cases.`}{' '}
         <Link
-          href="/docs/getting-started/performance"
+          href={localePath('/docs/getting-started/performance', locale)}
           className="inline-flex items-center gap-1 font-medium text-fd-foreground underline decoration-fd-primary underline-offset-4 transition-opacity hover:opacity-80"
         >
-          See the benchmarks
+          {t('See the benchmarks')}
           <ArrowRight className="size-3" />
         </Link>
       </figcaption>

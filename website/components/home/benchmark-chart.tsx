@@ -1,5 +1,7 @@
 'use client';
 
+import { translator } from '@/lib/messages';
+import { type Locale } from '@/lib/i18n';
 import {
   benchmarkRun,
   chartWorkloads,
@@ -31,7 +33,8 @@ function getRatio(workload: ChartWorkload, key: SeriesKey) {
 
 const rowCount = chartWorkloads.length * series.length;
 
-export function BenchmarkChart() {
+export function BenchmarkChart({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   const [view, setView] = useState<'chart' | 'table'>('chart');
   // The row whose details show, by hover or focus, and the row that the
   // keyboard reaches the chart at.
@@ -63,21 +66,25 @@ export function BenchmarkChart() {
     <figure className="rounded-2xl border bg-fd-background p-5 md:p-8">
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div>
-          <p className="font-medium">Time per update, relative to Mutative</p>
-          <p className="text-sm text-fd-muted-foreground">Shorter is better</p>
+          <p className="font-medium">
+            {t('Time per update, relative to Mutative')}
+          </p>
+          <p className="text-sm text-fd-muted-foreground">
+            {t('Shorter is better')}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-fd-muted-foreground">
             {series.map(({ key, label, color }) => (
               <li key={key} className="inline-flex items-center gap-2">
                 <span aria-hidden className={`size-3 rounded-[3px] ${color}`} />
-                {label}
+                {t(label)}
               </li>
             ))}
           </ul>
           <div
             role="group"
-            aria-label="View"
+            aria-label={t('View')}
             className="inline-flex rounded-lg border bg-fd-card p-0.5 text-sm"
           >
             {(['chart', 'table'] as const).map((option) => (
@@ -92,7 +99,7 @@ export function BenchmarkChart() {
                     : 'text-fd-muted-foreground hover:text-fd-foreground'
                 }`}
               >
-                {option}
+                {t(option)}
               </button>
             ))}
           </div>
@@ -113,17 +120,17 @@ export function BenchmarkChart() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 id={`benchmark-${workloadIndex}`} className="font-medium">
-                  {workload.name}
+                  {t(workload.name)}
                 </h3>
                 <p className="text-sm text-fd-muted-foreground">
-                  {workload.detail}
+                  {t(workload.detail)}
                 </p>
               </div>
               <p className="shrink-0 text-right text-sm">
                 <span className="font-semibold">
                   {formatFactor(getFactor(workload))}
                 </span>{' '}
-                <span className="text-fd-muted-foreground">faster</span>
+                <span className="text-fd-muted-foreground">{t('faster')}</span>
               </p>
             </div>
             <div
@@ -144,13 +151,15 @@ export function BenchmarkChart() {
                 );
                 const details =
                   key === 'mutative'
-                    ? label
-                    : `${label} · ${multiple} Mutative's time`;
+                    ? t(label)
+                    : locale === 'zh'
+                      ? `${t(label)} · 耗时为 Mutative 的 ${multiple}`
+                      : `${label} · ${multiple} Mutative's time`;
                 return (
                   <div
                     key={key}
                     role="listitem"
-                    aria-label={`${details}: ${workload[key]} µs per update`}
+                    aria-label={`${details}: ${workload[key]} ${t('µs per update')}`}
                     ref={(element) => {
                       rows.current[index] = element;
                     }}
@@ -176,7 +185,7 @@ export function BenchmarkChart() {
                     }`}
                   >
                     <span className="whitespace-nowrap pl-1 text-xs text-fd-muted-foreground sm:text-sm">
-                      {label}
+                      {t(label)}
                     </span>
                     <div className="flex h-7 items-center">
                       <div
@@ -198,7 +207,7 @@ export function BenchmarkChart() {
                             }`}
                           >
                             <span className="block font-semibold text-fd-foreground">
-                              {workload[key]} µs per update
+                              {workload[key]} {t('µs per update')}
                             </span>
                             <span className="mt-0.5 flex items-center gap-1.5 text-fd-muted-foreground">
                               <span
@@ -230,12 +239,12 @@ export function BenchmarkChart() {
       <div hidden={view !== 'table'} className="mt-8 overflow-x-auto">
         <table className="w-full min-w-[38rem] text-sm">
           <caption className="sr-only">
-            Microseconds per update, shorter is better
+            {t('Microseconds per update, shorter is better')}
           </caption>
           <thead>
             <tr className="border-b text-left text-fd-muted-foreground">
               <th scope="col" className="py-2 pr-4 font-medium">
-                Workload
+                {t('Workload')}
               </th>
               {series.map(({ key, label }) => (
                 <th
@@ -243,14 +252,14 @@ export function BenchmarkChart() {
                   scope="col"
                   className="whitespace-nowrap px-4 py-2 text-right font-medium"
                 >
-                  {label}
+                  {t(label)}
                 </th>
               ))}
               <th
                 scope="col"
                 className="whitespace-nowrap py-2 pl-4 text-right font-medium"
               >
-                Faster than Immer
+                {t('Faster than Immer')}
               </th>
             </tr>
           </thead>
@@ -258,9 +267,9 @@ export function BenchmarkChart() {
             {chartWorkloads.map((workload) => (
               <tr key={workload.name} className="border-b last:border-b-0">
                 <th scope="row" className="py-2 pr-4 text-left font-normal">
-                  {workload.name}
+                  {t(workload.name)}
                   <span className="block text-fd-muted-foreground">
-                    {workload.detail}
+                    {t(workload.detail)}
                   </span>
                 </th>
                 {series.map(({ key }) => (
@@ -281,7 +290,9 @@ export function BenchmarkChart() {
       </div>
 
       <figcaption className="mt-8 text-sm text-fd-muted-foreground">
-        {`Medians of three runs on an ${benchmarkRun.machine} with Node.js ${benchmarkRun.node} and Immer ${benchmarkRun.immer}, each library in a process of its own, without patches. Each bar is a library's time per update relative to Mutative's in its workload, and the table lists the times in microseconds. Mutative and the first Immer bar run without auto-freeze; the second Immer bar shows Immer's default. Hand-written reducers that copy only what they change are faster still in most workloads.`}
+        {locale === 'zh'
+          ? `在 ${benchmarkRun.machine}、Node.js ${benchmarkRun.node}、Immer ${benchmarkRun.immer} 上独立进程运行三次的中位数，均关闭补丁。条形表示各场景中相对于 Mutative 的单次更新耗时，表格以微秒列出耗时。Mutative 和第一条 Immer 关闭自动冻结，第二条 Immer 使用默认配置。多数场景中，只复制变化部分的手写 reducer 仍然更快。`
+          : `Medians of three runs on an ${benchmarkRun.machine} with Node.js ${benchmarkRun.node} and Immer ${benchmarkRun.immer}, each library in a process of its own, without patches. Each bar is a library's time per update relative to Mutative's in its workload, and the table lists the times in microseconds. Mutative and the first Immer bar run without auto-freeze; the second Immer bar shows Immer's default. Hand-written reducers that copy only what they change are faster still in most workloads.`}
       </figcaption>
     </figure>
   );

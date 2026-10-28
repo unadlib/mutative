@@ -1,3 +1,5 @@
+import { translator } from '@/lib/messages';
+import { type Locale } from '@/lib/i18n';
 import { highlight } from 'fumadocs-core/highlight';
 import { CodeBlock, Pre } from 'fumadocs-ui/components/codeblock';
 import { SectionHeading } from './section-heading';
@@ -39,28 +41,29 @@ function Code({ code, title }: { code: string; title: string }) {
   });
 }
 
-export function CodeComparison() {
+export function CodeComparison({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   return (
     <section className="mx-auto w-full max-w-[1100px] px-4 py-20 md:py-28">
       <SectionHeading
-        eyebrow="Simple"
-        title="Immutable updates without the spread"
+        eyebrow={t('Simple')}
+        title={t('Immutable updates without the spread')}
       >
-        Mark the last item of a list as done and add a new one. With spread
-        syntax, you copy each level of the state yourself; with Mutative, you
-        change a draft.
+        {t(
+          'Mark the last item of a list as done and add a new one. With spread syntax, you copy each level of the state yourself; with Mutative, you change a draft.'
+        )}
       </SectionHeading>
       <div className="mt-12 grid items-start gap-6 lg:grid-cols-[5fr_6fr]">
         {/* Grid items shrink below the width of their code. */}
         <div className="min-w-0">
           <p className="mb-3 text-sm font-medium text-fd-muted-foreground">
-            Spread syntax
+            {t('Spread syntax')}
           </p>
           <Code code={spreadCode} title="reducer.ts" />
         </div>
         <div className="min-w-0">
           <p className="mb-3 text-sm font-medium text-fd-primary">
-            With Mutative
+            {t('With Mutative')}
           </p>
           <div className="rounded-xl shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-fd-primary)_45%,transparent),0_16px_48px_-16px_color-mix(in_oklab,var(--color-fd-primary)_45%,transparent)]">
             <Code code={mutativeCode} title="reducer.ts" />

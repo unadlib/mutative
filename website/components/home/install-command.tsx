@@ -1,10 +1,13 @@
 'use client';
+import { translator } from '@/lib/messages';
+import { type Locale } from '@/lib/i18n';
 import { Check, Copy } from 'lucide-react';
 import { useState } from 'react';
 
 const command = 'npm install mutative';
 
-export function InstallCommand() {
+export function InstallCommand({ locale = 'en' }: { locale?: Locale }) {
+  const t = translator(locale);
   const [copied, setCopied] = useState(false);
 
   return (
@@ -13,7 +16,7 @@ export function InstallCommand() {
       <code>{command}</code>
       <button
         type="button"
-        aria-label={copied ? 'Copied' : 'Copy the install command'}
+        aria-label={copied ? t('Copied') : t('Copy the install command')}
         className="rounded-md p-1.5 text-fd-muted-foreground transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground"
         onClick={() => {
           void navigator.clipboard.writeText(command).then(() => {
