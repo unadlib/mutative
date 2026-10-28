@@ -31,7 +31,7 @@ const zh: Record<string, string> = {
     '在 42 版本将插件 store 迁移到 zustand-mutative。',
   Release: '版本发布',
   'January 2025': '2025 年 1 月',
-  'In production': '生产实践',
+  'In production': '生产环境',
   'From Immer to Mutative': '从 Immer 到 Mutative',
   'Open-source projects that replaced Immer with Mutative, in their own words.':
     '看看迁移到 Mutative 的开源项目如何评价（以下为引文译文）。',
