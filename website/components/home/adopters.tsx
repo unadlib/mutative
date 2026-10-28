@@ -107,7 +107,9 @@ export function Adopters({ locale = 'en' }: { locale?: Locale }) {
                 rel="noreferrer noopener"
                 className="mt-2 inline-flex items-center gap-1 text-sm text-fd-muted-foreground transition-colors hover:text-fd-foreground"
               >
-                {t(project.source.label)}, {t(project.source.date)}
+                {t(project.source.label)}
+                {locale === 'zh' ? '，' : ', '}
+                {t(project.source.date)}
                 <ArrowUpRight className="size-3.5" />
               </a>
             </figcaption>
@@ -115,11 +117,16 @@ export function Adopters({ locale = 'en' }: { locale?: Locale }) {
         ))}
       </div>
       <p className="mt-8 text-center text-sm text-fd-muted-foreground">
-        {t('Also used by')}{' '}
+        {t('Also used by')}
+        {locale === 'en' ? ' ' : ''}
         {otherProjects.map((project, index) => (
           <span key={project.name}>
             {index > 0 &&
-              (index === otherProjects.length - 1 ? t(' and ') : ', ')}
+              (index === otherProjects.length - 1
+                ? t(' and ')
+                : locale === 'zh'
+                  ? '、'
+                  : ', ')}
             <a
               href={project.url}
               target="_blank"
@@ -130,7 +137,7 @@ export function Adopters({ locale = 'en' }: { locale?: Locale }) {
             </a>
           </span>
         ))}
-        .{' '}
+        {locale === 'zh' ? '。' : '. '}
         <Link
           href={localePath('/docs/extra-topics/who-uses-mutative', locale)}
           className="inline-flex items-center gap-1 font-medium text-fd-foreground underline decoration-fd-primary underline-offset-4 transition-opacity hover:opacity-80"

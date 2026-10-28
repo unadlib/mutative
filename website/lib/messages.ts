@@ -8,7 +8,7 @@ const zh: Record<string, string> = {
     '使用 Mutative 替代 Immer 后，主线程脚本执行时间减少了约 1 秒。',
   'Replaced Immer with Mutative in its client.':
     '在客户端用 Mutative 替换了 Immer。',
-  'Pull request': '合并请求',
+  'Pull request': '拉取请求',
   'February 2025': '2025 年 2 月',
   'A backend with auth, permissions, storage and presence':
     '提供认证、权限、存储和在线状态的后端',
