@@ -1,0 +1,110 @@
+# apply() (/zh/docs/api-reference/apply)
+
+将补丁应用到状态，返回下一个状态，或原地修改状态。
+
+`apply()` 应用[补丁](/zh/docs/advanced-guides/patches)，例如 [`create()`](/zh/docs/api-reference/create) 开启 `enablePatches` 后返回的补丁，并返回下一个状态。它与 `create()` 一样保留原状态，并共享所有未修改的部分。
+
+```ts
+apply(state, patches, options?) // the next state
+apply(state, patches, { mutable: true }) // changes the state in place and returns undefined
+```
+
+## 用法 [#usage]
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.foo = 'foobar';
+    draft.list.push({ text: 'learning' });
+  },
+  {
+    enablePatches: true,
+  }
+);
+
+const nextState = apply(baseState, patches);
+expect(nextState).toEqual(state);
+
+const prevState = apply(state, inversePatches);
+expect(prevState).toEqual(baseState);
+```
+
+<a id="applystate-patches-options" />
+
+## 选项 [#options]
+
+| 选项                 | 类型               | 默认值     |
+| ------------------ | ---------------- | ------- |
+| `enableAutoFreeze` | `boolean`        | `false` |
+| `strict`           | `boolean`        | `false` |
+| `mark`             | `Mark \| Mark[]` | 无       |
+| `mutable`          | `boolean`        | `false` |
+
+`enableAutoFreeze`、`strict` 和 `mark` 与 [`create()` 的选项](/zh/docs/api-reference/create#options)一致。应传入生成补丁时相同的 `mark`，确保类实例等值采用一致的草稿处理方式。
+
+Mutative 1.2.0 起支持 `mutable: true`，会原地修改状态并返回 `undefined`。它不能与其他选项组合，否则开发构建会警告。由于不能原地替换根状态，遇到替换根状态的补丁（如直接返回新状态生成的补丁）会抛错。
+
+```ts
+import { apply } from 'mutative';
+
+const baseState = { foo: { bar: 'test' } };
+
+// This changes baseState itself.
+const result = apply(
+  baseState,
+  [
+    {
+      op: 'replace',
+      path: ['foo', 'bar'],
+      value: 'test2',
+    },
+  ],
+  {
+    mutable: true,
+  }
+);
+
+expect(result).toBeUndefined();
+expect(baseState).toEqual({ foo: { bar: 'test2' } });
+```
+
+## 将补丁应用到草稿 [#applying-patches-to-a-draft]
+
+更新函数中，`apply(draft, patches)` 原地修改并返回草稿，可在一次更新中结合补丁与其他修改。此时不能传选项。
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = { count: 0, log: [] as string[] };
+
+const state = create(baseState, (draft) => {
+  apply(draft, [{ op: 'replace', path: ['count'], value: 1 }]);
+  draft.log.push('count set to 1');
+});
+
+expect(state).toEqual({ count: 1, log: ['count set to 1'] });
+```
+
+## apply() 接受的补丁 [#patches-that-apply-accepts]
+
+* 支持 `add`、`remove` 和 `replace`。JSON Patch 的 `move`、`copy`、`test` 等其他操作会抛错。
+* 路径可以是键数组或 JSON Pointer 字符串（如 `pathAsArray: false` 的结果）。数组索引 `-` 表示追加。
+* Map 键保持原样；Set 的 `add` 和 `remove` 按补丁持有的值增删，直接替换 Set 元素的 `replace` 会抛错。详见[包含对象的 Set](/zh/docs/advanced-guides/patches#sets-of-objects)。
+* 路径经过对象或数组的 `__proto__`、`constructor`，或函数的 `prototype` 时会抛错，避免补丁修改原型。这些名称在 Map 中仍是普通键。其他路径段像 Immer 一样按属性读取，不防御已被其他代码修改的原型。
+* 无法解析的路径会抛错，错误信息中包含该路径。
+
+`apply()` 会在应用前深拷贝每个补丁值，因此新状态不会与补丁共享对象；重复应用相同补丁也会产生新副本。
+
+## TypeScript [#typescript]
+
+`enableAutoFreeze: true` 时返回 `Immutable<State>`，与 `apply<State, true>()` 一致。`enableAutoFreeze` 类型为 `boolean` 或可选 `true` 时，返回 `State | Immutable<State>`。`mutable: true` 时返回 `void`；`mutable` 类型为 `boolean`、可选 `boolean` 或可选 `true` 时，返回 `State | void`。
+
+错误及其生产错误码见[错误参考](/zh/docs/extra-topics/errors)。

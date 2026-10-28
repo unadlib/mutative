@@ -1,0 +1,43 @@
+# 谁在使用 Mutative (/zh/docs/extra-topics/who-uses-mutative)
+
+从 Immer 迁移到 Mutative 的开源项目及其反馈。
+
+以下开源项目直接依赖 Mutative。引文译自采用 Mutative 时的 Pull Request 或发布说明，只描述当时该项目的情况，并不代表所有工作负载。项目默认分支的核查日期为 2026 年 10 月 9 日。
+
+## Appsmith [#appsmith]
+
+用于构建管理面板、内部工具和仪表盘的 [Appsmith](https://github.com/appsmithorg/appsmith)，在客户端将 Immer 替换为 Mutative：
+
+> 使用 Mutative 替代 Immer 后，主线程脚本执行时间减少了约 1 秒。
+
+来自 2025 年 2 月 6 日合并的 [appsmithorg/appsmith#38993](https://github.com/appsmithorg/appsmith/pull/38993)。同一 PR 还移除了深拷贝，并在树的首次求值时跳过 Mutative。
+
+## InstantDB [#instantdb]
+
+提供认证、权限、存储和在线状态的后端 [InstantDB](https://github.com/instantdb/instant)，用不依赖自动冻结的 Mutative 替换了 Immer。在其性能测试中，Immer 单次事务约需 8 ms，增加待处理事务后约为 40 ms：
+
+> Mutative 单次事务约为 3 ms。继续增加待处理事务时，耗时似乎仍保持在 3 ms！
+
+来自 2024 年 9 月 19 日合并的 [instantdb/instant#243](https://github.com/instantdb/instant/pull/243)。
+
+## Notesnook [#notesnook]
+
+端到端加密笔记应用 [Notesnook](https://github.com/streetwriters/notesnook) 在 3.0.11 版本替换了 Immer：
+
+> 我们已移除 Immer，改用 Mutative 进行应用内不可变状态管理。Mutative 快近 10 倍，因此你会感受到应用响应速度的小幅提升。
+
+来自 2024 年 7 月 18 日的 [Notesnook v3.0.11 发布说明](https://notesnook.com/blog/notesnook-v3.0.11)。10 倍指库本身，发布说明对应用体验的表述是响应速度小幅提升。
+
+## Plate [#plate]
+
+React 富文本编辑器 [Plate](https://github.com/udecode/plate) 在 42 版本将插件 store 迁移到 [zustand-mutative](https://github.com/mutativejs/zustand-mutative)，核心包也依赖 Mutative：
+
+> 所有插件 store 现已使用 zustand-mutative 进行不可变状态更新，它比 `immer` 更快。
+
+来自 2025 年 1 月 9 日合并的 [42 版本发布](https://github.com/udecode/plate/pull/3945)。
+
+## 其他使用项目 [#also-used-by]
+
+* [Mol\*](https://github.com/molstar/molstar)：综合大分子库，在 [molstar/molstar#1618](https://github.com/molstar/molstar/pull/1618) 中替换 Immer，同时优化了动画加载。
+* [OpenRewrite](https://github.com/openrewrite/rewrite)：自动化大规模源码重构工具，在 [openrewrite/rewrite#6460](https://github.com/openrewrite/rewrite/pull/6460) 中为 JavaScript 支持替换了 Immer。
+* [MSW Data](https://github.com/mswjs/data)：用于 JavaScript 应用测试的数据查询库。

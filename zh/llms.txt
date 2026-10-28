@@ -1,0 +1,46 @@
+# Mutative
+
+> 高效的 JavaScript 不可变更新库。通过普通 JavaScript 修改草稿，只复制变化的部分，生成下一个状态。
+
+- [简介](https://mutative.js.org/zh/llms.mdx/docs/intro/content.md): Mutative 是一个高效的 JavaScript 不可变更新库。使用普通 JavaScript 修改草稿，即可得到下一个不可变状态。
+- 快速入门
+  - [快速入门](https://mutative.js.org/zh/llms.mdx/docs/getting-started/content.md): 用 5 分钟了解 Mutative 最重要的概念。
+  - [安装](https://mutative.js.org/zh/llms.mdx/docs/getting-started/installation/content.md): 从 npm 安装 Mutative 或通过 CDN 加载，并了解支持的运行环境。
+  - [常见用法](https://mutative.js.org/zh/llms.mdx/docs/getting-started/usages/content.md): 使用 create() 对对象、数组、Map 和 Set 进行常见的不可变更新。
+  - [核心概念](https://mutative.js.org/zh/llms.mdx/docs/getting-started/concepts/content.md): 理解 Mutative 的草稿、最终处理、结构共享、补丁和标记。
+  - [在 React 中使用 Mutative](https://mutative.js.org/zh/llms.mdx/docs/getting-started/mutative-with-react/content.md): 使用 create() 或 use-mutative 的 Hook 更新 React 状态。
+  - [性能](https://mutative.js.org/zh/llms.mdx/docs/getting-started/performance/content.md): 在 97 项工作负载中与 Immer、手写 reducer 的性能对比，以及基准测试的运行方式。
+- 进阶指南
+  - [进阶指南](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/content.md): 深入了解 Mutative 的高级功能与最佳实践。
+  - [自动冻结](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/auto-freeze/content.md): 使用 enableAutoFreeze 深度冻结下一个状态，阻止意外修改。
+  - [柯里化](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/currying/content.md): 创建稍后接收基础状态及额外参数的 producer，或创建稍后完成最终处理的草稿。
+  - [标记数据结构](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/mark/content.md): 通过 mark 选项决定哪些值创建草稿、哪些保持可变，以及如何复制它们。
+  - [补丁](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/patches/content.md): 将更新函数的修改记录为补丁，并通过 apply() 应用到状态。
+  - [严格模式](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/strict-mode/content.md): 显式读取无法创建草稿的值，并在开发环境检查返回值。
+  - [TypeScript](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/typescript/content.md): 了解草稿、结果、producer 和补丁的类型，以及 Mutative 导出的类型与类型转换工具。
+  - [常见陷阱](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/pitfalls/content.md): 避免草稿、返回值、未创建草稿的值及补丁中的常见错误。
+  - [性能建议](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/performance-tips/content.md): 避免不必要的草稿、搜索、复制、冻结与补丁开销。
+  - [从 Immer 迁移](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/migration/content.md): 将 Immer API 替换为 Mutative，并检查冻结、补丁、类实例和异步更新的差异。
+  - [从 Mutative v1 迁移到 v2](https://mutative.js.org/zh/llms.mdx/docs/advanced-guides/migration-v2/content.md): 相比 1.3.0，构建、补丁、数组、返回值、开发检查、类型和修复中可能影响现有代码的变化。
+- API 参考
+  - [API 参考](https://mutative.js.org/zh/llms.mdx/docs/api-reference/content.md): Mutative API 的参数、返回值及示例。
+  - [create()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/create/content.md): 根据更新函数对基础状态草稿的修改，生成下一个状态。
+  - [apply()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/apply/content.md): 将补丁应用到状态，返回下一个状态，或原地修改状态。
+  - [makeCreator()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/makecreator/content.md): 创建带默认选项的 create() 函数。
+  - [current()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/current/content.md): 获取草稿当前值的快照，返回不含代理的普通对象。
+  - [original()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/original/content.md): 获取创建草稿时的原值，不包含更新函数的修改。
+  - [rawReturn()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/rawreturn/content.md): 原样返回不含草稿的值并跳过搜索，或将状态设为 undefined。
+  - [unsafe()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/unsafe/content.md): 在严格模式下读取未创建草稿的值。
+  - [isDraftable()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/isdraftable/content.md): 检查 Mutative 是否能为值创建草稿，可指定 mark。
+  - [isDraft()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/isdraft/content.md): 检查一个值是否为草稿。
+  - [markSimpleObject()](https://mutative.js.org/zh/llms.mdx/docs/api-reference/marksimpleobject/content.md): 允许无原型对象和跨 realm 普通对象创建草稿的标记。
+  - [类型转换](https://mutative.js.org/zh/llms.mdx/docs/api-reference/casts/content.md): castDraft()、castImmutable() 和 castMutable() 改变 TypeScript 类型，并原样返回值。
+- 其他主题
+  - [扩展主题](https://mutative.js.org/zh/llms.mdx/docs/extra-topics/content.md): 了解 Mutative 的生态、常见问题和行为细节。
+  - [与 Immer 对比](https://mutative.js.org/zh/llms.mdx/docs/extra-topics/comparison-with-immer/content.md): 对比 Mutative 与 Immer 11.1.18 的 API、默认配置、草稿和补丁，以及两者共有的行为。
+  - [常见问题](https://mutative.js.org/zh/llms.mdx/docs/extra-topics/faq/content.md): 关于 Mutative 性能、从 Immer 迁移、数组、Map 和 Set 的常见问题。
+  - [参与贡献](https://mutative.js.org/zh/llms.mdx/docs/extra-topics/contributing/content.md): 配置仓库、运行检查，为代码、基准测试和文档贡献改进。
+  - [Mutative 生态系统](https://mutative.js.org/zh/llms.mdx/docs/extra-topics/mutative-ecosystem/content.md): 用于 React、Zustand、Jotai、XState、Yjs、撤销与重做等场景的 Mutative 生态库。
+  - [谁在使用 Mutative](https://mutative.js.org/zh/llms.mdx/docs/extra-topics/who-uses-mutative/content.md): 从 Immer 迁移到 Mutative 的开源项目及其反馈。
+  - [共享引用](https://mutative.js.org/zh/llms.mdx/docs/extra-topics/shared-references/content.md): 多条路径指向同一对象时的草稿行为，以及如何保留共享关系。
+  - [生产构建错误码](https://mutative.js.org/zh/llms.mdx/docs/extra-topics/errors/content.md): 解读 Mutative 压缩后的生产错误，以及开发构建中的错误与警告。

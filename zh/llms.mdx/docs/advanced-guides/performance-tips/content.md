@@ -1,0 +1,48 @@
+# 性能建议 (/zh/docs/advanced-guides/performance-tips)
+
+避免不必要的草稿、搜索、复制、冻结与补丁开销。
+
+Mutative 每次更新最多复制每个对象一次，且只为更新函数读取的值创建草稿，因此大多数写法已经足够快。以下建议适用于大状态和热点路径。数据来自 Node.js 24 下的[基准测试](/zh/docs/getting-started/performance)，单位为每次更新的微秒数。
+
+## 在快照中搜索大数组 [#search-large-arrays-in-a-snapshot]
+
+通过草稿读取的每个对象都会变成草稿，所以 `draft.list.find()` 会为每个访问的元素创建草稿。可搜索由普通值组成的 [`current(draft.list)`](/zh/docs/api-reference/current#searching-a-large-array)，再通过草稿修改匹配项：
+
+```ts
+import { create, current } from 'mutative';
+
+const baseState = {
+  list: Array.from({ length: 10_000 }, (_, id) => ({ id, done: false })),
+};
+
+const state = create(baseState, (draft) => {
+  const index = current(draft.list).findIndex((item) => item.id === 9_999);
+  draft.list[index].done = true;
+});
+
+expect(state.list[9_999].done).toBe(true);
+```
+
+在 10,000 行中先更新第一行，再查找并更新最后一行，使用快照耗时 176 µs，通过草稿搜索则为 2,169 µs。连续搜索应复用同一份快照，因为每次 `current()` 都会重新复制草稿中已修改的部分。若只需读取未代理的基础状态，可用 [`original()`](/zh/docs/api-reference/original)。
+
+## 用 `rawReturn()` 返回新状态 [#return-new-states-with-rawreturn]
+
+Mutative 会遍历更新函数返回值中的每个对象以搜索草稿：返回一个含 10,000 行的新状态耗时 2,600 µs。如果返回值不含草稿（例如从头构建的状态），可用 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 包裹，耗时仅 0.26 µs。返回之前的状态是各自默认配置下 Immer 优于 Mutative 的工作负载，因为 Immer 冻结状态，并跳过返回值中的冻结对象。详见[与 Immer 的性能对比](/zh/docs/api-reference/rawreturn#performance-compared-with-immer)。
+
+## 使用数组方法移动元素 [#let-array-methods-move-elements]
+
+`shift()`、`unshift()`、`splice()` 和 `reverse()` 在普通数组副本上原生执行，而逐个移动元素的循环会让每个元素经过草稿代理。用 `shift()` 删除 10,000 行中的第一行耗时 7.04 µs，而通过草稿逐项移动的 Immer 为 7,408 µs。详见[哪些数组方法原生执行](/zh/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts)。
+
+## 将相关修改合并为一次更新 [#make-one-update-for-related-changes]
+
+每次 `create()` 都会复制从根节点到变化位置的路径上的对象。把多个修改放进同一个更新函数，共享父对象只复制一次；每个修改单独调用则会重复复制。应将同一 action 或事件的修改合并处理。
+
+## 按需开启功能 [#turn-on-what-you-need]
+
+* **自动冻结**会访问下一个状态中所有尚未冻结的对象。在含 1,000 个属性的对象中插入属性，关闭时耗时 50.3 µs，开启时为 140 µs。可在开发环境，或其他代码依赖冻结状态时开启，详见[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+* **补丁**在只修改少量路径时开销很小：10,000 行场景中追加一行并插入属性，关闭补丁为 63.8 µs，开启为 63.2 µs。但移动元素会为每个移动索引生成补丁，所以开启补丁后删除第一行耗时 1,063 µs。除非需要 JSON Patch 格式，否则应保持 `arrayLengthAssignment: true`（即保留默认值），逐索引 `remove` 比单个 `length` 的 `replace` 开销更大。
+* **严格模式**检查读取的每个值。对于可能含对象的数组，数组方法和 `current()` 都会经过草稿。建议仅在开发环境开启，详见[严格模式](/zh/docs/advanced-guides/strict-mode)。
+
+## 避免为大型只读数据创建草稿 [#keep-large-data-out-of-drafts]
+
+只读不改的数据（如大型查询表）也会在更新函数读取时逐个创建草稿。可用 `original()` 读取，或放在状态之外。让[标记](/zh/docs/advanced-guides/mark)返回 `'mutable'` 也能完全跳过草稿处理，但此后对该值的修改就是原地修改。

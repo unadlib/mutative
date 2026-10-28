@@ -1,0 +1,123 @@
+# makeCreator() (/zh/docs/api-reference/makecreator)
+
+创建带默认选项的 create() 函数。
+
+`makeCreator(options)` 返回以给定[选项](/zh/docs/api-reference/create#options)为默认值的 `create()`。可为应用、store 或模块统一配置，无需每次调用都传入。
+
+```ts
+makeCreator(options?: Options): typeof create
+```
+
+## 用法 [#usage]
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({
+  enablePatches: true,
+});
+
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+};
+
+const [state, patches, inversePatches] = create(baseState, (draft) => {
+  draft.foo.bar = 'new str';
+});
+
+expect(state).toEqual({ foo: { bar: 'new str' } });
+expect(patches).toEqual([
+  { op: 'replace', path: ['foo', 'bar'], value: 'new str' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['foo', 'bar'], value: 'str' },
+]);
+```
+
+返回函数支持 [`create()`](/zh/docs/api-reference/create) 的全部签名：基础状态加更新函数、只传更新函数生成[柯里化 producer](/zh/docs/advanced-guides/currying)，或只传基础状态创建手动草稿。
+
+## 覆盖默认值 [#overriding-the-defaults]
+
+单次调用的选项会逐项覆盖创建器的默认值：
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({
+  enablePatches: true,
+});
+
+const baseState = { count: 0 };
+
+// The defaults: patches on.
+const [state, patches] = create(baseState, (draft) => {
+  draft.count += 1;
+});
+
+// Patches off for this call only.
+const nextState = create(
+  baseState,
+  (draft) => {
+    draft.count += 1;
+  },
+  {
+    enablePatches: false,
+  }
+);
+
+expect(patches).toHaveLength(1);
+expect(nextState).toEqual(state);
+```
+
+TypeScript 根据实际生效的选项确定每次调用的返回类型，因此 `enablePatches: false` 的调用只返回状态。
+
+## 示例 [#examples]
+
+仅在开发环境开启严格模式和自动冻结等检查：
+
+```ts
+import { makeCreator } from 'mutative';
+
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+export const create = makeCreator({
+  strict: isDevelopment,
+  enableAutoFreeze: isDevelopment,
+});
+```
+
+为包含类实例的状态统一使用相同 `mark`：
+
+```ts
+import { makeCreator } from 'mutative';
+
+class Point {
+  constructor(
+    public x: number,
+    public y: number
+  ) {}
+}
+
+const create = makeCreator({
+  mark: (target, { immutable }) =>
+    target instanceof Point ? immutable : undefined,
+});
+
+const baseState = { points: [new Point(0, 0)] };
+
+const state = create(baseState, (draft) => {
+  draft.points[0].x = 1;
+});
+
+expect(state.points[0]).toBeInstanceOf(Point);
+expect(state.points[0].x).toBe(1);
+expect(baseState.points[0].x).toBe(0);
+```
+
+对此状态调用 [`apply()`](/zh/docs/api-reference/apply) 和 [`isDraftable()`](/zh/docs/api-reference/isdraftable) 时，也应传入相同 `mark`。
+
+<Callout type="idea">
+  每个创建器保留独立选项，与 Immer 的全局设置不同，因此使用 Mutative 的库与应用不会相互改变行为。
+</Callout>

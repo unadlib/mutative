@@ -342,6 +342,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 * A Set draft that the recipe moves to another place, such as another key, an array, a Map, another Set or a new object, keeps its added, deleted and changed items there when its old place gets another value or is removed; v1 kept its original items.
 * A draft of a Set subclass changes its copy, an instance of the subclass, as Map drafts do: the subclass's own `add`, `has`, `delete` and `clear` take effect during the recipe, while the draft iterates the items in the order in which the Set holds them. v1 kept the items of a changed Set in a separate map, which bypassed those methods until it rebuilt the Set after the recipe. As a Map subclass's `set` already had to in v1, a Set subclass's `add` must store the value that it receives: an `add` that stores a copy of a draft, or of an object that holds drafts, leaves those drafts in the next state, where reading them throws.
 * Assigning `undefined` to a key that `delete`, `shift`, `unshift` or a shrinking `splice` removed from a draft adds the key back; v1 left a hole or kept the shorter length.
+* Deleting an array index that the current draft does not own changes nothing, as in JavaScript. In v1, deleting an index already absent from the original array could create an `undefined` element and, if it was past the end, lengthen the array. This also fixes the v2.0.0 regression where deleting an index removed earlier in the same recipe grew the array again; v1 kept the shortened array ([#212](https://github.com/unadlib/mutative/issues/212)).
 * Assigning to a key that a draft holds as an own data property sets that property, as in JavaScript, also when a prototype defines a setter of that name. v1 called the setter through the draft instead, and assigning an own `__proto__` key, as `JSON.parse()` creates one, threw. A class instance that `mark` makes `immutable` is copied by assigning its own properties, so such a setter now runs on that copy instead of through the draft; see [Copying marked instances](/docs/advanced-guides/mark#copying-marked-instances).
 * Under a `mark` that returns `mutable`, a value that the recipe assigned or moved is read back as assigned, through the draft and in `current()`; v1 returned the original value.
 * `current()` of a draft whose state holds a plain Set with drafts returns a snapshot; v1 threw.
@@ -357,7 +358,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 * A patch for a Map key that is an array holds the key as one path segment; v1 spread the array into the path, so applying the patch wrote to other keys.
 * `apply()` uses a Map key of a patch path as it is. v1 converted it to a string first, which threw for an object without a prototype.
 * Array patches record a change between `0` and `-0`, which the state already kept; in v1, applying the patches lost the sign. An element that stays `NaN` no longer yields a replace patch.
-* When a recipe shortens an array and lengthens it again, as `draft.length = 1; draft.length = 3` does, the patches replace the indices that the longer length exposes again. In v1, applying the patches kept the removed elements at those indices, and applying the inverse patches left holes there.
+* Patches keep the holes of sparse arrays apart from `undefined` elements, in both directions. When a recipe shortens an array and lengthens it again, as `draft.length = 1; draft.length = 3` does, the patches shorten and lengthen the array as well, which leaves holes at the indices that the longer length exposes again, and the inverse patches put the removed elements back. In v1, applying the patches kept the removed elements at those indices, and applying the inverse patches left holes there. v1 also put `undefined` into the holes that an array got past its end, and where a recipe filled a hole, applying the inverse patches put `undefined` there.
 * In strict mode, a nested `unsafe()` call no longer ends the access of the outer call; in v1, reading mutable data after it in the outer callback threw.
 * A producer that fails after its recipe returned, for example because the recipe changed the draft and returned another value, revokes its drafts and releases its array method cache, as a recipe that throws does; v1 left them usable. This also covers errors while inspecting a returned Proxy or calling a returned Promise's `then` method, and preserves the original error.
 * A draft of an array whose `Symbol.isConcatSpreadable` is false copies its elements; v1 put the whole array into the copy as its only element.
@@ -634,18 +635,18 @@ expect(apply(state, inversePatches)).toEqual(baseState);
 * **Operations and paths.** Patches use `add`, `remove` and `replace`. A path leads from the root to the changed value through object keys, array indices, Map keys as they are, objects and arrays included, and the positions of Set items. A recipe that returns a new state gets one `replace` patch with an empty path.
 * **Order.** The patches of a nested draft come before those of its parents, as in Immer.
 * **Values.** A patch value is the object that the next state holds, frozen with it when `enableAutoFreeze` is on, so copy a patch value before changing it. `apply()` copies patch values before applying them.
-* **Arrays.** `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. An array that a recipe shortens and lengthens again also gets patches for the indices that the longer length exposes again.
+* **Arrays.** `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. Patches preserve holes in both directions: filling a hole takes a `replace` patch, and recreating one rebuilds the array from its index; see [Sparse arrays](#sparse-arrays).
 * **Maps.** `set()` emits an `add` patch for a new key and a `replace` patch for an existing one, and `delete()` a `remove` patch.
 * **Sets.** Patches add an item by its value and remove one by the value it holds; see [Sets of objects](#sets-of-objects).
 * **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, emits no patches under its old path; the patches of its parent carry its value.
 * **Applying patches.** `apply()` applies `add`, `remove` and `replace` patches and accepts `-` as the index that appends to an array. It throws for other operations and for paths through `__proto__` or `constructor`. It takes the `enableAutoFreeze`, `strict` and `mark` options, or `mutable: true` to change the state in place, which throws for a patch that replaces the root state with another value, and it changes a draft in place.
-* **JSON Patch.** With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations. Maps and Sets have no JSON Patch counterpart.
+* **JSON Patch.** With `pathAsArray: false` and `arrayLengthAssignment: false`, patches of JSON-compatible objects and arrays are JSON Patch operations. Maps, Sets and array holes have no JSON counterpart.
 
 [Comparison with Immer](/docs/extra-topics/comparison-with-immer#patches) lists where these patches differ from Immer's.
 
 ## JSON patches [#json-patches]
 
-`enablePatches` takes `true`, or an object with two options that set the shape of the patches. With both set to `false`, the patches of objects and arrays are [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) operations, which other JSON Patch libraries can apply ([related discussion](https://github.com/unadlib/mutative/issues/6)).
+`enablePatches` takes `true`, or an object with two options that set the shape of the patches. With both set to `false`, patches of JSON-compatible objects and arrays are [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) operations, which other JSON Patch libraries can apply ([related discussion](https://github.com/unadlib/mutative/issues/6)).
 
 ### pathAsArray - default: true [#pathasarray---default-true]
 
@@ -712,6 +713,27 @@ expect(inversePatches).toEqual([
 <Callout type="idea">
   A `remove` patch per index takes more time and more patches for large arrays than one `replace` patch of the `length`, so leave `arrayLengthAssignment` on unless the patches must be JSON Patch operations.
 </Callout>
+
+## Sparse arrays [#sparse-arrays]
+
+A hole is an absent index, which differs from an own index whose value is `undefined`: array methods such as `map()` and `forEach()` skip holes. Patches and inverse patches preserve this distinction, including when a recipe lengthens an array, fills a hole with `undefined`, or moves holes with an array method.
+
+```ts
+const base = new Array<number>(2);
+base[0] = 1;
+
+const [state, patches, inverse] = create(base, (draft) => {
+  draft.unshift(0);
+}, { enablePatches: true });
+
+expect(2 in state).toBe(false);
+expect(2 in apply(base, patches)).toBe(false);
+expect(1 in apply(state, inverse)).toBe(false);
+```
+
+An index patch carries a value, so it cannot represent a hole. Filling a hole takes a `replace` patch, but the patches that recreate a hole shorten the array to its index, lengthen it again to leave holes, and restore the elements after it, so their number grows with those elements: filling a hole before 10,000 elements yields one patch and 10,002 inverse patches. A recipe that makes a hole before the last element gets such patches, and inverse patches that fill it. Holes that an array gets past its old length need only a `replace` patch of its `length`. These patches preserve the array itself for mutable application and application on a draft, also inside a Set.
+
+With `arrayLengthAssignment: false`, truncation still uses per-index `remove` patches, but recreating holes needs a `replace` patch of `length`. Apply these patches with Mutative's `apply()`: sparse arrays are JavaScript data, not JSON data, so their patches are not portable JSON Patch operations. JSON serialization turns array holes into `null` and cannot preserve their structure.
 
 ## Undo and redo [#undo-and-redo]
 
@@ -2651,7 +2673,7 @@ yarn add mutative
 bun add mutative
 ```
 
-Mutative has no dependencies. A production bundle of `create` alone is about 7.9 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.5 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
+Mutative has no dependencies. A production bundle of `create` alone is about 8.3 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.9 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
 
 ```ts
 import { create } from 'mutative';
@@ -2913,7 +2935,7 @@ Mutative is about 3.6x faster than Immer with matched settings and 6.6x faster w
 
 ## Benchmark suite [#benchmark-suite]
 
-The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 99 workloads: Immer's own performance tests, array methods, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. Its last full run measured 97 of them, and a focused run the two that return fresh data. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
+The [benchmark suite](https://github.com/unadlib/mutative/tree/main/perf-testing) times 101 workloads: Immer's own performance tests, array methods, sparse arrays, reads, Map and Set values, object records, class instances, a deep path, patch application, returned values, and searches. Its last full run measured 97 of them, and a focused run the two that return fresh data; the two sparse-array workloads came later. It compares Mutative with Immer 11.1.18 and with reducers written by hand, after checking every result against those reducers. The [performance summary](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md) has the complete results, the method, and their limits.
 
 ## Mutative vs Immer [#mutative-vs-immer]
 

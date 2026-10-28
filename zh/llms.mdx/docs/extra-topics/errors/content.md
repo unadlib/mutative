@@ -1,0 +1,76 @@
+# 生产构建错误码 (/zh/docs/extra-topics/errors)
+
+解读 Mutative 压缩后的生产错误，以及开发构建中的错误与警告。
+
+Mutative 的压缩生产构建用数字错误码替代完整消息，以减少发送给用户的字节数。
+
+本地调试建议使用开发构建，它保留完整错误信息、额外验证与警告，帮助定位应用中的问题。详见[开发与生产构建](/zh/docs/getting-started/installation#development-and-production-builds)。
+
+生产异常的消息格式为 `Minified Mutative error #<code>; visit https://mutative.js.org/docs/extra-topics/errors`。可在下表查找错误码，恢复开发构建的消息；`<…>` 表示调用中的具体值。源码标识符供贡献者定位实现。为便于与日志逐字匹配，下表保留英文诊断原文。
+
+错误移除后，数字码仍保持稳定。已停用的错误码会保留，确保旧生产日志仍可解读。
+
+| 错误码 | 源码标识符                            | 开发错误原文                                                                                                                       |
+| --: | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+|   0 | `InvalidBaseState`               | `Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable.` |
+|   1 | `CannotAssignToMapOrSet`         | `Map/Set draft does not support any property assignment.`                                                                    |
+|   2 | `InvalidArrayIndex`              | `Only supports setting array indices and the 'length' property.`                                                             |
+|   3 | `CannotSetPrototypeOfDraft`      | `Cannot call 'setPrototypeOf()' on drafts`                                                                                   |
+|   4 | `CannotDefinePropertyOnDraft`    | `Cannot call 'defineProperty()' on drafts`                                                                                   |
+|   5 | `MutateAndReturn`                | `Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.`          |
+|   6 | `CannotReturnModifiedChildDraft` | `Cannot return a modified child draft.`                                                                                      |
+|   7 | `CurrentOnNonDraft`              | `current() is only used for Draft, parameter: <value>`                                                                       |
+|   8 | `StrictModeAccess`               | `Strict mode: Mutable data cannot be accessed directly, please use 'unsafe(callback)' wrap.`                                 |
+|   9 | `UnsupportedMarkResult`          | `Unsupported mark result: <result>`                                                                                          |
+|  10 | `InvalidMark`                    | `Please check mark() to ensure that it is a stable marker draftable function.`                                               |
+|  11 | `CannotModifyFrozenObject`       | `Cannot modify frozen object`                                                                                                |
+|  12 | `InvalidPatchPath` （已停用）         | 生成的补丁路径无效。内部检查已移除，错误码保留。                                                                                                     |
+|  13 | `ReservedPatchAttribute`         | `Patching reserved attributes like __proto__ and constructor is not allowed.`                                                |
+|  14 | `CannotApplyPatch`               | `Cannot apply patch at '<path>'.`                                                                                            |
+|  15 | `ReplacePatchOnSet`              | `Cannot apply replace patch to set.`                                                                                         |
+|  16 | `UnsupportedPatchOperation`      | `Unsupported patch operation: <op>.`                                                                                         |
+|  17 | `ApplyOptionsToDraft`            | `Cannot apply patches with options to a draft.`                                                                              |
+|  18 | `OriginalOnNonDraft`             | `original() is only used for a draft, parameter: <value>`                                                                    |
+|  19 | `RawReturnWithoutValue`          | `rawReturn() must be called with a value.`                                                                                   |
+|  20 | `RawReturnWithExtraArguments`    | `rawReturn() must be called with one argument.`                                                                              |
+|  21 | `ReplaceMutableRoot`             | `apply() with the mutable option changes the state in place, so a patch cannot replace the root state with another value.`   |
+
+各错误的含义：
+
+* **0**：`create()` 的基础状态不可创建草稿，例如未标记的类实例或 `Date`。见 [`isDraftable()`](/zh/docs/api-reference/isdraftable) 和[标记](/zh/docs/advanced-guides/mark)。
+* **1–4**：向 Map/Set 草稿赋属性、向数组草稿赋非索引属性，或对草稿调用 `Object.setPrototypeOf()`、`Object.defineProperty()`。
+* **5**、**6**：同时修改草稿并返回其他值，或返回已修改的子草稿。见[返回新状态](/zh/docs/api-reference/create#returning-a-new-state)。
+* **7**、**18**：`current()` 或 `original()` 收到非草稿值。
+* **8**：[严格模式](/zh/docs/advanced-guides/strict-mode)下，在 `unsafe()` 外读取不可创建草稿的值。
+* **9**：`mark` 返回了 `'mutable'`、`'immutable'`、函数或空返回值以外的结果。
+* **10**：同一个值的 `mark` 结果不稳定，例如创建草稿时返回 `'immutable'`，复制时却不返回值。标记必须每次给出一致结果。
+* **11**：对[自动冻结](/zh/docs/advanced-guides/auto-freeze)后的 Map/Set 调用了 `set()`、`add()`、`delete()` 或 `clear()`。
+* **13–17**、**21**：`apply()` 收到无法应用的补丁，见[接受的补丁](/zh/docs/api-reference/apply#patches-that-apply-accepts)。
+* **19**、**20**：`rawReturn()` 没有参数或有多个参数。
+
+## 仅开发环境的错误 [#development-only-errors]
+
+开发构建还会执行以下生产构建跳过的检查：
+
+| 消息原文                                                                                                                                                                                 | 原因                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| `Invalid options: <options>, 'options' should be an object.`                                                                                                                         | `create()` 或 `makeCreator()` 收到非对象选项。           |
+| `Invalid mark: <mark>, 'mark' should be a function.`                                                                                                                                 | 标记数组含非函数值。                                      |
+| `You can't use mark and patches or auto freeze together.`                                                                                                                            | 开启补丁或自动冻结时，标记返回了拷贝函数。                           |
+| `Forbids circular reference`                                                                                                                                                         | 开启自动冻结时，结果含持有自身的对象；完整消息会指出重复对象的路径。              |
+| `Patches with string paths only support string Map keys and no symbol keys, got a key of type '<type>'. Set 'pathAsArray' to true to keep keys of other types.`                      | `pathAsArray: false` 时，路径含非字符串 Map 键或 symbol 键。 |
+| `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq`          | 更新函数将草稿作为 Map 草稿 `set()` 的键。                    |
+| `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.` | 开启自动冻结时，返回值的冻结对象内部含草稿。                          |
+
+## 开发环境警告 [#development-warnings]
+
+开发构建通过 `console.warn()` 输出以下警告，生产构建不输出：
+
+| 消息原文                                                                                                                                                                  | 原因                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`                                              | 返回对象不含草稿，使用 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 可跳过搜索。                            |
+| `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`                                                                          | 严格模式下，`rawReturn()` 包裹的值含草稿。                                                                    |
+| ``rawReturn() must be called with an object(including plain object, arrays, Set, Map, etc.) or `undefined`, other types do not need to be returned via rawReturn().`` | `rawReturn()` 收到可直接返回的原始值。                                                                      |
+| `Strict mode: the recipe left <count> drafts unchanged; …`                                                                                                            | 严格模式下，留下 1,000 个或更多未修改草稿时警告一次，见[搜索大数组](/zh/docs/api-reference/current#searching-a-large-array)。 |
+| `create() received a draft as its base and drafts current(draft), unlike Immer's produce: …`                                                                          | `create()` 收到草稿与更新函数时警告一次，见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。  |
+| `The "mutable" option is not allowed to be used with other options.`                                                                                                  | `apply()` 将 `mutable: true` 与其他选项组合使用。                                                          |

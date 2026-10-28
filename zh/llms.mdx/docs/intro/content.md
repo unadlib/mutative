@@ -1,0 +1,87 @@
+# 简介 (/zh/docs/intro)
+
+Mutative 是一个高效的 JavaScript 不可变更新库。使用普通 JavaScript 修改草稿，即可得到下一个不可变状态。
+
+**Mutative** 是一个高效的 JavaScript 不可变更新库。更新函数（recipe）使用普通 JavaScript 修改状态的草稿，Mutative 据此生成下一个状态，只复制发生变化的部分。在 [97 项基准工作负载](/zh/docs/getting-started/performance)中，相同配置下其性能约为 Immer 的 3.6 倍，各自默认配置下约为 6.6 倍。
+
+## 什么是 Mutative？ [#what-is-mutative]
+
+React、Redux 等库通过引用比较状态，因此不能原地修改状态：每次更新都要生成新状态，复制通向每个变化位置的路径上的对象，并共享其余对象。手写展开语法时，更新代码会随嵌套深度增长；漏掉一次复制就会修改之前的状态。
+
+例如，将状态中列表的最后一项标为完成，再添加一项。下面分别使用手写复制和 Mutative 实现：
+
+```ts
+import { create } from 'mutative';
+
+const state = {
+  list: [
+    { text: 'Learn TypeScript', done: true },
+    { text: 'Learn React', done: true },
+    { text: 'Learn Redux', done: false },
+  ],
+};
+
+// By hand, copying each level on the path to the changes:
+const byHand = {
+  ...state,
+  list: [
+    ...state.list.slice(0, 2),
+    { ...state.list[2], done: true },
+    { text: 'Learn Mutative', done: true },
+  ],
+};
+
+// With Mutative, changing a draft:
+const nextState = create(state, (draft) => {
+  draft.list[2].done = true;
+  draft.list.push({ text: 'Learn Mutative', done: true });
+});
+
+expect(nextState).toEqual(byHand);
+// The unchanged items are shared, and the base state is unchanged.
+expect(nextState.list[0]).toBe(state.list[0]);
+expect(state.list[2].done).toBe(false);
+```
+
+草稿是状态的代理：更新函数首次修改某个对象时，Mutative 才复制它；新状态与原状态共享所有未修改的对象。工作原理见[核心概念](/zh/docs/getting-started/concepts)。
+
+## 功能与优势 [#features-and-benefits]
+
+* **用可变写法完成不可变更新**：通过修改草稿，对对象、数组、Map 和 Set 进行不可变更新。
+* **高性能**：各自默认配置下，性能约为 Immer 的 6.6 倍；在已测量的宽对象及大数组插入场景中，也快于手写展开语法。
+* **可选的状态冻结**：默认不冻结不可变数据，需要时可开启[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+* **支持 JSON Patch**：[补丁](/zh/docs/advanced-guides/patches)使用 JSON Patch 的 `add`、`remove` 和 `replace` 操作。设置 `pathAsArray: false` 和 `arrayLengthAssignment: false` 后，对象和数组的补丁就是 JSON Patch 操作。
+* **自定义浅拷贝**：通过[标记](/zh/docs/advanced-guides/mark)为类实例等数据创建草稿，需要时还可提供自定义浅拷贝函数。
+* **非侵入式标记可变与不可变数据**：无需修改数据或类定义，就能决定哪些值参与草稿处理。
+* **严格模式下更安全地访问可变数据**：[严格模式](/zh/docs/advanced-guides/strict-mode)要求显式读取无法创建草稿的数据。
+* **支持 reducer**：[producer](/zh/docs/advanced-guides/currying) 可作为 Redux 等不可变状态库的 reducer，更新函数也可以是异步函数。
+
+## 设计动机 [#motivation]
+
+Immer 让开发者可以通过修改草稿轻松编写不可变更新。Mutative 延续这一模型，着重提高性能：每次更新最多复制每个对象一次，仅在更新函数读取对象时创建草稿，只完成已修改草稿的最终处理，并在副本上原生执行移动元素的数组方法。Immer 默认冻结下一个状态，每次更新都要为此付出开销；Mutative 只在显式开启时冻结。
+
+Mutative 的选项按调用传入，无需全局配置；通过标记支持类实例，无需修改类定义；支持异步更新函数以及 Map、Set 子类，并处理 Immer 未正确处理的[边界情况](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts)。详细差异见[与 Immer 对比](/zh/docs/extra-topics/comparison-with-immer)。
+
+## 下一步 [#next-steps]
+
+<Cards>
+  <Card title="安装" href="/zh/docs/getting-started/installation">
+    将 Mutative 添加到项目，或通过 CDN 加载。
+  </Card>
+
+  <Card title="常见用法" href="/zh/docs/getting-started/usages">
+    使用 `create()` 更新对象、数组、Map 和 Set。
+  </Card>
+
+  <Card title="核心概念" href="/zh/docs/getting-started/concepts">
+    了解草稿、结构共享、补丁和标记。
+  </Card>
+
+  <Card title="从 Immer 迁移" href="/zh/docs/advanced-guides/migration">
+    将 Immer API 替换为对应的 Mutative API。
+  </Card>
+</Cards>
+
+## 致谢 [#credits]
+
+Mutative 的灵感来自 [Immer](https://immerjs.github.io/immer/)，它帮助许多开发者更简单地编写不可变更新。Mutative 基于同样的理念，采用不同的实现，并提供更多功能。

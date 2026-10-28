@@ -1,0 +1,75 @@
+# rawReturn() (/zh/docs/api-reference/rawreturn)
+
+原样返回不含草稿的值并跳过搜索，或将状态设为 undefined。
+
+`rawReturn(value)` 包裹更新函数的返回值，使 `create()` 原样将它作为下一个状态，不再搜索其中的草稿。它也能将状态设为 `undefined`，而直接不返回任何值无法表达此意图。
+
+```ts
+rawReturn<T extends object | undefined>(value: T): T
+```
+
+## 用法 [#usage]
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const baseState = { id: 'test' };
+
+const state = create(baseState as { id: string } | undefined, () => {
+  return rawReturn(undefined);
+});
+
+expect(state).toBe(undefined);
+```
+
+更新函数可以返回新状态而不修改草稿。Mutative 会搜索其中的草稿并替换为最终值，因此可返回 `{ ...draft, a: 2 }` 等对象：
+
+```ts
+import { create, isDraft } from 'mutative';
+
+const baseState = { a: 1, b: { c: 1 } };
+
+const state = create(baseState, (draft) => {
+  return {
+    ...draft,
+    a: 2,
+  };
+});
+
+expect(state).toEqual({ a: 2, b: { c: 1 } });
+expect(isDraft(state.b)).toBe(false);
+expect(state.b).toBe(baseState.b);
+```
+
+搜索会访问返回值中的每个对象，大型数据的开销较高。对于从头构建或之前保存的不含草稿的状态，可用 `rawReturn()` 跳过：
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const initialState = { todos: [] as string[] };
+const baseState = { todos: ['learn'] };
+
+// A reducer that resets the state.
+const state = create(baseState, () => rawReturn(initialState));
+
+expect(state).toBe(initialState);
+```
+
+基准测试中，返回 10,000 行新状态时，搜索耗时 2.6 ms，使用 `rawReturn()` 为 0.26 µs。开发构建发现返回对象不含草稿时会建议使用此方法。
+
+## 与 Immer 的性能对比 [#performance-compared-with-immer]
+
+返回之前的状态是[基准测试](/zh/docs/getting-started/performance)中 Mutative 默认配置慢于 Immer 的工作负载。Immer 默认冻结每个新状态，在返回值搜索中跳过冻结对象，因此返回之前冻结的 10,000 行状态耗时 0.79 µs；默认不冻结的 Mutative 搜索同样状态需要 2.6 ms。相同配置下 Mutative 更快：关闭自动冻结为 2.6 ms 对 5.7 ms，开启为 0.53 µs 对 0.79 µs，因为其生产构建也会跳过冻结值。使用 `rawReturn()` 返回不含草稿的状态仅需 0.26 µs。
+
+默认冻结是一种取舍。尚未冻结的数据（如 JSON 响应）需要先冻结：每次重新创建并返回 10,000 行时，Immer 默认配置为 9.2 ms，Mutative 搜索为 3.1 ms，`rawReturn()` 为 0.23 ms，其中创建数据本身为 0.19 ms。冻结还使 Immer 在[所选结果](/zh/docs/getting-started/performance#mutative-vs-immer)的其他工作负载中变慢，例如更新 100 行中的一项，耗时从 1.82 µs 增至 25.0 µs。何时值得冻结，见[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+
+## 使用规则 [#rules]
+
+* 不能包裹包含草稿的值。非严格模式不做搜索，最终状态会留下在更新结束后被撤销的草稿，读取时抛错。[严格模式](/zh/docs/advanced-guides/strict-mode)仍搜索并替换这些草稿，开发构建还会提示：`The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`（返回值含草稿，请勿用 `rawReturn()` 包裹。）
+* 必须且只能传一个参数，否则抛错。
+* 仅用于对象和 `undefined`。原始值不含草稿，可直接返回；开发构建会对不必要的包裹发出警告。
+* 开启自动冻结后，生产构建跳过返回值中的冻结对象及其内部值，因此返回之前冻结的状态或基于它构建的状态，即使不用 `rawReturn()` 也很快。开发构建仍会搜索并拒绝其中的草稿，所以不要将草稿放入冻结对象或其内部值。
+
+<Callout type="idea">
+  使用 `rawReturn()` 时，建议在开发环境开启严格模式，如 `strict: process.env.NODE_ENV !== 'production'`，以发现错误包裹的草稿。
+</Callout>

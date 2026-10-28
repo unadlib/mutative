@@ -22,7 +22,7 @@ yarn add mutative
 bun add mutative
 ```
 
-Mutative has no dependencies. A production bundle of `create` alone is about 7.9 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.5 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
+Mutative has no dependencies. A production bundle of `create` alone is about 8.3 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.9 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
 
 ```ts
 import { create } from 'mutative';

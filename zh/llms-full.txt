@@ -1,0 +1,3303 @@
+# 自动冻结 (/zh/docs/advanced-guides/auto-freeze)
+
+使用 enableAutoFreeze 深度冻结下一个状态，阻止意外修改。
+
+Mutative 默认不冻结下一个状态。开启 `enableAutoFreeze` 后，会通过 `Object.freeze()` 深度冻结状态，意外修改会失败，避免改变其他代码仍在使用的状态。
+
+## 开启自动冻结 [#enable-auto-freeze]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { user: { name: 'Ada' }, tags: ['a'] };
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.user.name = 'Grace';
+  },
+  {
+    enableAutoFreeze: true,
+  }
+);
+
+expect(Object.isFrozen(state)).toBe(true);
+expect(Object.isFrozen(state.user)).toBe(true);
+// The array that the next state shares with the base state is frozen too.
+expect(state.tags).toBe(baseState.tags);
+expect(Object.isFrozen(baseState.tags)).toBe(true);
+
+// Writing to it throws in strict mode code, such as an ES module.
+expect(() => {
+  'use strict';
+  (state.user as { name: string }).name = 'Linus';
+}).toThrow(TypeError);
+```
+
+可通过 [`makeCreator()`](/zh/docs/api-reference/makecreator) 为整个应用设置默认值，也可将该选项传给 [`apply()`](/zh/docs/api-reference/apply)，冻结应用补丁后生成的状态。
+
+## 冻结范围 [#what-is-frozen]
+
+* 下一个状态中沿可枚举键可达的所有对象：包括已修改对象的副本、更新函数赋入的值，以及与基础状态共享的对象。共享对象在基础状态中也会被冻结。如果更新函数没有修改任何内容，则返回被冻结的基础状态本身。
+* 类实例、日期和函数也像普通对象一样由 `Object.freeze()` 冻结。但 `Date` 仍可调用 `setFullYear()` 等修改方法，因为日期值并非对象属性。
+* Map 和 Set 的 `set()`、`add()`、`delete()`、`clear()` 方法会抛错；Map 用作键的对象也会被冻结。
+
+已冻结的对象及其内部值会被跳过，因此首次更新冻结状态后，后续更新只需冻结新复制或新增的对象。基础状态也可以预先冻结：修改时，Mutative 像处理其他对象一样复制冻结对象。
+
+在 JavaScript 严格模式代码（包括 ES 模块和类）中，写入冻结对象会抛出 `TypeError`，其他情况下则不生效。冻结的 Map 和 Set 在两种情况下都会抛错。
+
+## 开发环境检查 [#development-checks]
+
+开发构建会拒绝包含循环引用的下一个状态，即对象通过其内部值直接或间接持有自身。Mutative 不支持此类结构，详见[共享引用](/zh/docs/extra-topics/shared-references)。生产构建跳过该检查。
+
+开启自动冻结后，生产构建在[返回值](/zh/docs/api-reference/rawreturn)中搜索草稿时也会跳过冻结对象，所以返回之前已冻结的状态开销很小。开发构建仍会搜索，并在发现草稿时抛错。
+
+## 成本与建议 [#cost-and-recommendation]
+
+冻结需要访问所有尚未冻结的对象，每次更新都有开销，宽对象和大数组尤其明显。在[基准测试](/zh/docs/getting-started/performance)所选的大多数工作负载中，默认冻结的 Immer 开启自动冻结时比关闭时更慢；Mutative 默认关闭此功能。
+
+<Callout type="idea">
+  建议在开发环境开启自动冻结以发现意外修改，在生产环境关闭以提高性能：`makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })`。如果其他代码依赖冻结状态，则应在生产环境保留。
+</Callout>
+
+返回自定义浅拷贝函数的[标记](/zh/docs/advanced-guides/mark)不能与自动冻结一起使用。[`current()`](/zh/docs/api-reference/current) 始终返回未冻结的快照，即使开启了自动冻结。TypeScript 会将 `enableAutoFreeze: true` 时 `create()` 的返回类型标为属性只读的 `Immutable<State>`。
+
+
+# 柯里化 (/zh/docs/advanced-guides/currying)
+
+创建稍后接收基础状态及额外参数的 producer，或创建稍后完成最终处理的草稿。
+
+除了 `create(base, recipe)`，[`create()`](/zh/docs/api-reference/create) 还支持两种柯里化形式：只传更新函数会得到 producer（生产者函数），稍后再传入基础状态；只传基础状态则得到可稍后完成最终处理的草稿。
+
+## Producer（生产者函数） [#producers]
+
+`create(recipe, options?)` 返回 producer `(base, ...args) => nextState`。它为第一个参数创建草稿，再将草稿和其余参数传给更新函数：
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const toggle = create((draft: Todo[], index: number) => {
+  draft[index].done = !draft[index].done;
+});
+
+const todos: Todo[] = [
+  { text: 'learn', done: false },
+  { text: 'ship', done: false },
+];
+
+const nextTodos = toggle(todos, 1);
+
+expect(nextTodos[1].done).toBe(true);
+expect(nextTodos[0]).toBe(todos[0]);
+```
+
+接收 action 参数的 producer 就是 reducer，可用于 Redux、`useReducer()` 等接收 reducer 的库：
+
+```ts
+import { create } from 'mutative';
+
+type State = { todos: { text: string; done: boolean }[] };
+
+type Action =
+  | { type: 'add'; text: string }
+  | { type: 'toggle'; index: number };
+
+const reducer = create((draft: State, action: Action) => {
+  switch (action.type) {
+    case 'add':
+      draft.todos.push({ text: action.text, done: false });
+      break;
+    case 'toggle':
+      draft.todos[action.index].done = !draft.todos[action.index].done;
+      break;
+  }
+});
+
+const initialState: State = { todos: [] };
+const state = [
+  { type: 'add', text: 'learn' } as const,
+  { type: 'toggle', index: 0 } as const,
+].reduce(reducer, initialState);
+
+expect(state.todos).toEqual([{ text: 'learn', done: true }]);
+```
+
+* 调用时的选项作用于 producer 生成的每个状态。例如 `create(recipe, { enablePatches: true })` 返回的 producer 会生成 `[nextState, patches, inversePatches]`。
+* producer 以自身的 `this` 调用更新函数，因此可以作为对象方法使用。
+* 异步更新函数对应的 producer 返回下一个状态的 Promise。
+* TypeScript 中如上例标注草稿参数类型，即可为 producer 的参数与结果提供类型。
+
+## 延后完成最终处理的草稿 [#drafts-that-you-finalize-later]
+
+`create(base, options?)` 返回基础状态的草稿和 `finalize()` 函数，适合无法放进单个更新函数的修改，例如分散在多个函数中的更新。`finalize()` 的返回值与传入更新函数的 `create()` 一致：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  foobar: { foo: 'str', bar: 'str' },
+  baz: { text: 'str' },
+};
+
+const [draft, finalize] = create(baseState, { enablePatches: true });
+
+draft.foobar.bar = 'baz';
+
+const [state, patches, inversePatches] = finalize();
+
+expect(state).toEqual({
+  foobar: { foo: 'str', bar: 'baz' },
+  baz: { text: 'str' },
+});
+expect(state.baz).toBe(baseState.baz);
+expect(patches).toEqual([
+  { op: 'replace', path: ['foobar', 'bar'], value: 'baz' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['foobar', 'bar'], value: 'str' },
+]);
+```
+
+此形式要求基础状态可创建草稿，因为没有更新函数可以通过返回值替换状态。
+
+<Callout type="warn">
+  `finalize()` 只能调用一次。如果它抛错（例如开发构建拒绝某个补丁路径），草稿不会像更新函数失败时那样被撤销，而是仍可写入。再次调用 `finalize()` 可能返回包含已撤销草稿的状态，补丁也可能遗漏修改。此时应从基础状态重新创建草稿。
+</Callout>
+
+[`makeCreator()`](/zh/docs/api-reference/makecreator) 返回的 `create()` 支持相同形式，并使用配置的默认选项。
+
+
+# 进阶指南 (/zh/docs/advanced-guides)
+
+深入了解 Mutative 的高级功能与最佳实践。
+
+- [自动冻结](/zh/docs/advanced-guides/auto-freeze)
+- [柯里化](/zh/docs/advanced-guides/currying)
+- [标记数据结构](/zh/docs/advanced-guides/mark)
+- [补丁](/zh/docs/advanced-guides/patches)
+- [严格模式](/zh/docs/advanced-guides/strict-mode)
+- [TypeScript](/zh/docs/advanced-guides/typescript)
+- [常见陷阱](/zh/docs/advanced-guides/pitfalls)
+- [性能建议](/zh/docs/advanced-guides/performance-tips)
+- [从 Immer 迁移](/zh/docs/advanced-guides/migration)
+- [从 Mutative v1 迁移到 v2](/zh/docs/advanced-guides/migration-v2)
+
+
+# 标记数据结构 (/zh/docs/advanced-guides/mark)
+
+通过 mark 选项决定哪些值创建草稿、哪些保持可变，以及如何复制它们。
+
+默认情况下，Mutative 为普通对象、数组、Map 和 Set 创建草稿，其他值保持原样：状态中的类实例、`Date` 或无原型对象会被草稿、基础状态和下一个状态共享。`mark` 选项可改变指定值的处理方式，无需修改值或类定义。
+
+## 标记函数 [#mark-functions]
+
+标记函数接收更新函数从草稿读取的每个值，以及 `{ mutable: 'mutable', immutable: 'immutable' }`。它可以返回：
+
+* `'immutable'`：为值创建草稿，例如类实例。修改时 Mutative 会保留原型并复制它。
+* `'mutable'`：不为值创建草稿。更新函数直接读取和修改原值及其内部值，下一个状态也与之共享。
+* 一个返回浅拷贝的函数：使用该副本为值创建草稿。
+* 不返回值：按默认方式处理。
+
+```ts
+import { create } from 'mutative';
+
+class Todo {
+  done = false;
+  constructor(public text: string) {}
+  toggle() {
+    this.done = !this.done;
+  }
+}
+
+const cache = { hits: 0 };
+
+const baseState = {
+  todos: [new Todo('learn'), new Todo('ship')],
+  cache,
+};
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.todos[0].toggle();
+    draft.cache.hits += 1;
+  },
+  {
+    mark: (target, { immutable, mutable }) => {
+      if (target instanceof Todo) return immutable;
+      if (target === cache) return mutable;
+      return undefined;
+    },
+  }
+);
+
+// The changed instance is a copy of the same class.
+expect(state.todos[0]).toBeInstanceOf(Todo);
+expect(state.todos[0].done).toBe(true);
+expect(baseState.todos[0].done).toBe(false);
+expect(state.todos[1]).toBe(baseState.todos[1]);
+
+// The mutable object was changed in place.
+expect(state.cache).toBe(cache);
+expect(cache.hits).toBe(1);
+```
+
+可传入标记函数列表组合使用，第一个返回值的函数决定处理方式，例如 `mark: [markSimpleObject, markTodos]`。[`markSimpleObject()`](/zh/docs/api-reference/marksimpleobject) 用于无原型对象和其他 realm 中的普通对象。
+
+对同一状态的每次调用应使用相同标记。可用 [`makeCreator({ mark })`](/zh/docs/api-reference/makecreator) 设置默认值，[`apply()`](/zh/docs/api-reference/apply) 和 [`isDraftable()`](/zh/docs/api-reference/isdraftable) 也支持此选项。若基础状态本身是类实例，必须将它标为 `immutable`，否则 `create()` 会抛错。
+
+## 补丁、自动冻结与严格模式 [#patches-auto-freeze-and-strict-mode]
+
+* 标为 `immutable` 的值像普通对象一样支持补丁和自动冻结。对所有对象都返回 `'immutable'` 的标记（如 `() => 'immutable'`）也同样支持。
+* 返回拷贝函数的标记不能与补丁或自动冻结组合，开发构建会报错；部分补丁也可能无法应用到这类值。
+* [严格模式](/zh/docs/advanced-guides/strict-mode)下，从草稿读取标为 `mutable` 的值必须位于 [`unsafe()`](/zh/docs/api-reference/unsafe) 内，否则会像读取其他不可创建草稿的对象一样抛错。
+
+## 自定义浅拷贝 [#custom-shallow-copies]
+
+返回函数的标记会使用该函数返回的副本创建草稿，适用于默认复制方式无法处理的值，如 `Date`：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { updatedAt: new Date(Date.UTC(2020, 0, 1)) };
+
+const state = create(
+  baseState,
+  (draft) => {
+    const updatedAt = draft.updatedAt;
+    updatedAt.setUTCFullYear(2021);
+    updatedAt.setUTCMonth(5);
+  },
+  {
+    mark: (target) =>
+      target instanceof Date ? () => new Date(target.getTime()) : undefined,
+  }
+);
+
+expect(state.updatedAt.toISOString()).toBe('2021-06-01T00:00:00.000Z');
+expect(baseState.updatedAt.getUTCFullYear()).toBe(2020);
+```
+
+首次读取这类值会直接返回副本，后续读取则返回副本的草稿。两种引用上的修改都会进入下一个状态，但 `Date` 等将数据存于内部槽或私有字段的对象，其方法只能在副本本身上调用。因此应像上例一样只读取一次，并通过该引用修改。若不使用标记，可赋入新的 `Date`。
+
+## 复制已标记的实例 [#copying-marked-instances]
+
+Mutative 复制被 `mark` 标为 `immutable` 的实例时，会保留其全部自有属性（包括不可枚举属性），并将自有访问器读取为值，类似 Immer 的 `setUseStrictShallowCopy('class_only')`。为了加快复制，可枚举、可写、可配置的自有属性通过赋值复制，而非定义属性，类似 Immer 的默认复制方式。因此，如果自有属性遮蔽了类上的 setter（例如子类字段覆盖基类访问器），复制时会触发副本上的 setter，可能修改副本与基础状态共享的对象；若遮蔽的是无 setter 的 getter 或只读属性，复制会抛错。请将这类值保存在类访问器中，或改用其他键。
+
+
+# 从 Mutative v1 迁移到 v2 (/zh/docs/advanced-guides/migration-v2)
+
+相比 1.3.0，构建、补丁、数组、返回值、开发检查、类型和修复中可能影响现有代码的变化。
+
+Mutative v2 保留 v1 API。以下列出自 v1.3.0 以来可能影响现有代码的变化。
+
+## 构建输出与包入口 [#build-output-and-package-entries]
+
+* **ES2018 输出**：所有构建目标从 ES2015 改为 ES2018，保留原生对象展开。支持 Proxy 但不支持 ES2018 的 Chrome 49–59、Firefox 18–54、Safari 10–11.0、Edge 12–18 等引擎，需要项目构建工具转译 Mutative。
+* **打包工具**：ESM 入口在每个开发检查处比较 `process.env.NODE_ENV`，不再始终运行开发代码。定义 `NODE_ENV` 为 `production` 的生产打包会移除开发检查和警告，并抛出压缩错误，与 CommonJS 消费端一致。未定义 `NODE_ENV` 的 Node.js 目标打包（如 esbuild 的 `platform: 'node'`）现在会包含两份 CommonJS 构建；请定义该变量或将 Mutative 设为外部依赖。
+* **Node.js ESM**：Node.js 中的 `import` 解析到重新导出 CommonJS 构建的模块，因此与 `require` 共享实例，且都遵循 `NODE_ENV`。此前 `import` 始终以独立实例运行开发 ESM 构建。
+* **无打包工具**：`dist/mutative.esm.mjs` 和 `dist/mutative.esm.js` 加载时读取 `process.env.NODE_ENV`，直接通过 CDN URL 在 `<script type="module">` 或其他没有 `process` 的环境中加载会报 `process is not defined`。请改用 `dist/mutative.esm.production.min.mjs`，或 `unpkg`、`jsdelivr` 字段指向的 UMD 构建。
+* **生产错误**：生产构建抛出 `Minified Mutative error #<code>` 并附上[错误参考](/zh/docs/extra-topics/errors)链接，不再提供完整消息；`apply()`、`original()`、`rawReturn()` 也一样。开发构建保留完整消息。生产代码若匹配错误文本，需改为匹配错误码。
+
+## 补丁 [#patches]
+
+* **顺序**：嵌套草稿的补丁现在先于父级补丁，与 Immer 一致。例如 `const item = draft.list[0]; draft.list.length = 0; item.text = 'b'; draft.item = item;` 先生成 `list` 长度替换，再生成 `item` 添加。应用结果与此前一致；仅重复表达原索引处未变化草稿的冗余替换补丁不再生成。
+* **值**：原本为草稿的补丁值现在引用下一个状态中的对象，不再深拷贝；开启 `enableAutoFreeze` 时一同冻结。`apply()` 仍会在应用前复制补丁值。修改补丁值前请先复制。
+* **移动的草稿**：已修改草稿因排序、赋值或替换离开原键后，不再在旧路径下生成补丁，其值由父级补丁携带。v1 的这类补丁可能无法应用，例如原键被原始值替换后的逆向补丁。
+* **Set 元素**：Set 同时增删元素时，已修改元素由 Set 的 `remove` 和 `add` 按值携带。v1 还会按修改后的位置生成元素内部补丁，重放时可能改错基础 Set 中的元素，或根本无法应用。只修改元素而不增删的 Set 仍按位置生成补丁。
+* **用原始对象覆盖草稿**：将草稿的原始对象赋给持有它的键，现在像普通赋值一样记录。若草稿最初就从此键读取，恢复原值不生成补丁；若草稿由其他键移来，则生成该赋值的补丁。v1 对两种情况都错误生成对象键的 `remove`，第二种情况又遗漏数组元素补丁，导致重放时丢键或丢失元素更新。
+
+## 数组 [#arrays]
+
+* `shift`、`unshift`、`splice`、`reverse` 在普通数组草稿的副本上原生执行，`indexOf`、`lastIndexOf`、`includes` 原生搜索，详见[哪些数组方法原生执行](/zh/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts)。数据数组的结果与 v1 一致，补丁可双向重放。数组索引上的访问器会读取为数据值，因此 getter 调用次数可能变化。
+* 已修改数组的 `current()` 复制当前数组，不再逐元素通过草稿读取。原生方法移动的基础元素若含外层 `create()` 的草稿，会保持原样，与未移动元素原有行为一致。
+* 大数组搜索可用 `current(draft.list)`，避免为每个访问元素创建草稿，再通过草稿修改匹配项，详见 [`current()`](/zh/docs/api-reference/current)。
+
+## 返回值 [#returned-values]
+
+* 开启 `enableAutoFreeze` 时，生产构建不再搜索返回值中的冻结对象（包括返回值本身）及其内部值，内部草稿会保持未解析。开发构建仍会搜索并在发现草稿时抛错，包括冻结对象内部尚未冻结的对象，v1 会替换其中草稿。不要将草稿放入冻结对象或其内部值。关闭自动冻结时，返回值搜索与 v1 一致。
+
+## 开发构建 [#development-builds]
+
+* 严格模式下，更新函数留下 1,000 个或更多未修改草稿时警告一次，例如大数组草稿搜索。
+* 严格模式下，对不含草稿的值调用 `rawReturn()` 不再输出相互矛盾的警告。
+* `create()` 接收草稿和更新函数时警告一次，因为它与 v1 一样为 `current(draft)` 快照创建草稿，详见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。
+* `enablePatches: { pathAsArray: false }` 时，如果路径含非字符串 Map 键或 symbol 键，会抛错，因为字符串路径无法表示这些键：应用时会写入不同键（如 `'1'` 而非 `1`），或无法应用键下的修改。生产构建与 v1 一样仍生成这类补丁，symbol 键仍会导致 `TypeError`。这类键应保留数组路径。
+* 开启 `enableAutoFreeze` 时，只对真正持有自身的对象报告循环引用。`draft.prev = original(draft)` 等持有原值的修改草稿，或通过其他路径连接共享对象的情况不再抛错；生产构建一直能够冻结这类状态。真正循环的错误消息会指出重复对象路径，可能比 v1 多一个键。
+* 将草稿作为 Map 草稿 `set()` 的键（如 `draft.map.set(draft.key, value)`）会抛错。Map 键原样保留，草稿撤销后读取会失败。生产构建仍像 v1 一样保留这种键。应使用 `original(draft)`、`current(draft)` 或 ID。
+
+## TypeScript [#typescript]
+
+* 显式指定状态类型的异步更新，如 `create<State>(base, async (draft) => { … })`，现在返回 `Promise<State>`，柯里化 producer 也一样；v1 错误标为 `State`。状态类型为泛型参数，或本身包含 Promise（如 `object`、`unknown`）时，异步或可能返回 Promise 的更新函数仍像 v1 一样推断为状态类型；泛型代码应省略显式类型参数。
+* `apply()` 接受 `enableAutoFreeze: true` 并返回 `Immutable<State>`，与 `apply<State, true>()` 一致；v1 拒绝该选项并将冻结结果标为可变。选项类型为 `boolean` 或可选 `true` 时返回 `State | Immutable<State>`。`mutable` 为 `boolean`、可选 `boolean` 或可选 `true` 时返回 `State | void`。
+* 标注草稿类型并返回新状态的柯里化更新函数，如 `create((draft: State) => ({ ...draft, count: 0 }))`，现在生成返回 `State` 的 producer；异步时为 `Promise<State>`。v1 错误将它识别为手动草稿，导致无法调用。泛型中的 `create((draft: T) => { … })` 也修复了同一问题。
+* 显式指定状态类型时，可能返回也可能不返回 Promise 的更新函数（如 `(draft: State) => void | Promise<void>`）现在返回 `State | Promise<State>`，也适用于 `number` 等原始状态、柯里化 producer 和 `makeCreator()`。v1 将其标为 `State`。
+
+## 会改变结果的修复 [#fixes-that-change-results]
+
+* 开启补丁时，Set 中每个被修改的元素都保留修改。v1 对非根 Set 的多个元素进行深层修改时，只保留其中一个。
+* Set 接收未修改草稿时，保留原始对象，与状态其余部分一致，不再持有草稿的浅拷贝。
+* Set 草稿被移到其他键、数组、Map、Set 或新对象中后，即使原位置被替换或删除，新位置仍保留其增删改结果；v1 保留原始元素。
+* Set 子类草稿像 Map 一样修改子类实例副本，子类的 `add`、`has`、`delete` 和 `clear` 在更新期间生效，迭代顺序也与 Set 一致。v1 将变化元素放在独立映射中，到更新结束重建 Set 时才经过这些方法。与 v1 已要求 Map 子类 `set` 的行为一样，Set 子类 `add` 必须保存收到的原值：若复制草稿或包含草稿的对象，会在最终状态中留下读取即抛错的草稿。
+* 对被 `delete`、`shift`、`unshift` 或缩短数组的 `splice` 删除的键赋 `undefined`，会重新添加该键；v1 留下空洞或保持缩短后的长度。
+* 删除当前草稿不拥有的数组索引不产生变化，与 JavaScript 一致。v1 删除原数组中已缺失的索引可能创建 `undefined` 元素，越界时还会扩展长度。此项也修复 v2.0.0 的回归：删除本次更新中已移除的索引会再次扩展数组，而 v1 会保留缩短后的数组（[#212](https://github.com/unadlib/mutative/issues/212)）。
+* 对自有数据属性赋值时，即使原型有同名 setter，也会设置该属性，与 JavaScript 一致。v1 会通过草稿调用 setter，对 `JSON.parse()` 产生的自有 `__proto__` 赋值还会抛错。标为 `immutable` 的类实例通过赋值复制自有属性，因此 setter 现在会在副本上触发，而非通过草稿触发，见[复制已标记的实例](/zh/docs/advanced-guides/mark#copying-marked-instances)。
+* `mark` 返回 `mutable` 时，重新读取更新函数赋入或移入的值（包括 `current()`）会得到实际赋入值；v1 返回原值。
+* 状态含带草稿的普通 Set 时，`current()` 返回快照，v1 会抛错。
+* `current()` 会快照更新函数赋入且被标记为可创建草稿的对象（如类实例）及其内部草稿。v1 原样返回对象，后续草稿修改会泄漏到快照。
+* 开启自动冻结时，Map 和 Set 实例本身也被冻结，添加属性或替换方法会失败；v1 只替换修改方法。后续更新跳过冻结的 Map/Set，不再遍历条目；持有自身的 Map/Set 在生产环境不再栈溢出。
+* Map/Set 草稿的迭代器遵循内置行为：部分消费后再次迭代会从停下的位置继续，环境支持时也提供 `toArray()` 等辅助方法。v1 会从头迭代，且只有 Map 的 `keys()` 支持辅助方法。
+* Map 值与条目迭代器、所有 Set 迭代器必须在草稿有效期内消费。更新完成、失败或手动草稿完成最终处理后，再产出新值会抛出 `TypeError`。惰性辅助方法遵循相同生命周期，耗尽的迭代器保持耗尽。Map 键不创建草稿，`keys()` 仍返回原生迭代器。
+* `apply()` 复制补丁值的自有 symbol 键；自有 `__proto__` 保持数据属性。v1 丢弃 symbol 键，并把自有 `__proto__` 变成副本原型。
+* `apply()` 拒绝对象或数组上以 `__proto__` 结尾的路径，与路径中间出现此键的处理一致。可转换属性键（如包装字符串）也在转换后检查。v1 在 `mutable: true` 时会赋值并替换对象原型。
+* 补丁路径访问 Set 元素时，只接受 `1` 或 `'1'` 等索引，`__proto__` 等其他键会抛错。v1 会读取元素数组的任意属性，使 `__proto__` 路径能访问 `Array.prototype`。
+* `apply()` 的 `mutable: true` 遇到替换根状态的补丁会抛错，因为无法原地替换根值。v1 忽略替换，却把后续补丁应用到替换值，导致原状态未变而补丁值被修改。
+* `mark` 使对象可创建草稿时（如 `markSimpleObject` 下的普通对象），副本保留自有 `__proto__` 数据属性；v1 通过赋值替换了副本原型。
+* 数组作为 Map 键时，补丁路径将它保留为单个路径段；v1 将数组展开到路径中，导致写入其他键。
+* `apply()` 原样使用补丁路径中的 Map 键。v1 先转为字符串，无原型对象键会导致错误。
+* 数组补丁记录 `0` 与 `-0` 的变化；状态本就保留符号，但 v1 重放补丁会丢失。保持 `NaN` 的元素不再生成替换补丁。
+* 稀疏数组补丁双向区分空洞和 `undefined`。先缩短再扩展（如 `draft.length = 1; draft.length = 3`）会生成同样的截短和扩展补丁，重新暴露的索引为空洞，逆向补丁恢复原元素。v1 的正向补丁保留已移除元素，逆向补丁留下空洞；还会将新增空洞，以及填洞后的逆向还原，错误变为 `undefined`。
+* 严格模式下，嵌套 `unsafe()` 不再提前结束外层访问权限；v1 在内层返回后读取可变数据会抛错。
+* 更新函数返回后发生错误（如同时修改草稿和返回其他值），也会撤销草稿并释放数组方法缓存，与更新函数抛错一致；v1 留下仍可用的草稿。这也覆盖检查返回 Proxy 或调用返回 Promise 的 `then` 时出错，并保留原始错误。
+* `Symbol.isConcatSpreadable` 为 false 的数组草稿正确复制元素；v1 将整个数组作为唯一元素放入副本。
+
+
+# 从 Immer 迁移 (/zh/docs/advanced-guides/migration)
+
+将 Immer API 替换为 Mutative，并检查冻结、补丁、类实例和异步更新的差异。
+
+从 Immer 迁移到 Mutative 主要是替换 API 调用。两者都通过修改草稿生成新状态，并共享未修改的部分。[与 Immer 对比](/zh/docs/extra-topics/comparison-with-immer)列出了完整 API 对应关系和行为差异。
+
+<Callout type="idea">
+  [mutative-compat](https://github.com/exuanbo/mutative-compat) 使用 Immer API 封装 Mutative，可先快速切换，再逐步迁移具体调用。
+</Callout>
+
+## 迁移清单 [#checklist]
+
+1. 将 `produce()` 替换为 `create()`，将 `produceWithPatches()` 替换为开启 `enablePatches: true` 的 `create()`，将 `applyPatches()` 替换为 `apply()`，将 `nothing` 替换为 `rawReturn(undefined)`。`current()`、`original()`、`isDraft()`、`isDraftable()`、`castDraft()` 和 `castImmutable()` 名称不变。
+2. 移除 `enableMapSet()`、`enablePatches()` 和 `enableArrayMethods()` 调用：Mutative 内置支持 Map、Set 和补丁，并原生执行相关数组方法。
+3. 确认是否需要冻结。Immer 默认冻结下一个状态，Mutative 默认不冻结。若代码依赖冻结状态（例如捕获意外修改），请设置 `enableAutoFreeze: true`。
+4. 将 `setAutoFreeze()` 和 `new Immer()` 的全局配置替换为每次调用的选项，或通过 [`makeCreator()`](/zh/docs/api-reference/makecreator) 设置默认值。
+5. 用 [`mark`](/zh/docs/advanced-guides/mark) 选项替换类上的 `[immerable] = true`。
+
+## `produce()` → `create()` [#produce---create]
+
+```ts
+import { produce } from 'immer';
+
+const baseState = [
+  { title: 'Learn TypeScript', done: true },
+  { title: 'Try Immer', done: false },
+];
+
+const nextState = produce(baseState, (draft) => {
+  draft[1].done = true;
+  draft.push({ title: 'Tweet about it', done: false });
+});
+
+expect(nextState[1].done).toBe(true);
+expect(Object.isFrozen(nextState)).toBe(true);
+```
+
+使用 Mutative：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = [
+  { title: 'Learn TypeScript', done: true },
+  { title: 'Try Mutative', done: false },
+];
+
+const nextState = create(baseState, (draft) => {
+  draft[1].done = true;
+  draft.push({ title: 'Tweet about it', done: false });
+});
+
+expect(nextState[1].done).toBe(true);
+expect(Object.isFrozen(nextState)).toBe(false);
+```
+
+Mutative 默认不冻结下一个状态，只有设置 `enableAutoFreeze` 才会冻结，这也是其更快的原因之一。要保留 Immer 的默认行为，可在每次调用时传入选项，或创建自带该配置的 `create()`：
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({ enableAutoFreeze: true });
+
+const nextState = create({ list: [1] }, (draft) => {
+  draft.list.push(2);
+});
+
+expect(Object.isFrozen(nextState.list)).toBe(true);
+```
+
+两者的柯里化 producer 用法一致：`produce(recipe)` 替换为 `create(recipe)`，producer 会将其余参数传给更新函数，详见[柯里化](/zh/docs/advanced-guides/currying)。
+
+## 补丁 [#patches]
+
+```ts
+import { applyPatches, enablePatches, produceWithPatches } from 'immer';
+
+enablePatches();
+
+const baseState = { info: { name: 'Michael', age: 33 } };
+
+const [nextState, patches, inversePatches] = produceWithPatches(
+  baseState,
+  (draft) => {
+    draft.info.age++;
+  }
+);
+
+expect(applyPatches(baseState, patches)).toEqual(nextState);
+expect(applyPatches(nextState, inversePatches)).toEqual(baseState);
+```
+
+使用 Mutative：
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = { info: { name: 'Michael', age: 33 } };
+
+const [nextState, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.info.age++;
+  },
+  { enablePatches: true }
+);
+
+expect(apply(baseState, patches)).toEqual(nextState);
+expect(apply(nextState, inversePatches)).toEqual(baseState);
+```
+
+传给 `produce()` 的补丁监听器同样可改为开启此选项，再从 `create()` 结果读取补丁。两者在缩短数组和修改 Set 中对象时的补丁有所不同：Mutative 默认用 `replace` 修改 `length`；设置 `enablePatches: { arrayLengthAssignment: false }` 后，就会像 Immer 一样逐索引删除。详见对比中的[补丁](/zh/docs/extra-topics/comparison-with-immer#patches)。
+
+## 返回 `undefined` [#return-undefined]
+
+Immer 的 `nothing` 用于让更新函数返回 `undefined`：
+
+```ts
+import { nothing, produce } from 'immer';
+
+const baseState: { count: number } | undefined = { count: 1 };
+
+const nextState = produce(baseState, () => nothing);
+
+expect(nextState).toBeUndefined();
+```
+
+Mutative 则返回 `rawReturn(undefined)`：
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const baseState: { count: number } | undefined = { count: 1 };
+
+const nextState = create(baseState, () => rawReturn(undefined));
+
+expect(nextState).toBeUndefined();
+```
+
+## 手动草稿 [#manual-drafts]
+
+`createDraft()` 和 `finishDraft()` 可替换为不带更新函数的一次 `create()` 调用，它同时返回草稿和最终处理函数：
+
+```ts
+import { createDraft, finishDraft } from 'immer';
+
+const baseState = { count: 1 };
+
+const draft = createDraft(baseState);
+draft.count += 1;
+const nextState = finishDraft(draft);
+
+expect(nextState).toEqual({ count: 2 });
+```
+
+使用 Mutative：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { count: 1 };
+
+const [draft, finalize] = create(baseState);
+draft.count += 1;
+const nextState = finalize();
+
+expect(nextState).toEqual({ count: 2 });
+```
+
+## 类实例 [#classes]
+
+Immer 为带 `[immerable] = true` 的类实例创建草稿。Mutative 无需修改类，而是通过 `mark` 函数将实例标为 `immutable`：
+
+```ts
+import { create } from 'mutative';
+
+class Clock {
+  constructor(
+    public hour: number,
+    public minute: number
+  ) {}
+}
+
+const clock = new Clock(12, 10);
+
+const nextClock = create(
+  clock,
+  (draft) => {
+    draft.minute += 1;
+  },
+  {
+    mark: (target, { immutable }) =>
+      target instanceof Clock ? immutable : undefined,
+  }
+);
+
+expect(nextClock).toBeInstanceOf(Clock);
+expect(nextClock.minute).toBe(11);
+expect(clock.minute).toBe(10);
+```
+
+对这类状态的每次 `create()` 和 `apply()` 调用都应传入相同 `mark`，例如通过 `makeCreator({ mark })` 设置。详见[标记数据结构](/zh/docs/advanced-guides/mark)。
+
+## 异步更新函数 [#async-recipes]
+
+Immer 11 不支持异步更新函数：若在首次 `await` 前修改草稿，会因为返回的 Promise 被视为新值而抛错；若之后再修改，则会访问已撤销的草稿。Mutative 的 `create()` 返回下一个状态的 Promise，在其落定前草稿始终可用：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { user: { name: '' } };
+
+const nextState = await create(baseState, async (draft) => {
+  draft.user.name = await Promise.resolve('Ada');
+});
+
+expect(nextState.user.name).toBe('Ada');
+```
+
+## TypeScript [#typescript]
+
+两者均导出 `Draft<T>`、`Immutable<T>` 和 `Patch`；Mutative 额外提供补丁列表类型 `Patches` 和 `castMutable()`。Mutative 根据选项推断 `create()` 的返回类型，例如开启 `enablePatches: true` 时返回包含补丁的元组，详见 [TypeScript](/zh/docs/advanced-guides/typescript)。
+
+
+# 补丁 (/zh/docs/advanced-guides/patches)
+
+将更新函数的修改记录为补丁，并通过 apply() 应用到状态。
+
+开启 `enablePatches` 后，`create()` 还会返回将基础状态转换为下一个状态的正向补丁，以及将下一个状态还原为基础状态的逆向补丁。[`apply()`](/zh/docs/api-reference/apply) 可应用这些补丁，用于在其他状态副本上重放、通过网络传输修改，或实现撤销与重做。
+
+## 生成与应用补丁 [#generating-and-applying-patches]
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.foo = 'foobar';
+    draft.list.push({ text: 'learning' });
+  },
+  {
+    enablePatches: true,
+  }
+);
+
+expect(patches).toEqual([
+  { op: 'add', path: ['list', 1], value: { text: 'learning' } },
+  { op: 'replace', path: ['foo'], value: 'foobar' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['list', 'length'], value: 1 },
+  { op: 'replace', path: ['foo'], value: 'bar' },
+]);
+
+expect(apply(baseState, patches)).toEqual(state);
+expect(apply(state, inversePatches)).toEqual(baseState);
+```
+
+`enablePatches` 也适用于柯里化 producer、手动草稿和 [`makeCreator()`](/zh/docs/api-reference/makecreator)。它支持对象、数组、Map、Set，以及通过 [`mark`](/zh/docs/advanced-guides/mark) 变为可创建草稿的值；应用时需向 `apply()` 传入相同的 `mark`。
+
+## 补丁行为 [#patch-behavior]
+
+* **操作与路径**：补丁使用 `add`、`remove` 和 `replace`。路径从根节点经由对象键、数组索引、原样保留的 Map 键（包括对象与数组）或 Set 元素位置，指向变化的值。直接返回新状态的更新函数会生成一个路径为空的 `replace` 补丁。
+* **顺序**：嵌套草稿的补丁先于父级补丁，与 Immer 一致。
+* **值**：补丁值引用下一个状态中的对象，开启 `enableAutoFreeze` 时会一起冻结。修改补丁值前应先复制。`apply()` 在应用前会复制补丁值。
+* **数组**：`shift()`、`unshift()`、`splice()`、`reverse()` 和 `sort()` 为每个元素发生变化的索引生成 `replace`，为超出原长度的索引生成 `add`。数组缩短时，默认生成一个修改 `length` 的 `replace`；设置 `arrayLengthAssignment: false` 后则为每个移除的索引生成 `remove`。正向和逆向补丁都保留空洞：填充空洞使用 `replace`，重建空洞则从该索引处重建数组，详见[稀疏数组](#sparse-arrays)。
+* **Map**：`set()` 对新键生成 `add`，对已有键生成 `replace`；`delete()` 生成 `remove`。
+* **Set**：按值添加元素，按持有的值删除元素，详见[包含对象的 Set](#sets-of-objects)。
+* **移动的草稿**：如果已修改的草稿因排序、赋值或被其他值替换而离开原键，就不会在旧路径下生成补丁，其值由父级补丁携带。
+* **应用补丁**：`apply()` 支持 `add`、`remove` 和 `replace`，数组索引 `-` 表示追加。其他操作以及经过 `__proto__` 或 `constructor` 的路径会抛错。它支持 `enableAutoFreeze`、`strict` 和 `mark`，也可用 `mutable: true` 原地修改状态，但无法原地替换根状态，此时会抛错。传入草稿时则原地修改草稿。
+* **JSON Patch**：设置 `pathAsArray: false` 和 `arrayLengthAssignment: false` 后，JSON 兼容对象和数组的补丁就是 JSON Patch 操作。Map、Set 和数组空洞没有对应的 JSON 表示。
+
+与 Immer 的差异见[补丁对比](/zh/docs/extra-topics/comparison-with-immer#patches)。
+
+## JSON 补丁 [#json-patches]
+
+`enablePatches` 可设为 `true`，或包含两个格式选项的对象。两项都设为 `false` 后，JSON 兼容对象和数组的补丁就是 [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) 操作，可供其他 JSON Patch 库应用（[相关讨论](https://github.com/unadlib/mutative/issues/6)）。
+
+### pathAsArray：默认为 true [#pathasarray---default-true]
+
+设置 `pathAsArray: false` 后，路径使用 JSON Pointer 字符串，而非键数组：
+
+```ts
+import { create } from 'mutative';
+
+const [state, patches, inversePatches] = create(
+  { list: [1, 2, 3] },
+  (draft) => {
+    draft.list.length = 0;
+  },
+  {
+    enablePatches: {
+      pathAsArray: false,
+    },
+  }
+);
+
+expect(state).toEqual({ list: [] });
+expect(patches).toEqual([{ op: 'replace', path: '/list/length', value: 0 }]);
+expect(inversePatches).toEqual([
+  { op: 'add', path: '/list/0', value: 1 },
+  { op: 'add', path: '/list/1', value: 2 },
+  { op: 'add', path: '/list/2', value: 3 },
+]);
+```
+
+字符串路径只能保存字符串，不能表示非字符串的 Map 键或 symbol 键。例如 `pathAsArray: false` 时，`draft.set(1, 'b')` 的补丁会写入键 `'1'`。这类键应保留默认数组路径；开发构建遇到无法表示的字符串路径会抛错。
+
+### arrayLengthAssignment：默认为 true [#arraylengthassignment---default-true]
+
+设置 `arrayLengthAssignment: false` 后，缩短数组会为每个移除的索引生成 `remove`，而非通过 `replace` 修改 `length`：
+
+```ts
+import { create } from 'mutative';
+
+const [state, patches, inversePatches] = create(
+  { list: [1, 2, 3] },
+  (draft) => {
+    draft.list.length = 0;
+  },
+  {
+    enablePatches: {
+      arrayLengthAssignment: false,
+    },
+  }
+);
+
+expect(state).toEqual({ list: [] });
+expect(patches).toEqual([
+  { op: 'remove', path: ['list', 2] },
+  { op: 'remove', path: ['list', 1] },
+  { op: 'remove', path: ['list', 0] },
+]);
+expect(inversePatches).toEqual([
+  { op: 'add', path: ['list', 0], value: 1 },
+  { op: 'add', path: ['list', 1], value: 2 },
+  { op: 'add', path: ['list', 2], value: 3 },
+]);
+```
+
+<Callout type="idea">
+  对大数组逐索引生成 `remove` 比单个 `length` 的 `replace` 耗时更多、补丁更多。除非需要 JSON Patch 格式，否则应保持 `arrayLengthAssignment: true`（即保留默认值）。
+</Callout>
+
+## 稀疏数组 [#sparse-arrays]
+
+空洞表示索引不存在，与自有索引的值为 `undefined` 不同：`map()`、`forEach()` 等数组方法会跳过空洞。正向和逆向补丁会保留这种区别，包括扩展数组、用 `undefined` 填充空洞，或通过数组方法移动空洞。
+
+```ts
+const base = new Array<number>(2);
+base[0] = 1;
+
+const [state, patches, inverse] = create(base, (draft) => {
+  draft.unshift(0);
+}, { enablePatches: true });
+
+expect(2 in state).toBe(false);
+expect(2 in apply(base, patches)).toBe(false);
+expect(1 in apply(state, inverse)).toBe(false);
+```
+
+索引补丁必须携带值，无法直接表示空洞。填充空洞使用 `replace`；重建空洞时，需要先将数组截短到该索引，再扩展长度以留下空洞，并恢复后续元素。因此，补丁数量随后续元素数量增长：填充一个后面还有 10,000 个元素的空洞，会产生 1 个正向补丁和 10,002 个逆向补丁。在最后一个元素之前制造空洞也会产生这种重建补丁，逆向补丁则负责填回。超出原长度的新空洞只需一个修改 `length` 的 `replace`。无论原地应用还是应用到草稿，这些补丁都保留数组自身的引用，包括 Set 内的数组。
+
+设置 `arrayLengthAssignment: false` 时，截短仍使用逐索引 `remove`，但重建空洞仍需要修改 `length` 的 `replace`。请用 Mutative 的 `apply()` 应用这些补丁：稀疏数组属于 JavaScript 数据，其补丁不是可移植的 JSON Patch。JSON 序列化会把空洞变成 `null`，无法保留其结构。
+
+## 撤销与重做 [#undo-and-redo]
+
+每次修改的逆向补丁用于撤销，正向补丁用于重做：
+
+```ts
+import { apply, create, type Patches } from 'mutative';
+
+let state = { todos: [] as string[] };
+const undoStack: { patches: Patches; inversePatches: Patches }[] = [];
+
+function update(recipe: (draft: typeof state) => void) {
+  const [nextState, patches, inversePatches] = create(state, recipe, {
+    enablePatches: true,
+  });
+  state = nextState;
+  undoStack.push({ patches, inversePatches });
+}
+
+update((draft) => {
+  draft.todos.push('learn Mutative');
+});
+update((draft) => {
+  draft.todos.push('use patches');
+});
+
+const last = undoStack.pop()!;
+state = apply(state, last.inversePatches);
+expect(state.todos).toEqual(['learn Mutative']);
+
+state = apply(state, last.patches);
+expect(state.todos).toEqual(['learn Mutative', 'use patches']);
+```
+
+[travels](https://github.com/mutativejs/travels) 基于这些补丁提供撤销、重做、历史长度限制、归档和持久化；[use-travel](https://github.com/mutativejs/use-travel) 和 [zustand-travel](https://github.com/mutativejs/zustand-travel) 分别集成到 React 和 Zustand。
+
+## 包含对象的 Set [#sets-of-objects]
+
+Set 补丁按值添加元素，并按持有的值删除元素，因此 `remove` 只能从持有同一对象引用的 Set 中删除该对象。如果只修改现有元素而未增删元素，补丁会记录各修改元素的位置，可以双向重放。一旦增删了元素，Set 的 `remove` 和 `add` 补丁就会按值携带所有变化的元素。
+
+`apply()` 会复制每个补丁值，所以应用后 Set 持有的是新增对象的副本，逆向补丁无法删除这些副本：重做后再撤销会留下对象。此外，`apply()` 总是在末尾添加元素，应用后的顺序可能不同于更新函数产生的状态。发生增删的 Set 中，被修改的元素或由逆向补丁恢复的元素会移到末尾；删除后重新添加同一元素也会移到末尾，却不生成补丁。后续更新的补丁若按位置寻址，就可能无报错地修改另一个元素。原始值 Set 的元素不会因此丢失，但顺序也可能变化。
+
+如果需要在 `apply()` 返回的状态上继续重放补丁（如撤销、重做或同步副本），请将这类对象保存在按 ID 索引的 Map 或数组中。
+
+
+# 性能建议 (/zh/docs/advanced-guides/performance-tips)
+
+避免不必要的草稿、搜索、复制、冻结与补丁开销。
+
+Mutative 每次更新最多复制每个对象一次，且只为更新函数读取的值创建草稿，因此大多数写法已经足够快。以下建议适用于大状态和热点路径。数据来自 Node.js 24 下的[基准测试](/zh/docs/getting-started/performance)，单位为每次更新的微秒数。
+
+## 在快照中搜索大数组 [#search-large-arrays-in-a-snapshot]
+
+通过草稿读取的每个对象都会变成草稿，所以 `draft.list.find()` 会为每个访问的元素创建草稿。可搜索由普通值组成的 [`current(draft.list)`](/zh/docs/api-reference/current#searching-a-large-array)，再通过草稿修改匹配项：
+
+```ts
+import { create, current } from 'mutative';
+
+const baseState = {
+  list: Array.from({ length: 10_000 }, (_, id) => ({ id, done: false })),
+};
+
+const state = create(baseState, (draft) => {
+  const index = current(draft.list).findIndex((item) => item.id === 9_999);
+  draft.list[index].done = true;
+});
+
+expect(state.list[9_999].done).toBe(true);
+```
+
+在 10,000 行中先更新第一行，再查找并更新最后一行，使用快照耗时 176 µs，通过草稿搜索则为 2,169 µs。连续搜索应复用同一份快照，因为每次 `current()` 都会重新复制草稿中已修改的部分。若只需读取未代理的基础状态，可用 [`original()`](/zh/docs/api-reference/original)。
+
+## 用 `rawReturn()` 返回新状态 [#return-new-states-with-rawreturn]
+
+Mutative 会遍历更新函数返回值中的每个对象以搜索草稿：返回一个含 10,000 行的新状态耗时 2,600 µs。如果返回值不含草稿（例如从头构建的状态），可用 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 包裹，耗时仅 0.26 µs。返回之前的状态是各自默认配置下 Immer 优于 Mutative 的工作负载，因为 Immer 冻结状态，并跳过返回值中的冻结对象。详见[与 Immer 的性能对比](/zh/docs/api-reference/rawreturn#performance-compared-with-immer)。
+
+## 使用数组方法移动元素 [#let-array-methods-move-elements]
+
+`shift()`、`unshift()`、`splice()` 和 `reverse()` 在普通数组副本上原生执行，而逐个移动元素的循环会让每个元素经过草稿代理。用 `shift()` 删除 10,000 行中的第一行耗时 7.04 µs，而通过草稿逐项移动的 Immer 为 7,408 µs。详见[哪些数组方法原生执行](/zh/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts)。
+
+## 将相关修改合并为一次更新 [#make-one-update-for-related-changes]
+
+每次 `create()` 都会复制从根节点到变化位置的路径上的对象。把多个修改放进同一个更新函数，共享父对象只复制一次；每个修改单独调用则会重复复制。应将同一 action 或事件的修改合并处理。
+
+## 按需开启功能 [#turn-on-what-you-need]
+
+* **自动冻结**会访问下一个状态中所有尚未冻结的对象。在含 1,000 个属性的对象中插入属性，关闭时耗时 50.3 µs，开启时为 140 µs。可在开发环境，或其他代码依赖冻结状态时开启，详见[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+* **补丁**在只修改少量路径时开销很小：10,000 行场景中追加一行并插入属性，关闭补丁为 63.8 µs，开启为 63.2 µs。但移动元素会为每个移动索引生成补丁，所以开启补丁后删除第一行耗时 1,063 µs。除非需要 JSON Patch 格式，否则应保持 `arrayLengthAssignment: true`（即保留默认值），逐索引 `remove` 比单个 `length` 的 `replace` 开销更大。
+* **严格模式**检查读取的每个值。对于可能含对象的数组，数组方法和 `current()` 都会经过草稿。建议仅在开发环境开启，详见[严格模式](/zh/docs/advanced-guides/strict-mode)。
+
+## 避免为大型只读数据创建草稿 [#keep-large-data-out-of-drafts]
+
+只读不改的数据（如大型查询表）也会在更新函数读取时逐个创建草稿。可用 `original()` 读取，或放在状态之外。让[标记](/zh/docs/advanced-guides/mark)返回 `'mutable'` 也能完全跳过草稿处理，但此后对该值的修改就是原地修改。
+
+
+# 常见陷阱 (/zh/docs/advanced-guides/pitfalls)
+
+避免草稿、返回值、未创建草稿的值及补丁中的常见错误。
+
+大多数更新函数都是普通 JavaScript，但草稿是仅在更新期间有效的代理，Mutative 也只复制它为之创建草稿的值。下面介绍由此产生的常见错误。
+
+## 重新赋值草稿参数 [#reassigning-the-draft-parameter]
+
+给 `draft` 参数重新赋值只会改变局部变量。要替换整个状态，应返回新状态：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { count: 1 };
+
+const unchanged = create(baseState, (draft) => {
+  // This only changes the local variable.
+  draft = { count: 0 };
+});
+expect(unchanged).toBe(baseState);
+
+const replaced = create(baseState, () => ({ count: 0 }));
+expect(replaced).toEqual({ count: 0 });
+```
+
+## 修改草稿的同时返回其他值 [#changing-the-draft-and-returning-another-value]
+
+更新函数必须在修改草稿和返回新状态之间二选一，否则 Mutative 无法确定采用哪个结果，会抛错。返回 `undefined` 或草稿本身会保留草稿修改；要让下一个状态为 `undefined`，应返回 [`rawReturn(undefined)`](/zh/docs/api-reference/rawreturn)。注意箭头函数可能隐式返回赋值表达式或方法调用的结果：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { list: [1] };
+
+// `push()` returns the new length, which the recipe then returns:
+// TypeScript rejects such a recipe, and at runtime it throws.
+expect(() =>
+  // @ts-expect-error
+  create(baseState, (draft) => draft.list.push(2))
+).toThrow();
+
+// A block body returns nothing.
+const state = create(baseState, (draft) => {
+  draft.list.push(2);
+});
+expect(state.list).toEqual([1, 2]);
+```
+
+## 在更新结束后保留草稿 [#keeping-a-draft-after-the-recipe]
+
+更新函数结束时，Mutative 会撤销其草稿。回调、闭包或其他状态持有的草稿之后再被读取时会抛错。应保留 [`current(draft)`](/zh/docs/api-reference/current)、原始对象或下一个状态。异步更新函数的草稿在 Promise 落定前有效；`create(base)` 的草稿则在 `finalize()` 返回前有效。
+
+草稿也只属于创建它的 `create()` 调用，不要存入另一次调用的草稿中，详见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。
+
+## 修改未创建草稿的值 [#changing-values-that-are-not-drafted]
+
+Mutative 为普通对象、数组、Map 和 Set 创建草稿。类实例、日期、无原型对象等其他对象被草稿、基础状态和下一个状态共享，修改它们也会修改基础状态：
+
+```ts
+import { create } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = { counter: new Counter() };
+
+const state = create(baseState, (draft) => {
+  draft.counter.count += 1;
+});
+
+// The instance was changed in place, and the state was not copied.
+expect(state).toBe(baseState);
+expect(baseState.counter.count).toBe(1);
+```
+
+将这些类[标记](/zh/docs/advanced-guides/mark)为 `immutable`，让 Mutative 为实例创建草稿并复制；对无原型对象使用 [`markSimpleObject()`](/zh/docs/api-reference/marksimpleobject)；或直接替换值，而非修改它。[严格模式](/zh/docs/advanced-guides/strict-mode)会在开发环境报告这类读取。
+
+## 在草稿中搜索基础状态的对象 [#searching-a-draft-for-objects-of-the-base-state]
+
+基础状态中的对象经草稿读取后会成为代理，因此在草稿数组中搜索原始对象会找不到。可按 ID 搜索，或搜索 [`original(draft)`](/zh/docs/api-reference/original)；在新增、删除或移动元素前，其索引与草稿一致：
+
+```ts
+import { create, original } from 'mutative';
+
+const baseState = { list: [{ id: 1 }, { id: 2 }] };
+const item = baseState.list[1];
+
+create(baseState, (draft) => {
+  expect(draft.list.indexOf(item)).toBe(-1);
+  expect(original(draft.list).indexOf(item)).toBe(1);
+  expect(draft.list.findIndex((element) => element.id === 2)).toBe(1);
+});
+```
+
+ES2025 的 [Set 方法](/zh/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts)也有相同情况，但 Set 草稿的 `has()` 和 `delete()` 可以接收原始对象。草稿不能作为 [Map 的键](/zh/docs/extra-topics/faq#can-a-draft-be-a-map-key)。
+
+## 共享对象 [#shared-objects]
+
+状态中的多条路径指向同一对象时，每条路径都有独立草稿，下一个状态为每条发生修改的路径持有一份副本。要保留共享关系，可将同一个草稿赋给其他路径，详见[共享引用](/zh/docs/extra-topics/shared-references)。
+
+## 用 `rawReturn()` 包裹草稿 [#wrapping-drafts-in-rawreturn]
+
+[`rawReturn()`](/zh/docs/api-reference/rawreturn) 不搜索返回值中的草稿，因此其中的草稿会以已撤销的状态留在最终结果中。只应包裹不含草稿的值，例如 `rawReturn(initialState)`，并在开发环境开启严格模式以报告此类问题。
+
+## 修改补丁值 [#changing-patch-values]
+
+补丁值引用下一个状态中的对象，开启自动冻结时也会被冻结。修改前应先复制补丁值，或使用会在应用前复制补丁值的 [`apply()`](/zh/docs/api-reference/apply)。
+
+## 冻结基础状态 [#freezing-the-base-state]
+
+开启[自动冻结](/zh/docs/advanced-guides/auto-freeze)后，Mutative 会冻结下一个状态与基础状态共享的对象。因此，之后原地修改基础状态也可能失败，即使修改的是更新函数没有碰过的部分。
+
+
+# 严格模式 (/zh/docs/advanced-guides/strict-mode)
+
+显式读取无法创建草稿的值，并在开发环境检查返回值。
+
+Mutative 为普通对象、数组、Map、Set 和被[标为](/zh/docs/advanced-guides/mark) `immutable` 的值创建草稿。状态中其他对象（如 `Date` 或类实例）被草稿、基础状态和下一个状态共享，更新函数修改它们也会修改基础状态。`strict` 选项要求显式进行这类读取。
+
+## 严格模式检查什么 [#what-strict-mode-checks]
+
+* 从草稿读取无法创建草稿的对象，或标为 `mutable` 的值时，会抛错，除非读取发生在 [`unsafe()`](/zh/docs/api-reference/unsafe) 内。原始值、草稿和赋值不受影响。
+* 更新函数通过 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 返回的值仍会被搜索，其中的草稿会替换为最终值；开发构建发现草稿时还会警告。
+* 如果更新函数留下 1,000 个或更多未修改的草稿，开发构建会警告一次。通过草稿读取的对象都会变成草稿，因此 `draft.list.find()` 等大数组搜索会为每个访问的元素创建草稿。应改为搜索 [`current(draft.list)`](/zh/docs/api-reference/current#searching-a-large-array)，再通过草稿修改匹配项。
+
+```ts
+import { create, unsafe } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = {
+  counter: new Counter(),
+  list: [{ text: 'todo' }],
+};
+
+create(
+  baseState,
+  (draft) => {
+    // Drafts and primitives can be read and changed as usual.
+    draft.list[0].text = 'done';
+
+    // The Counter instance is not drafted, so reading it throws.
+    expect(() => draft.counter.count).toThrow();
+
+    // Inside unsafe(), it can be read.
+    expect(unsafe(() => draft.counter.count)).toBe(0);
+  },
+  {
+    strict: true,
+  }
+);
+```
+
+要修改这类值，可用新值替换，或将其类标为 `immutable`，让 Mutative 为实例创建草稿并复制：
+
+```ts
+import { create } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = { counter: new Counter() };
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.counter.count += 1;
+  },
+  {
+    strict: true,
+    mark: (target, { immutable }) =>
+      target instanceof Counter ? immutable : undefined,
+  }
+);
+
+expect(state.counter.count).toBe(1);
+expect(baseState.counter.count).toBe(0);
+```
+
+## 在开发环境启用 [#enable-it-in-development]
+
+严格模式检查更新函数读取的每个值，因此对于可能含对象的数组，原本在副本上原生执行的数组方法，以及已修改数组的 `current()`，都会改为通过草稿读取数组。建议仅在开发环境启用：
+
+```ts
+import { makeCreator } from 'mutative';
+
+export const create = makeCreator({
+  strict: process.env.NODE_ENV !== 'production',
+});
+```
+
+<Callout type="idea">
+  严格模式对 `rawReturn()` 尤其有用：未开启时，不会搜索其包裹值中的草稿；若其中含有草稿，最终状态会保留已撤销的代理。
+</Callout>
+
+
+# TypeScript (/zh/docs/advanced-guides/typescript)
+
+了解草稿、结果、producer 和补丁的类型，以及 Mutative 导出的类型与类型转换工具。
+
+Mutative 使用 TypeScript 编写并自带类型声明，支持 TypeScript 5.0 及以上；包检查会用 TypeScript 5.0 编译这些声明。
+
+## 类型推断 [#inferred-types]
+
+`create()` 从基础状态推断状态类型。草稿类型为 `Draft<State>`，会深度移除 `readonly`，因此更新函数能修改类型上只读的状态；结果类型与基础状态一致：
+
+```ts
+import { create } from 'mutative';
+
+type State = {
+  readonly todos: readonly { readonly text: string; readonly done: boolean }[];
+};
+
+const baseState: State = { todos: [{ text: 'learn', done: false }] };
+
+const state: State = create(baseState, (draft) => {
+  draft.todos[0].done = true;
+  draft.todos.push({ text: 'ship', done: false });
+});
+
+expect(state.todos).toHaveLength(2);
+```
+
+选项会影响结果类型：`enablePatches: true` 返回 `[State, Patches, Patches]`，`enableAutoFreeze: true` 返回 `Immutable<State>`，异步更新函数返回 Promise。类型为 `boolean` 的选项见 [create()](/zh/docs/api-reference/create#enablepatches)，补丁应用的结果类型见 [apply()](/zh/docs/api-reference/apply#typescript)。
+
+如果基础值不能表达完整状态类型（例如空数组），可显式传入状态类型参数：
+
+```ts
+import { create } from 'mutative';
+
+type State = { items: string[] };
+
+const state = create<State>({ items: [] }, (draft) => {
+  draft.items.push('a');
+});
+
+expect(state.items).toEqual(['a']);
+```
+
+显式指定状态类型后，TypeScript 不再推断其余类型参数。因此，如果选项通过变量设置 `enablePatches`，应将对应类型参数设为 `boolean`，例如 `create<State, false, boolean>(base, recipe, options)`。
+
+## `Draft<T>` 与 `Immutable<T>` [#draftt-and-immutablet]
+
+* `Draft<T>` 表示 `T` 的草稿：深度移除对象、数组、Map 和 Set 的只读限制。函数、Promise、日期和正则表达式保留原类型，Map 的键不会变成草稿。
+* `Immutable<T>` 表示深度只读的 `T`，Map 和 Set 分别使用 `ReadonlyMap` 和 `ReadonlySet`，用于冻结状态。
+
+用 `Draft<State>` 标注修改草稿的辅助函数：
+
+```ts
+import { create, type Draft } from 'mutative';
+
+type State = { todos: { text: string; done: boolean }[] };
+
+function addTodo(draft: Draft<State>, text: string) {
+  draft.todos.push({ text, done: false });
+}
+
+const state = create({ todos: [] } as State, (draft) => {
+  addTodo(draft, 'learn');
+});
+
+expect(state.todos).toEqual([{ text: 'learn', done: false }]);
+```
+
+## Producer（生产者函数） [#producers]
+
+未传基础状态时，应为更新函数的草稿参数标注类型，以确定 producer 的参数和返回类型。更新函数的其余参数也会成为 producer 的参数：
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const toggle = create((draft: Todo[], index: number) => {
+  draft[index].done = !draft[index].done;
+});
+
+const todos: Todo[] = toggle([{ text: 'learn', done: false }], 0);
+
+expect(todos[0].done).toBe(true);
+```
+
+通过类型参数 `create<Todo[], [index: number]>((draft, index) => { … })` 可得到相同的 producer。泛型函数中，可用类型参数标注草稿，例如 `create((draft: T) => { … })`；异步更新函数应省略显式类型参数，详见[异步更新函数](/zh/docs/api-reference/create#async-recipes)。
+
+## 类型转换 [#casts]
+
+`castDraft()`、`castImmutable()` 和 `castMutable()` 只改变类型，原样返回传入的值：
+
+* `castDraft(value)` 将值视为草稿，例如将只读值赋入草稿。
+* `castImmutable(value)` 将值视为 `Immutable<T>`，例如应只读的初始状态。它不会冻结值。
+* `castMutable<T>(draft)` 将草稿视为 `T`，适合函数要求 `T` 但 `Draft<T>` 不兼容的情况，例如草稿类型不包含类的私有成员。
+
+```ts
+import { castDraft, castImmutable, castMutable, create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const defaults = castImmutable({ todos: [{ text: 'learn', done: false }] as Todo[] });
+
+const state = create({ todos: [] as Todo[] }, (draft) => {
+  // `defaults.todos` is readonly, which a draft does not accept without a cast.
+  draft.todos = castDraft(defaults.todos);
+});
+
+expect(state.todos).toBe(defaults.todos);
+
+class Point {
+  constructor(
+    private x: number,
+    private y: number
+  ) {}
+  distanceTo(other: Point) {
+    return Math.hypot(other.x - this.x, other.y - this.y);
+  }
+}
+
+const origin = new Point(0, 0);
+
+create({ point: new Point(3, 4) }, (draft) => {
+  // The draft type of a Point lacks its private members.
+  expect(origin.distanceTo(castMutable<Point>(draft.point))).toBe(5);
+});
+```
+
+## 导出的类型 [#exported-types]
+
+| 类型                 | 说明                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `Draft<T>`         | `T` 的草稿类型。                                                                             |
+| `Immutable<T>`     | 深度只读的 `T`。                                                                             |
+| `Patch<P>`         | `add`、`remove` 或 `replace` 操作；当 `P` 为 `{ pathAsArray: false }` 时，路径类型为字符串。             |
+| `Patches<P>`       | 补丁数组。                                                                                  |
+| `PatchesOptions`   | `enablePatches` 选项的类型。                                                                 |
+| `Options<O, F>`    | `create()` 和 `makeCreator()` 的选项，`O` 为 `enablePatches` 类型，`F` 为 `enableAutoFreeze` 类型。 |
+| `DraftedObject<T>` | 对象类型对应的草稿类型。                                                                           |
+
+[仓库中的 API 参考](https://github.com/unadlib/mutative/tree/main/docs)包含从源码生成的类型定义。
+
+
+# apply() (/zh/docs/api-reference/apply)
+
+将补丁应用到状态，返回下一个状态，或原地修改状态。
+
+`apply()` 应用[补丁](/zh/docs/advanced-guides/patches)，例如 [`create()`](/zh/docs/api-reference/create) 开启 `enablePatches` 后返回的补丁，并返回下一个状态。它与 `create()` 一样保留原状态，并共享所有未修改的部分。
+
+```ts
+apply(state, patches, options?) // the next state
+apply(state, patches, { mutable: true }) // changes the state in place and returns undefined
+```
+
+## 用法 [#usage]
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.foo = 'foobar';
+    draft.list.push({ text: 'learning' });
+  },
+  {
+    enablePatches: true,
+  }
+);
+
+const nextState = apply(baseState, patches);
+expect(nextState).toEqual(state);
+
+const prevState = apply(state, inversePatches);
+expect(prevState).toEqual(baseState);
+```
+
+<a id="applystate-patches-options" />
+
+## 选项 [#options]
+
+| 选项                 | 类型               | 默认值     |
+| ------------------ | ---------------- | ------- |
+| `enableAutoFreeze` | `boolean`        | `false` |
+| `strict`           | `boolean`        | `false` |
+| `mark`             | `Mark \| Mark[]` | 无       |
+| `mutable`          | `boolean`        | `false` |
+
+`enableAutoFreeze`、`strict` 和 `mark` 与 [`create()` 的选项](/zh/docs/api-reference/create#options)一致。应传入生成补丁时相同的 `mark`，确保类实例等值采用一致的草稿处理方式。
+
+Mutative 1.2.0 起支持 `mutable: true`，会原地修改状态并返回 `undefined`。它不能与其他选项组合，否则开发构建会警告。由于不能原地替换根状态，遇到替换根状态的补丁（如直接返回新状态生成的补丁）会抛错。
+
+```ts
+import { apply } from 'mutative';
+
+const baseState = { foo: { bar: 'test' } };
+
+// This changes baseState itself.
+const result = apply(
+  baseState,
+  [
+    {
+      op: 'replace',
+      path: ['foo', 'bar'],
+      value: 'test2',
+    },
+  ],
+  {
+    mutable: true,
+  }
+);
+
+expect(result).toBeUndefined();
+expect(baseState).toEqual({ foo: { bar: 'test2' } });
+```
+
+## 将补丁应用到草稿 [#applying-patches-to-a-draft]
+
+更新函数中，`apply(draft, patches)` 原地修改并返回草稿，可在一次更新中结合补丁与其他修改。此时不能传选项。
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = { count: 0, log: [] as string[] };
+
+const state = create(baseState, (draft) => {
+  apply(draft, [{ op: 'replace', path: ['count'], value: 1 }]);
+  draft.log.push('count set to 1');
+});
+
+expect(state).toEqual({ count: 1, log: ['count set to 1'] });
+```
+
+## apply() 接受的补丁 [#patches-that-apply-accepts]
+
+* 支持 `add`、`remove` 和 `replace`。JSON Patch 的 `move`、`copy`、`test` 等其他操作会抛错。
+* 路径可以是键数组或 JSON Pointer 字符串（如 `pathAsArray: false` 的结果）。数组索引 `-` 表示追加。
+* Map 键保持原样；Set 的 `add` 和 `remove` 按补丁持有的值增删，直接替换 Set 元素的 `replace` 会抛错。详见[包含对象的 Set](/zh/docs/advanced-guides/patches#sets-of-objects)。
+* 路径经过对象或数组的 `__proto__`、`constructor`，或函数的 `prototype` 时会抛错，避免补丁修改原型。这些名称在 Map 中仍是普通键。其他路径段像 Immer 一样按属性读取，不防御已被其他代码修改的原型。
+* 无法解析的路径会抛错，错误信息中包含该路径。
+
+`apply()` 会在应用前深拷贝每个补丁值，因此新状态不会与补丁共享对象；重复应用相同补丁也会产生新副本。
+
+## TypeScript [#typescript]
+
+`enableAutoFreeze: true` 时返回 `Immutable<State>`，与 `apply<State, true>()` 一致。`enableAutoFreeze` 类型为 `boolean` 或可选 `true` 时，返回 `State | Immutable<State>`。`mutable: true` 时返回 `void`；`mutable` 类型为 `boolean`、可选 `boolean` 或可选 `true` 时，返回 `State | void`。
+
+错误及其生产错误码见[错误参考](/zh/docs/extra-topics/errors)。
+
+
+# 类型转换 (/zh/docs/api-reference/casts)
+
+castDraft()、castImmutable() 和 castMutable() 改变 TypeScript 类型，并原样返回值。
+
+`castDraft()`、`castImmutable()` 和 `castMutable()` 是 TypeScript 辅助函数，只将参数视为另一种类型并原样返回，不进行运行时数据转换。
+
+```ts
+castDraft<T>(value: T): Draft<T>
+castImmutable<T>(value: T): Immutable<T>
+castMutable<T>(draft: Draft<T>): T
+```
+
+## castDraft() [#castdraft]
+
+`castDraft(value)` 将值视为 [`Draft<T>`](/zh/docs/advanced-guides/typescript#draftt-and-immutablet)，其属性不是只读的，适合将只读类型的值赋入草稿：
+
+```ts
+import { castDraft, create, type Immutable } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const defaults: Immutable<Todo[]> = [{ text: 'learn', done: false }];
+
+const state = create({ todos: [] as Todo[] }, (draft) => {
+  draft.todos = castDraft(defaults);
+});
+
+expect(state.todos).toBe(defaults);
+```
+
+这不会真正创建草稿，下一个状态仍原样持有该值。
+
+## castImmutable() [#castimmutable]
+
+`castImmutable(value)` 将值视为深度只读的 [`Immutable<T>`](/zh/docs/advanced-guides/typescript#draftt-and-immutablet)，例如只应读取的初始状态。它不会冻结值，冻结需使用[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+
+```ts
+import { castImmutable, create } from 'mutative';
+
+const initialState = castImmutable({ todos: [{ text: 'learn', done: false }] });
+
+const state = create(initialState, (draft) => {
+  draft.todos[0].done = true;
+});
+
+expect(state.todos[0].done).toBe(true);
+expect(Object.isFrozen(initialState)).toBe(false);
+```
+
+## castMutable() [#castmutable]
+
+`castMutable<T>(draft)` 将草稿视为 `T`，适用于函数要求 `T` 而 `Draft<T>` 不兼容的情况。例如草稿类型不包含类的私有成员，传给要求类本身的函数时需要转换：
+
+```ts
+import { castMutable, create } from 'mutative';
+
+class Point {
+  constructor(
+    private x: number,
+    private y: number
+  ) {}
+  distanceTo(other: Point) {
+    return Math.hypot(other.x - this.x, other.y - this.y);
+  }
+}
+
+const origin = new Point(0, 0);
+
+create({ point: new Point(3, 4) }, (draft) => {
+  expect(origin.distanceTo(castMutable<Point>(draft.point))).toBe(5);
+});
+```
+
+TypeScript 无法从 `Draft<T>` 反向推断 `T`，需像上例一样显式传入类型参数。
+
+
+# create() (/zh/docs/api-reference/create)
+
+根据更新函数对基础状态草稿的修改，生成下一个状态。
+
+`create()` 为基础状态创建草稿，运行修改草稿的更新函数，并返回下一个状态。未修改的部分与基础状态共享，基础状态本身保持不变。
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.foo = 'foobar';
+  draft.list.push({ text: 'learning' });
+});
+
+expect(state).toEqual({
+  foo: 'foobar',
+  list: [{ text: 'todo' }, { text: 'learning' }],
+});
+expect(state.list[0]).toBe(baseState.list[0]);
+expect(baseState.foo).toBe('bar');
+```
+
+## 函数签名 [#signatures]
+
+```ts
+create(base, recipe, options?) // the next state
+create(base, recipe, { enablePatches: true }) // [nextState, patches, inversePatches]
+create(recipe, options?) // a producer: (base, ...args) => the next state
+create(base, options?) // [draft, finalize]
+```
+
+* `base` 是要创建草稿的状态：普通对象、数组、`Map`、`Set`，或通过 [`mark`](#mark) 变为可创建草稿的值（如类实例）。日期和未标记的类实例等其他对象会导致错误。传入更新函数时，原始值或 `null` 基础状态会原样传给更新函数，其返回值作为下一个状态。
+* `recipe` 接收草稿；在 producer 中还会接收其余参数。它可以修改草稿且不返回值，或返回[新状态](#returning-a-new-state)，也可以是[异步函数](#async-recipes)。
+* `options` 见[下文](#options)，可通过 [`makeCreator()`](/zh/docs/api-reference/makecreator) 设置默认值。
+
+`create()` 返回下一个状态；若未发生修改，则返回基础状态本身。开启 `enablePatches` 后返回 `[nextState, patches, inversePatches]`：正向补丁将基础状态转为下一个状态，逆向补丁将其还原。异步更新函数则返回对应结果的 Promise。
+
+## 选项 [#options]
+
+<a id="createstate-fn-options---options" />
+
+| 选项                                      | 类型                                                                                                                       | 默认值     |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------- |
+| [`strict`](#strict)                     | `boolean`                                                                                                                | `false` |
+| [`enablePatches`](#enablepatches)       | `boolean \| { pathAsArray?: boolean; arrayLengthAssignment?: boolean }`                                                  | `false` |
+| [`enableAutoFreeze`](#enableautofreeze) | `boolean`                                                                                                                | `false` |
+| [`mark`](#mark)                         | `Mark \| Mark[]`，其中 `Mark` 为 `(target, { mutable, immutable }) => 'mutable' \| 'immutable' \| (() => copy) \| undefined` | 无       |
+
+### strict [#strict]
+
+[严格模式](/zh/docs/advanced-guides/strict-mode)下，从草稿读取不可创建草稿的对象（如 `Date` 或未标记的类实例），或被 `mark` 标为可变的值时，必须位于 [`unsafe()`](/zh/docs/api-reference/unsafe) 内，否则抛错。通过 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 返回的值仍会被搜索，开发构建发现其中有草稿时会警告。如果更新函数留下 1,000 个或更多未修改草稿，开发构建也会警告一次，大数组草稿搜索就容易触发。无需创建草稿的搜索方式见 [`current()`](/zh/docs/api-reference/current#searching-a-large-array)。
+
+严格模式检查更新函数读取的每个值，建议开发时开启、生产时关闭，例如 `strict: process.env.NODE_ENV !== 'production'`。
+
+### enablePatches [#enablepatches]
+
+设为 `true` 后，`create()` 返回 `[nextState, patches, inversePatches]`，详见[补丁](/zh/docs/advanced-guides/patches)。也可传对象配置补丁格式：
+
+* `pathAsArray` 默认为 `true`：路径为键数组，如 `['list', 0]`。设为 `false` 时使用 JSON Pointer 字符串，如 `'/list/0'`。字符串路径不能表示非字符串 Map 键或 symbol 键，例如 `draft.set(1, 'b')` 的补丁会写入键 `'1'`。这类键应保留数组路径，开发构建遇到无法表示的字符串路径会抛错。
+* `arrayLengthAssignment` 默认为 `true`：缩短数组时生成修改 `length` 的 `replace`。设为 `false` 后，为每个移除的索引生成 `remove`，大数组的耗时会更高。
+
+设置 `pathAsArray: false` 和 `arrayLengthAssignment: false` 后，对象和数组的补丁为 JSON Patch 操作（[RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)），另见[相关讨论](https://github.com/unadlib/mutative/issues/6)。
+
+TypeScript 根据传给 `create()` 或 `makeCreator()` 的 `enablePatches` 类型确定结果：`true` 或对象返回元组，`boolean` 则返回状态或元组的联合类型。类型为 `{ enablePatches: true }` 但可能为 `undefined` 的选项（例如封装函数的可选参数），以及 `{ enablePatches?: true }`，仍会被推断为元组，但运行时关闭补丁只返回状态；此类场景应将标志类型写为 `boolean`。显式指定状态类型后，TypeScript 不再推断其他类型参数，需同时为 `enablePatches` 传入 `boolean`，例如 `create<State, false, boolean>(base, recipe, options)` 或 `create<State, [], false, boolean>(recipe, options)`。
+
+### enableAutoFreeze [#enableautofreeze]
+
+深度冻结下一个状态，包括与基础状态共享的部分。开发构建还会拒绝持有自身的对象，详见[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+
+### mark [#mark]
+
+标记决定如何为值创建草稿，详见[标记数据结构](/zh/docs/advanced-guides/mark)。它接收更新函数读取的每个值和 `{ mutable: 'mutable', immutable: 'immutable' }`，返回：
+
+* `'immutable'`：允许创建草稿，如类实例；修改时会复制该值。
+* `'mutable'`：不创建草稿，直接原地读取和修改该值及其内部值。
+* 返回浅拷贝的函数：使用该副本处理草稿。必须关闭补丁和自动冻结，部分补丁也可能无法应用到这类值。
+* `undefined`：使用默认处理方式。
+
+传入标记数组时，第一个返回值的函数决定处理方式。若标记对所有对象都返回 `'immutable'`（如 `() => 'immutable'`），补丁和自动冻结仍正常工作。标为 `immutable` 的实例会复制全部自有属性，其中可枚举、可写、可配置的属性通过赋值复制。因此，自有属性遮蔽类 setter 时会触发该 setter，遮蔽无 setter 的 getter 或只读属性时会抛错，详见[复制已标记的实例](/zh/docs/advanced-guides/mark#copying-marked-instances)。
+
+## 返回新状态 [#returning-a-new-state]
+
+更新函数可以返回下一个状态，而不修改草稿：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { todos: [{ text: 'todo', done: true }] };
+
+const state = create(baseState, (draft) => ({
+  todos: draft.todos.filter((todo) => !todo.done),
+}));
+
+expect(state).toEqual({ todos: [] });
+```
+
+* 返回 `undefined` 或草稿本身会保留草稿修改。要将状态设为 `undefined`，请返回 [`rawReturn(undefined)`](/zh/docs/api-reference/rawreturn)。
+* 同时修改草稿并返回其他值会抛错。
+* 返回未修改的子草稿（如 `draft.list`）时，其值成为下一个状态；返回已修改的子草稿会抛错。
+* Mutative 搜索返回对象中的草稿并替换为最终值，因此可以返回 `{ ...draft, count: 0 }` 等含草稿的对象。[`rawReturn()`](/zh/docs/api-reference/rawreturn) 可为不含草稿的值跳过搜索；开发构建发现返回对象不含草稿时会给出使用建议。
+
+## 异步更新函数 [#async-recipes]
+
+更新函数可以是异步函数。此时 `create()` 返回结果的 Promise，在 Promise 落定前草稿保持可用。
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { items: ['a'] };
+
+const state = await create(baseState, async (draft) => {
+  const item = await Promise.resolve('b');
+  draft.items.push(item);
+});
+
+expect(state.items).toEqual(['a', 'b']);
+```
+
+`create()` 只识别当前 JavaScript realm 的 Promise，因此来自其他 realm（如 `vm` 上下文或 iframe）的异步函数需要当前 realm 的包装：`create(baseState, async (draft) => { return await recipe(draft); })`。TypeScript 通常也推断为 Promise，但显式状态类型为泛型参数（如泛型函数中的 `create<T>(base, async (draft) => { … })`），或类型本身包含 Promise（如 `object`、`unknown`）时，会得到状态类型本身。泛型代码应省略显式类型参数：`create(base, async (draft) => { … })` 返回 `Promise<T>`，`create(async (draft: T) => { … })` 返回 `(base: T) => Promise<T>`。
+
+## 柯里化 [#currying]
+
+只传更新函数、不传基础状态时，`create()` 返回 producer，稍后接收基础状态，并将其余参数传给更新函数：
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const toggle = create((draft: Todo[], index: number) => {
+  draft[index].done = !draft[index].done;
+});
+
+const todos: Todo[] = [{ text: 'learn', done: false }];
+
+expect(toggle(todos, 0)).toEqual([{ text: 'learn', done: true }]);
+```
+
+只传基础状态、不传更新函数时，`create()` 返回草稿和 `finalize()`，其返回值与普通调用一致：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { list: [{ text: 'todo' }] };
+
+const [draft, finalize] = create(baseState, { enablePatches: true });
+draft.list.push({ text: 'learning' });
+const [state, patches] = finalize();
+
+expect(state.list).toHaveLength(2);
+expect(patches).toEqual([
+  { op: 'add', path: ['list', 1], value: { text: 'learning' } },
+]);
+```
+
+<Callout type="warn">
+  `finalize()` 只能调用一次。如果它抛错（如开发构建拒绝补丁路径），草稿不会像更新函数失败时那样被撤销，而是仍可写入。再次调用可能返回包含已撤销草稿的状态，补丁也可能遗漏修改。应从基础状态重新创建草稿。
+</Callout>
+
+更多用法见[柯里化](/zh/docs/advanced-guides/currying)。
+
+## 在草稿上调用 create() [#create-on-a-draft]
+
+更新函数可以把草稿传给调用 `create()` 的辅助函数。与直接代理草稿的 Immer `produce` 不同，`create()` 会为当前状态快照 `current(draft)` 创建草稿，因此辅助函数未修改的值仍引用基础状态对象。将结果赋回外层草稿本身是安全的，但之后修改结果中的这些值会改变基础状态，因为外层草稿会原样返回赋入的值（[#160](https://github.com/unadlib/mutative/issues/160)）。开发构建在 `create()` 接收草稿和更新函数时会警告一次。
+
+```ts
+const state = create(baseState, (draft) => {
+  draft.node = create(draft.node, (node) => {
+    node.name = 'renamed';
+  });
+  // `draft.node` is now the helper's result, and `draft.node.metadata` is an
+  // object of `baseState`: writing to it here would change `baseState`.
+});
+```
+
+可让辅助函数直接修改草稿，仅对其他值调用 `create()`：
+
+```ts
+type Item = { name: string; metadata: { value: string } };
+
+function rename(item: Item, name: string): Item {
+  if (isDraft(item)) {
+    item.name = name;
+    return item;
+  }
+  return create(item, (draft) => {
+    draft.name = name;
+  });
+}
+```
+
+接收到草稿时，`rename()` 返回草稿本身，外层更新函数通过外层代理继续修改，未变化的部分保留原引用。与 `create()` 不同，即使调用方丢弃返回值，它也已经修改了外层草稿。
+
+如果不适合这种方式，可在辅助函数的更新函数内完成修改，或在调用前通过外层草稿修改。如果结果必须与基础状态完全隔离，可传入深拷贝，如 `create(structuredClone(current(draft)), recipe)`，代价是每次复制整个草稿、未修改值也获得新引用；`structuredClone` 还会将类实例变成普通对象，遇到函数则抛错。为捕获意外写入，可在开发环境为辅助函数开启 `enableAutoFreeze`，例如 `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })`。它会同时冻结结果及其与基础状态共享的对象，使意外写入像 Immer 默认冻结时一样抛错。
+
+草稿只属于创建它的 `create()` 调用，包括 `create(base)` 返回的手动草稿。不要存入其他调用的草稿，或赋入其中的对象：本次调用结束时它就会被撤销，另一次调用的结果可能保留无法读取的草稿，接收它的 Set 草稿也可能无法再通过 `has()` 或 `delete()` 找到它。请保存 `current(draft)`、原始对象或该调用的最终结果。
+
+## 错误 [#errors]
+
+无效基础状态、同时修改草稿和返回其他值等错误及其生产错误码，见[错误参考](/zh/docs/extra-topics/errors)。
+
+
+# current() (/zh/docs/api-reference/current)
+
+获取草稿当前值的快照，返回不含代理的普通对象。
+
+`current(draft)` 返回草稿当前值的快照：包含迄今修改的普通对象、数组、Map 和 Set，不含草稿代理。快照在更新结束后仍有效，可用于日志、比较、保存或搜索。
+
+```ts
+current<T>(draft: Draft<T>): T
+```
+
+## 用法 [#usage]
+
+```ts
+import { create, current } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.foo = 'foobar';
+  draft.list.push({ text: 'learning' });
+
+  const snapshot = current(draft.list);
+  expect(snapshot).toEqual([{ text: 'todo' }, { text: 'learning' }]);
+
+  draft.list.push({ text: 'shipping' });
+  // Later changes do not reach the snapshot.
+  expect(snapshot).toHaveLength(2);
+});
+```
+
+* 快照与基础状态共享未修改对象。草稿未修改时，`current(draft)` 无需复制，直接返回原值，与 [`original(draft)`](/zh/docs/api-reference/original) 一致。
+* 每次调用都会复制已修改草稿及其已修改的后代，因此会产生新对象。连续读取应复用快照，避免在循环中反复调用。
+* 后续草稿修改不会改变快照，但无法创建草稿的共享对象（如未标记的类实例）例外。
+* 即使开启 `enableAutoFreeze`，快照也不会被冻结。
+* 对基础状态或最终状态等非草稿调用会抛错，可用 [`isDraft()`](/zh/docs/api-reference/isdraft) 检查。
+
+## 搜索大数组 [#searching-a-large-array]
+
+通过草稿读取的每个对象都会创建独立草稿，所以 `draft.list.find()` 会为每个访问元素付出草稿开销。搜索 `current(draft.list)` 则读取普通值：数组未修改时返回原数组，修改后返回副本，其中已修改元素采用当前值，其他元素采用原始对象。即使增删或移动元素，快照索引也与草稿一致。请通过草稿修改匹配项；快照元素不是草稿，搜索回调只能读取它们。
+
+```ts
+import { create, current } from 'mutative';
+
+const baseState = {
+  list: Array.from({ length: 1000 }, (_, id) => ({ id, done: false })),
+};
+
+const state = create(baseState, (draft) => {
+  draft.list.shift();
+  const index = current(draft.list).findIndex((item) => item.id === 500);
+  draft.list[index].done = true;
+});
+
+expect(state.list[499]).toEqual({ id: 500, done: true });
+expect(state.list[0]).toBe(baseState.list[1]);
+```
+
+[严格模式](/zh/docs/advanced-guides/strict-mode)下，若更新函数留下 1,000 个或更多未修改草稿，开发构建会警告一次；大数组草稿搜索很容易触发。
+
+<Callout type="idea">
+  [`original(draft.list)`](/zh/docs/api-reference/original) 搜索的是基础状态，增删或移动元素后，其索引不再对应当前草稿。
+</Callout>
+
+
+# API 参考 (/zh/docs/api-reference)
+
+Mutative API 的参数、返回值及示例。
+
+- [create()](/zh/docs/api-reference/create)
+- [apply()](/zh/docs/api-reference/apply)
+- [makeCreator()](/zh/docs/api-reference/makecreator)
+- [current()](/zh/docs/api-reference/current)
+- [original()](/zh/docs/api-reference/original)
+- [rawReturn()](/zh/docs/api-reference/rawreturn)
+- [unsafe()](/zh/docs/api-reference/unsafe)
+- [isDraftable()](/zh/docs/api-reference/isdraftable)
+- [isDraft()](/zh/docs/api-reference/isdraft)
+- [markSimpleObject()](/zh/docs/api-reference/marksimpleobject)
+- [类型转换](/zh/docs/api-reference/casts)
+
+
+# isDraft() (/zh/docs/api-reference/isdraft)
+
+检查一个值是否为草稿。
+
+`isDraft(value)` 对当前或其他更新函数的草稿返回 `true`，对其他值返回 `false`，包括基础状态、最终状态和更新函数赋入的值。
+
+```ts
+isDraft(value: any): boolean
+```
+
+## 用法 [#usage]
+
+```ts
+import { create, isDraft } from 'mutative';
+
+const baseState = {
+  date: new Date(),
+  list: [{ text: 'todo' }],
+};
+
+const state = create(baseState, (draft) => {
+  expect(isDraft(draft)).toBe(true);
+  expect(isDraft(draft.list)).toBe(true);
+  // A Date is not drafted.
+  expect(isDraft(draft.date)).toBe(false);
+});
+
+expect(isDraft(state)).toBe(false);
+expect(isDraft(baseState)).toBe(false);
+```
+
+可用于同时接收草稿与普通值的辅助函数：对草稿原地修改，对其他值调用 `create()`，见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。[`current()`](/zh/docs/api-reference/current) 和 [`original()`](/zh/docs/api-reference/original) 对非草稿会抛错。
+
+`isDraft()` 需要读取传入值，因此对 producer 结束后已撤销的草稿调用时，也会像其他读取一样抛错。
+
+
+# isDraftable() (/zh/docs/api-reference/isdraftable)
+
+检查 Mutative 是否能为值创建草稿，可指定 mark。
+
+`isDraftable(value, options?)` 对可创建草稿的值返回 `true`，这些值可作为 `create()` 的基础状态。
+
+```ts
+isDraftable(value: any, options?: { mark?: Mark }): boolean
+```
+
+## 用法 [#usage]
+
+```ts
+import { isDraftable } from 'mutative';
+
+const baseState = {
+  date: new Date(),
+  list: [{ text: 'todo' }],
+};
+
+expect(isDraftable(baseState)).toBe(true);
+expect(isDraftable(baseState.list)).toBe(true);
+expect(isDraftable(baseState.date)).toBe(false);
+```
+
+没有标记时，以下值可创建草稿：
+
+* 原型为 `Object.prototype` 的普通对象。
+* 数组。
+* `Map` 和 `Set` 实例，包括子类实例。
+
+原始值、函数、日期、类实例、无原型对象及其他 realm（如 iframe）的普通对象默认不可创建草稿。[标记](/zh/docs/advanced-guides/mark)可以改变这一点，例如 [`markSimpleObject()`](/zh/docs/api-reference/marksimpleobject) 支持无原型对象和跨 realm 普通对象。应传入与 `create()` 相同的 `mark`，得到一致判断：
+
+```ts
+import { isDraftable } from 'mutative';
+
+class Todo {
+  constructor(public text: string) {}
+}
+
+const mark = (target: unknown) =>
+  target instanceof Todo ? ('immutable' as const) : undefined;
+
+expect(isDraftable(new Todo('learn'))).toBe(false);
+expect(isDraftable(new Todo('learn'), { mark })).toBe(true);
+```
+
+标记返回 `'immutable'` 或拷贝函数时，该值可创建草稿。返回 `'mutable'` 会让更新函数读取时跳过草稿，但 `isDraftable()` 对普通对象、数组、Map 和 Set 仍返回 `true`。
+
+
+# makeCreator() (/zh/docs/api-reference/makecreator)
+
+创建带默认选项的 create() 函数。
+
+`makeCreator(options)` 返回以给定[选项](/zh/docs/api-reference/create#options)为默认值的 `create()`。可为应用、store 或模块统一配置，无需每次调用都传入。
+
+```ts
+makeCreator(options?: Options): typeof create
+```
+
+## 用法 [#usage]
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({
+  enablePatches: true,
+});
+
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+};
+
+const [state, patches, inversePatches] = create(baseState, (draft) => {
+  draft.foo.bar = 'new str';
+});
+
+expect(state).toEqual({ foo: { bar: 'new str' } });
+expect(patches).toEqual([
+  { op: 'replace', path: ['foo', 'bar'], value: 'new str' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['foo', 'bar'], value: 'str' },
+]);
+```
+
+返回函数支持 [`create()`](/zh/docs/api-reference/create) 的全部签名：基础状态加更新函数、只传更新函数生成[柯里化 producer](/zh/docs/advanced-guides/currying)，或只传基础状态创建手动草稿。
+
+## 覆盖默认值 [#overriding-the-defaults]
+
+单次调用的选项会逐项覆盖创建器的默认值：
+
+```ts
+import { makeCreator } from 'mutative';
+
+const create = makeCreator({
+  enablePatches: true,
+});
+
+const baseState = { count: 0 };
+
+// The defaults: patches on.
+const [state, patches] = create(baseState, (draft) => {
+  draft.count += 1;
+});
+
+// Patches off for this call only.
+const nextState = create(
+  baseState,
+  (draft) => {
+    draft.count += 1;
+  },
+  {
+    enablePatches: false,
+  }
+);
+
+expect(patches).toHaveLength(1);
+expect(nextState).toEqual(state);
+```
+
+TypeScript 根据实际生效的选项确定每次调用的返回类型，因此 `enablePatches: false` 的调用只返回状态。
+
+## 示例 [#examples]
+
+仅在开发环境开启严格模式和自动冻结等检查：
+
+```ts
+import { makeCreator } from 'mutative';
+
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+export const create = makeCreator({
+  strict: isDevelopment,
+  enableAutoFreeze: isDevelopment,
+});
+```
+
+为包含类实例的状态统一使用相同 `mark`：
+
+```ts
+import { makeCreator } from 'mutative';
+
+class Point {
+  constructor(
+    public x: number,
+    public y: number
+  ) {}
+}
+
+const create = makeCreator({
+  mark: (target, { immutable }) =>
+    target instanceof Point ? immutable : undefined,
+});
+
+const baseState = { points: [new Point(0, 0)] };
+
+const state = create(baseState, (draft) => {
+  draft.points[0].x = 1;
+});
+
+expect(state.points[0]).toBeInstanceOf(Point);
+expect(state.points[0].x).toBe(1);
+expect(baseState.points[0].x).toBe(0);
+```
+
+对此状态调用 [`apply()`](/zh/docs/api-reference/apply) 和 [`isDraftable()`](/zh/docs/api-reference/isdraftable) 时，也应传入相同 `mark`。
+
+<Callout type="idea">
+  每个创建器保留独立选项，与 Immer 的全局设置不同，因此使用 Mutative 的库与应用不会相互改变行为。
+</Callout>
+
+
+# markSimpleObject() (/zh/docs/api-reference/marksimpleobject)
+
+允许无原型对象和跨 realm 普通对象创建草稿的标记。
+
+`markSimpleObject` 是一个[标记](/zh/docs/advanced-guides/mark)，支持普通对象、由 `Object.create(null)` 创建的无原型对象，以及同源 iframe 或 `vm` 上下文等其他 realm 中的普通对象（其原型为对应 realm 的 `Object.prototype`）。未使用它时，Mutative 只为当前 realm 的普通对象创建草稿，对其他类型的基础状态调用 `create()` 会抛错。
+
+```ts
+markSimpleObject(value: unknown): 'immutable' | undefined
+```
+
+## 用法 [#usage]
+
+将它作为单次调用或 [`makeCreator()`](/zh/docs/api-reference/makecreator) 的 `mark` 选项：
+
+```ts
+import { create, markSimpleObject } from 'mutative';
+
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+  simpleObject: Object.create(null),
+};
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'new str';
+    draft.simpleObject.a = 'a';
+  },
+  {
+    mark: markSimpleObject,
+  }
+);
+
+expect(state.simpleObject).not.toBe(baseState.simpleObject);
+expect(state.simpleObject.a).toBe('a');
+expect(Object.getPrototypeOf(state.simpleObject)).toBe(null);
+expect(baseState.simpleObject.a).toBe(undefined);
+```
+
+它对简单对象返回 `'immutable'`，其他值不返回结果，交由默认方式处理。因此可用数组与其他标记组合，如 `mark: [markSimpleObject, markClasses]`。它与其他不可变标记一样支持补丁和自动冻结。
+
+
+# original() (/zh/docs/api-reference/original)
+
+获取创建草稿时的原值，不包含更新函数的修改。
+
+`original(draft)` 返回创建该草稿时的值，即基础状态中的对象，不包含本次更新的修改。
+
+```ts
+original<T>(draft: T): T
+```
+
+## 用法 [#usage]
+
+```ts
+import { create, original } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.foo = 'foobar';
+  draft.list.push({ text: 'learning' });
+
+  expect(original(draft.list)).toEqual([{ text: 'todo' }]);
+  expect(original(draft.list)).toBe(baseState.list);
+  expect(original(draft.list)).not.toBe(draft.list);
+});
+```
+
+可用它比较草稿与原值，或在不创建草稿的情况下读取基础状态，因为原值不含代理。
+
+* 返回的是基础状态对象本身，切勿修改。
+* 对非草稿会抛错，包括基础状态、最终状态，以及更新函数赋入但未被创建草稿的值。可用 [`isDraft()`](/zh/docs/api-reference/isdraft) 检查。
+* 基础状态中的对象经草稿读取后会成为代理，在草稿数组中搜索原对象会找不到。可使用 `original(draft.list).indexOf(item)`。
+
+`original()` 反映修改前的状态，所以增删或移动元素后，查到的索引不再对应当前草稿。搜索当前草稿数组请使用 [`current()`](/zh/docs/api-reference/current#searching-a-large-array)。
+
+
+# rawReturn() (/zh/docs/api-reference/rawreturn)
+
+原样返回不含草稿的值并跳过搜索，或将状态设为 undefined。
+
+`rawReturn(value)` 包裹更新函数的返回值，使 `create()` 原样将它作为下一个状态，不再搜索其中的草稿。它也能将状态设为 `undefined`，而直接不返回任何值无法表达此意图。
+
+```ts
+rawReturn<T extends object | undefined>(value: T): T
+```
+
+## 用法 [#usage]
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const baseState = { id: 'test' };
+
+const state = create(baseState as { id: string } | undefined, () => {
+  return rawReturn(undefined);
+});
+
+expect(state).toBe(undefined);
+```
+
+更新函数可以返回新状态而不修改草稿。Mutative 会搜索其中的草稿并替换为最终值，因此可返回 `{ ...draft, a: 2 }` 等对象：
+
+```ts
+import { create, isDraft } from 'mutative';
+
+const baseState = { a: 1, b: { c: 1 } };
+
+const state = create(baseState, (draft) => {
+  return {
+    ...draft,
+    a: 2,
+  };
+});
+
+expect(state).toEqual({ a: 2, b: { c: 1 } });
+expect(isDraft(state.b)).toBe(false);
+expect(state.b).toBe(baseState.b);
+```
+
+搜索会访问返回值中的每个对象，大型数据的开销较高。对于从头构建或之前保存的不含草稿的状态，可用 `rawReturn()` 跳过：
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const initialState = { todos: [] as string[] };
+const baseState = { todos: ['learn'] };
+
+// A reducer that resets the state.
+const state = create(baseState, () => rawReturn(initialState));
+
+expect(state).toBe(initialState);
+```
+
+基准测试中，返回 10,000 行新状态时，搜索耗时 2.6 ms，使用 `rawReturn()` 为 0.26 µs。开发构建发现返回对象不含草稿时会建议使用此方法。
+
+## 与 Immer 的性能对比 [#performance-compared-with-immer]
+
+返回之前的状态是[基准测试](/zh/docs/getting-started/performance)中 Mutative 默认配置慢于 Immer 的工作负载。Immer 默认冻结每个新状态，在返回值搜索中跳过冻结对象，因此返回之前冻结的 10,000 行状态耗时 0.79 µs；默认不冻结的 Mutative 搜索同样状态需要 2.6 ms。相同配置下 Mutative 更快：关闭自动冻结为 2.6 ms 对 5.7 ms，开启为 0.53 µs 对 0.79 µs，因为其生产构建也会跳过冻结值。使用 `rawReturn()` 返回不含草稿的状态仅需 0.26 µs。
+
+默认冻结是一种取舍。尚未冻结的数据（如 JSON 响应）需要先冻结：每次重新创建并返回 10,000 行时，Immer 默认配置为 9.2 ms，Mutative 搜索为 3.1 ms，`rawReturn()` 为 0.23 ms，其中创建数据本身为 0.19 ms。冻结还使 Immer 在[所选结果](/zh/docs/getting-started/performance#mutative-vs-immer)的其他工作负载中变慢，例如更新 100 行中的一项，耗时从 1.82 µs 增至 25.0 µs。何时值得冻结，见[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+
+## 使用规则 [#rules]
+
+* 不能包裹包含草稿的值。非严格模式不做搜索，最终状态会留下在更新结束后被撤销的草稿，读取时抛错。[严格模式](/zh/docs/advanced-guides/strict-mode)仍搜索并替换这些草稿，开发构建还会提示：`The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`（返回值含草稿，请勿用 `rawReturn()` 包裹。）
+* 必须且只能传一个参数，否则抛错。
+* 仅用于对象和 `undefined`。原始值不含草稿，可直接返回；开发构建会对不必要的包裹发出警告。
+* 开启自动冻结后，生产构建跳过返回值中的冻结对象及其内部值，因此返回之前冻结的状态或基于它构建的状态，即使不用 `rawReturn()` 也很快。开发构建仍会搜索并拒绝其中的草稿，所以不要将草稿放入冻结对象或其内部值。
+
+<Callout type="idea">
+  使用 `rawReturn()` 时，建议在开发环境开启严格模式，如 `strict: process.env.NODE_ENV !== 'production'`，以发现错误包裹的草稿。
+</Callout>
+
+
+# unsafe() (/zh/docs/api-reference/unsafe)
+
+在严格模式下读取未创建草稿的值。
+
+[严格模式](/zh/docs/advanced-guides/strict-mode)下，读取 `Date`、未标记的类实例或被 `mark` 标为可变的值等不可创建草稿的对象会抛错。`unsafe(callback)` 在允许此类读取的环境中执行回调，并返回回调结果。
+
+```ts
+unsafe<T>(callback: () => T): T
+```
+
+## 用法 [#usage]
+
+```ts
+import { create, unsafe } from 'mutative';
+
+const baseState = {
+  createdAt: new Date(Date.UTC(2020, 0, 1)),
+  updatedAt: new Date(Date.UTC(2020, 0, 1)),
+};
+
+const state = create(
+  baseState,
+  (draft) => {
+    // Reading a Date from a draft throws in strict mode:
+    expect(() => draft.createdAt.getTime()).toThrow();
+
+    const year = unsafe(() => draft.createdAt.getUTCFullYear());
+    expect(year).toBe(2020);
+
+    // Assigning a value is no read and needs no unsafe().
+    draft.updatedAt = new Date(Date.UTC(2021, 0, 1));
+  },
+  {
+    strict: true,
+  }
+);
+
+expect(state.updatedAt.getUTCFullYear()).toBe(2021);
+expect(baseState.updatedAt.getUTCFullYear()).toBe(2020);
+```
+
+严格模式要求显式读取，因为 Mutative 不会复制这些值。草稿与基础状态共享它们，`draft.createdAt.setFullYear(2000)` 等修改也会改变基础状态，下一个状态仍持有同一对象。请像上例替换 `updatedAt` 一样替换值，或将其类[标记](/zh/docs/advanced-guides/mark)为 `immutable`，让 Mutative 创建草稿并复制。
+
+* 回调返回前，`unsafe()` 允许所有 producer 进行此类读取。嵌套调用不会提前结束外层调用的访问权限。
+* 非严格模式下，它仅执行回调。
+* 在 `unsafe()` 内读取的可创建草稿值仍是草稿，对其修改会照常记录。
+
+
+# 与 Immer 对比 (/zh/docs/extra-topics/comparison-with-immer)
+
+对比 Mutative 与 Immer 11.1.18 的 API、默认配置、草稿和补丁，以及两者共有的行为。
+
+Mutative 与 Immer 采用相同模型：更新函数修改草稿，库生成下一个状态，并共享未修改部分。大多数代码只需按[迁移指南](/zh/docs/advanced-guides/migration)替换函数名。本页基于 Immer 11.1.18，列出影响执行行为或结果的差异，以及容易被误解的共有行为。
+
+## 功能概览 [#at-a-glance]
+
+| 功能                      | Mutative | Immer |
+| :---------------------- | :------: | :---: |
+| 默认关闭自动冻结                |     ✅    |   ❌   |
+| 每次调用独立选项，无全局设置或插件       |     ✅    |   ❌   |
+| 无需修改类定义即可创建实例草稿         |     ✅    |   ❌   |
+| 自定义浅拷贝                  |     ✅    |   ❌   |
+| 严格模式                    |     ✅    |   ❌   |
+| 异步更新函数                  |     ✅    |   ❌   |
+| Map 和 Set 子类保留类型        |     ✅    |   ❌   |
+| Set 草稿支持 ES2025 Set 方法  |     ✅    |   ❌   |
+| 冻结 Map 键中的对象            |     ✅    |   ❌   |
+| 原生执行草稿数组方法              |     ✅    | 需开启插件 |
+| 补丁支持 JSON Pointer 字符串路径 |     ✅    |   ❌   |
+
+## API [#apis]
+
+| Immer                                                 | Mutative                                                                              |
+| :---------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| `produce(base, recipe)`                               | `create(base, recipe)`                                                                |
+| `produce(recipe)`，柯里化 producer                        | `create(recipe)`                                                                      |
+| `produceWithPatches()`，或传给 `produce()` 的补丁监听器         | `create(base, recipe, { enablePatches: true })`，返回 `[state, patches, inversePatches]` |
+| `applyPatches(state, patches)`                        | `apply(state, patches)`                                                               |
+| `createDraft(base)` 和 `finishDraft(draft)`            | `const [draft, finalize] = create(base)` 和 `finalize()`                               |
+| `current()`、`original()`、`isDraft()`、`isDraftable()`  | 同名函数，`isDraftable()` 还接受 `{ mark }`                                                   |
+| `castDraft()`、`castImmutable()`                       | 同名函数，另有 `castMutable()`                                                               |
+| `nothing`，用于返回 `undefined`                            | `rawReturn(undefined)`                                                                |
+| 类上的 `[immerable]: true`                               | `mark` 选项或 `markSimpleObject()`                                                       |
+| `freeze(value, deep)`                                 | 无对应导出；用 `enableAutoFreeze` 冻结结果                                                       |
+| `setAutoFreeze()`                                     | 每次调用的 `enableAutoFreeze` 选项                                                           |
+| `new Immer(config)`                                   | `makeCreator(options)` 返回带默认选项的 `create()`                                            |
+| `enableMapSet()`、`enablePatches()`                    | 无需调用                                                                                  |
+| `enableArrayMethods()`                                | 无需调用，相关数组方法原生执行                                                                       |
+| `setUseStrictShallowCopy()`、`setUseStrictIteration()` | 无对应设置，见[标记](#defaults-and-configuration)                                              |
+| 无对应 API                                               | `unsafe()`，用于严格模式下显式读取                                                                |
+
+## 默认值与配置 [#defaults-and-configuration]
+
+* **自动冻结**：Mutative 默认不冻结结果，需开启 `enableAutoFreeze`；Immer 默认冻结。开启后，两者均深度冻结整个结果及未修改部分，并冻结 Map/Set 实例使修改方法抛错。Mutative 还冻结 Map 的对象键，Immer 不会。
+* **每次调用独立选项**：`create()` 和 `apply()` 接收独立选项，`makeCreator()` 设置默认值；Immer 的 `setAutoFreeze()` 和插件影响模块的所有调用方。Mutative 内置 Map、Set 和补丁支持，无需 Immer 要求的 `enableMapSet()`、`enablePatches()`。
+* **标记**：`mark` 决定如何创建草稿：无需修改类定义即可支持实例，而 Immer 要求 `[immerable]`；也可保持值可变以原地修改，或返回自定义复制函数。Mutative 对已标记实例复制全部自有属性，包括不可枚举属性，类似 Immer 的 `setUseStrictShallowCopy('class_only')`；但对可枚举、可写、可配置属性使用赋值，类似 Immer 默认复制。因此遮蔽类 setter 的自有属性会触发它，详见[复制已标记的实例](/zh/docs/advanced-guides/mark#copying-marked-instances)。两者对普通对象都只复制可枚举属性，并将 getter 读取为值。另见[标记](/zh/docs/advanced-guides/mark)。
+* **严格模式**：`strict: true` 时，读取可能绕过草稿被修改的值（如未标记类实例）必须放在 `unsafe()` 内，否则抛错。Immer 没有对应模式，详见[严格模式](/zh/docs/advanced-guides/strict-mode)。
+
+## 草稿 [#drafts]
+
+* **Map 和 Set 子类**在草稿和结果中保留类型及方法；Immer 的结果为普通 Map 和 Set。
+* **ES2025 Set 方法**（如 `union()`、`isSubsetOf()`）可用于 Set 草稿，按草稿迭代返回的对象进行比较，见[常见问题](/zh/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts)。Immer 的这些方法看不到草稿元素，例如 `new Set([1, 2])` 的草稿与 `new Set([3])` 求并集会返回 `Set {3}`。
+* **异步更新函数**使 `create()` 返回结果 Promise，草稿在 Promise 落定前有效，见 [create()](/zh/docs/api-reference/create)。Immer 11 会因修改草稿同时返回 Promise 而抛错。
+* **嵌套 `create()` 接收草稿**时，会复制其当前状态，而 Immer 的 `produce()` 直接代理草稿，见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。
+* **返回值**：两者都支持用返回值替换状态，也都拒绝同时修改草稿并返回其他值。`rawReturn()` 像 Immer 的 `nothing` 一样支持返回 `undefined`，还可跳过返回值中的草稿搜索，见 [rawReturn()](/zh/docs/api-reference/rawreturn)。
+* **数组方法**：`shift()`、`unshift()`、`splice()`、`reverse()` 在普通数组副本上移动元素，`indexOf()`、`lastIndexOf()`、`includes()` 原生搜索，行为边界见[常见问题](/zh/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts)。Immer 默认通过代理执行，需显式开启 `enableArrayMethods()`；11.1.18 的该插件可能返回原始基础对象并生成无法重放的补丁，见[审计](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md)。
+* **共有行为**：共享对象的每条路径有独立草稿，见[共享引用](/zh/docs/extra-topics/shared-references)。未标记也无 `[immerable]` 的类实例不创建草稿，修改它会改变基础状态。`current()`、`original()` 对非草稿抛错。Map 草稿在首次修改前开始的迭代会遍历基础 Map，见[常见问题](/zh/docs/extra-topics/faq#can-a-recipe-change-a-map-draft-while-iterating-over-it)。
+
+## 补丁 [#patches]
+
+两者对多数修改生成相同操作、路径和值；嵌套草稿的补丁先于父级；补丁值引用下一个状态的对象，并随状态冻结。以下场景存在差异，生成与应用细节见[补丁行为](/zh/docs/advanced-guides/patches#patch-behavior)。
+
+* **缩短数组**：Mutative 默认以 `replace` 修改 `length`，适用于 `pop()`、`list.length = 0` 的正向补丁，以及 `push()`、插入型 `splice()` 的逆向补丁。Immer 逐索引生成 `remove`。Mutative 设置 `enablePatches: { arrayLengthAssignment: false }` 后采用相同方式。
+* **修改 Set 元素**：只修改对象、不增删元素时，Mutative 按元素位置生成内部 `replace`，Immer 删除旧对象并添加新对象。一旦增删元素，两者都按值携带已修改元素。
+* **字符串路径**：Mutative 的 `enablePatches: { pathAsArray: false }` 生成 JSON Patch 要求的 JSON Pointer 字符串；Immer 始终使用数组。字符串无法表示非字符串 Map 键或 symbol 键。
+* **应用选项**：`apply()` 支持 `enableAutoFreeze`、`strict` 和 `mark`，或用 `mutable: true` 原地修改并返回 `undefined`。
+* **共有行为**：两者均原地修改传入草稿、应用前复制补丁值、接受数组追加索引 `-`，并拒绝 `move`、`copy`、`test` 及经过 `__proto__`、`constructor` 的路径。由于复制补丁值，向 Set 添加的对象是副本，逆向补丁无法删除它，所以重做后撤销会留下对象。两者都在末尾添加元素，Set 顺序可能改变，详见[包含对象的 Set](/zh/docs/advanced-guides/patches#sets-of-objects)。
+
+## Mutative 正确处理的 Immer 边界情况 [#immer-behaviors-that-mutative-handles]
+
+Mutative 通过了适配到自身 API 的 Immer 测试套件。[差异测试](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts)固定了 Immer 11.1.18 处理有误、而 Mutative 处理正确的案例，如草稿泄漏到最终状态、冻结后 Map 键仍可变等。[数组方法审计](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md)复现了 `enableArrayMethods()` 的补丁顺序、基础状态修改和草稿最终处理问题；[复现测试](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.test.ts)包含关闭插件的对照，并对 Mutative 运行相同更新函数。
+
+## Mutative 与 Immer 的性能 [#mutative-vs-immer-performance]
+
+相同配置下（冻结与补丁设置一致），Mutative 在 614 个测量案例中的 595 个快于 Immer 11.1.18，耗时比的几何平均值为 3.6 倍。各自默认配置下（仅 Immer 自动冻结），Mutative 在 157 个中的 154 个更快，几何平均值为 6.6 倍。相同配置的比较中，Immer 只在开启自动冻结时更快：更新多字段类实例，以及两个耗时区间与 Mutative 重叠的 100 行数组更新。
+
+开启补丁、关闭冻结时，Mutative 在 150 个案例中的 148 个更快，其余差距在 5% 以内；所有数组案例都更快，几何平均值为 Immer 的 4.4 倍、Mutative 1.3.0 的 13 倍。比较未开启 Immer 的 `enableArrayMethods()`，因为 11.1.18 的插件会从 `shift`、`pop`、`splice` 返回原始基础对象，修改它们会改变之前的状态，补丁也可能无法重放。上方审计包含复现。
+
+Immer 11.0.0 在 [immerjs/immer#1183](https://github.com/immerjs/immer/pull/1183) 中移植了 Mutative 的最终处理回调机制，替代递归遍历草稿树。本次测量使用的 Immer 11.1.18 已包含该改进。
+
+精选结果见[性能](/zh/docs/getting-started/performance)，完整结果、方法和局限见[性能报告](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md)。
+
+
+# 参与贡献 (/zh/docs/extra-topics/contributing)
+
+配置仓库、运行检查，为代码、基准测试和文档贡献改进。
+
+Mutative 致力于高效的不可变更新，重点关注性能与易用的 API。欢迎提交与性能或易用性相关的 Pull Request。较大改动请先创建 [issue](https://github.com/unadlib/mutative/issues) 或发起[讨论](https://github.com/unadlib/mutative/discussions)。
+
+### 开发流程 [#development-workflow]
+
+* 克隆[仓库](https://github.com/unadlib/mutative)，使用 Node.js 22 或 24，以及 `package.json` 声明的 pnpm 版本。
+* 运行 `pnpm install` 安装依赖。
+* 运行 `pnpm test` 执行测试，或用 `pnpm test --watch` 进入交互式监听模式。
+* 提交前运行 `pnpm format`、`pnpm lint` 和 `pnpm type-check`。
+* 使用 `pnpm commit` 编写符合 [Conventional Commits](https://www.conventionalcommits.org/) 的提交信息。
+* 创建 Pull Request。
+
+### 构建、包与基准测试 [#builds-packages-and-benchmarks]
+
+[构建与验证指南](https://github.com/unadlib/mutative/blob/main/BUILDING.md)介绍构建流程、包检查、体积限制和生成的 API 参考。[基准测试套件](https://github.com/unadlib/mutative/blob/main/perf-testing/README.md)比较当前构建、Mutative 1.3.0、Immer 和手写 reducer，并介绍 CI 回归预算。运行 `pnpm benchmark:immer:check` 验证工作负载，运行 `pnpm benchmark:immer` 测量性能。
+
+### 文档 [#docs]
+
+* 网站位于 [`website/`](https://github.com/unadlib/mutative/tree/main/website)。仓库根目录运行 `pnpm start:docs` 预览，在 `website/` 内运行 `pnpm build` 导出并检查链接。
+* 仅从 `mutative` 或 `immer` 导入的 Mutative 代码示例会作为测试运行，可使用 Vitest 的 `expect`。请保持这类示例完整；不用于运行的片段应省略导入。
+* `pnpm build:doc` 从源码 TSDoc 重新生成 [`docs/`](https://github.com/unadlib/mutative/tree/main/docs) 的 API 参考，CI 会检查是否保持最新。
+* 每个 Markdown 段落和列表项写在单独一行。
+
+
+# 生产构建错误码 (/zh/docs/extra-topics/errors)
+
+解读 Mutative 压缩后的生产错误，以及开发构建中的错误与警告。
+
+Mutative 的压缩生产构建用数字错误码替代完整消息，以减少发送给用户的字节数。
+
+本地调试建议使用开发构建，它保留完整错误信息、额外验证与警告，帮助定位应用中的问题。详见[开发与生产构建](/zh/docs/getting-started/installation#development-and-production-builds)。
+
+生产异常的消息格式为 `Minified Mutative error #<code>; visit https://mutative.js.org/docs/extra-topics/errors`。可在下表查找错误码，恢复开发构建的消息；`<…>` 表示调用中的具体值。源码标识符供贡献者定位实现。为便于与日志逐字匹配，下表保留英文诊断原文。
+
+错误移除后，数字码仍保持稳定。已停用的错误码会保留，确保旧生产日志仍可解读。
+
+| 错误码 | 源码标识符                            | 开发错误原文                                                                                                                       |
+| --: | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+|   0 | `InvalidBaseState`               | `Invalid base state: create() only supports plain objects, arrays, Set, Map or using mark() to mark the state as immutable.` |
+|   1 | `CannotAssignToMapOrSet`         | `Map/Set draft does not support any property assignment.`                                                                    |
+|   2 | `InvalidArrayIndex`              | `Only supports setting array indices and the 'length' property.`                                                             |
+|   3 | `CannotSetPrototypeOfDraft`      | `Cannot call 'setPrototypeOf()' on drafts`                                                                                   |
+|   4 | `CannotDefinePropertyOnDraft`    | `Cannot call 'defineProperty()' on drafts`                                                                                   |
+|   5 | `MutateAndReturn`                | `Either the value is returned as a new non-draft value, or only the draft is modified without returning any value.`          |
+|   6 | `CannotReturnModifiedChildDraft` | `Cannot return a modified child draft.`                                                                                      |
+|   7 | `CurrentOnNonDraft`              | `current() is only used for Draft, parameter: <value>`                                                                       |
+|   8 | `StrictModeAccess`               | `Strict mode: Mutable data cannot be accessed directly, please use 'unsafe(callback)' wrap.`                                 |
+|   9 | `UnsupportedMarkResult`          | `Unsupported mark result: <result>`                                                                                          |
+|  10 | `InvalidMark`                    | `Please check mark() to ensure that it is a stable marker draftable function.`                                               |
+|  11 | `CannotModifyFrozenObject`       | `Cannot modify frozen object`                                                                                                |
+|  12 | `InvalidPatchPath` （已停用）         | 生成的补丁路径无效。内部检查已移除，错误码保留。                                                                                                     |
+|  13 | `ReservedPatchAttribute`         | `Patching reserved attributes like __proto__ and constructor is not allowed.`                                                |
+|  14 | `CannotApplyPatch`               | `Cannot apply patch at '<path>'.`                                                                                            |
+|  15 | `ReplacePatchOnSet`              | `Cannot apply replace patch to set.`                                                                                         |
+|  16 | `UnsupportedPatchOperation`      | `Unsupported patch operation: <op>.`                                                                                         |
+|  17 | `ApplyOptionsToDraft`            | `Cannot apply patches with options to a draft.`                                                                              |
+|  18 | `OriginalOnNonDraft`             | `original() is only used for a draft, parameter: <value>`                                                                    |
+|  19 | `RawReturnWithoutValue`          | `rawReturn() must be called with a value.`                                                                                   |
+|  20 | `RawReturnWithExtraArguments`    | `rawReturn() must be called with one argument.`                                                                              |
+|  21 | `ReplaceMutableRoot`             | `apply() with the mutable option changes the state in place, so a patch cannot replace the root state with another value.`   |
+
+各错误的含义：
+
+* **0**：`create()` 的基础状态不可创建草稿，例如未标记的类实例或 `Date`。见 [`isDraftable()`](/zh/docs/api-reference/isdraftable) 和[标记](/zh/docs/advanced-guides/mark)。
+* **1–4**：向 Map/Set 草稿赋属性、向数组草稿赋非索引属性，或对草稿调用 `Object.setPrototypeOf()`、`Object.defineProperty()`。
+* **5**、**6**：同时修改草稿并返回其他值，或返回已修改的子草稿。见[返回新状态](/zh/docs/api-reference/create#returning-a-new-state)。
+* **7**、**18**：`current()` 或 `original()` 收到非草稿值。
+* **8**：[严格模式](/zh/docs/advanced-guides/strict-mode)下，在 `unsafe()` 外读取不可创建草稿的值。
+* **9**：`mark` 返回了 `'mutable'`、`'immutable'`、函数或空返回值以外的结果。
+* **10**：同一个值的 `mark` 结果不稳定，例如创建草稿时返回 `'immutable'`，复制时却不返回值。标记必须每次给出一致结果。
+* **11**：对[自动冻结](/zh/docs/advanced-guides/auto-freeze)后的 Map/Set 调用了 `set()`、`add()`、`delete()` 或 `clear()`。
+* **13–17**、**21**：`apply()` 收到无法应用的补丁，见[接受的补丁](/zh/docs/api-reference/apply#patches-that-apply-accepts)。
+* **19**、**20**：`rawReturn()` 没有参数或有多个参数。
+
+## 仅开发环境的错误 [#development-only-errors]
+
+开发构建还会执行以下生产构建跳过的检查：
+
+| 消息原文                                                                                                                                                                                 | 原因                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| `Invalid options: <options>, 'options' should be an object.`                                                                                                                         | `create()` 或 `makeCreator()` 收到非对象选项。           |
+| `Invalid mark: <mark>, 'mark' should be a function.`                                                                                                                                 | 标记数组含非函数值。                                      |
+| `You can't use mark and patches or auto freeze together.`                                                                                                                            | 开启补丁或自动冻结时，标记返回了拷贝函数。                           |
+| `Forbids circular reference`                                                                                                                                                         | 开启自动冻结时，结果含持有自身的对象；完整消息会指出重复对象的路径。              |
+| `Patches with string paths only support string Map keys and no symbol keys, got a key of type '<type>'. Set 'pathAsArray' to true to keep keys of other types.`                      | `pathAsArray: false` 时，路径含非字符串 Map 键或 symbol 键。 |
+| `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq`          | 更新函数将草稿作为 Map 草稿 `set()` 的键。                    |
+| `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.` | 开启自动冻结时，返回值的冻结对象内部含草稿。                          |
+
+## 开发环境警告 [#development-warnings]
+
+开发构建通过 `console.warn()` 输出以下警告，生产构建不输出：
+
+| 消息原文                                                                                                                                                                  | 原因                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `The return value does not contain any draft, please use 'rawReturn()' to wrap the return value to improve performance.`                                              | 返回对象不含草稿，使用 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 可跳过搜索。                            |
+| `The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.`                                                                          | 严格模式下，`rawReturn()` 包裹的值含草稿。                                                                    |
+| ``rawReturn() must be called with an object(including plain object, arrays, Set, Map, etc.) or `undefined`, other types do not need to be returned via rawReturn().`` | `rawReturn()` 收到可直接返回的原始值。                                                                      |
+| `Strict mode: the recipe left <count> drafts unchanged; …`                                                                                                            | 严格模式下，留下 1,000 个或更多未修改草稿时警告一次，见[搜索大数组](/zh/docs/api-reference/current#searching-a-large-array)。 |
+| `create() received a draft as its base and drafts current(draft), unlike Immer's produce: …`                                                                          | `create()` 收到草稿与更新函数时警告一次，见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。  |
+| `The "mutable" option is not allowed to be used with other options.`                                                                                                  | `apply()` 将 `mutable: true` 与其他选项组合使用。                                                          |
+
+
+# 常见问题 (/zh/docs/extra-topics/faq)
+
+关于 Mutative 性能、从 Immer 迁移、数组、Map 和 Set 的常见问题。
+
+其他问题可在 [GitHub Discussions](https://github.com/unadlib/mutative/discussions) 讨论；发现缺陷请提交 [issue](https://github.com/unadlib/mutative/issues)。
+
+## 问答 [#qa]
+
+### Mutative 为什么性能较好？ [#why-does-mutative-have-such-good-performance]
+
+无论更新函数修改多少次，Mutative 每次更新最多复制每个对象一次，只为读取的值创建草稿，只完成已修改草稿的最终处理，并在副本上原生移动数组元素，避免逐元素经过代理。它还默认不冻结下一个状态。测量结果见[性能](/zh/docs/getting-started/performance)。
+
+### 已经使用 Immer，可以平滑迁移吗？ [#im-already-using-immer-can-i-migrate-smoothly-to-mutative]
+
+可以。除非需要兼容 Internet Explorer，Mutative 支持几乎所有 Immer 功能，[迁移指南](/zh/docs/advanced-guides/migration)介绍了各 API 的替换方式。[与 Immer 对比](/zh/docs/extra-topics/comparison-with-immer)列出全部对应 API 和行为差异。
+
+Mutative 和 Immer 都需要 `Proxy`。Android 上 React Native 的 JavaScriptCore 自 0.59 起支持，Hermes 自 0.64 起支持，见 [Hermes 的 Proxy 支持](https://reactnative.dev/blog/2021/03/12/version-0.64#hermes-with-proxy-support)。
+
+### 能与 Redux 集成吗？ [#can-mutative-be-integrated-with-redux]
+
+可以。接收 action 参数的[producer](/zh/docs/advanced-guides/currying) 就是 reducer；更新函数也可以返回新状态，例如用 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 返回初始状态。Redux Toolkit 的 `createSlice()`、`createReducer()` 使用 Immer，其[允许配置 produce() 的 RFC](https://github.com/reduxjs/redux-toolkit/pull/3074)已提出。
+
+### 哪些数组方法在草稿上原生执行？ [#which-array-methods-run-natively-on-drafts]
+
+`shift`、`unshift`、`splice`、`reverse` 在无空洞的普通数组副本上直接移动元素，包括值为 `undefined` 的元素；`indexOf`、`lastIndexOf`、`includes` 原生搜索当前数组；`sort`、`join` 在原始值数组上原生执行。移出的基础元素会作为草稿返回，补丁可双向重放，无变化调用保留状态。稀疏数组、数组子类、自有 `constructor` 或 `Symbol.isConcatSpreadable`、自定义 `mark` 下的数组、所有带回调的方法，以及 `at`、`slice`、`fill`、`copyWithin` 均走代理路径。可能执行用户代码的参数（如对象形式的 `fromIndex` 或 `splice` 索引）也在代理路径转换，以观察转换过程中对数组的修改，与原生方法一致。
+
+快速路径面向数据数组：索引访问器会读取为数据值，其 getter 的调用次数、顺序、重入影响及返回对象身份，不保证与逐元素代理执行一致。自动冻结时，复制冻结、密封或不可扩展数组也可能读取 getter 两次。
+
+优化搜索与代理路径结果一致，按读取时返回的元素身份比较。草稿、更新函数赋入的值、不可创建草稿的对象和原始值均可找到。基础状态对象读取时会变成草稿，所以无论之前是否读过都无法按原始对象找到，除非更新函数重新赋入或插入它且不在原索引。搜索基础状态可用 [`original()`](/zh/docs/api-reference/original)，如 `original(draft.list).indexOf(item)`。搜索不会读取传入查找值的属性。
+
+严格模式下，位于 [`unsafe()`](/zh/docs/api-reference/unsafe) 外且可能含对象的数组走代理路径，读取不可创建草稿元素时照常失败；仅通过 `typeof` 确认的原始值数组保留原生路径。原生路径移动和比较元素时不检查内部结构，而代理路径检查每个读取元素。因此，元素本身若是 Proxy，其内部方法可能被调用更少，但不会更多或在额外时机调用。例如搜索跳过一个已撤销 Proxy 元素时，不会因此抛错。
+
+这些方法移出或移动的可创建草稿基础元素，会在暴露前转换为草稿。`forEach`、`map`、`filter`、`find` 等带回调方法走代理，以便回调观察所有修改并修改元素。大数组只读扫描可使用 [`current()`](/zh/docs/api-reference/current)。
+
+### 遍历 Map 草稿时可以修改它吗？ [#can-a-recipe-change-a-map-draft-while-iterating-over-it]
+
+可以。删除当前条目、修改其他条目的值，与 Map 一致；Set 草稿也按 Set 方式迭代。但若 Map 草稿在首次修改或读取对象值之前开始迭代，它遍历的是基础 Map。此后删除的条目仍会被访问，值为 `undefined`；新增条目不会被访问。需要边遍历边删除其他条目时，可遍历 `Array.from(draft.keys())`，并跳过 `draft.has()` 为 false 的键。
+
+### Set 草稿支持 `union()`、`isSubsetOf()` 等方法吗？ [#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts]
+
+支持，但按草稿迭代返回的元素比较。基础状态对象在这里是草稿，因此无法与原始对象匹配，尽管 `has()` 接受原始对象。若需与基础状态对象比较，可在 `current(draft)` 上调用（未修改对象保留身份），在 `original(draft)` 上比较基础状态，或按 ID 比较，如 `[...draft].filter((item) => ids.has(item.id))`。此规则适用于 `union()`、`intersection()`、`difference()`、`symmetricDifference()`、`isSubsetOf()`、`isSupersetOf()`、`isDisjointFrom()`。
+
+### 草稿可以作为 Map 的键吗？ [#can-a-draft-be-a-map-key]
+
+不可以。Map 键原样保留，producer 结束时草稿被撤销，所以 Map 和引用该键的补丁都会持有已撤销草稿，读取属性会抛错。应改用 `original(draft)`、`current(draft)` 或 ID。开发构建会拒绝将草稿作为 Map 草稿 `set()` 的键。
+
+### 支持共享引用吗？ [#does-mutative-support-shared-references]
+
+支持，但**通向共享对象的每条路径都有独立草稿**，一条路径的修改不会自动反映到其他路径。要在结果中保留共享关系，必须显式赋值，例如 `draft.b = draft.a`。详见[共享引用](/zh/docs/extra-topics/shared-references)。
+
+### 更新结束后可以保留草稿吗？ [#can-i-keep-a-draft-after-the-recipe-ends]
+
+不可以。`create()` 的更新函数结束（包括失败）时会撤销草稿，之后读取会抛错。请保留 [`current(draft)`](/zh/docs/api-reference/current) 的普通值快照或最终状态。[手动 create(base)](/zh/docs/advanced-guides/currying#drafts-that-you-finalize-later) 的草稿在 `finalize()` 返回前有效，异步更新函数的草稿在 Promise 落定前有效。
+
+
+# 扩展主题 (/zh/docs/extra-topics)
+
+了解 Mutative 的生态、常见问题和行为细节。
+
+- [与 Immer 对比](/zh/docs/extra-topics/comparison-with-immer)
+- [常见问题](/zh/docs/extra-topics/faq)
+- [参与贡献](/zh/docs/extra-topics/contributing)
+- [Mutative 生态系统](/zh/docs/extra-topics/mutative-ecosystem)
+- [谁在使用 Mutative](/zh/docs/extra-topics/who-uses-mutative)
+- [共享引用](/zh/docs/extra-topics/shared-references)
+- [生产构建错误码](/zh/docs/extra-topics/errors)
+
+
+# Mutative 生态系统 (/zh/docs/extra-topics/mutative-ecosystem)
+
+用于 React、Zustand、Jotai、XState、Yjs、撤销与重做等场景的 Mutative 生态库。
+
+这些库通过 Mutative 为其他工具提供不可变更新。请与 `mutative` 一起安装，并查阅各自仓库中的完整 API。
+
+## React [#react]
+
+* [use-mutative](https://github.com/mutativejs/use-mutative)：速度是使用展开语法的 useState 的 2–6 倍，可用作替代方案，提供 `useMutative()` 和 `useMutativeReducer()`，见[在 React 中使用 Mutative](/zh/docs/getting-started/mutative-with-react)。
+* [use-travel](https://github.com/mutativejs/use-travel)：状态时间旅行 Hook，支持撤销、重做、重置和归档。
+* [reactant](https://github.com/unadlib/reactant)：使用 Mutative 进行不可变更新的 React 应用框架。
+
+## Zustand [#zustand]
+
+[zustand-mutative](https://github.com/mutativejs/zustand-mutative) 是 Zustand 中间件，让 `set()` 接收更新函数：
+
+```tsx
+import { create } from 'zustand';
+import { mutative } from 'zustand-mutative';
+
+type State = { count: number };
+type Actions = { increment: (qty: number) => void };
+
+export const useCountStore = create<State & Actions>()(
+  mutative((set) => ({
+    count: 0,
+    increment: (qty) =>
+      set((state) => {
+        state.count += qty;
+      }),
+  }))
+);
+```
+
+[zustand-travel](https://github.com/mutativejs/zustand-travel) 基于 travels，为 Zustand 提供撤销与重做。
+
+## Jotai [#jotai]
+
+[jotai-mutative](https://github.com/mutativejs/jotai-mutative) 提供 setter 接收更新函数的 atom：
+
+```tsx
+import { useAtom } from 'jotai';
+import { atomWithMutative } from 'jotai-mutative';
+
+const countAtom = atomWithMutative({ value: 0 });
+
+export function Counter() {
+  const [count, setCount] = useAtom(countAtom);
+  return (
+    <button
+      onClick={() =>
+        setCount((draft) => {
+          draft.value += 1;
+        })
+      }
+    >
+      {count.value}
+    </button>
+  );
+}
+```
+
+`withMutative(atom)` 和 `useMutativeAtom(atom)` 为现有 atom 提供相同 setter。
+
+## XState [#xstate]
+
+[xstate-mutative](https://github.com/mutativejs/xstate-mutative) 为 XState 5 提供修改 context 草稿的 `assign()` action：
+
+```ts
+import { createActor, createMachine } from 'xstate';
+import { assign } from 'xstate-mutative';
+
+const machine = createMachine({
+  context: { count: 0 },
+  on: {
+    increment: {
+      actions: assign(({ context }) => {
+        context.count += 1;
+      }),
+    },
+  },
+});
+
+const actor = createActor(machine).start();
+actor.send({ type: 'increment' });
+```
+
+## 撤销与重做 [#undo-and-redo]
+
+[travels](https://github.com/mutativejs/travels) 是与框架无关的撤销、重做核心，以 Mutative 补丁保存历史，支持历史长度限制、归档和持久化：
+
+```ts
+import { createTravels } from 'travels';
+
+const travels = createTravels({ count: 0 });
+
+travels.setState((draft) => {
+  draft.count += 1;
+});
+travels.back();
+travels.forward();
+```
+
+[use-travel](https://github.com/mutativejs/use-travel) 和 [zustand-travel](https://github.com/mutativejs/zustand-travel) 分别集成到 React 和 Zustand。自行基于补丁实现的方法见[撤销与重做](/zh/docs/advanced-guides/patches#undo-and-redo)。
+
+## 协同编辑 [#collaboration]
+
+[mutative-yjs](https://github.com/mutativejs/mutative-yjs) 将 Yjs 的 `Y.Map` 或 `Y.Array` 绑定到普通快照，通过更新函数修改，并在远端变化时刷新：
+
+```ts
+import * as Y from 'yjs';
+import { bind } from 'mutative-yjs';
+
+const doc = new Y.Doc();
+const binder = bind<{ count: number; items: string[] }>(doc.getMap('data'));
+
+binder.update((state) => {
+  state.count = 0;
+  state.items = ['apple'];
+});
+binder.update((state) => {
+  state.count += 1;
+  state.items.push('banana');
+});
+
+binder.get(); // { count: 1, items: ['apple', 'banana'] }
+```
+
+## 其他库 [#other-libraries]
+
+* [mutative-compat](https://github.com/exuanbo/mutative-compat)：完全兼容 Immer API 的 Mutative 封装。
+* [mutability](https://github.com/mutativejs/mutability)：事务式可变更新库，原地修改状态并返回补丁。
+* [usm](https://github.com/reactant/usm)：用于 Redux、MobX、Vuex、Pinia 等的简洁灵活状态模型。
+* [coaction](https://github.com/coactionjs/coaction)：TypeScript 不可变响应式状态运行时。
+* [coexist](https://github.com/coactionjs/coexist)：支持多个 UI 框架共存的应用运行时。
+
+
+# 共享引用 (/zh/docs/extra-topics/shared-references)
+
+多条路径指向同一对象时的草稿行为，以及如何保留共享关系。
+
+Mutative 支持从根节点到同一节点存在多条路径的结构，即含共享节点的有向无环图（DAG），**但不能包含循环引用**。需要理解草稿处理共享引用时的以下行为。
+
+## 多条路径使用独立草稿 [#independent-drafts-for-multiple-paths]
+
+基础状态的多条路径引用同一对象时，Mutative 会为**每条路径创建独立草稿**。修改一条路径**不会**自动反映到其他路径。
+
+```javascript
+import { create } from 'mutative';
+
+const obj = {};
+// Same object referenced by two keys
+obj.color1 = obj.color2 = { name: 'Red' };
+
+const result = create(obj, (draft) => {
+  // ⚠️ Different drafts created for each path!
+  console.log(draft.color1 === draft.color2); // false
+
+  draft.color1.name = 'Blue';
+
+  // color2 remains unchanged because it has a separate draft
+  console.log(draft.color2.name); // 'Red'
+});
+
+console.log(result.color1 === result.color2); // false
+// Result: { color1: { name: 'Blue' }, color2: { name: 'Red' } }
+```
+
+这是**有意设计的行为**，与 Immer 一致。状态树中的每条路径都有独立的草稿代理。
+
+## 创建共享引用 [#creating-shared-references]
+
+若需在结果状态中**保留或创建共享引用**，必须在更新函数中显式将一个草稿赋给另一个位置。
+
+```javascript
+const result = create(obj, (draft) => {
+  draft.color1.name = 'Blue';
+
+  // ✅ Explicitly share the reference
+  draft.color2 = draft.color1;
+});
+
+// Now they share the same reference in the result
+console.log(result.color1 === result.color2); // true
+// Result: { color1: { name: 'Blue' }, color2: { name: 'Blue' } }
+```
+
+## 行为汇总 [#summary]
+
+| 场景             | 行为                                         |
+| -------------- | ------------------------------------------ |
+| **基础状态中的共享节点** | 每条路径有**独立草稿**，一条路径的修改**不会**反映到其他路径。        |
+| **手动赋值的引用**    | ✅ **支持**。`draft.x = draft.y` 在最终状态中创建共享引用。 |
+| **真正的循环引用**    | ❌ **不支持**。开发环境开启自动冻结时会主动检测。                |
+
+
+# 谁在使用 Mutative (/zh/docs/extra-topics/who-uses-mutative)
+
+从 Immer 迁移到 Mutative 的开源项目及其反馈。
+
+以下开源项目直接依赖 Mutative。引文译自采用 Mutative 时的 Pull Request 或发布说明，只描述当时该项目的情况，并不代表所有工作负载。项目默认分支的核查日期为 2026 年 10 月 9 日。
+
+## Appsmith [#appsmith]
+
+用于构建管理面板、内部工具和仪表盘的 [Appsmith](https://github.com/appsmithorg/appsmith)，在客户端将 Immer 替换为 Mutative：
+
+> 使用 Mutative 替代 Immer 后，主线程脚本执行时间减少了约 1 秒。
+
+来自 2025 年 2 月 6 日合并的 [appsmithorg/appsmith#38993](https://github.com/appsmithorg/appsmith/pull/38993)。同一 PR 还移除了深拷贝，并在树的首次求值时跳过 Mutative。
+
+## InstantDB [#instantdb]
+
+提供认证、权限、存储和在线状态的后端 [InstantDB](https://github.com/instantdb/instant)，用不依赖自动冻结的 Mutative 替换了 Immer。在其性能测试中，Immer 单次事务约需 8 ms，增加待处理事务后约为 40 ms：
+
+> Mutative 单次事务约为 3 ms。继续增加待处理事务时，耗时似乎仍保持在 3 ms！
+
+来自 2024 年 9 月 19 日合并的 [instantdb/instant#243](https://github.com/instantdb/instant/pull/243)。
+
+## Notesnook [#notesnook]
+
+端到端加密笔记应用 [Notesnook](https://github.com/streetwriters/notesnook) 在 3.0.11 版本替换了 Immer：
+
+> 我们已移除 Immer，改用 Mutative 进行应用内不可变状态管理。Mutative 快近 10 倍，因此你会感受到应用响应速度的小幅提升。
+
+来自 2024 年 7 月 18 日的 [Notesnook v3.0.11 发布说明](https://notesnook.com/blog/notesnook-v3.0.11)。10 倍指库本身，发布说明对应用体验的表述是响应速度小幅提升。
+
+## Plate [#plate]
+
+React 富文本编辑器 [Plate](https://github.com/udecode/plate) 在 42 版本将插件 store 迁移到 [zustand-mutative](https://github.com/mutativejs/zustand-mutative)，核心包也依赖 Mutative：
+
+> 所有插件 store 现已使用 zustand-mutative 进行不可变状态更新，它比 `immer` 更快。
+
+来自 2025 年 1 月 9 日合并的 [42 版本发布](https://github.com/udecode/plate/pull/3945)。
+
+## 其他使用项目 [#also-used-by]
+
+* [Mol\*](https://github.com/molstar/molstar)：综合大分子库，在 [molstar/molstar#1618](https://github.com/molstar/molstar/pull/1618) 中替换 Immer，同时优化了动画加载。
+* [OpenRewrite](https://github.com/openrewrite/rewrite)：自动化大规模源码重构工具，在 [openrewrite/rewrite#6460](https://github.com/openrewrite/rewrite/pull/6460) 中为 JavaScript 支持替换了 Immer。
+* [MSW Data](https://github.com/mswjs/data)：用于 JavaScript 应用测试的数据查询库。
+
+
+# 核心概念 (/zh/docs/getting-started/concepts)
+
+理解 Mutative 的草稿、最终处理、结构共享、补丁和标记。
+
+Mutative 基于 `Proxy`。更新函数修改状态的草稿，Mutative 记录发生变化的部分，再据此生成下一个状态，并共享所有未变化的部分。补丁用于描述变化，标记用于决定哪些值可以创建草稿。
+
+## 基本流程 [#base-workflow]
+
+<img alt="Mutative 工作流程" src="__img0" />
+
+* 当前状态是基础状态（base state），始终保持不变。
+* 更新函数在草稿（draft）上修改数据。读取对象时，Mutative 为其创建草稿（图中虚线）；修改对象时，再复制该对象（图中红色部分）。
+* 下一个状态包含已修改对象的副本，其余对象与基础状态共享。
+
+```ts
+import { create, isDraft } from 'mutative';
+
+const baseState = {
+  a0: {
+    b0: {},
+  },
+  a1: {
+    b1: {},
+    b2: {
+      c0: 0,
+    },
+  },
+  a2: {},
+};
+
+const nextState = create(baseState, (draft) => {
+  const { a0 } = draft;
+  // Reading a draftable value through a draft gives a draft of it.
+  expect(isDraft(a0)).toBe(true);
+  draft.a1.b2.c0 = 1;
+});
+
+expect(nextState).not.toBe(baseState);
+// Drafted but not changed: shared with the base state.
+expect(nextState.a0).toBe(baseState.a0);
+// Never read: shared with the base state.
+expect(nextState.a2).toBe(baseState.a2);
+// Changed, and every object on the path to the change: copied.
+expect(nextState.a1).not.toBe(baseState.a1);
+expect(nextState.a1.b2).not.toBe(baseState.a1.b2);
+expect(nextState.a1.b1).toBe(baseState.a1.b1);
+expect(nextState.a1.b2.c0).toBe(1);
+```
+
+## 草稿 [#drafts]
+
+草稿是状态中某个值的 `Proxy`，行为与该值一致：更新函数可以读取、赋值、删除属性，或调用数组的 `push()`、Map 的 `set()` 等方法。Mutative 按需创建草稿：
+
+* 通过草稿读取可创建草稿的值时，首次读取才为它创建草稿。普通对象、数组、Map 和 Set 均可创建草稿，通过[标记](/zh/docs/advanced-guides/mark)指定的类实例等值也可以，详见 [`isDraftable()`](/zh/docs/api-reference/isdraftable)。原始值、日期等其他值直接原样返回。
+* 首次修改草稿时会浅拷贝原值，后续修改都写入同一副本。因此，无论更新函数修改多少次，每次更新最多复制每个对象一次。
+* 更新函数赋入的新值不会自动变成草稿，下一个状态直接持有这些值。
+* 通向同一对象的每条路径都有独立的草稿，即使多条路径引用同一对象也是如此，详见[共享引用](/zh/docs/extra-topics/shared-references)。
+
+草稿的生命周期仅限于所属的 `create()` 调用。更新函数结束后，Mutative 会撤销草稿代理，之后再读取就会抛错。如需保留数据，请使用返回普通值快照的 [`current(draft)`](/zh/docs/api-reference/current)；可通过 [`isDraft()`](/zh/docs/api-reference/isdraft) 检查是否为草稿。
+
+## 最终处理 [#finalization]
+
+更新函数结束后，Mutative 对草稿进行最终处理：下一个状态采用已修改草稿的副本，并保留未修改草稿的原值，因此所有未变化的对象都与基础状态共享。如果更新函数没有做任何修改，就返回基础状态本身。开启[自动冻结](/zh/docs/advanced-guides/auto-freeze)后，Mutative 还会深度冻结下一个状态。
+
+更新函数也可以直接返回新状态，而不修改草稿，详见[返回新状态](/zh/docs/api-reference/create#returning-a-new-state)。
+
+## 补丁 [#patches]
+
+开启 `enablePatches` 后，`create()` 还会返回描述更新内容的正向补丁，以及用于撤销的逆向补丁。每个补丁包含操作 `op`（`add`、`remove` 或 `replace`）、从根节点指向变化位置的 `path`，以及 `add` 和 `replace` 操作所需的新 `value`。[`apply()`](/zh/docs/api-reference/apply) 可将补丁应用到状态，例如在另一个状态副本上重放或撤销修改，详见[补丁](/zh/docs/advanced-guides/patches)。
+
+## 标记 [#mark]
+
+状态可能混合需要与不需要创建草稿的数据，例如类实例、缓存或来自其他库的值。`mark` 选项逐个决定：为值创建草稿、保持其可变，还是使用自定义函数复制。无需在对象本身添加标记。详见[标记数据结构](/zh/docs/advanced-guides/mark)。
+
+
+# 快速入门 (/zh/docs/getting-started)
+
+用 5 分钟了解 Mutative 最重要的概念。
+
+- [安装](/zh/docs/getting-started/installation)
+- [常见用法](/zh/docs/getting-started/usages)
+- [核心概念](/zh/docs/getting-started/concepts)
+- [在 React 中使用 Mutative](/zh/docs/getting-started/mutative-with-react)
+- [性能](/zh/docs/getting-started/performance)
+
+
+# 安装 (/zh/docs/getting-started/installation)
+
+从 npm 安装 Mutative 或通过 CDN 加载，并了解支持的运行环境。
+
+## 包管理器 [#package-managers]
+
+
+
+```bash
+npm install mutative
+```
+
+```bash
+pnpm add mutative
+```
+
+```bash
+yarn add mutative
+```
+
+```bash
+bun add mutative
+```
+
+Mutative 没有依赖。仅包含 `create` 的生产构建经 Brotli 压缩后约为 8.3 kB；包含 `create`、`apply`、`current` 和 `original` 时约为 8.9 kB。其中已包含补丁、`Map`、`Set` 和原生数组方法支持，无需插件。
+
+```ts
+import { create } from 'mutative';
+```
+
+## 环境要求 [#requirements]
+
+* **JavaScript**：Mutative 需要 `Proxy`，以及构建产物保留的 ES2018 语法（如对象展开）：支持 Node.js 14.0 及以上、现代浏览器和 React Native 0.64 及以上。支持 `Proxy` 但不支持 ES2018 语法的引擎，如 Chrome 49–59、Firefox 18–54、Safari 10–11.0 和 Edge 12–18，需要由项目构建工具转译 Mutative。Internet Explorer 没有 `Proxy`，因此不受支持。
+* **TypeScript**：类型声明支持 TypeScript 5.0 及以上，详见 [TypeScript](/zh/docs/advanced-guides/typescript)。
+
+## 开发与生产构建 [#development-and-production-builds]
+
+包内提供开发构建和压缩后的生产构建。前者包含完整错误信息、警告和额外检查；后者用[数字错误码](/zh/docs/extra-topics/errors)表示错误。实际使用哪个构建由 `process.env.NODE_ENV` 决定：
+
+* **打包工具**解析 ESM 构建，其中的开发检查比较 `process.env.NODE_ENV` 与 `'production'`。webpack、Vite、Rollup 和 esbuild 的常见生产配置会将它定义为 `'production'`，从而移除开发代码。目标为 Node.js 的打包配置会解析 CommonJS 入口；请在该配置中定义 `process.env.NODE_ENV`，或将 Mutative 设为外部依赖。
+* **Node.js** 无论使用 `require` 还是 `import`，都会运行 CommonJS 构建，并在加载 Mutative 时根据 `NODE_ENV` 选择开发或生产版本。
+* **未使用打包工具的浏览器**没有 `process`，需要使用下方的生产 ESM 文件或 UMD 构建。
+
+## CDN [#cdn]
+
+* Unpkg：`<script src="https://unpkg.com/mutative"></script>`
+* JSDelivr：`<script src="https://cdn.jsdelivr.net/npm/mutative"></script>`
+* ES 模块：`import { create } from 'https://unpkg.com/mutative/dist/mutative.esm.production.min.mjs';`
+
+`<script>` 标签加载生产 UMD 构建，提供全局变量 `Mutative`，例如 `Mutative.create(baseState, recipe)`。包中的其他 ESM 文件会读取 `process.env.NODE_ENV`，它由打包工具或 Node.js 提供；无打包工具的浏览器应使用上方的生产文件。
+
+```html
+<script type="module">
+  import { create } from 'https://unpkg.com/mutative/dist/mutative.esm.production.min.mjs';
+
+  const state = create({ count: 0 }, (draft) => {
+    draft.count += 1;
+  });
+  console.log(state.count); // 1
+</script>
+```
+
+
+# 在 React 中使用 Mutative (/zh/docs/getting-started/mutative-with-react)
+
+使用 create() 或 use-mutative 的 Hook 更新 React 状态。
+
+当组件状态被新对象替换时，React 会重新渲染，因此更新不能修改当前状态。`create()` 根据草稿上的修改生成新状态，未变化的部分保留原引用，使经过记忆化处理的子组件和选择器可以跳过这些部分。
+
+## 配合 `useState` 和 `useReducer` [#with-usestate-and-usereducer]
+
+`create()` 无需适配器：可在 `useState` 的函数式更新中调用，也可在 `useReducer` 的 reducer 中调用。
+
+```tsx
+import { useReducer, useState } from 'react';
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+export function TodoList() {
+  const [todos, setTodos] = useState<Todo[]>([{ text: 'Learn React', done: false }]);
+
+  const toggle = (index: number) =>
+    setTodos((current) =>
+      create(current, (draft) => {
+        draft[index].done = !draft[index].done;
+      })
+    );
+
+  return (
+    <ul>
+      {todos.map((todo, index) => (
+        <li key={index} onClick={() => toggle(index)}>
+          {todo.done ? '✓' : '○'} {todo.text}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+type Action = { type: 'add'; text: string } | { type: 'remove'; index: number };
+
+function reducer(state: Todo[], action: Action) {
+  return create(state, (draft) => {
+    switch (action.type) {
+      case 'add':
+        draft.push({ text: action.text, done: false });
+        break;
+      case 'remove':
+        draft.splice(action.index, 1);
+        break;
+    }
+  });
+}
+
+export function useTodos(initialTodos: Todo[]) {
+  return useReducer(reducer, initialTodos);
+}
+```
+
+如果更新函数没有修改任何内容，就返回当前状态本身，React 会跳过重新渲染。
+
+## use-mutative [#use-mutative]
+
+[use-mutative](https://github.com/mutativejs/use-mutative) 将上述模式封装为两个 Hook。
+
+
+
+```bash
+npm install mutative use-mutative
+```
+
+```bash
+pnpm add mutative use-mutative
+```
+
+```bash
+yarn add mutative use-mutative
+```
+
+```bash
+bun add mutative use-mutative
+```
+
+### `useMutative()` [#usemutative]
+
+`useMutative()` 的用法类似 `useState()`，其 setter 还可以接收修改草稿的更新函数：
+
+```tsx
+import { useMutative } from 'use-mutative';
+
+export function App() {
+  const [state, setState] = useMutative({
+    foo: 'bar',
+    list: [{ text: 'todo' }],
+  });
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          // Change a draft of the state.
+          setState((draft) => {
+            draft.foo = `${draft.foo} 2`;
+            draft.list.push({ text: 'todo 2' });
+          });
+        }}
+      >
+        Update
+      </button>
+      <button
+        onClick={() => {
+          // Or replace the state.
+          setState({ foo: 'bar 2', list: [{ text: 'todo 2' }] });
+        }}
+      >
+        Replace
+      </button>
+      <pre>{JSON.stringify(state, null, 2)}</pre>
+    </>
+  );
+}
+```
+
+### `useMutativeReducer()` [#usemutativereducer]
+
+`useMutativeReducer()` 的用法类似 `useReducer()`，但 reducer 接收到的是状态草稿。reducer 可以修改草稿并不返回任何值，或直接返回新状态。如果返回值不包含草稿，可用 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 包裹，跳过对其中草稿的搜索。
+
+```tsx
+import { rawReturn, type Draft } from 'mutative';
+import { useMutativeReducer } from 'use-mutative';
+
+const initialState = { count: 0 };
+
+type Action = { type: 'reset' | 'increment' | 'decrement' };
+
+function reducer(draft: Draft<typeof initialState>, action: Action) {
+  switch (action.type) {
+    case 'reset':
+      return rawReturn(initialState);
+    case 'increment':
+      draft.count += 1;
+      return;
+    case 'decrement':
+      draft.count -= 1;
+      return;
+  }
+}
+
+export function Counter() {
+  const [state, dispatch] = useMutativeReducer(reducer, initialState);
+
+  return (
+    <div>
+      Count: {state.count}
+      <button onClick={() => dispatch({ type: 'increment' })}>Increment</button>
+      <button onClick={() => dispatch({ type: 'decrement' })}>Decrement</button>
+      <button onClick={() => dispatch({ type: 'reset' })}>Reset</button>
+    </div>
+  );
+}
+```
+
+### 选项与补丁 [#options-and-patches]
+
+两个 Hook 都将 [`create()` 的选项](/zh/docs/api-reference/create#options)作为最后一个参数。开启 `enablePatches` 后，还会返回最近一次更新的正向补丁和逆向补丁：
+
+```tsx
+const [state, setState, patches, inversePatches] = useMutative(initialState, {
+  enablePatches: true,
+});
+
+const [state, dispatch, patches, inversePatches] = useMutativeReducer(
+  reducer,
+  initialState,
+  undefined,
+  { enablePatches: true }
+);
+```
+
+`useMutativeReducer()` 的第三个参数是 `useReducer()` 的可选初始化函数。
+
+## 撤销与重做 [#undo-and-redo]
+
+[use-travel](https://github.com/mutativejs/use-travel) 通过每次更新的补丁维护状态历史，支持撤销、重做和重置：
+
+```tsx
+import { useTravel } from 'use-travel';
+
+export function Counter() {
+  const [state, setState, controls] = useTravel({ count: 0 });
+
+  return (
+    <div>
+      <strong>{state.count}</strong>
+      <button
+        onClick={() =>
+          setState((draft) => {
+            draft.count += 1;
+          })
+        }
+      >
+        Increment
+      </button>
+      <button onClick={() => controls.back()} disabled={!controls.canUndo}>
+        Undo
+      </button>
+      <button onClick={() => controls.forward()} disabled={!controls.canRedo}>
+        Redo
+      </button>
+    </div>
+  );
+}
+```
+
+Zustand、Jotai、XState 等状态库也有 Mutative 集成，详见[生态系统](/zh/docs/extra-topics/mutative-ecosystem)。
+
+
+# 性能 (/zh/docs/getting-started/performance)
+
+在 97 项工作负载中与 Immer、手写 reducer 的性能对比，以及基准测试的运行方式。
+
+在 97 项基准工作负载中，相同配置下 Mutative 的性能约为 Immer 的 3.6 倍，各自默认配置下约为 6.6 倍。在多数场景中，只复制变化部分的手写 reducer 仍然更快。
+
+## 基准测试套件 [#benchmark-suite]
+
+[基准测试套件](https://github.com/unadlib/mutative/tree/main/perf-testing)测量 101 项工作负载的耗时：Immer 自身的性能测试、数组方法、稀疏数组、读取、Map 和 Set 的值、对象记录、类实例、深层路径、补丁应用、返回值和搜索。最近一次完整测试测量了其中 97 项，另一次专项测试测量了两个返回全新数据的场景；两个稀疏数组场景是在此后加入的。套件先用手写 reducer 验证每个结果，再比较 Mutative、Immer 11.1.18 和手写 reducer 的耗时。[性能报告](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md)包含完整结果、测试方法及其局限。
+
+## Mutative 与 Immer 对比 [#mutative-vs-immer]
+
+> Mutative 通过了 Immer 的全部测试用例。
+
+在相同配置下（同时开启或关闭冻结，同时开启或关闭补丁），Mutative 在 614 个测量案例中的 595 个更快，耗时比的几何平均值为 3.6 倍。各自默认配置下（Mutative 关闭自动冻结，Immer 开启），Mutative 在 157 个案例中的 154 个更快，几何平均值为 6.6 倍。其余 3 个场景返回的是 Immer 此前已冻结的状态：Immer 搜索返回状态中的草稿时会跳过已冻结的值，而默认不冻结的 Mutative 会继续搜索，除非用 [`rawReturn()`](/zh/docs/api-reference/rawreturn#performance-compared-with-immer) 包裹返回值；此时耗时为 0.26 µs。
+
+<PerformanceOverview />
+
+下表单位为每次更新的微秒数，取 Apple M1 Max、Node.js 24.16.0 环境下三次测试的中位数，各库在独立进程中运行；数值越小越好。Mutative、第一列 Immer 和手写 reducer 均关闭自动冻结，第二列 Immer 使用其默认配置。
+
+| 工作负载                      |     行数 | Mutative |  Immer | Immer，自动冻结 |  手写实现 |
+| ------------------------- | -----: | -------: | -----: | ---------: | ----: |
+| 更新小对象的一个字段                |      — |     0.51 |   0.69 |       0.95 |  0.02 |
+| 按 ID 找到并更新数组项             |    100 |     1.12 |   1.82 |       25.0 |  0.38 |
+| 200 次 RTK Query 风格更新      |      — |    1,001 |  1,133 |      4,795 |   352 |
+| 按索引读取每一行                  | 10,000 |    4,756 |  9,584 |      9,687 |  57.7 |
+| 删除第一行                     | 10,000 |     7.04 |  7,408 |      8,137 |  1.40 |
+| 更新每一行                     | 10,000 |    6,462 | 12,570 |     15,607 |   211 |
+| 更新 10,000 条记录中的一条         | 10,000 |    1,200 |  2,094 |      3,131 | 2,088 |
+| 向含 1,000 个属性的对象插入属性       |      — |     50.3 |    149 |        229 |   126 |
+| 更新 Map 中的值                | 10,000 |      518 |    526 |        733 |   519 |
+| 向 Set 添加一个数字              | 10,000 |     29.5 |    904 |        975 |  61.2 |
+| 更新类实例                     | 10,000 |     2.92 |   3.44 |        668 |  1.42 |
+| 更新十层嵌套的值                  |      — |     3.50 |   4.41 |       7.84 |  0.76 |
+| 对 10% 的行应用补丁              | 10,000 |      734 |  1,166 |      2,095 |     — |
+| `shift()` 后搜索 `current()` | 10,000 |      257 | 11,255 |     11,846 |  64.8 |
+| 返回 draft.filter()         | 10,000 |    2,658 |  4,251 |      4,736 |  77.7 |
+| 返回新状态                     | 10,000 |    2,604 |  5,718 |       0.79 |  0.02 |
+| 通过 rawReturn() 返回         | 10,000 |     0.26 |  5,703 |       0.79 |  0.02 |
+
+每个库的每项工作负载均在独立进程中运行。把所有库放在同一进程时，所有库都会变慢，且幅度不同：Mutative 耗时的几何平均值为独立进程时的 1.1 倍，Immer 为 1.2 倍，手写 reducer 为 1.7 倍。搜索场景先用 `shift()` 删除第一行，再在数组快照中找到最后一行并更新。Immer 没有 `rawReturn()`，因此最后两行均返回相同的普通值；开启自动冻结后，Mutative 也像 Immer 一样跳过已冻结的返回状态，耗时为 0.53 µs。在 614 个相同配置的案例中，Immer 在 6 个案例中更快，全部开启了自动冻结：其中 4 个更新含 100 至 10,000 个字段的类实例，另 2 个更新 100 行数组，其多次运行的耗时区间与 Mutative 重叠。
+
+## 大数组 [#large-arrays]
+
+当规模为 1,000 和 10,000 行时，差距进一步扩大。与未开启数组方法插件的 Immer 相比，Mutative 在这些规模的 232 个案例中的 222 个更快，几何平均值为 4.7 倍，且在所有移动元素的案例中都更快：
+
+<ArrayScalingChart />
+
+| 自动冻结 | 补丁 | 全部场景，1,000 行 | 全部场景，10,000 行 | 元素移动，1,000 行 | 元素移动，10,000 行 |
+| ---- | -- | -----------: | ------------: | -----------: | ------------: |
+| 关闭   | 关闭 |         8.7x |         10.8x |         209x |          430x |
+| 关闭   | 开启 |         4.1x |          4.5x |         7.1x |          7.3x |
+| 开启   | 关闭 |         3.9x |          4.2x |          32x |           39x |
+| 开启   | 开启 |         2.7x |          2.8x |         6.6x |          6.8x |
+
+每个值都是 Immer 耗时除以 Mutative 耗时的几何平均值；元素移动包括 `shift`、`unshift`、`splice` 插入和 `reverse`。Mutative 在副本上原生移动元素，Immer 则逐个通过草稿代理移动：删除 10,000 行中的第一行分别需要 7.04 µs 和 7,408 µs，相差 1,052 倍。开启补丁后，两者都为每个移动的索引生成补丁，因此优势缩小为 5–9 倍。[性能报告](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md)按场景列出了详细结果。
+
+## 开启补丁 [#with-patches]
+
+开启补丁、关闭自动冻结时，Mutative 在 150 个案例中的 148 个快于 Immer，其余 2 个差距在 5% 以内，几何平均值为 3.3 倍；相比 Mutative 1.3.0，在 131 个案例中更快，其余差距在 5% 以内，几何平均值为 4.6 倍。在所有已测量的数组场景中，它都快于两者：几何平均值分别为 Immer 的 4.4 倍和 Mutative 1.3.0 的 13 倍。如果更新只涉及少量路径，补丁开销很小：在 10,000 行场景中追加一行并插入一个属性，开启补丁耗时 63.2 µs，关闭时为 63.8 µs。移动元素时，各库都会为每个移动索引生成补丁，因此删除 10,000 行中的第一行会生成 10,000 个正向补丁和 10,000 个逆向补丁。
+
+以下耗时单位为每次更新的微秒数，开启补丁、关闭自动冻结：
+
+<PatchComparisonChart />
+
+| 工作负载                 |     行数 | Mutative |  Immer | Mutative 1.3.0 |
+| -------------------- | -----: | -------: | -----: | -------------: |
+| 追加一行并插入一个属性          | 10,000 |     63.2 |    360 |            210 |
+| 按 ID 找到并更新数组项        |    100 |     1.50 |   3.22 |           3.35 |
+| 200 次 RTK Query 风格更新 |      — |    1,140 |  1,470 |          2,116 |
+| 用 `splice` 删除第一行     |    100 |     11.5 |   83.6 |          2,982 |
+| 在中间插入一行              |    100 |     8.83 |   48.0 |          1,191 |
+| 对行排序                 |    100 |      105 |    129 |          2,466 |
+| 用 `shift` 删除第一行      | 10,000 |    1,063 |  8,943 |        265,439 |
+| 反转行顺序                | 10,000 |    1,071 |  9,424 |        280,542 |
+| 更新每一行                | 10,000 |    8,555 | 21,767 |         22,549 |
+| 更新 10,000 条记录中的一条    | 10,000 |    1,184 |  2,104 |          1,181 |
+
+Immer 可选的 `enableArrayMethods()` 插件也在草稿副本上执行数组方法。开启补丁时，移动 1,000 或 10,000 行，Immer 的耗时为 Mutative 的 1.13–1.70 倍（即慢 13%–70%）。本对比未开启该插件，因为在 Immer 11.1.18 中它破坏了通常成立的保证：`shift`、`pop` 和 `splice` 返回原始基础对象，修改移出的对象会改变之前的状态；重排序也可能暴露原始对象，并在结果中留下已撤销的草稿；正向补丁还可能无法正确重放。[审计](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md)中的 4,913 组三步操作序列，有 123 组在开启插件时出错，关闭时则全部通过。[性能报告](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md)单独列出了开启该插件的 Immer 结果。
+
+## Mutative 与手写 reducer 对比 [#mutative-vs-hand-written-reducers]
+
+只复制变化部分的手写 reducer 比使用草稿机制的库更快，在套件的 150 个案例中有 129 个快于 Mutative。Mutative 的优势在于：复制宽对象（如含 1,000 个键的记录或含 100 个字段的类实例，快 1.5–2.8 倍）、在 10,000 行数组头部插入（16 µs 对 28 µs），以及向含 1,000 或 10,000 个数字的 Set 添加数字。Mutative 复制 Set 比 `new Set()` 更快，在 10,000 个元素时为 30 µs 对 61 µs。
+
+如果代码反复复制同一结构，展开语法也会变慢。无论更新函数修改多少次，Mutative 每次更新最多复制每个对象一次。
+
+如何避免不必要的草稿、搜索、复制、冻结和补丁，见[性能建议](/zh/docs/advanced-guides/performance-tips)。
+
+## 运行基准测试 [#run-the-benchmarks]
+
+克隆仓库后运行：
+
+```sh
+pnpm install --frozen-lockfile
+pnpm benchmark:immer:check
+pnpm benchmark:immer
+```
+
+[基准测试指南](https://github.com/unadlib/mutative/blob/main/perf-testing/README.md)介绍了工作负载、选项、内存测量和 CI 回归预算。
+
+
+# 常见用法 (/zh/docs/getting-started/usages)
+
+使用 create() 对对象、数组、Map 和 Set 进行常见的不可变更新。
+
+## 使用 `create()` 创建新状态 [#use-create-to-create-a-new-state]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'coding' }],
+};
+
+const state = create(baseState, (draft) => {
+  draft.list.push({ text: 'learning' });
+});
+
+expect(state).not.toBe(baseState);
+expect(state.list).not.toBe(baseState.list);
+expect(state.list[0]).toBe(baseState.list[0]);
+```
+
+`create(baseState, recipe, options?)` 为基础状态创建草稿，并将它传给更新函数。更新函数使用普通 JavaScript 修改草稿，`create()` 返回下一个状态：复制已修改的对象，与基础状态共享其余对象。基础状态保持不变。选项及其他调用方式见 [`create()`](/zh/docs/api-reference/create)。
+
+以下示例像普通 JavaScript 修改状态一样修改草稿。
+
+## 对象 [#objects]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  user: { name: 'Ada', address: { city: 'London' } },
+  flags: { beta: true } as Record<string, boolean>,
+};
+
+const state = create(baseState, (draft) => {
+  // Update a nested property.
+  draft.user.address.city = 'Paris';
+  // Add a property.
+  draft.flags.darkMode = true;
+  // Delete a property.
+  delete draft.flags.beta;
+});
+
+expect(state).toEqual({
+  user: { name: 'Ada', address: { city: 'Paris' } },
+  flags: { darkMode: true },
+});
+```
+
+## 数组 [#arrays]
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { id: number; text: string; done: boolean };
+
+const baseState: Todo[] = [
+  { id: 1, text: 'learn', done: false },
+  { id: 2, text: 'build', done: false },
+  { id: 3, text: 'ship', done: false },
+];
+
+const state = create(baseState, (draft) => {
+  // Update the item with an id.
+  const todo = draft.find((item) => item.id === 2);
+  if (todo) todo.done = true;
+
+  // Remove the item with an id.
+  const index = draft.findIndex((item) => item.id === 1);
+  if (index !== -1) draft.splice(index, 1);
+
+  // Insert at the front, and add at the end.
+  draft.unshift({ id: 0, text: 'plan', done: true });
+  draft.push({ id: 4, text: 'celebrate', done: false });
+
+  // Move the last item to the second position.
+  const [moved] = draft.splice(draft.length - 1, 1);
+  draft.splice(1, 0, moved);
+});
+
+expect(state.map((todo) => todo.id)).toEqual([0, 4, 2, 3]);
+expect(state[2].done).toBe(true);
+// Unchanged items keep their references.
+expect(state[3]).toBe(baseState[2]);
+```
+
+要过滤数组，可将过滤结果赋给草稿。Mutative 会将新数组中的草稿替换为对应的最终值：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = { todos: [{ text: 'learn', done: true }, { text: 'ship', done: false }] };
+
+const state = create(baseState, (draft) => {
+  draft.todos = draft.todos.filter((todo) => !todo.done);
+});
+
+expect(state.todos).toEqual([{ text: 'ship', done: false }]);
+expect(state.todos[0]).toBe(baseState.todos[1]);
+```
+
+`find()`、`filter()` 等带回调的方法通过草稿访问元素，所以每个被访问的元素都会变成草稿。对大数组进行只读搜索时，可改为搜索 [`current(draft)`](/zh/docs/api-reference/current#searching-a-large-array)。
+
+## Map 和 Set [#maps-and-sets]
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  users: new Map([['ada', { name: 'Ada', age: 36 }]]),
+  tags: new Set(['js']),
+};
+
+const state = create(baseState, (draft) => {
+  // Update a value, and add and delete entries.
+  draft.users.get('ada')!.age += 1;
+  draft.users.set('grace', { name: 'Grace', age: 45 });
+  draft.users.delete('ada');
+
+  draft.tags.add('ts');
+  draft.tags.delete('js');
+});
+
+expect([...state.users.keys()]).toEqual(['grace']);
+expect([...state.tags]).toEqual(['ts']);
+// The base state is unchanged.
+expect(baseState.users.get('ada')!.age).toBe(36);
+```
+
+从 Map 或 Set 草稿读取的值也是草稿，而 Map 的键保持原样。常见问题中介绍了[遍历 Map 草稿](/zh/docs/extra-topics/faq#can-a-recipe-change-a-map-draft-while-iterating-over-it)、[将草稿作为 Map 键](/zh/docs/extra-topics/faq#can-a-draft-be-a-map-key)和 [ES2025 Set 方法](/zh/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts)。
+
+## 返回新状态 [#returning-a-new-state]
+
+更新函数可以像 reducer 一样，直接返回下一个状态，而不修改草稿：
+
+```ts
+import { create, rawReturn } from 'mutative';
+
+const baseState = { count: 5, history: [1, 2, 3] };
+
+const state = create(baseState, (draft) => ({ ...draft, count: 0 }));
+
+expect(state).toEqual({ count: 0, history: [1, 2, 3] });
+expect(state.history).toBe(baseState.history);
+
+// `rawReturn()` returns a value as it is, and can return undefined.
+const cleared = create(baseState as typeof baseState | undefined, () =>
+  rawReturn(undefined)
+);
+
+expect(cleared).toBe(undefined);
+```
+
+更新函数必须在修改草稿和返回新值之间二选一，同时进行会抛错。详见[返回新状态](/zh/docs/api-reference/create#returning-a-new-state)。
+
+## 补丁 [#patches]
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = { todos: ['learn'] };
+
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.todos.push('ship');
+  },
+  { enablePatches: true }
+);
+
+expect(patches).toEqual([{ op: 'add', path: ['todos', 1], value: 'ship' }]);
+expect(apply(state, inversePatches)).toEqual(baseState);
+```
+
+补丁格式及撤销、重做的实现见[补丁](/zh/docs/advanced-guides/patches)。
+
+
+# 简介 (/zh/docs/intro)
+
+Mutative 是一个高效的 JavaScript 不可变更新库。使用普通 JavaScript 修改草稿，即可得到下一个不可变状态。
+
+**Mutative** 是一个高效的 JavaScript 不可变更新库。更新函数（recipe）使用普通 JavaScript 修改状态的草稿，Mutative 据此生成下一个状态，只复制发生变化的部分。在 [97 项基准工作负载](/zh/docs/getting-started/performance)中，相同配置下其性能约为 Immer 的 3.6 倍，各自默认配置下约为 6.6 倍。
+
+## 什么是 Mutative？ [#what-is-mutative]
+
+React、Redux 等库通过引用比较状态，因此不能原地修改状态：每次更新都要生成新状态，复制通向每个变化位置的路径上的对象，并共享其余对象。手写展开语法时，更新代码会随嵌套深度增长；漏掉一次复制就会修改之前的状态。
+
+例如，将状态中列表的最后一项标为完成，再添加一项。下面分别使用手写复制和 Mutative 实现：
+
+```ts
+import { create } from 'mutative';
+
+const state = {
+  list: [
+    { text: 'Learn TypeScript', done: true },
+    { text: 'Learn React', done: true },
+    { text: 'Learn Redux', done: false },
+  ],
+};
+
+// By hand, copying each level on the path to the changes:
+const byHand = {
+  ...state,
+  list: [
+    ...state.list.slice(0, 2),
+    { ...state.list[2], done: true },
+    { text: 'Learn Mutative', done: true },
+  ],
+};
+
+// With Mutative, changing a draft:
+const nextState = create(state, (draft) => {
+  draft.list[2].done = true;
+  draft.list.push({ text: 'Learn Mutative', done: true });
+});
+
+expect(nextState).toEqual(byHand);
+// The unchanged items are shared, and the base state is unchanged.
+expect(nextState.list[0]).toBe(state.list[0]);
+expect(state.list[2].done).toBe(false);
+```
+
+草稿是状态的代理：更新函数首次修改某个对象时，Mutative 才复制它；新状态与原状态共享所有未修改的对象。工作原理见[核心概念](/zh/docs/getting-started/concepts)。
+
+## 功能与优势 [#features-and-benefits]
+
+* **用可变写法完成不可变更新**：通过修改草稿，对对象、数组、Map 和 Set 进行不可变更新。
+* **高性能**：各自默认配置下，性能约为 Immer 的 6.6 倍；在已测量的宽对象及大数组插入场景中，也快于手写展开语法。
+* **可选的状态冻结**：默认不冻结不可变数据，需要时可开启[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+* **支持 JSON Patch**：[补丁](/zh/docs/advanced-guides/patches)使用 JSON Patch 的 `add`、`remove` 和 `replace` 操作。设置 `pathAsArray: false` 和 `arrayLengthAssignment: false` 后，对象和数组的补丁就是 JSON Patch 操作。
+* **自定义浅拷贝**：通过[标记](/zh/docs/advanced-guides/mark)为类实例等数据创建草稿，需要时还可提供自定义浅拷贝函数。
+* **非侵入式标记可变与不可变数据**：无需修改数据或类定义，就能决定哪些值参与草稿处理。
+* **严格模式下更安全地访问可变数据**：[严格模式](/zh/docs/advanced-guides/strict-mode)要求显式读取无法创建草稿的数据。
+* **支持 reducer**：[producer](/zh/docs/advanced-guides/currying) 可作为 Redux 等不可变状态库的 reducer，更新函数也可以是异步函数。
+
+## 设计动机 [#motivation]
+
+Immer 让开发者可以通过修改草稿轻松编写不可变更新。Mutative 延续这一模型，着重提高性能：每次更新最多复制每个对象一次，仅在更新函数读取对象时创建草稿，只完成已修改草稿的最终处理，并在副本上原生执行移动元素的数组方法。Immer 默认冻结下一个状态，每次更新都要为此付出开销；Mutative 只在显式开启时冻结。
+
+Mutative 的选项按调用传入，无需全局配置；通过标记支持类实例，无需修改类定义；支持异步更新函数以及 Map、Set 子类，并处理 Immer 未正确处理的[边界情况](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts)。详细差异见[与 Immer 对比](/zh/docs/extra-topics/comparison-with-immer)。
+
+## 下一步 [#next-steps]
+
+<Cards>
+  <Card title="安装" href="/zh/docs/getting-started/installation">
+    将 Mutative 添加到项目，或通过 CDN 加载。
+  </Card>
+
+  <Card title="常见用法" href="/zh/docs/getting-started/usages">
+    使用 `create()` 更新对象、数组、Map 和 Set。
+  </Card>
+
+  <Card title="核心概念" href="/zh/docs/getting-started/concepts">
+    了解草稿、结构共享、补丁和标记。
+  </Card>
+
+  <Card title="从 Immer 迁移" href="/zh/docs/advanced-guides/migration">
+    将 Immer API 替换为对应的 Mutative API。
+  </Card>
+</Cards>
+
+## 致谢 [#credits]
+
+Mutative 的灵感来自 [Immer](https://immerjs.github.io/immer/)，它帮助许多开发者更简单地编写不可变更新。Mutative 基于同样的理念，采用不同的实现，并提供更多功能。

@@ -1,252 +1,754 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 <url>
 <loc>https://mutative.js.org/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/" />
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/blog/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/blog/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/blog/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/blog/" />
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/" />
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/blog/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/blog/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/blog/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/blog/" />
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/blog/releases/1.0/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/blog/releases/1.0/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/blog/releases/1.0/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/blog/releases/1.0/" />
 <lastmod>2026-10-12T12:10:38.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/blog/releases/2.0/</loc>
-<lastmod>2026-10-13T13:14:05.000Z</lastmod>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/blog/releases/2.0/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/blog/releases/2.0/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/blog/releases/2.0/" />
+<lastmod>2026-10-26T14:52:45.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/blog/releases/1.0/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/blog/releases/1.0/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/blog/releases/1.0/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/blog/releases/1.0/" />
+<lastmod>2026-10-28T16:49:10.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/blog/releases/2.0/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/blog/releases/2.0/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/blog/releases/2.0/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/blog/releases/2.0/" />
+<lastmod>2026-10-28T16:48:46.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/auto-freeze/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/auto-freeze/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/auto-freeze/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/auto-freeze/" />
 <lastmod>2026-10-12T11:51:14.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/currying/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/currying/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/currying/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/currying/" />
 <lastmod>2026-10-12T11:52:25.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/" />
 <lastmod>2026-10-12T12:13:24.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/mark/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/mark/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/mark/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/mark/" />
 <lastmod>2026-10-12T11:54:18.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/migration-v2/</loc>
-<lastmod>2026-10-13T13:33:02.000Z</lastmod>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/migration-v2/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/migration-v2/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/migration-v2/" />
+<lastmod>2026-10-27T00:55:12.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/migration/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/migration/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/migration/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/migration/" />
 <lastmod>2026-10-12T14:42:03.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/patches/</loc>
-<lastmod>2026-10-12T11:43:48.000Z</lastmod>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/patches/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/patches/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/patches/" />
+<lastmod>2026-10-27T00:55:12.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/performance-tips/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/performance-tips/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/performance-tips/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/performance-tips/" />
 <lastmod>2026-10-12T17:02:05.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/pitfalls/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/pitfalls/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/pitfalls/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/pitfalls/" />
 <lastmod>2026-10-12T12:08:43.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/strict-mode/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/strict-mode/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/strict-mode/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/strict-mode/" />
 <lastmod>2026-10-12T11:55:06.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/advanced-guides/typescript/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/typescript/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/typescript/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/typescript/" />
 <lastmod>2026-10-12T11:56:58.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/apply/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/apply/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/apply/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/apply/" />
 <lastmod>2026-10-12T11:46:26.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/casts/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/casts/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/casts/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/casts/" />
 <lastmod>2026-10-12T12:07:41.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/create/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/create/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/create/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/create/" />
 <lastmod>2026-10-12T11:40:38.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/current/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/current/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/current/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/current/" />
 <lastmod>2026-10-12T11:47:08.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/" />
 <lastmod>2026-10-12T12:13:24.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/isdraft/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/isdraft/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/isdraft/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/isdraft/" />
 <lastmod>2026-10-12T11:49:43.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/isdraftable/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/isdraftable/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/isdraftable/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/isdraftable/" />
 <lastmod>2026-10-12T11:49:43.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/makecreator/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/makecreator/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/makecreator/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/makecreator/" />
 <lastmod>2026-10-12T11:45:34.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/marksimpleobject/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/marksimpleobject/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/marksimpleobject/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/marksimpleobject/" />
 <lastmod>2026-10-12T11:50:08.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/original/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/original/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/original/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/original/" />
 <lastmod>2026-10-12T11:47:55.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/rawreturn/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/rawreturn/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/rawreturn/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/rawreturn/" />
 <lastmod>2026-10-12T17:02:05.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/api-reference/unsafe/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/unsafe/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/unsafe/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/unsafe/" />
 <lastmod>2026-10-12T11:48:50.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/extra-topics/comparison-with-immer/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/comparison-with-immer/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/comparison-with-immer/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/comparison-with-immer/" />
 <lastmod>2026-10-12T14:10:06.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/extra-topics/contributing/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/contributing/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/contributing/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/contributing/" />
 <lastmod>2026-10-12T12:04:05.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/extra-topics/errors/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/errors/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/errors/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/errors/" />
 <lastmod>2026-10-12T12:02:13.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/extra-topics/faq/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/faq/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/faq/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/faq/" />
 <lastmod>2026-10-12T12:00:30.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/extra-topics/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/" />
 <lastmod>2026-10-12T12:13:24.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/extra-topics/mutative-ecosystem/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/mutative-ecosystem/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/mutative-ecosystem/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/mutative-ecosystem/" />
 <lastmod>2026-10-23T14:16:05.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/extra-topics/shared-references/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/shared-references/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/shared-references/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/shared-references/" />
 <lastmod>2026-10-12T12:13:24.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/extra-topics/who-uses-mutative/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/who-uses-mutative/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/who-uses-mutative/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/who-uses-mutative/" />
 <lastmod>2026-10-08T16:29:35.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/getting-started/concepts/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/concepts/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/concepts/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/concepts/" />
 <lastmod>2026-10-12T14:40:38.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/getting-started/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/" />
 <lastmod>2026-10-08T16:29:35.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/getting-started/installation/</loc>
-<lastmod>2026-10-12T11:57:42.000Z</lastmod>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/installation/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/installation/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/installation/" />
+<lastmod>2026-10-27T00:55:12.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/getting-started/mutative-with-react/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/mutative-with-react/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/mutative-with-react/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/mutative-with-react/" />
 <lastmod>2026-10-12T11:40:48.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/getting-started/performance/</loc>
-<lastmod>2026-10-13T09:01:45.000Z</lastmod>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/performance/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/performance/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/performance/" />
+<lastmod>2026-10-27T00:55:12.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/getting-started/usages/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/usages/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/usages/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/usages/" />
 <lastmod>2026-10-12T12:00:30.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>
 <url>
 <loc>https://mutative.js.org/docs/intro/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/intro/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/intro/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/intro/" />
 <lastmod>2026-10-12T11:44:34.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/auto-freeze/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/auto-freeze/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/auto-freeze/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/auto-freeze/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/currying/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/currying/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/currying/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/currying/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/mark/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/mark/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/mark/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/mark/" />
+<lastmod>2026-10-28T16:48:46.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/migration-v2/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/migration-v2/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/migration-v2/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/migration-v2/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/migration/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/migration/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/migration/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/migration/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/patches/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/patches/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/patches/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/patches/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/performance-tips/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/performance-tips/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/performance-tips/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/performance-tips/" />
+<lastmod>2026-10-28T16:48:54.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/pitfalls/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/pitfalls/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/pitfalls/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/pitfalls/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/strict-mode/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/strict-mode/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/strict-mode/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/strict-mode/" />
+<lastmod>2026-10-28T16:48:46.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/advanced-guides/typescript/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/advanced-guides/typescript/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/advanced-guides/typescript/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/advanced-guides/typescript/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/apply/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/apply/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/apply/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/apply/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/casts/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/casts/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/casts/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/casts/" />
+<lastmod>2026-10-28T16:49:02.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/create/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/create/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/create/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/create/" />
+<lastmod>2026-10-28T16:48:46.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/current/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/current/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/current/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/current/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/isdraft/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/isdraft/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/isdraft/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/isdraft/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/isdraftable/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/isdraftable/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/isdraftable/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/isdraftable/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/makecreator/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/makecreator/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/makecreator/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/makecreator/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/marksimpleobject/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/marksimpleobject/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/marksimpleobject/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/marksimpleobject/" />
+<lastmod>2026-10-28T16:49:02.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/original/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/original/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/original/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/original/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/rawreturn/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/rawreturn/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/rawreturn/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/rawreturn/" />
+<lastmod>2026-10-28T16:48:54.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/api-reference/unsafe/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/api-reference/unsafe/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/api-reference/unsafe/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/api-reference/unsafe/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/extra-topics/comparison-with-immer/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/comparison-with-immer/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/comparison-with-immer/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/comparison-with-immer/" />
+<lastmod>2026-10-28T16:49:02.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/extra-topics/contributing/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/contributing/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/contributing/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/contributing/" />
+<lastmod>2026-10-28T16:49:02.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/extra-topics/errors/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/errors/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/errors/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/errors/" />
+<lastmod>2026-10-28T16:49:10.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/extra-topics/faq/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/faq/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/faq/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/faq/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/extra-topics/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/extra-topics/mutative-ecosystem/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/mutative-ecosystem/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/mutative-ecosystem/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/mutative-ecosystem/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/extra-topics/shared-references/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/shared-references/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/shared-references/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/shared-references/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/extra-topics/who-uses-mutative/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/extra-topics/who-uses-mutative/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/extra-topics/who-uses-mutative/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/extra-topics/who-uses-mutative/" />
+<lastmod>2026-10-28T15:51:11.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/getting-started/concepts/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/concepts/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/concepts/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/concepts/" />
+<lastmod>2026-10-28T15:51:01.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/getting-started/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/" />
+<lastmod>2026-10-28T15:51:01.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/getting-started/installation/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/installation/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/installation/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/installation/" />
+<lastmod>2026-10-28T15:51:01.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/getting-started/mutative-with-react/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/mutative-with-react/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/mutative-with-react/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/mutative-with-react/" />
+<lastmod>2026-10-28T15:51:01.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/getting-started/performance/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/performance/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/performance/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/performance/" />
+<lastmod>2026-10-28T16:48:53.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/getting-started/usages/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/getting-started/usages/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/getting-started/usages/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/getting-started/usages/" />
+<lastmod>2026-10-28T15:51:01.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.5</priority>
+</url>
+<url>
+<loc>https://mutative.js.org/zh/docs/intro/</loc>
+<xhtml:link rel="alternate" hreflang="en" href="https://mutative.js.org/docs/intro/" />
+<xhtml:link rel="alternate" hreflang="zh-CN" href="https://mutative.js.org/zh/docs/intro/" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://mutative.js.org/docs/intro/" />
+<lastmod>2026-10-28T16:48:07.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
 </url>

@@ -1,0 +1,104 @@
+# 柯里化 (/zh/docs/advanced-guides/currying)
+
+创建稍后接收基础状态及额外参数的 producer，或创建稍后完成最终处理的草稿。
+
+除了 `create(base, recipe)`，[`create()`](/zh/docs/api-reference/create) 还支持两种柯里化形式：只传更新函数会得到 producer（生产者函数），稍后再传入基础状态；只传基础状态则得到可稍后完成最终处理的草稿。
+
+## Producer（生产者函数） [#producers]
+
+`create(recipe, options?)` 返回 producer `(base, ...args) => nextState`。它为第一个参数创建草稿，再将草稿和其余参数传给更新函数：
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const toggle = create((draft: Todo[], index: number) => {
+  draft[index].done = !draft[index].done;
+});
+
+const todos: Todo[] = [
+  { text: 'learn', done: false },
+  { text: 'ship', done: false },
+];
+
+const nextTodos = toggle(todos, 1);
+
+expect(nextTodos[1].done).toBe(true);
+expect(nextTodos[0]).toBe(todos[0]);
+```
+
+接收 action 参数的 producer 就是 reducer，可用于 Redux、`useReducer()` 等接收 reducer 的库：
+
+```ts
+import { create } from 'mutative';
+
+type State = { todos: { text: string; done: boolean }[] };
+
+type Action =
+  | { type: 'add'; text: string }
+  | { type: 'toggle'; index: number };
+
+const reducer = create((draft: State, action: Action) => {
+  switch (action.type) {
+    case 'add':
+      draft.todos.push({ text: action.text, done: false });
+      break;
+    case 'toggle':
+      draft.todos[action.index].done = !draft.todos[action.index].done;
+      break;
+  }
+});
+
+const initialState: State = { todos: [] };
+const state = [
+  { type: 'add', text: 'learn' } as const,
+  { type: 'toggle', index: 0 } as const,
+].reduce(reducer, initialState);
+
+expect(state.todos).toEqual([{ text: 'learn', done: true }]);
+```
+
+* 调用时的选项作用于 producer 生成的每个状态。例如 `create(recipe, { enablePatches: true })` 返回的 producer 会生成 `[nextState, patches, inversePatches]`。
+* producer 以自身的 `this` 调用更新函数，因此可以作为对象方法使用。
+* 异步更新函数对应的 producer 返回下一个状态的 Promise。
+* TypeScript 中如上例标注草稿参数类型，即可为 producer 的参数与结果提供类型。
+
+## 延后完成最终处理的草稿 [#drafts-that-you-finalize-later]
+
+`create(base, options?)` 返回基础状态的草稿和 `finalize()` 函数，适合无法放进单个更新函数的修改，例如分散在多个函数中的更新。`finalize()` 的返回值与传入更新函数的 `create()` 一致：
+
+```ts
+import { create } from 'mutative';
+
+const baseState = {
+  foobar: { foo: 'str', bar: 'str' },
+  baz: { text: 'str' },
+};
+
+const [draft, finalize] = create(baseState, { enablePatches: true });
+
+draft.foobar.bar = 'baz';
+
+const [state, patches, inversePatches] = finalize();
+
+expect(state).toEqual({
+  foobar: { foo: 'str', bar: 'baz' },
+  baz: { text: 'str' },
+});
+expect(state.baz).toBe(baseState.baz);
+expect(patches).toEqual([
+  { op: 'replace', path: ['foobar', 'bar'], value: 'baz' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['foobar', 'bar'], value: 'str' },
+]);
+```
+
+此形式要求基础状态可创建草稿，因为没有更新函数可以通过返回值替换状态。
+
+<Callout type="warn">
+  `finalize()` 只能调用一次。如果它抛错（例如开发构建拒绝某个补丁路径），草稿不会像更新函数失败时那样被撤销，而是仍可写入。再次调用 `finalize()` 可能返回包含已撤销草稿的状态，补丁也可能遗漏修改。此时应从基础状态重新创建草稿。
+</Callout>
+
+[`makeCreator()`](/zh/docs/api-reference/makecreator) 返回的 `create()` 支持相同形式，并使用配置的默认选项。

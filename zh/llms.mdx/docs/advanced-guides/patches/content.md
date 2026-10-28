@@ -1,0 +1,189 @@
+# 补丁 (/zh/docs/advanced-guides/patches)
+
+将更新函数的修改记录为补丁，并通过 apply() 应用到状态。
+
+开启 `enablePatches` 后，`create()` 还会返回将基础状态转换为下一个状态的正向补丁，以及将下一个状态还原为基础状态的逆向补丁。[`apply()`](/zh/docs/api-reference/apply) 可应用这些补丁，用于在其他状态副本上重放、通过网络传输修改，或实现撤销与重做。
+
+## 生成与应用补丁 [#generating-and-applying-patches]
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = {
+  foo: 'bar',
+  list: [{ text: 'todo' }],
+};
+
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.foo = 'foobar';
+    draft.list.push({ text: 'learning' });
+  },
+  {
+    enablePatches: true,
+  }
+);
+
+expect(patches).toEqual([
+  { op: 'add', path: ['list', 1], value: { text: 'learning' } },
+  { op: 'replace', path: ['foo'], value: 'foobar' },
+]);
+expect(inversePatches).toEqual([
+  { op: 'replace', path: ['list', 'length'], value: 1 },
+  { op: 'replace', path: ['foo'], value: 'bar' },
+]);
+
+expect(apply(baseState, patches)).toEqual(state);
+expect(apply(state, inversePatches)).toEqual(baseState);
+```
+
+`enablePatches` 也适用于柯里化 producer、手动草稿和 [`makeCreator()`](/zh/docs/api-reference/makecreator)。它支持对象、数组、Map、Set，以及通过 [`mark`](/zh/docs/advanced-guides/mark) 变为可创建草稿的值；应用时需向 `apply()` 传入相同的 `mark`。
+
+## 补丁行为 [#patch-behavior]
+
+* **操作与路径**：补丁使用 `add`、`remove` 和 `replace`。路径从根节点经由对象键、数组索引、原样保留的 Map 键（包括对象与数组）或 Set 元素位置，指向变化的值。直接返回新状态的更新函数会生成一个路径为空的 `replace` 补丁。
+* **顺序**：嵌套草稿的补丁先于父级补丁，与 Immer 一致。
+* **值**：补丁值引用下一个状态中的对象，开启 `enableAutoFreeze` 时会一起冻结。修改补丁值前应先复制。`apply()` 在应用前会复制补丁值。
+* **数组**：`shift()`、`unshift()`、`splice()`、`reverse()` 和 `sort()` 为每个元素发生变化的索引生成 `replace`，为超出原长度的索引生成 `add`。数组缩短时，默认生成一个修改 `length` 的 `replace`；设置 `arrayLengthAssignment: false` 后则为每个移除的索引生成 `remove`。正向和逆向补丁都保留空洞：填充空洞使用 `replace`，重建空洞则从该索引处重建数组，详见[稀疏数组](#sparse-arrays)。
+* **Map**：`set()` 对新键生成 `add`，对已有键生成 `replace`；`delete()` 生成 `remove`。
+* **Set**：按值添加元素，按持有的值删除元素，详见[包含对象的 Set](#sets-of-objects)。
+* **移动的草稿**：如果已修改的草稿因排序、赋值或被其他值替换而离开原键，就不会在旧路径下生成补丁，其值由父级补丁携带。
+* **应用补丁**：`apply()` 支持 `add`、`remove` 和 `replace`，数组索引 `-` 表示追加。其他操作以及经过 `__proto__` 或 `constructor` 的路径会抛错。它支持 `enableAutoFreeze`、`strict` 和 `mark`，也可用 `mutable: true` 原地修改状态，但无法原地替换根状态，此时会抛错。传入草稿时则原地修改草稿。
+* **JSON Patch**：设置 `pathAsArray: false` 和 `arrayLengthAssignment: false` 后，JSON 兼容对象和数组的补丁就是 JSON Patch 操作。Map、Set 和数组空洞没有对应的 JSON 表示。
+
+与 Immer 的差异见[补丁对比](/zh/docs/extra-topics/comparison-with-immer#patches)。
+
+## JSON 补丁 [#json-patches]
+
+`enablePatches` 可设为 `true`，或包含两个格式选项的对象。两项都设为 `false` 后，JSON 兼容对象和数组的补丁就是 [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) 操作，可供其他 JSON Patch 库应用（[相关讨论](https://github.com/unadlib/mutative/issues/6)）。
+
+### pathAsArray：默认为 true [#pathasarray---default-true]
+
+设置 `pathAsArray: false` 后，路径使用 JSON Pointer 字符串，而非键数组：
+
+```ts
+import { create } from 'mutative';
+
+const [state, patches, inversePatches] = create(
+  { list: [1, 2, 3] },
+  (draft) => {
+    draft.list.length = 0;
+  },
+  {
+    enablePatches: {
+      pathAsArray: false,
+    },
+  }
+);
+
+expect(state).toEqual({ list: [] });
+expect(patches).toEqual([{ op: 'replace', path: '/list/length', value: 0 }]);
+expect(inversePatches).toEqual([
+  { op: 'add', path: '/list/0', value: 1 },
+  { op: 'add', path: '/list/1', value: 2 },
+  { op: 'add', path: '/list/2', value: 3 },
+]);
+```
+
+字符串路径只能保存字符串，不能表示非字符串的 Map 键或 symbol 键。例如 `pathAsArray: false` 时，`draft.set(1, 'b')` 的补丁会写入键 `'1'`。这类键应保留默认数组路径；开发构建遇到无法表示的字符串路径会抛错。
+
+### arrayLengthAssignment：默认为 true [#arraylengthassignment---default-true]
+
+设置 `arrayLengthAssignment: false` 后，缩短数组会为每个移除的索引生成 `remove`，而非通过 `replace` 修改 `length`：
+
+```ts
+import { create } from 'mutative';
+
+const [state, patches, inversePatches] = create(
+  { list: [1, 2, 3] },
+  (draft) => {
+    draft.list.length = 0;
+  },
+  {
+    enablePatches: {
+      arrayLengthAssignment: false,
+    },
+  }
+);
+
+expect(state).toEqual({ list: [] });
+expect(patches).toEqual([
+  { op: 'remove', path: ['list', 2] },
+  { op: 'remove', path: ['list', 1] },
+  { op: 'remove', path: ['list', 0] },
+]);
+expect(inversePatches).toEqual([
+  { op: 'add', path: ['list', 0], value: 1 },
+  { op: 'add', path: ['list', 1], value: 2 },
+  { op: 'add', path: ['list', 2], value: 3 },
+]);
+```
+
+<Callout type="idea">
+  对大数组逐索引生成 `remove` 比单个 `length` 的 `replace` 耗时更多、补丁更多。除非需要 JSON Patch 格式，否则应保持 `arrayLengthAssignment: true`（即保留默认值）。
+</Callout>
+
+## 稀疏数组 [#sparse-arrays]
+
+空洞表示索引不存在，与自有索引的值为 `undefined` 不同：`map()`、`forEach()` 等数组方法会跳过空洞。正向和逆向补丁会保留这种区别，包括扩展数组、用 `undefined` 填充空洞，或通过数组方法移动空洞。
+
+```ts
+const base = new Array<number>(2);
+base[0] = 1;
+
+const [state, patches, inverse] = create(base, (draft) => {
+  draft.unshift(0);
+}, { enablePatches: true });
+
+expect(2 in state).toBe(false);
+expect(2 in apply(base, patches)).toBe(false);
+expect(1 in apply(state, inverse)).toBe(false);
+```
+
+索引补丁必须携带值，无法直接表示空洞。填充空洞使用 `replace`；重建空洞时，需要先将数组截短到该索引，再扩展长度以留下空洞，并恢复后续元素。因此，补丁数量随后续元素数量增长：填充一个后面还有 10,000 个元素的空洞，会产生 1 个正向补丁和 10,002 个逆向补丁。在最后一个元素之前制造空洞也会产生这种重建补丁，逆向补丁则负责填回。超出原长度的新空洞只需一个修改 `length` 的 `replace`。无论原地应用还是应用到草稿，这些补丁都保留数组自身的引用，包括 Set 内的数组。
+
+设置 `arrayLengthAssignment: false` 时，截短仍使用逐索引 `remove`，但重建空洞仍需要修改 `length` 的 `replace`。请用 Mutative 的 `apply()` 应用这些补丁：稀疏数组属于 JavaScript 数据，其补丁不是可移植的 JSON Patch。JSON 序列化会把空洞变成 `null`，无法保留其结构。
+
+## 撤销与重做 [#undo-and-redo]
+
+每次修改的逆向补丁用于撤销，正向补丁用于重做：
+
+```ts
+import { apply, create, type Patches } from 'mutative';
+
+let state = { todos: [] as string[] };
+const undoStack: { patches: Patches; inversePatches: Patches }[] = [];
+
+function update(recipe: (draft: typeof state) => void) {
+  const [nextState, patches, inversePatches] = create(state, recipe, {
+    enablePatches: true,
+  });
+  state = nextState;
+  undoStack.push({ patches, inversePatches });
+}
+
+update((draft) => {
+  draft.todos.push('learn Mutative');
+});
+update((draft) => {
+  draft.todos.push('use patches');
+});
+
+const last = undoStack.pop()!;
+state = apply(state, last.inversePatches);
+expect(state.todos).toEqual(['learn Mutative']);
+
+state = apply(state, last.patches);
+expect(state.todos).toEqual(['learn Mutative', 'use patches']);
+```
+
+[travels](https://github.com/mutativejs/travels) 基于这些补丁提供撤销、重做、历史长度限制、归档和持久化；[use-travel](https://github.com/mutativejs/use-travel) 和 [zustand-travel](https://github.com/mutativejs/zustand-travel) 分别集成到 React 和 Zustand。
+
+## 包含对象的 Set [#sets-of-objects]
+
+Set 补丁按值添加元素，并按持有的值删除元素，因此 `remove` 只能从持有同一对象引用的 Set 中删除该对象。如果只修改现有元素而未增删元素，补丁会记录各修改元素的位置，可以双向重放。一旦增删了元素，Set 的 `remove` 和 `add` 补丁就会按值携带所有变化的元素。
+
+`apply()` 会复制每个补丁值，所以应用后 Set 持有的是新增对象的副本，逆向补丁无法删除这些副本：重做后再撤销会留下对象。此外，`apply()` 总是在末尾添加元素，应用后的顺序可能不同于更新函数产生的状态。发生增删的 Set 中，被修改的元素或由逆向补丁恢复的元素会移到末尾；删除后重新添加同一元素也会移到末尾，却不生成补丁。后续更新的补丁若按位置寻址，就可能无报错地修改另一个元素。原始值 Set 的元素不会因此丢失，但顺序也可能变化。
+
+如果需要在 `apply()` 返回的状态上继续重放补丁（如撤销、重做或同步副本），请将这类对象保存在按 ID 索引的 Map 或数组中。

@@ -1,0 +1,48 @@
+# isDraftable() (/zh/docs/api-reference/isdraftable)
+
+检查 Mutative 是否能为值创建草稿，可指定 mark。
+
+`isDraftable(value, options?)` 对可创建草稿的值返回 `true`，这些值可作为 `create()` 的基础状态。
+
+```ts
+isDraftable(value: any, options?: { mark?: Mark }): boolean
+```
+
+## 用法 [#usage]
+
+```ts
+import { isDraftable } from 'mutative';
+
+const baseState = {
+  date: new Date(),
+  list: [{ text: 'todo' }],
+};
+
+expect(isDraftable(baseState)).toBe(true);
+expect(isDraftable(baseState.list)).toBe(true);
+expect(isDraftable(baseState.date)).toBe(false);
+```
+
+没有标记时，以下值可创建草稿：
+
+* 原型为 `Object.prototype` 的普通对象。
+* 数组。
+* `Map` 和 `Set` 实例，包括子类实例。
+
+原始值、函数、日期、类实例、无原型对象及其他 realm（如 iframe）的普通对象默认不可创建草稿。[标记](/zh/docs/advanced-guides/mark)可以改变这一点，例如 [`markSimpleObject()`](/zh/docs/api-reference/marksimpleobject) 支持无原型对象和跨 realm 普通对象。应传入与 `create()` 相同的 `mark`，得到一致判断：
+
+```ts
+import { isDraftable } from 'mutative';
+
+class Todo {
+  constructor(public text: string) {}
+}
+
+const mark = (target: unknown) =>
+  target instanceof Todo ? ('immutable' as const) : undefined;
+
+expect(isDraftable(new Todo('learn'))).toBe(false);
+expect(isDraftable(new Todo('learn'), { mark })).toBe(true);
+```
+
+标记返回 `'immutable'` 或拷贝函数时，该值可创建草稿。返回 `'mutable'` 会让更新函数读取时跳过草稿，但 `isDraftable()` 对普通对象、数组、Map 和 Set 仍返回 `true`。

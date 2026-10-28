@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://mutative.js.org/zh/blog</id>
+    <title>Mutative 中文博客</title>
+    <updated>2026-10-13T00:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://mutative.js.org/zh/blog"/>
+    <link rel="self" href="https://mutative.js.org/zh/blog/atom.xml"/>
+    <subtitle>Mutative 中文博客</subtitle>
+    <icon>https://mutative.js.org/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[Mutative 2.0 发布：更快的更新，更可靠的补丁]]></title>
+        <id>https://mutative.js.org/zh/blog/releases/2.0</id>
+        <link href="https://mutative.js.org/zh/blog/releases/2.0"/>
+        <updated>2026-10-13T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Mutative 2.0 保留 1.x API，加快更新，修复补丁和 Set 草稿的边界问题，并使生产构建行为更可预测。本文介绍变化与升级步骤。]]></summary>
+        <author>
+            <name>Michael Lin</name>
+            <uri>https://unadlib.github.io/</uri>
+        </author>
+        <category label="版本发布" term="release"/>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Mutative 1.0 发布：高效不可变更新的新阶段]]></title>
+        <id>https://mutative.js.org/zh/blog/releases/1.0</id>
+        <link href="https://mutative.js.org/zh/blog/releases/1.0"/>
+        <updated>2023-12-16T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Mutative 1.0 提供高效的 JavaScript 不可变状态更新。在当时的基准场景中，速度是朴素手写 reducer 的 2–6 倍、Immer 的 10 倍以上。]]></summary>
+        <author>
+            <name>Michael Lin</name>
+            <uri>https://unadlib.github.io/</uri>
+        </author>
+        <category label="版本发布" term="release"/>
+    </entry>
+</feed>

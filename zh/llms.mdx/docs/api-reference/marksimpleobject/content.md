@@ -1,0 +1,42 @@
+# markSimpleObject() (/zh/docs/api-reference/marksimpleobject)
+
+允许无原型对象和跨 realm 普通对象创建草稿的标记。
+
+`markSimpleObject` 是一个[标记](/zh/docs/advanced-guides/mark)，支持普通对象、由 `Object.create(null)` 创建的无原型对象，以及同源 iframe 或 `vm` 上下文等其他 realm 中的普通对象（其原型为对应 realm 的 `Object.prototype`）。未使用它时，Mutative 只为当前 realm 的普通对象创建草稿，对其他类型的基础状态调用 `create()` 会抛错。
+
+```ts
+markSimpleObject(value: unknown): 'immutable' | undefined
+```
+
+## 用法 [#usage]
+
+将它作为单次调用或 [`makeCreator()`](/zh/docs/api-reference/makecreator) 的 `mark` 选项：
+
+```ts
+import { create, markSimpleObject } from 'mutative';
+
+const baseState = {
+  foo: {
+    bar: 'str',
+  },
+  simpleObject: Object.create(null),
+};
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.foo.bar = 'new str';
+    draft.simpleObject.a = 'a';
+  },
+  {
+    mark: markSimpleObject,
+  }
+);
+
+expect(state.simpleObject).not.toBe(baseState.simpleObject);
+expect(state.simpleObject.a).toBe('a');
+expect(Object.getPrototypeOf(state.simpleObject)).toBe(null);
+expect(baseState.simpleObject.a).toBe(undefined);
+```
+
+它对简单对象返回 `'immutable'`，其他值不返回结果，交由默认方式处理。因此可用数组与其他标记组合，如 `mark: [markSimpleObject, markClasses]`。它与其他不可变标记一样支持补丁和自动冻结。

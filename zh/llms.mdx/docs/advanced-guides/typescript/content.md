@@ -1,0 +1,141 @@
+# TypeScript (/zh/docs/advanced-guides/typescript)
+
+了解草稿、结果、producer 和补丁的类型，以及 Mutative 导出的类型与类型转换工具。
+
+Mutative 使用 TypeScript 编写并自带类型声明，支持 TypeScript 5.0 及以上；包检查会用 TypeScript 5.0 编译这些声明。
+
+## 类型推断 [#inferred-types]
+
+`create()` 从基础状态推断状态类型。草稿类型为 `Draft<State>`，会深度移除 `readonly`，因此更新函数能修改类型上只读的状态；结果类型与基础状态一致：
+
+```ts
+import { create } from 'mutative';
+
+type State = {
+  readonly todos: readonly { readonly text: string; readonly done: boolean }[];
+};
+
+const baseState: State = { todos: [{ text: 'learn', done: false }] };
+
+const state: State = create(baseState, (draft) => {
+  draft.todos[0].done = true;
+  draft.todos.push({ text: 'ship', done: false });
+});
+
+expect(state.todos).toHaveLength(2);
+```
+
+选项会影响结果类型：`enablePatches: true` 返回 `[State, Patches, Patches]`，`enableAutoFreeze: true` 返回 `Immutable<State>`，异步更新函数返回 Promise。类型为 `boolean` 的选项见 [create()](/zh/docs/api-reference/create#enablepatches)，补丁应用的结果类型见 [apply()](/zh/docs/api-reference/apply#typescript)。
+
+如果基础值不能表达完整状态类型（例如空数组），可显式传入状态类型参数：
+
+```ts
+import { create } from 'mutative';
+
+type State = { items: string[] };
+
+const state = create<State>({ items: [] }, (draft) => {
+  draft.items.push('a');
+});
+
+expect(state.items).toEqual(['a']);
+```
+
+显式指定状态类型后，TypeScript 不再推断其余类型参数。因此，如果选项通过变量设置 `enablePatches`，应将对应类型参数设为 `boolean`，例如 `create<State, false, boolean>(base, recipe, options)`。
+
+## `Draft<T>` 与 `Immutable<T>` [#draftt-and-immutablet]
+
+* `Draft<T>` 表示 `T` 的草稿：深度移除对象、数组、Map 和 Set 的只读限制。函数、Promise、日期和正则表达式保留原类型，Map 的键不会变成草稿。
+* `Immutable<T>` 表示深度只读的 `T`，Map 和 Set 分别使用 `ReadonlyMap` 和 `ReadonlySet`，用于冻结状态。
+
+用 `Draft<State>` 标注修改草稿的辅助函数：
+
+```ts
+import { create, type Draft } from 'mutative';
+
+type State = { todos: { text: string; done: boolean }[] };
+
+function addTodo(draft: Draft<State>, text: string) {
+  draft.todos.push({ text, done: false });
+}
+
+const state = create({ todos: [] } as State, (draft) => {
+  addTodo(draft, 'learn');
+});
+
+expect(state.todos).toEqual([{ text: 'learn', done: false }]);
+```
+
+## Producer（生产者函数） [#producers]
+
+未传基础状态时，应为更新函数的草稿参数标注类型，以确定 producer 的参数和返回类型。更新函数的其余参数也会成为 producer 的参数：
+
+```ts
+import { create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const toggle = create((draft: Todo[], index: number) => {
+  draft[index].done = !draft[index].done;
+});
+
+const todos: Todo[] = toggle([{ text: 'learn', done: false }], 0);
+
+expect(todos[0].done).toBe(true);
+```
+
+通过类型参数 `create<Todo[], [index: number]>((draft, index) => { … })` 可得到相同的 producer。泛型函数中，可用类型参数标注草稿，例如 `create((draft: T) => { … })`；异步更新函数应省略显式类型参数，详见[异步更新函数](/zh/docs/api-reference/create#async-recipes)。
+
+## 类型转换 [#casts]
+
+`castDraft()`、`castImmutable()` 和 `castMutable()` 只改变类型，原样返回传入的值：
+
+* `castDraft(value)` 将值视为草稿，例如将只读值赋入草稿。
+* `castImmutable(value)` 将值视为 `Immutable<T>`，例如应只读的初始状态。它不会冻结值。
+* `castMutable<T>(draft)` 将草稿视为 `T`，适合函数要求 `T` 但 `Draft<T>` 不兼容的情况，例如草稿类型不包含类的私有成员。
+
+```ts
+import { castDraft, castImmutable, castMutable, create } from 'mutative';
+
+type Todo = { text: string; done: boolean };
+
+const defaults = castImmutable({ todos: [{ text: 'learn', done: false }] as Todo[] });
+
+const state = create({ todos: [] as Todo[] }, (draft) => {
+  // `defaults.todos` is readonly, which a draft does not accept without a cast.
+  draft.todos = castDraft(defaults.todos);
+});
+
+expect(state.todos).toBe(defaults.todos);
+
+class Point {
+  constructor(
+    private x: number,
+    private y: number
+  ) {}
+  distanceTo(other: Point) {
+    return Math.hypot(other.x - this.x, other.y - this.y);
+  }
+}
+
+const origin = new Point(0, 0);
+
+create({ point: new Point(3, 4) }, (draft) => {
+  // The draft type of a Point lacks its private members.
+  expect(origin.distanceTo(castMutable<Point>(draft.point))).toBe(5);
+});
+```
+
+## 导出的类型 [#exported-types]
+
+| 类型                 | 说明                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `Draft<T>`         | `T` 的草稿类型。                                                                             |
+| `Immutable<T>`     | 深度只读的 `T`。                                                                             |
+| `Patch<P>`         | `add`、`remove` 或 `replace` 操作；当 `P` 为 `{ pathAsArray: false }` 时，路径类型为字符串。             |
+| `Patches<P>`       | 补丁数组。                                                                                  |
+| `PatchesOptions`   | `enablePatches` 选项的类型。                                                                 |
+| `Options<O, F>`    | `create()` 和 `makeCreator()` 的选项，`O` 为 `enablePatches` 类型，`F` 为 `enableAutoFreeze` 类型。 |
+| `DraftedObject<T>` | 对象类型对应的草稿类型。                                                                           |
+
+[仓库中的 API 参考](https://github.com/unadlib/mutative/tree/main/docs)包含从源码生成的类型定义。
