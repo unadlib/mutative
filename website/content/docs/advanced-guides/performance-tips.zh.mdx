@@ -32,7 +32,7 @@ Mutative 会遍历更新函数返回值中的每个对象以搜索草稿：返�
 
 ## 使用数组方法移动元素 [#let-array-methods-move-elements]
 
-`shift()`、`unshift()`、`splice()` 和 `reverse()` 在普通数组副本上原生执行，而逐个移动元素的循环会为每个元素经过草稿代理。用 `shift()` 删除 10,000 行中的第一行耗时 7.04 µs，而通过草稿逐项移动的 Immer 为 7,408 µs。详见[哪些数组方法原生执行](/zh/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts)。
+`shift()`、`unshift()`、`splice()` 和 `reverse()` 在普通数组副本上原生执行，而逐个移动元素的循环会让每个元素经过草稿代理。用 `shift()` 删除 10,000 行中的第一行耗时 7.04 µs，而通过草稿逐项移动的 Immer 为 7,408 µs。详见[哪些数组方法原生执行](/zh/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts)。
 
 ## 将相关修改合并为一次更新 [#make-one-update-for-related-changes]
 
