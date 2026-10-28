@@ -59,13 +59,17 @@ export function getAuthors(post: BlogPost): Author[] {
 }
 
 /**
- * Minutes to read a post at 200 words per minute, as Docusaurus estimated.
+ * Minutes to read a post at 200 words or 400 Chinese characters per minute.
  */
 export async function getReadingTime(post: BlogPost): Promise<number> {
   const content = (await post.data.getText('raw')).replace(
     /^---\n[\s\S]*?\n---\n/,
     ''
   );
-  const words = content.split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(words / 200));
+  const chinese = content.match(/\p{Script=Han}/gu)?.length ?? 0;
+  const words = content
+    .replace(/\p{Script=Han}/gu, '')
+    .split(/\s+/)
+    .filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 200 + chinese / 400));
 }

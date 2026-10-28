@@ -1,0 +1,344 @@
+---
+title: 'Mutative 2.0 发布：更快的更新，更可靠的补丁'
+authors: unadlib
+tags: [release]
+description: Mutative 2.0 保留 1.x API，加快更新，修复补丁和 Set 草稿的边界问题，并使生产构建行为更可预测。本文介绍变化与升级步骤。
+image: /img/blog/mutative-2.0-social-card.jpg
+date: 2026-10-13
+---
+
+Mutative 让你像修改普通数据一样编写不可变更新。更新函数修改状态的草稿，Mutative 返回下一个状态，只复制变化的部分，其余部分与原状态共享。
+
+Mutative 2.0 保留 1.x API，改进底层实现。设想一个 worker 从 10,000 个任务的队列头部取出任务，失败后放回尾部。1.x 的 `shift()` 要让剩余 9,999 个任务逐个经过草稿代理；2.0 则在草稿副本上原生移动。关闭自动冻结和补丁时，删除第一项只需 7 µs，而 1.3.0 为 8.2 ms，耗时超过前者的 1,000 倍。
+
+大多数场景的收益远小于此。在[基准测试](#what-the-benchmark-shows)的 97 项场景中，相同配置下，2.0 相对 Immer 11.1.18 的性能几何平均值为 3.6 倍，相对 1.3.0 为 4.3 倍；614 个测量案例中有 6 个慢于 Immer。各自默认配置下，相对 Immer 的几何平均值为 6.6 倍。
+
+变化集中在三个方面：
+
+- **[减少数组、集合与快照的工作量](#less-work-on-arrays-collections-and-snapshots)**：移动元素的数组方法原生执行，Set/Map 草稿、`current()`、`apply()` 每次更新的工作更少。
+- **[修复边界情况](#correct-results-in-edge-cases)**：补丁采用 Immer 的顺序，并能在部分 1.x 失败的场景正确重放；Set 草稿保留所有修改，`apply()` 更严格地检查路径。
+- **[更可预测的构建和类型](#predictable-builds-and-types)**：打包工具和 Node.js 均通过 `process.env.NODE_ENV` 选择构建，更多类型与运行时结果一致。
+
+没有函数或选项被重命名或移除，也不要求新增选项。这仍是一次主版本升级，因为补丁顺序与值、Map/Set 实例冻结、构建选择、生产错误和部分推断类型等可观察行为发生了变化。构建目标改为 ES2018，部分修复也改变了 1.x 原本错误的结果。
+
+<Callout type="info">
+从 1.x 升级？文末[检查清单](#upgrading-from-1x)列出了需要核对的事项，[迁移指南](/zh/docs/advanced-guides/migration-v2)描述自 1.3.0 以来的全部变化，[发布说明](https://github.com/unadlib/mutative/releases/tag/v2.0.0)列出 2.0 的 PR 和贡献者。
+</Callout>
+
+## Mutative 如何工作 [#how-mutative-works]
+
+下面通过将第一个任务标为完成，展示基本模型。开启 `enablePatches` 后，`create()` 还返回描述变化的补丁和用于撤销的逆向补丁，可用 [`apply()`](/zh/docs/api-reference/apply) 重放：
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = {
+  settings: { maxAttempts: 3 },
+  queue: [
+    { id: 1, done: false },
+    { id: 2, done: false },
+  ],
+};
+
+const [nextState, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.queue[0].done = true;
+  },
+  { enablePatches: true }
+);
+
+// The base state is unchanged, and what the recipe did not change is shared.
+expect(baseState.queue[0].done).toBe(false);
+expect(nextState.queue[0].done).toBe(true);
+expect(nextState.settings).toBe(baseState.settings);
+expect(nextState.queue[1]).toBe(baseState.queue[1]);
+
+// Patches describe the change, and inverse patches undo it.
+expect(patches).toEqual([
+  { op: 'replace', path: ['queue', 0, 'done'], value: true },
+]);
+expect(apply(baseState, patches)).toEqual(nextState);
+expect(apply(nextState, inversePatches)).toEqual(baseState);
+```
+
+草稿是 `Proxy`。每次更新最多浅拷贝每个已修改对象及通向它的对象一次，其余对象与基础状态共享。React 的记忆化或 store 选择器等引用检查便能跳过未变化部分。
+
+更新函数结束时草稿被撤销，应保存下一个状态或 [`current()`](/zh/docs/api-reference/current) 快照。仅在 `enableAutoFreeze: true` 时冻结结果。[核心概念](/zh/docs/getting-started/concepts)解释模型，[常见陷阱](/zh/docs/advanced-guides/pitfalls)整理使用规则。
+
+## 减少数组、集合与快照的工作量 [#less-work-on-arrays-collections-and-snapshots]
+
+### 原生移动数组元素 [#array-methods-that-move-elements]
+
+1.x 的数组方法经过草稿代理，`shift()` 需要逐个读写剩余元素。2.0 的 `shift()`、`unshift()`、`splice()`、`reverse()` 直接在普通数组副本上移动元素；`indexOf()`、`lastIndexOf()`、`includes()` 原生搜索当前数组，原始值数组的 `sort()`、`join()` 也原生执行。
+
+移出的基础对象仍作为草稿返回，修改它不会改变基础状态。仅移动的元素保留身份，补丁可双向重放。下面用短队列展示开头的重试场景：
+
+```ts
+import { apply, create, isDraft } from 'mutative';
+
+const baseState = {
+  queue: Array.from({ length: 5 }, (_, id) => ({ id, attempts: 0 })),
+};
+
+const [nextState, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    // shift() moves the other jobs natively on the draft's copy and returns
+    // the removed job as a draft.
+    const job = draft.queue.shift()!;
+    expect(isDraft(job)).toBe(true);
+    job.attempts += 1;
+    draft.queue.push(job);
+  },
+  { enablePatches: true }
+);
+
+expect(nextState.queue.map((job) => job.id)).toEqual([1, 2, 3, 4, 0]);
+expect(nextState.queue[4].attempts).toBe(1);
+// The base state is unchanged, and the jobs that only moved are shared.
+expect(baseState.queue[0].attempts).toBe(0);
+expect(nextState.queue[0]).toBe(baseState.queue[1]);
+// The patches replay in both directions.
+expect(apply(baseState, patches)).toEqual(nextState);
+expect(apply(nextState, inversePatches)).toEqual(baseState);
+```
+
+原生路径面向稠密数据数组。稀疏数组、数组子类、自定义标记下的数组、带回调的方法均走代理；严格模式下可能含对象的数组也走代理，除非位于 `unsafe()` 内。索引 getter 被读取为普通值，调用次数可能不同于代理路径。详见[常见问题](/zh/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts)和[原生数组方法约定][contract]。
+
+### 搜索快照，修改草稿 [#search-a-snapshot-change-the-draft]
+
+`find()`、`filter()` 等带回调的方法仍经过草稿，只读扫描也可能为每行创建草稿。大数组只读搜索可改用 [`current()`](/zh/docs/api-reference/current#searching-a-large-array) 的普通值快照，再通过草稿修改匹配项。2.0 的 `current()` 从当前元素复制已修改数组，无需逐个经过代理；移动元素后，快照索引仍与草稿一致：
+
+```ts
+import { create, current } from 'mutative';
+
+const baseState = {
+  queue: Array.from({ length: 10_000 }, (_, id) => ({ id, paused: false })),
+};
+
+const nextState = create(baseState, (draft) => {
+  draft.queue.shift();
+  // Search a snapshot of plain values, which creates no drafts, and change
+  // the match through the draft.
+  const index = current(draft.queue).findIndex((job) => job.id === 9_999);
+  draft.queue[index].paused = true;
+});
+
+expect(nextState.queue).toHaveLength(9_999);
+expect(nextState.queue[9_998]).toEqual({ id: 9_999, paused: true });
+expect(nextState.queue[0]).toBe(baseState.queue[1]);
+```
+
+关闭冻结和补丁时，上例为 257 µs，1.3.0 为 15,717 µs，Immer 为 11,255 µs。若先更新而非删除第一行，快照搜索为 176 µs，草稿搜索为 2,169 µs。
+
+### Set、Map 与补丁应用 [#sets-maps-and-applying-patches]
+
+Set 和 Map 也减少了工作。1.3.0 首次读取 Set 就映射所有元素，查找未命中也会复制 Set。2.0 不再这样：像 Immer 一样，在修改前直接从原 Set 回答 `has()`、`size` 等查询。修改后也直接编辑副本，只跟踪有草稿的元素，不再将所有元素转入 Map 再转回。Map 草稿的 `forEach()` 直接从草稿状态读取条目，而非经过代理。
+
+`apply()` 通过草稿上的 `splice()` 增删数组元素，因此同样受益于原生方法。补丁路径每一步只读取一次草稿类型，此前需要两次代理查询。
+
+### 基准测试说明了什么 [#what-the-benchmark-shows]
+
+除非另有说明，本文数字来自 2026 年 10 月 12 日的同一批测试：97 项场景比较 Mutative 2.0、1.3.0 和 Immer 11.1.18，覆盖冻结与补丁的开关组合。一个测量单元指某场景、某规模和某配置的组合；其他设置见[测量方式](#how-the-numbers-were-measured)。
+
+相同配置下，2.0 在 614 个单元中的 595 个快于 Immer，13 个差距在 5% 以内，6 个更慢，性能比的几何平均值为 3.58。相比 1.3.0，535 个更快、70 个差距在 5% 以内、9 个更慢，几何平均值为 4.27。各自默认配置下（仅 Immer 冻结，均无补丁），157 个中的 154 个更快，几何平均值为 6.63。这些均值对每个单元赋予相同权重，描述的是测试套件，不能直接代表应用速度。
+
+下表展示收益及其边界，单位为每个场景的微秒数；除特别注明外，均关闭冻结和补丁，越低越好。
+
+| 工作负载 | Mutative 2.0 | Mutative 1.3.0 | Immer 11.1.18 |
+| --- | ---: | ---: | ---: |
+| 用 `shift()` 删除 10,000 行中的第一行 | 7.04 | 8,203 | 7,408 |
+| 在含 10,000 个数字的 Set 中查找两个数字并读取大小 | 0.62 | 544 | 0.66 |
+| 更新含 10,000 个对象的 Set 中的一个对象 | 531 | 1,024 | 6,024 |
+| 向 10,000 行追加一行并插入属性，开启补丁 | 63.2 | 210 | 360 |
+| 用 `apply()` 在 100 行中插入、删除和替换行 | 2.97 | 115 | 99.0 |
+| 200 次 RTK Query 风格更新 | 1,001 | 1,849 | 1,133 |
+| 更新 10,000 条记录中的一条 | 1,200 | 1,188 | 2,094 |
+| 更新含 1,000 个字段的类实例中的一个字段，开启冻结 | 402 | 411 | 237 |
+
+RTK Query 风格场景模拟 100 个待处理请求和 100 个已完成请求的 reducer，并未运行 Redux Toolkit。这个小更新混合场景中，2.0 耗时约为 1.3.0 的一半，比 Immer 少 12%。主要开销在复制大型对象、记录或 Map 的场景（如记录更新行）则与之前相近。仅修改少量路径时，补丁开销很小：追加与插入场景无论是否开启补丁均约为 63 µs；1.3.0 从 65.8 µs 增至 210 µs，Immer 从 161 µs 增至 360 µs。
+
+#### 哪些场景 2.0 更慢 [#where-20-is-slower]
+
+相同配置下，2.0 在 6 个单元中慢于 Immer，全部开启自动冻结。4 个更新多字段类实例：1,000 个字段时耗时为 Immer 的 1.7 倍；100 或 10,000 个字段、关闭补丁时约多 5%。[报告][limits]将差异归因于副本冻结：2.0 根据描述符逐属性构建副本，Immer 11 使用 `Object.assign()`。关闭冻结时，1,000 字段更新在不同进程中约为 98 µs 或 200 µs，Immer 为 203 µs。另两个场景是在 100 行后追加及用 `concat()` 前置行，差距小于各库多次运行间的波动。各自默认配置下的 3 个更慢单元都返回之前已冻结的行，见[自动冻结与返回值](#auto-freeze-and-returned-values)。
+
+相比 1.3.0，2.0 在 9 个单元中慢 8–18%，均开启冻结，除 1 个外差距都小于运行波动。多数场景手写 reducer 仍更快：运行展开语法参考实现的 150 个单元中，2.0 在 129 个更慢，耗时几何平均值为其 8.4 倍。
+
+还有两项成本：开启补丁后，Set 增删元素要比较所有元素来生成补丁。向含 10,000 个数字的 Set 添加数字，关闭冻结时，有补丁为 440 µs，无补丁为 29.5 µs。浏览器引擎也不同于 Node.js：WebKit 26.4 冻结 10,000 元素数组约需 2.4 ms，冻结数组的每次扫描都很慢，所以当时测量的所有 Mutative 构建更新 10,000 行冻结数据都要数毫秒。更多取舍（包括内存）见[局限][limits]。
+
+#### 包体积 [#bundle-size]
+
+部分速度收益以体积为代价。补丁、Map/Set 支持和原生数组方法内置于 `create()`，打包工具无法像可选插件一样移除它们。浏览器生产构建经压缩及 Brotli 后，单独 `create()` 为 7.9 kB，比 1.3.0 多 2.1 kB；体积测量时最新的 Immer 11.1.21 的 `produce()` 为 3.6 kB。`create()`、`apply()`、`current()`、`original()` 合计 8.5 kB，比 1.3.0 多 2.2 kB；Immer 对应 API 加补丁、Map/Set 和数组方法插件为 6.4 kB。[README][readme-performance]记录设置，1.3.0 使用相同方法测量。
+
+#### 测量方式 [#how-the-numbers-were-measured]
+
+测试针对 `main` 的 [`40f3a42`][measured-commit] 提交，当时版本号尚未从 1.3.0 改为 2.0.0。发布的 2.0.0 包含相同生产文件，SHA-256 与[报告记录][identity]一致，为 `cb6464f3…`。[指南][workloads]中的 97 项场景均运行 100 行规模，其中 30 项还运行 1,000 和 10,000 行。环境为 Apple M1 Max、Node.js 24.16.0，对照 npm 的 Mutative 1.3.0 和 Immer 11.1.18。每个库的每个场景独立运行三个进程，最终耗时为三个进程均值的中位数。开启冻结时输入预先冻结，不计外部数据首次冻结的时间；补丁测量使用 `arrayLengthAssignment: false`，与 Immer 逐索引删除对齐。
+
+未开启 Immer 的 `enableArrayMethods()` 插件。[审计][audit]显示 11.1.18 以及 11.1.21 仍会从 `shift()`、`pop()`、`splice()` 返回基础对象，修改移出的对象（如上方重试示例）会改变原状态，正向补丁也可能无法重放。单独开启插件测量时，Immer 在 328 个单元中的 59 个更快，主要出现在将基础对象交给回调的场景，2.0 不会这么做；所有元素移动场景中 Immer 仍更慢。
+
+[性能报告][summary]记录本批结果、方法与局限。[性能文档](/zh/docs/getting-started/performance)和[最新报告][latest-summary]展示当前结果；克隆仓库后可运行 `pnpm benchmark:immer`。
+
+## 修复边界情况 [#correct-results-in-edge-cases]
+
+2.0 同时修复了 1.x 生成错误状态或无法重放补丁的情况。以下为影响较大的修复，完整列表见[迁移指南](/zh/docs/advanced-guides/migration-v2#fixes-that-change-results)。
+
+### 补丁 [#patches]
+
+使用补丁实现撤销、重做或同步时，需注意：
+
+- **顺序**：嵌套草稿先于父级，与 Immer 一致。应用结果不变，重复描述原索引处未变化草稿的冗余 `replace` 被移除。
+- **值**：原本为草稿的补丁值现在引用结果对象，不再深拷贝，自动冻结也会冻结它。修改前请先复制。
+- **重放**：修复排序或赋值移动、替换已修改草稿，Set 同时增删和修改元素，将草稿原始对象赋回持有草稿的键，以及数组 `0`/`-0` 变化或先缩短再扩展等情况，见[迁移指南](/zh/docs/advanced-guides/migration-v2#patches)。
+
+部分修复直接改变状态结果。开启补丁时，非根 Set 的两个或更多元素发生深层变化（如下方 `worker.stats.jobs`）时，1.3.0 只保留其中一个修改。2.0 保留全部修改，补丁可双向重放：
+
+```ts
+import { apply, create } from 'mutative';
+
+const baseState = {
+  workers: new Set([
+    { name: 'build-1', stats: { jobs: 1 } },
+    { name: 'build-2', stats: { jobs: 2 } },
+  ]),
+};
+
+const [nextState, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    for (const worker of draft.workers) {
+      worker.stats.jobs += 1;
+    }
+  },
+  { enablePatches: true }
+);
+
+expect([...nextState.workers].map((worker) => worker.stats.jobs)).toEqual([
+  2, 3,
+]);
+expect([...baseState.workers].map((worker) => worker.stats.jobs)).toEqual([
+  1, 2,
+]);
+expect(apply(baseState, patches)).toEqual(nextState);
+expect(apply(nextState, inversePatches)).toEqual(baseState);
+```
+
+仍有局限：补丁向 Set 添加对象时，`apply()` 会复制它们，逆向补丁无法按原引用删除副本；新增元素移到末尾，也可能改变后续补丁寻址的位置。需要反复撤销、重做或同步时，建议用按 ID 索引的 Map 或数组，见[包含对象的 Set](/zh/docs/advanced-guides/patches#sets-of-objects)。在本文发布时，稀疏数组补丁也可能把空洞变成显式 `undefined`。
+
+### 应用补丁 [#applying-patches]
+
+`apply()` 现在拒绝以 `__proto__` 结尾的路径，与此前对路径中间该键的处理一致。Set 元素只能按索引读取，不能再通过 Set 路径访问 `Array.prototype`。如果补丁来自其他客户端等不可控来源，这些检查值得升级。路径中的 Map 键保持原样，不再转字符串；补丁值副本保留自有 symbol 键和 `JSON.parse()` 产生的自有 `__proto__` 数据属性。`mutable: true` 遇到替换根状态会抛错，因为无法原地替换根值。详见[接受的补丁](/zh/docs/api-reference/apply#patches-that-apply-accepts)。
+
+### 集合、迭代器与失败的生产函数 [#collections-iterators-and-failed-producers]
+
+Set/Map 草稿更接近原生行为。Set 子类草稿修改子类实例，其 `add()`、`has()`、`delete()`、`clear()` 在更新期间生效，`add()` 必须保存收到的值。移到其他位置的 Set 草稿保留修改。Map/Set 的部分消费迭代器从停止处继续，环境支持时提供 `toArray()` 等辅助方法。
+
+迭代器也随草稿结束：同步更新完成、异步 Promise 落定或手动 `finalize()` 成功后，Map 值和条目迭代器、所有 Set 迭代器不再产出新值，而是抛 `TypeError`。已耗尽的迭代器保持耗尽；Map 键不创建草稿，`keys()` 保留原生迭代器。请在草稿有效期内消费。
+
+更新函数返回后失败（例如同时修改草稿并返回其他值）的生产函数，现在也会撤销草稿并保留原始错误。手动草稿不同：`finalize()` 抛错后草稿可能仍可写，应从基础状态重新创建，不要复用，见[手动草稿](/zh/docs/api-reference/create#currying)。
+
+### 自动冻结与返回值 [#auto-freeze-and-returned-values]
+
+开启 `enableAutoFreeze: true` 时，2.0 像 Immer 一样冻结 Map/Set 实例本身；1.x 只替换修改方法。后续更新可跳过冻结集合，但添加属性或替换方法现在会失败。
+
+更新函数返回的新状态可能包含草稿（如 `{ ...draft, count: 0 }`），因此 Mutative 会搜索。开启冻结后，2.0 生产构建跳过返回值中的冻结对象及其所有后代，返回之前冻结的状态成本很低。开发构建仍搜索并拒绝其中草稿，因此不要将草稿放入冻结对象或其内部值。1.x 已有的 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 可对不含草稿的值跳过搜索，不能包裹草稿。
+
+这解释了各自默认配置下 2.0 慢于 Immer 的 3 个单元：它们都返回由之前冻结的行组成的新状态。Immer 默认冻结，因此跳过这些行；2.0 默认不冻结，会搜索所有行，10,000 行为 2.60 ms，Immer 为 0.79 µs。`rawReturn()` 可跳过搜索，开启冻结的 2.0 生产构建也能跳过，耗时 0.53 µs。全新数据结果相反：2026 年 10 月 13 日使用同一生产构建的[专项测试][fresh]中，每次新建并返回 10,000 行，Immer 默认冻结为 9.2 ms，2.0 默认配置为 3.1 ms，`rawReturn()` 为 0.23 ms。
+
+## 更可预测的构建和类型 [#predictable-builds-and-types]
+
+包内包含带完整错误、警告及检查的开发构建，以及压缩生产构建。2.0 在打包工具和 Node.js 中统一通过 `process.env.NODE_ENV` 选择：
+
+- **打包工具**解析 ESM，其开发检查现在读取 `process.env.NODE_ENV`。生产构建将其替换为 `'production'` 后即可移除开发代码；1.x ESM 始终运行开发逻辑。
+- **Node.js 目标打包**（如 esbuild `platform: 'node'`）使用加载时选择版本的 CommonJS 入口。若未定义 `process.env.NODE_ENV`，会包含两份构建，使压缩后的 `create()` 体积超过原来的两倍。请定义变量或保留为外部依赖。
+- **Node.js** 的 `import` 解析到重新导出 CommonJS 的模块，与 `require` 共享实例，加载时读取一次 `NODE_ENV`。1.x 的 `import` 始终运行独立的开发 ESM 实例。
+
+没有 `process` 全局变量的浏览器等环境直接加载 `dist/mutative.esm.mjs` 会报 `process is not defined`。请改用 `dist/mutative.esm.production.min.mjs` 或 UMD，见[安装](/zh/docs/getting-started/installation#development-and-production-builds)。
+
+生产构建抛出 `Minified Mutative error #<code>`，并链接到[错误参考](/zh/docs/extra-topics/errors)。CommonJS 消费端在 1.x 已采用此形式；2.0 的生产打包也一样，`apply()`、`original()`、`rawReturn()` 的错误也加入编码。构建流程见 [BUILDING.md][building]。
+
+### 更多开发检查 [#more-checks-in-development]
+
+生产构建跳过开发检查，因此应使用开发构建运行测试。2.0 新增以下检查：
+
+- **草稿作为 Map 键**：`draft.map.set(draft.key, value)` 会抛错，避免结果留下已撤销键。改用 `original(draft)`、`current(draft)` 或 ID。
+- **字符串路径无法表示的键**：`pathAsArray: false` 时，非字符串 Map 键或 symbol 键会抛错，应保留默认数组路径。
+- **大草稿搜索**：严格模式下留下 1,000 个或更多未修改草稿时警告一次，通常可改为搜索 `current()` 快照。
+
+开启冻结时，循环检查只拒绝真正持有自身的对象，因此 `draft.prev = original(draft)` 不再抛错。仍不支持真正的循环引用，消息见[错误参考](/zh/docs/extra-topics/errors#development-only-errors)。
+
+### 输出与包入口 [#output-and-package-entries]
+
+构建目标从 ES2015 改为 ES2018，保留原生对象展开。仍需要 `Proxy`。Chrome 49–59、Firefox 18–54、Safari 10–11.0、Edge 12–18 等支持 Proxy 但不支持 ES2018 的环境需要转译 Mutative。包声明的最低 Node.js 仍为 14.0，CI 在 14.0.0 对打包产物执行简短测试。
+
+`exports` 为 `import`、`require` 分别提供对应模块类型的声明，支持 `NodeNext` 解析。[包检查][package-checks]覆盖 CommonJS、ESM、UMD，以及 `NodeNext` 和 `Bundler` 类型解析。声明支持 TypeScript 5.0 及以上。
+
+### 类型 [#types]
+
+更多类型与运行时一致。显式状态类型配合异步更新函数返回 `Promise<State>`，异步柯里化生产函数也一样；1.x 将其标为 `State`。`apply()` 现在接受 `enableAutoFreeze: true` 并返回 `Immutable<State>`，1.x 类型则拒绝该选项：
+
+```ts
+import { apply, create, type Immutable, type Patches } from 'mutative';
+
+type State = { count: number; tags: string[] };
+
+const baseState: State = { count: 0, tags: [] };
+
+// 1.x typed this result as State; 2.0 types it as the Promise that it is.
+const pending: Promise<State> = create<State>(baseState, async (draft) => {
+  draft.count = await Promise.resolve(1);
+});
+expect((await pending).count).toBe(1);
+
+// The types of 1.x rejected enableAutoFreeze here; 2.0 types the frozen result.
+const patches: Patches = [{ op: 'add', path: ['tags', 0], value: 'v2' }];
+const frozen: Immutable<State> = apply(baseState, patches, {
+  enableAutoFreeze: true,
+});
+expect(frozen.tags).toEqual(['v2']);
+expect(Object.isFrozen(frozen.tags)).toBe(true);
+```
+
+标注草稿并返回新状态的柯里化生产函数，以及可能返回 Promise 的更新函数，类型也更精确。泛型参数作为状态类型等场景仍有注意事项，见迁移指南的 [TypeScript](/zh/docs/advanced-guides/migration-v2#typescript)。
+
+## 从 1.x 升级 [#upgrading-from-1x]
+
+2.0 修复不会回移到 1.x，1.3.0 是最后一个 1.x 版本。安装 2.0：
+
+```npm
+npm install mutative@2
+```
+
+生态库若将 `mutative` 1.x 声明为 peer dependency，npm 7 及以上安装 `mutative@2` 时会以 `ERESOLVE` 停止。请升级到接受 2.0 的生态库版本，或在兼容前保留 1.3.0。
+
+然后依次检查以下事项，细节见[迁移指南](/zh/docs/advanced-guides/migration-v2)。
+
+1. **用两种构建测试**：开发构建检查新增错误，生产构建设置 `NODE_ENV=production`。生产环境按错误码而非文本匹配。见[开发构建](/zh/docs/advanced-guides/migration-v2#development-builds)。
+2. **检查打包与目标环境**：包括 Node.js 目标在内，每份 bundle 都定义 `process.env.NODE_ENV`，或将 Mutative 外部化。无打包浏览器加载生产 ESM/UMD，旧引擎需转译 ES2018。见[构建输出与入口](/zh/docs/advanced-guides/migration-v2#build-output-and-package-entries)。
+3. **更新读取补丁的代码与测试**：补丁快照顺序变化，修改补丁值前先复制。见[补丁](/zh/docs/advanced-guides/migration-v2#patches)。
+4. **检查冻结依赖**：冻结 Map/Set 不能新增属性或替换方法，返回值的冻结对象中不能包含草稿。见[返回值](/zh/docs/advanced-guides/migration-v2#returned-values)。
+5. **遵守草稿生命周期**：有效期内消费产出值的迭代器，以 `original(draft)`、`current(draft)` 或 ID 作为 Map 键；Set 子类 `add()` 必须保存原值。见[集合生命周期](#collections-iterators-and-failed-producers)。
+6. **检查索引带 getter 的数组**：原生方法将其读取为普通值。见[数组](/zh/docs/advanced-guides/migration-v2#arrays)。
+7. **执行类型检查**：重新评估为绕过 1.x 异步和 `apply()` 类型而写的转换。支持 TypeScript 5.0 及以上，见 [TypeScript](/zh/docs/advanced-guides/migration-v2#typescript)。
+8. **复查固定 1.x 结果的测试**：尤其 Set、补丁、`apply()` 和 `current()`，新结果可能才是正确结果。见[影响结果的修复](/zh/docs/advanced-guides/migration-v2#fixes-that-change-results)。
+
+## 从 Immer 迁移 [#coming-from-immer]
+
+Mutative 通过了适配后的 Immer 测试套件，大多数代码可通过改名迁移：`produce()` → `create()`，`produceWithPatches()` → 开启 `enablePatches: true` 的 `create()`，`applyPatches()` → `apply()`，`nothing` → `rawReturn(undefined)`。移除插件调用，以[标记](/zh/docs/advanced-guides/mark)替代 `[immerable]`。主要选择是冻结：Immer 默认冻结，Mutative 默认不冻结；若代码依赖冻结状态，可用 `makeCreator()` 等设置 `enableAutoFreeze: true`。[迁移指南](/zh/docs/advanced-guides/migration)逐步说明，[与 Immer 对比](/zh/docs/extra-topics/comparison-with-immer)列出基于 11.1.18 核查的差异。[mutative-compat](https://github.com/exuanbo/mutative-compat) 提供 Immer API 封装以便快速切换，但本文写作时其 peer dependency 仍为 Mutative 1.x。
+
+## 致谢 [#thanks]
+
+感谢报告问题、审查改动和构建生态库的每位贡献者。文档随 2.0 一同修订，代码示例作为库测试运行，并新增[常见陷阱](/zh/docs/advanced-guides/pitfalls)和[性能建议](/zh/docs/advanced-guides/performance-tips)。升级后如有行为变化，或[迁移指南](/zh/docs/advanced-guides/migration-v2)遗漏场景，欢迎提交 [issue](https://github.com/unadlib/mutative/issues) 或发起[讨论](https://github.com/unadlib/mutative/discussions)。
+
+[summary]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/perf-testing/reports/SUMMARY.md
+[identity]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/perf-testing/reports/SUMMARY.md#source-and-artifact-identity
+[fresh]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/perf-testing/reports/SUMMARY.md#fresh-data-returned-with-default-freeze-settings
+[limits]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/perf-testing/reports/SUMMARY.md#tradeoffs-and-limits
+[contract]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/perf-testing/reports/SUMMARY.md#native-array-method-contract
+[latest-summary]: https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md
+[measured-commit]: https://github.com/unadlib/mutative/commit/40f3a421bb67de29d2f6031fcd5d7f5d65a51974
+[workloads]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/perf-testing/README.md#workloads-and-units
+[audit]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/test/immer-array-methods.md
+[readme-performance]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/README.md#performance
+[building]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/BUILDING.md#build-pipeline
+[package-checks]: https://github.com/unadlib/mutative/blob/7bd3fcfdfd0399c0a96fa3aeea31682e9af9f4f3/BUILDING.md#package-checks

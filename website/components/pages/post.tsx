@@ -11,7 +11,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export async function BlogPostContent({ slug, locale = 'en' }: { slug: string[]; locale?: Locale }) {
+export async function BlogPostContent({
+  slug,
+  locale = 'en',
+}: {
+  slug: string[];
+  locale?: Locale;
+}) {
   const post = blog.getPage(slug, locale);
   if (!post) notFound();
 
@@ -21,7 +27,7 @@ export async function BlogPostContent({ slug, locale = 'en' }: { slug: string[];
   return (
     <div className="mx-auto w-full max-w-[860px] flex-1 px-4 py-12 md:py-16">
       <Link
-        href={localePath("/blog", locale)}
+        href={localePath('/blog', locale)}
         className="text-sm text-fd-muted-foreground transition-colors hover:text-fd-foreground"
       >
         ← {locale === 'zh' ? '博客' : 'Blog'}
@@ -65,10 +71,12 @@ export async function BlogPostContent({ slug, locale = 'en' }: { slug: string[];
       <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
         {post.data.tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="font-medium">{locale === 'zh' ? '标签：' : 'Tags:'}</span>
+            <span className="font-medium">
+              {locale === 'zh' ? '标签：' : 'Tags:'}
+            </span>
             {post.data.tags.map((tag) => (
               <span
-                key={locale === 'zh' && tag === 'release' ? '版本发布' : tag}
+                key={tag}
                 className="rounded-full border bg-fd-secondary px-3 py-0.5 text-fd-secondary-foreground"
               >
                 {locale === 'zh' && tag === 'release' ? '版本发布' : tag}
@@ -85,7 +93,10 @@ export async function BlogPostContent({ slug, locale = 'en' }: { slug: string[];
   );
 }
 
-export async function postMetadata(slug: string[], locale: Locale = 'en'): Promise<Metadata> {
+export async function postMetadata(
+  slug: string[],
+  locale: Locale = 'en'
+): Promise<Metadata> {
   const post = blog.getPage(slug, locale);
   if (!post) notFound();
 
@@ -93,22 +104,25 @@ export async function postMetadata(slug: string[], locale: Locale = 'en'): Promi
   // as `/blog/releases/1.0`, but GitHub Pages serves it at `/blog/releases/1.0/`.
   const url = `${post.url}/`;
 
-  return createMetadata({
-    title: post.data.title,
-    description: getPageDescription(post.data),
-    alternates: {
-      canonical: url,
+  return createMetadata(
+    {
+      title: post.data.title,
+      description: getPageDescription(post.data),
+      alternates: {
+        canonical: url,
+      },
+      openGraph: {
+        type: 'article',
+        url,
+        publishedTime: post.data.date.toISOString(),
+        authors: getAuthors(post).map((author) => author.name),
+        tags: post.data.tags,
+        ...(post.data.image && { images: post.data.image }),
+      },
+      twitter: {
+        ...(post.data.image && { images: post.data.image }),
+      },
     },
-    openGraph: {
-      type: 'article',
-      url,
-      publishedTime: post.data.date.toISOString(),
-      authors: getAuthors(post).map((author) => author.name),
-      tags: post.data.tags,
-      ...(post.data.image && { images: post.data.image }),
-    },
-    twitter: {
-      ...(post.data.image && { images: post.data.image }),
-    },
-  }, locale);
+    locale
+  );
 }

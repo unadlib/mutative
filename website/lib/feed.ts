@@ -38,7 +38,10 @@ export function getFeed(format: 'rss' | 'atom', locale: Locale = 'en'): string {
               link: author.url,
             }))
           : undefined,
-      category: post.data.tags.map((tag) => ({ name: tag, term: tag })),
+      category: post.data.tags.map((tag) => ({
+        name: locale === 'zh' && tag === 'release' ? '版本发布' : tag,
+        term: tag,
+      })),
     });
   }
 
