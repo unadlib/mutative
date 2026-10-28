@@ -57,7 +57,7 @@ const zh: Record<string, string> = {
   'Every result checked against hand-written reducers':
     '每项结果均与手写 reducer 核对',
   Fast: '高效',
-  'Faster than Immer, by design': '以性能为核心的设计',
+  'Faster than Immer, by design': '设计使然，快于 Immer',
   'Mutative copies each object at most once per update and moves array elements natively on its copy, instead of through a draft proxy.':
     '每次更新最多复制每个对象一次，并在副本上原生移动数组元素，无需逐个经过草稿代理。',
   'See the benchmarks': '查看基准测试',
