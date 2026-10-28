@@ -32,6 +32,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'weekly',
     priority: 0.5,
     ...page,
-    alternates: { languages: Object.fromEntries(Object.entries(languageAlternates(new URL(page.url).pathname)).map(([lang, path]) => [lang, `${siteUrl}${path}`])) },
+    alternates: {
+      languages: Object.fromEntries(
+        Object.entries(languageAlternates(new URL(page.url).pathname)).map(
+          ([lang, path]) => [lang, `${siteUrl}${path}`]
+        )
+      ),
+    },
   }));
 }

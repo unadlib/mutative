@@ -1,4 +1,4 @@
-import { type Locale, localePath } from '@/lib/i18n';
+import { type Locale } from '@/lib/i18n';
 import { DocsCategory } from '@/components/docs-category';
 import { getMDXComponents } from '@/components/mdx';
 import { getLastUpdate } from '@/lib/git';
@@ -23,7 +23,13 @@ import { createRelativeLink } from 'fumadocs-ui/mdx';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-export async function DocsContent({ slug, locale = 'en' }: { slug?: string[]; locale?: Locale }) {
+export async function DocsContent({
+  slug,
+  locale = 'en',
+}: {
+  slug?: string[];
+  locale?: Locale;
+}) {
   const page = source.getPage(slug, locale);
   if (!page) notFound();
 
@@ -63,7 +69,8 @@ export async function DocsContent({ slug, locale = 'en' }: { slug?: string[]; lo
             <time dateTime={lastUpdate.date.toISOString()}>
               {formatDate(lastUpdate.date, locale)}
             </time>{' '}
-            {locale === 'zh' ? '作者：' : 'by '}{lastUpdate.author}
+            {locale === 'zh' ? '作者：' : 'by '}
+            {lastUpdate.author}
           </p>
         )}
       </div>
@@ -71,18 +78,24 @@ export async function DocsContent({ slug, locale = 'en' }: { slug?: string[]; lo
   );
 }
 
-export async function docsMetadata(slug: string[] | undefined, locale: Locale = 'en'): Promise<Metadata> {
+export async function docsMetadata(
+  slug: string[] | undefined,
+  locale: Locale = 'en'
+): Promise<Metadata> {
   const page = source.getPage(slug, locale);
   if (!page) notFound();
 
-  return createMetadata({
-    title: page.data.title,
-    description: getPageDescription(page.data),
-    alternates: {
-      canonical: page.url,
+  return createMetadata(
+    {
+      title: page.data.title,
+      description: getPageDescription(page.data),
+      alternates: {
+        canonical: page.url,
+      },
+      openGraph: {
+        url: page.url,
+      },
     },
-    openGraph: {
-      url: page.url,
-    },
-  }, locale);
+    locale
+  );
 }

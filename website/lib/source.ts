@@ -49,7 +49,7 @@ export const source = loader({
 export const llmsIndex = llms(
   loader({
     baseUrl: docsRoute,
-  i18n,
+    i18n,
     url: (slugs, locale) =>
       `${siteUrl}${getPageMarkdownUrl({ slugs, locale }).url}`,
     source: docs.toFumadocsSource(),
