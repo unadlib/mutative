@@ -1,6 +1,6 @@
 ---
 title: TypeScript
-description: 了解草稿、结果、生产函数和补丁的类型，以及 Mutative 导出的类型与类型转换工具。
+description: 了解草稿、结果、producer 和补丁的类型，以及 Mutative 导出的类型与类型转换工具。
 ---
 
 Mutative 使用 TypeScript 编写并自带类型声明，支持 TypeScript 5.0 及以上；包检查会用 TypeScript 5.0 编译这些声明。
@@ -67,9 +67,9 @@ const state = create({ todos: [] } as State, (draft) => {
 expect(state.todos).toEqual([{ text: 'learn', done: false }]);
 ```
 
-## 生产函数 [#producers]
+## Producer（生产者函数） [#producers]
 
-未传基础状态时，应为更新函数的草稿参数标注类型，以确定生产函数的参数和返回类型。更新函数的其余参数也会成为生产函数的参数：
+未传基础状态时，应为更新函数的草稿参数标注类型，以确定 producer 的参数和返回类型。更新函数的其余参数也会成为 producer 的参数：
 
 ```ts
 import { create } from 'mutative';
@@ -85,7 +85,7 @@ const todos: Todo[] = toggle([{ text: 'learn', done: false }], 0);
 expect(todos[0].done).toBe(true);
 ```
 
-通过类型参数 `create<Todo[], [index: number]>((draft, index) => { … })` 可得到相同的生产函数。泛型函数中，可用类型参数标注草稿，例如 `create((draft: T) => { … })`；异步更新函数应省略显式类型参数，详见[异步更新函数](/zh/docs/api-reference/create#async-recipes)。
+通过类型参数 `create<Todo[], [index: number]>((draft, index) => { … })` 可得到相同的 producer。泛型函数中，可用类型参数标注草稿，例如 `create((draft: T) => { … })`；异步更新函数应省略显式类型参数，详见[异步更新函数](/zh/docs/api-reference/create#async-recipes)。
 
 ## 类型转换 [#casts]
 

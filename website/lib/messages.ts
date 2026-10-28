@@ -122,7 +122,7 @@ const zh: Record<string, string> = {
   'Explicit reads of data that is not drafted, which a recipe could otherwise change in place.':
     '显式读取未创建草稿的数据，避免无意中原地修改。',
   'Producers that work as reducers, with Redux and any other immutable state library.':
-    '生产函数可作为 reducer，配合 Redux 等不可变状态库使用。',
+    'producer 可作为 reducer，配合 Redux 等不可变状态库使用。',
   Features: '功能',
   'Everything immutable updates need': '不可变更新所需的功能',
   'Drafts for every data structure, with patches, freezing, marks and strict mode when you need them.':

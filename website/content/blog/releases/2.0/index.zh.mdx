@@ -229,13 +229,13 @@ expect(apply(nextState, inversePatches)).toEqual(baseState);
 
 `apply()` 现在拒绝以 `__proto__` 结尾的路径，与此前对路径中间该键的处理一致。Set 元素只能按索引读取，不能再通过 Set 路径访问 `Array.prototype`。如果补丁来自其他客户端等不可控来源，建议升级到 2.0 以获得这些安全检查。路径中的 Map 键保持原样，不再转字符串；补丁值副本保留自有 symbol 键和 `JSON.parse()` 产生的自有 `__proto__` 数据属性。`mutable: true` 遇到替换根状态会抛错，因为无法原地替换根值。详见[接受的补丁](/zh/docs/api-reference/apply#patches-that-apply-accepts)。
 
-### 集合、迭代器与失败的生产函数 [#collections-iterators-and-failed-producers]
+### 集合、迭代器与失败的 producer [#collections-iterators-and-failed-producers]
 
 Set/Map 草稿更接近原生行为。Set 子类草稿修改子类实例，其 `add()`、`has()`、`delete()`、`clear()` 在更新期间生效，`add()` 必须保存收到的值。移到其他位置的 Set 草稿保留修改。Map/Set 的部分消费迭代器从停止处继续，环境支持时提供 `toArray()` 等辅助方法。
 
 迭代器也随草稿结束：同步更新完成、异步 Promise 落定或手动 `finalize()` 成功后，Map 值和条目迭代器、所有 Set 迭代器不再产出新值，而是抛 `TypeError`。已耗尽的迭代器保持耗尽；Map 键不创建草稿，`keys()` 保留原生迭代器。请在草稿有效期内消费。
 
-更新函数返回后失败（例如同时修改草稿并返回其他值）的生产函数，现在也会撤销草稿并保留原始错误。手动草稿不同：`finalize()` 抛错后草稿可能仍可写，应从基础状态重新创建，不要复用，见[手动草稿](/zh/docs/api-reference/create#currying)。
+更新函数返回后失败（例如同时修改草稿并返回其他值）的 producer，现在也会撤销草稿并保留原始错误。手动草稿不同：`finalize()` 抛错后草稿可能仍可写，应从基础状态重新创建，不要复用，见[手动草稿](/zh/docs/api-reference/create#currying)。
 
 ### 自动冻结与返回值 [#auto-freeze-and-returned-values]
 
@@ -275,7 +275,7 @@ Set/Map 草稿更接近原生行为。Set 子类草稿修改子类实例，其 `
 
 ### 类型 [#types]
 
-更多类型与运行时一致。显式状态类型配合异步更新函数返回 `Promise<State>`，异步柯里化生产函数也一样；1.x 将其标为 `State`。`apply()` 现在接受 `enableAutoFreeze: true` 并返回 `Immutable<State>`，1.x 类型则拒绝该选项：
+更多类型与运行时一致。显式状态类型配合异步更新函数返回 `Promise<State>`，异步柯里化 producer 也一样；1.x 将其标为 `State`。`apply()` 现在接受 `enableAutoFreeze: true` 并返回 `Immutable<State>`，1.x 类型则拒绝该选项：
 
 ```ts
 import { apply, create, type Immutable, type Patches } from 'mutative';
@@ -299,7 +299,7 @@ expect(frozen.tags).toEqual(['v2']);
 expect(Object.isFrozen(frozen.tags)).toBe(true);
 ```
 
-标注草稿并返回新状态的柯里化生产函数，以及可能返回 Promise 的更新函数，类型也更精确。泛型参数作为状态类型等场景仍有注意事项，见迁移指南的 [TypeScript](/zh/docs/advanced-guides/migration-v2#typescript)。
+标注草稿并返回新状态的柯里化 producer，以及可能返回 Promise 的更新函数，类型也更精确。泛型参数作为状态类型等场景仍有注意事项，见迁移指南的 [TypeScript](/zh/docs/advanced-guides/migration-v2#typescript)。
 
 ## 从 1.x 升级 [#upgrading-from-1x]
 

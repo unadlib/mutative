@@ -36,7 +36,7 @@ create(base, options?) // [draft, finalize]
 ```
 
 - `base` 是要创建草稿的状态：普通对象、数组、`Map`、`Set`，或通过 [`mark`](#mark) 变为可创建草稿的值（如类实例）。日期和未标记的类实例等其他对象会导致错误。传入更新函数时，原始值或 `null` 基础状态会原样传给更新函数，其返回值作为下一个状态。
-- `recipe` 接收草稿；在生产函数中还会接收其余参数。它可以修改草稿且不返回值，或返回[新状态](#returning-a-new-state)，也可以是[异步函数](#async-recipes)。
+- `recipe` 接收草稿；在 producer 中还会接收其余参数。它可以修改草稿且不返回值，或返回[新状态](#returning-a-new-state)，也可以是[异步函数](#async-recipes)。
 - `options` 见[下文](#options)，可通过 [`makeCreator()`](/zh/docs/api-reference/makecreator) 设置默认值。
 
 `create()` 返回下一个状态；若未发生修改，则返回基础状态本身。开启 `enablePatches` 后返回 `[nextState, patches, inversePatches]`：正向补丁将基础状态转为下一个状态，逆向补丁将其还原。异步更新函数则返回对应结果的 Promise。
@@ -126,7 +126,7 @@ expect(state.items).toEqual(['a', 'b']);
 
 ## 柯里化 [#currying]
 
-只传更新函数、不传基础状态时，`create()` 返回生产函数，稍后接收基础状态，并将其余参数传给更新函数：
+只传更新函数、不传基础状态时，`create()` 返回 producer，稍后接收基础状态，并将其余参数传给更新函数：
 
 ```ts
 import { create } from 'mutative';

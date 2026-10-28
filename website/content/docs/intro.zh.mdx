@@ -55,7 +55,7 @@ expect(state.list[2].done).toBe(false);
 - **自定义浅拷贝**：通过[标记](/zh/docs/advanced-guides/mark)为类实例等数据创建草稿，需要时还可提供自定义浅拷贝函数。
 - **非侵入式标记可变与不可变数据**：无需修改数据或类定义，就能决定哪些值参与草稿处理。
 - **严格模式下更安全地访问可变数据**：[严格模式](/zh/docs/advanced-guides/strict-mode)要求显式读取无法创建草稿的数据。
-- **支持 reducer**：[生产函数](/zh/docs/advanced-guides/currying)可作为 Redux 等不可变状态库的 reducer，更新函数也可以是异步函数。
+- **支持 reducer**：[producer](/zh/docs/advanced-guides/currying) 可作为 Redux 等不可变状态库的 reducer，更新函数也可以是异步函数。
 
 ## 设计动机 [#motivation]
 

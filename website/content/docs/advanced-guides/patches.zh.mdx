@@ -39,7 +39,7 @@ expect(apply(baseState, patches)).toEqual(state);
 expect(apply(state, inversePatches)).toEqual(baseState);
 ```
 
-`enablePatches` 也适用于柯里化生产函数、手动草稿和 [`makeCreator()`](/zh/docs/api-reference/makecreator)。它支持对象、数组、Map、Set，以及通过 [`mark`](/zh/docs/advanced-guides/mark) 变为可创建草稿的值；应用时需向 `apply()` 传入相同的 `mark`。
+`enablePatches` 也适用于柯里化 producer、手动草稿和 [`makeCreator()`](/zh/docs/api-reference/makecreator)。它支持对象、数组、Map、Set，以及通过 [`mark`](/zh/docs/advanced-guides/mark) 变为可创建草稿的值；应用时需向 `apply()` 传入相同的 `mark`。
 
 ## 补丁行为 [#patch-behavior]
 

@@ -32,4 +32,4 @@ expect(isDraft(baseState)).toBe(false);
 
 可用于同时接收草稿与普通值的辅助函数：对草稿原地修改，对其他值调用 `create()`，见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。[`current()`](/zh/docs/api-reference/current) 和 [`original()`](/zh/docs/api-reference/original) 对非草稿会抛错。
 
-`isDraft()` 需要读取传入值，因此对生产函数结束后已撤销的草稿调用时，也会像其他读取一样抛错。
+`isDraft()` 需要读取传入值，因此对 producer 结束后已撤销的草稿调用时，也会像其他读取一样抛错。

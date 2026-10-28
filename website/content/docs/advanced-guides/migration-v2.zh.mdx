@@ -42,10 +42,10 @@ Mutative v2 保留 v1 API。以下列出自 v1.3.0 以来可能影响现有代�
 
 ## TypeScript [#typescript]
 
-- 显式指定状态类型的异步更新，如 `create<State>(base, async (draft) => { … })`，现在返回 `Promise<State>`，柯里化生产函数也一样；v1 错误标为 `State`。状态类型为泛型参数，或本身包含 Promise（如 `object`、`unknown`）时，异步或可能返回 Promise 的更新函数仍像 v1 一样推断为状态类型；泛型代码应省略显式类型参数。
+- 显式指定状态类型的异步更新，如 `create<State>(base, async (draft) => { … })`，现在返回 `Promise<State>`，柯里化 producer 也一样；v1 错误标为 `State`。状态类型为泛型参数，或本身包含 Promise（如 `object`、`unknown`）时，异步或可能返回 Promise 的更新函数仍像 v1 一样推断为状态类型；泛型代码应省略显式类型参数。
 - `apply()` 接受 `enableAutoFreeze: true` 并返回 `Immutable<State>`，与 `apply<State, true>()` 一致；v1 拒绝该选项并将冻结结果标为可变。选项类型为 `boolean` 或可选 `true` 时返回 `State | Immutable<State>`。`mutable` 为 `boolean`、可选 `boolean` 或可选 `true` 时返回 `State | void`。
-- 标注草稿类型并返回新状态的柯里化更新函数，如 `create((draft: State) => ({ ...draft, count: 0 }))`，现在生成返回 `State` 的生产函数；异步时为 `Promise<State>`。v1 错误将它识别为手动草稿，导致无法调用。泛型中的 `create((draft: T) => { … })` 也修复了同一问题。
-- 显式指定状态类型时，可能返回也可能不返回 Promise 的更新函数（如 `(draft: State) => void | Promise<void>`）现在返回 `State | Promise<State>`，也适用于 `number` 等原始状态、柯里化生产函数和 `makeCreator()`。v1 将其标为 `State`。
+- 标注草稿类型并返回新状态的柯里化更新函数，如 `create((draft: State) => ({ ...draft, count: 0 }))`，现在生成返回 `State` 的 producer；异步时为 `Promise<State>`。v1 错误将它识别为手动草稿，导致无法调用。泛型中的 `create((draft: T) => { … })` 也修复了同一问题。
+- 显式指定状态类型时，可能返回也可能不返回 Promise 的更新函数（如 `(draft: State) => void | Promise<void>`）现在返回 `State | Promise<State>`，也适用于 `number` 等原始状态、柯里化 producer 和 `makeCreator()`。v1 将其标为 `State`。
 
 ## 会改变结果的修复 [#fixes-that-change-results]
 

@@ -19,7 +19,7 @@ Mutative 和 Immer 都需要 `Proxy`。Android 上 React Native 的 JavaScriptCo
 
 ### 能与 Redux 集成吗？ [#can-mutative-be-integrated-with-redux]
 
-可以。接收 action 参数的[生产函数](/zh/docs/advanced-guides/currying)就是 reducer；更新函数也可以返回新状态，例如用 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 返回初始状态。Redux Toolkit 的 `createSlice()`、`createReducer()` 使用 Immer，其[允许配置 produce() 的 RFC](https://github.com/reduxjs/redux-toolkit/pull/3074)已提出。
+可以。接收 action 参数的[producer](/zh/docs/advanced-guides/currying) 就是 reducer；更新函数也可以返回新状态，例如用 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 返回初始状态。Redux Toolkit 的 `createSlice()`、`createReducer()` 使用 Immer，其[允许配置 produce() 的 RFC](https://github.com/reduxjs/redux-toolkit/pull/3074)已提出。
 
 ### 哪些数组方法在草稿上原生执行？ [#which-array-methods-run-natively-on-drafts]
 
@@ -43,7 +43,7 @@ Mutative 和 Immer 都需要 `Proxy`。Android 上 React Native 的 JavaScriptCo
 
 ### 草稿可以作为 Map 的键吗？ [#can-a-draft-be-a-map-key]
 
-不可以。Map 键原样保留，生产函数结束时草稿被撤销，所以 Map 和引用该键的补丁都会持有已撤销草稿，读取属性会抛错。应改用 `original(draft)`、`current(draft)` 或 ID。开发构建会拒绝将草稿作为 Map 草稿 `set()` 的键。
+不可以。Map 键原样保留，producer 结束时草稿被撤销，所以 Map 和引用该键的补丁都会持有已撤销草稿，读取属性会抛错。应改用 `original(draft)`、`current(draft)` 或 ID。开发构建会拒绝将草稿作为 Map 草稿 `set()` 的键。
 
 ### 支持共享引用吗？ [#does-mutative-support-shared-references]
 

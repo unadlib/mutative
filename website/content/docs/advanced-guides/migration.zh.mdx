@@ -69,7 +69,7 @@ const nextState = create({ list: [1] }, (draft) => {
 expect(Object.isFrozen(nextState.list)).toBe(true);
 ```
 
-两者的柯里化生产函数用法一致：`produce(recipe)` 替换为 `create(recipe)`，生产函数会将其余参数传给更新函数，详见[柯里化](/zh/docs/advanced-guides/currying)。
+两者的柯里化 producer 用法一致：`produce(recipe)` 替换为 `create(recipe)`，producer 会将其余参数传给更新函数，详见[柯里化](/zh/docs/advanced-guides/currying)。
 
 ## 补丁 [#patches]
 

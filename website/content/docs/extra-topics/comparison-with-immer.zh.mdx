@@ -26,7 +26,7 @@ Mutative 与 Immer 采用相同模型：更新函数修改草稿，库生成下�
 | Immer | Mutative |
 | :--- | :--- |
 | `produce(base, recipe)` | `create(base, recipe)` |
-| `produce(recipe)`，柯里化生产函数 | `create(recipe)` |
+| `produce(recipe)`，柯里化 producer | `create(recipe)` |
 | `produceWithPatches()`，或传给 `produce()` 的补丁监听器 | `create(base, recipe, { enablePatches: true })`，返回 `[state, patches, inversePatches]` |
 | `applyPatches(state, patches)` | `apply(state, patches)` |
 | `createDraft(base)` 和 `finishDraft(draft)` | `const [draft, finalize] = create(base)` 和 `finalize()` |

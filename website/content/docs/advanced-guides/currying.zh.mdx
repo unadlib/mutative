@@ -1,13 +1,13 @@
 ---
 title: 柯里化
-description: 创建稍后接收基础状态及额外参数的生产函数，或创建稍后完成最终处理的草稿。
+description: 创建稍后接收基础状态及额外参数的 producer，或创建稍后完成最终处理的草稿。
 ---
 
-除了 `create(base, recipe)`，[`create()`](/zh/docs/api-reference/create) 还支持两种柯里化形式：只传更新函数会得到生产函数（producer），稍后再传入基础状态；只传基础状态则得到可稍后完成最终处理的草稿。
+除了 `create(base, recipe)`，[`create()`](/zh/docs/api-reference/create) 还支持两种柯里化形式：只传更新函数会得到 producer（生产者函数），稍后再传入基础状态；只传基础状态则得到可稍后完成最终处理的草稿。
 
-## 生产函数 [#producers]
+## Producer（生产者函数） [#producers]
 
-`create(recipe, options?)` 返回生产函数 `(base, ...args) => nextState`。它为第一个参数创建草稿，再将草稿和其余参数传给更新函数：
+`create(recipe, options?)` 返回 producer `(base, ...args) => nextState`。它为第一个参数创建草稿，再将草稿和其余参数传给更新函数：
 
 ```ts
 import { create } from 'mutative';
@@ -29,7 +29,7 @@ expect(nextTodos[1].done).toBe(true);
 expect(nextTodos[0]).toBe(todos[0]);
 ```
 
-接收 action 参数的生产函数就是 reducer，可用于 Redux、`useReducer()` 等接收 reducer 的库：
+接收 action 参数的 producer 就是 reducer，可用于 Redux、`useReducer()` 等接收 reducer 的库：
 
 ```ts
 import { create } from 'mutative';
@@ -60,10 +60,10 @@ const state = [
 expect(state.todos).toEqual([{ text: 'learn', done: true }]);
 ```
 
-- 调用时的选项作用于生产函数生成的每个状态。例如 `create(recipe, { enablePatches: true })` 返回的生产函数会生成 `[nextState, patches, inversePatches]`。
-- 生产函数以自身的 `this` 调用更新函数，因此可以作为对象方法使用。
-- 异步更新函数对应的生产函数返回下一个状态的 Promise。
-- TypeScript 中如上例标注草稿参数类型，即可为生产函数的参数与结果提供类型。
+- 调用时的选项作用于 producer 生成的每个状态。例如 `create(recipe, { enablePatches: true })` 返回的 producer 会生成 `[nextState, patches, inversePatches]`。
+- producer 以自身的 `this` 调用更新函数，因此可以作为对象方法使用。
+- 异步更新函数对应的 producer 返回下一个状态的 Promise。
+- TypeScript 中如上例标注草稿参数类型，即可为 producer 的参数与结果提供类型。
 
 ## 延后完成最终处理的草稿 [#drafts-that-you-finalize-later]
 
