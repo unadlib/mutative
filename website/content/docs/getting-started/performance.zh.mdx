@@ -13,7 +13,7 @@ import {
 
 ## 基准测试套件 [#benchmark-suite]
 
-[基准测试套件](https://github.com/unadlib/mutative/tree/main/perf-testing)计时测量 101 项工作负载：Immer 自身的性能测试、数组方法、稀疏数组、读取、Map 和 Set 的值、对象记录、类实例、深层路径、补丁应用、返回值和搜索。最近一次完整测试测量了其中 97 项，另一次专项测试测量了两个返回全新数据的场景；两个稀疏数组场景是在此后加入的。套件先用手写 reducer 验证每个结果，再比较 Mutative、Immer 11.1.18 和手写 reducer 的耗时。[性能报告](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md)包含完整结果、测试方法及其局限。
+[基准测试套件](https://github.com/unadlib/mutative/tree/main/perf-testing)测量 101 项工作负载的耗时：Immer 自身的性能测试、数组方法、稀疏数组、读取、Map 和 Set 的值、对象记录、类实例、深层路径、补丁应用、返回值和搜索。最近一次完整测试测量了其中 97 项，另一次专项测试测量了两个返回全新数据的场景；两个稀疏数组场景是在此后加入的。套件先用手写 reducer 验证每个结果，再比较 Mutative、Immer 11.1.18 和手写 reducer 的耗时。[性能报告](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md)包含完整结果、测试方法及其局限。
 
 ## Mutative 与 Immer 对比 [#mutative-vs-immer]
 
