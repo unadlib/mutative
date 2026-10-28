@@ -1,8 +1,8 @@
 {
   "reference": {
-    "revision": "eba635a9289a9ddf9a65221059cd9f51d97d8c42",
-    "description": "Rebuild a sparse array only in the direction that makes a hole, and restore only its suffix",
-    "node": "v24.22.0",
+    "revision": "c6ce7aa2d550c27a14bcdbe7f38fa6d8397dade5",
+    "description": "Security update to esbuild 0.28.2: unchanged library artifacts; CJS consumer wrappers add 154 raw bytes, at most 55 gzip bytes and 53 Brotli bytes",
+    "node": "v24.16.0",
     "commands": [
       "pnpm install --frozen-lockfile",
       "pnpm build"
@@ -12,7 +12,7 @@
     "maxGrowthPercent": 1,
     "maxGrowthBytes": 64
   },
-  "esbuild": "0.24.0",
+  "esbuild": "0.28.2",
   "measurements": {
     "artifact/mutative.cjs.production.min.js": {
       "raw": 28489,
@@ -50,34 +50,34 @@
       "brotli": 16052
     },
     "consumer/import/create": {
-      "raw": 25665,
-      "gzip": 9037,
-      "brotli": 8337
+      "raw": 25647,
+      "gzip": 9022,
+      "brotli": 8305
     },
     "consumer/import/patches": {
-      "raw": 27729,
-      "gzip": 9725,
-      "brotli": 8927
+      "raw": 27711,
+      "gzip": 9711,
+      "brotli": 8948
     },
     "consumer/import/all": {
-      "raw": 28515,
-      "gzip": 9985,
-      "brotli": 9170
+      "raw": 28497,
+      "gzip": 9972,
+      "brotli": 9177
     },
     "consumer/require/create": {
-      "raw": 27977,
-      "gzip": 9994,
-      "brotli": 9182
+      "raw": 28131,
+      "gzip": 10046,
+      "brotli": 9235
     },
     "consumer/require/patches": {
-      "raw": 28045,
-      "gzip": 10029,
-      "brotli": 9211
+      "raw": 28199,
+      "gzip": 10083,
+      "brotli": 9263
     },
     "consumer/require/all": {
-      "raw": 27942,
-      "gzip": 9973,
-      "brotli": 9165
+      "raw": 28096,
+      "gzip": 10028,
+      "brotli": 9212
     }
   }
 }
