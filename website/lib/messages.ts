@@ -73,7 +73,7 @@ const zh: Record<string, string> = {
   'Spread syntax': '展开语法',
   'With Mutative': '使用 Mutative',
   'A 2-6x faster alternative to useState with spread operation.':
-    '比使用展开语法的 useState 快 2–6 倍的替代方案。',
+    '速度是使用展开语法的 useState 的 2–6 倍，可用作替代方案。',
   'A Mutative middleware for Zustand.': 'Zustand 的 Mutative 中间件。',
   'A Mutative extension for Jotai.': 'Jotai 的 Mutative 扩展。',
   'Utilities for using Mutative with XState.':
