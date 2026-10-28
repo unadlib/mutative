@@ -19,7 +19,7 @@ import {
 
 > Mutative 通过了 Immer 的全部测试用例。
 
-在相同配置下（同时开启或关闭冻结，同时开启或关闭补丁），Mutative 在 614 个测量案例中的 595 个更快，耗时比的几何平均值为 3.6 倍。各自默认配置下（Mutative 关闭自动冻结，Immer 开启），Mutative 在 157 个案例中的 154 个更快，几何平均值为 6.6 倍。其余 3 个场景返回之前已被 Immer 冻结的状态：Immer 搜索返回状态中的草稿时会跳过已冻结的值，而默认不冻结的 Mutative 会继续搜索，除非用 [`rawReturn()`](/zh/docs/api-reference/rawreturn#performance-compared-with-immer) 包裹返回值；此时耗时为 0.26 µs。
+在相同配置下（同时开启或关闭冻结，同时开启或关闭补丁），Mutative 在 614 个测量案例中的 595 个更快，耗时比的几何平均值为 3.6 倍。各自默认配置下（Mutative 关闭自动冻结，Immer 开启），Mutative 在 157 个案例中的 154 个更快，几何平均值为 6.6 倍。其余 3 个场景返回的是 Immer 此前已冻结的状态：Immer 搜索返回状态中的草稿时会跳过已冻结的值，而默认不冻结的 Mutative 会继续搜索，除非用 [`rawReturn()`](/zh/docs/api-reference/rawreturn#performance-compared-with-immer) 包裹返回值；此时耗时为 0.26 µs。
 
 <PerformanceOverview />
 
