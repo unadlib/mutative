@@ -303,13 +303,13 @@ expect(Object.isFrozen(frozen.tags)).toBe(true);
 
 ## 从 1.x 升级 [#upgrading-from-1x]
 
-2.0 修复不会回移到 1.x，1.3.0 是最后一个 1.x 版本。安装 2.0：
+2.0 的修复不会移植回 1.x，1.3.0 是最后一个 1.x 版本。安装 2.0：
 
 ```npm
 npm install mutative@2
 ```
 
-生态库若将 `mutative` 1.x 声明为 peer dependency，npm 7 及以上安装 `mutative@2` 时会以 `ERESOLVE` 停止。请升级到接受 2.0 的生态库版本，或在兼容前保留 1.3.0。
+生态库若将 `mutative` 1.x 声明为 peer dependency，npm 7 及以上安装 `mutative@2` 时会报 `ERESOLVE` 错误并中止安装。请升级到接受 2.0 的生态库版本，或在兼容前保留 1.3.0。
 
 然后依次检查以下事项，细节见[迁移指南](/zh/docs/advanced-guides/migration-v2)。
 
