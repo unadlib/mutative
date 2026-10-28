@@ -227,7 +227,7 @@ expect(apply(nextState, inversePatches)).toEqual(baseState);
 
 ### 应用补丁 [#applying-patches]
 
-`apply()` 现在拒绝以 `__proto__` 结尾的路径，与此前对路径中间该键的处理一致。Set 元素只能按索引读取，不能再通过 Set 路径访问 `Array.prototype`。如果补丁来自其他客户端等不可控来源，这些检查值得升级。路径中的 Map 键保持原样，不再转字符串；补丁值副本保留自有 symbol 键和 `JSON.parse()` 产生的自有 `__proto__` 数据属性。`mutable: true` 遇到替换根状态会抛错，因为无法原地替换根值。详见[接受的补丁](/zh/docs/api-reference/apply#patches-that-apply-accepts)。
+`apply()` 现在拒绝以 `__proto__` 结尾的路径，与此前对路径中间该键的处理一致。Set 元素只能按索引读取，不能再通过 Set 路径访问 `Array.prototype`。如果补丁来自其他客户端等不可控来源，建议升级到 2.0 以获得这些安全检查。路径中的 Map 键保持原样，不再转字符串；补丁值副本保留自有 symbol 键和 `JSON.parse()` 产生的自有 `__proto__` 数据属性。`mutable: true` 遇到替换根状态会抛错，因为无法原地替换根值。详见[接受的补丁](/zh/docs/api-reference/apply#patches-that-apply-accepts)。
 
 ### 集合、迭代器与失败的生产函数 [#collections-iterators-and-failed-producers]
 
