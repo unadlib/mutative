@@ -1,0 +1,17 @@
+{
+  "title": "进阶指南",
+  "defaultOpen": true,
+  "collapsible": false,
+  "pages": [
+    "auto-freeze",
+    "currying",
+    "mark",
+    "patches",
+    "strict-mode",
+    "typescript",
+    "pitfalls",
+    "performance-tips",
+    "migration",
+    "migration-v2"
+  ]
+}

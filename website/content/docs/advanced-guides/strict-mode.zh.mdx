@@ -1,0 +1,85 @@
+---
+title: 严格模式
+description: 显式读取无法创建草稿的值，并在开发环境检查返回值。
+---
+
+Mutative 为普通对象、数组、Map、Set 和被[标记](/zh/docs/advanced-guides/mark)为不可变的值创建草稿。状态中其他对象（如 `Date` 或类实例）被草稿、基础状态和下一个状态共享，更新函数修改它们也会修改基础状态。`strict` 选项要求显式进行这类读取。
+
+## 严格模式检查什么 [#what-strict-mode-checks]
+
+- 从草稿读取无法创建草稿的对象，或标为 `mutable` 的值时，会抛错，除非读取发生在 [`unsafe()`](/zh/docs/api-reference/unsafe) 内。原始值、草稿和赋值不受影响。
+- 更新函数通过 [`rawReturn()`](/zh/docs/api-reference/rawreturn) 返回的值仍会被搜索，其中的草稿会替换为最终值；开发构建发现草稿时还会警告。
+- 如果更新函数留下 1,000 个或更多未修改的草稿，开发构建会警告一次。通过草稿读取的对象都会变成草稿，因此 `draft.list.find()` 等大数组搜索会为每个访问的元素创建草稿。应改为搜索 [`current(draft.list)`](/zh/docs/api-reference/current#searching-a-large-array)，再通过草稿修改匹配项。
+
+```ts
+import { create, unsafe } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = {
+  counter: new Counter(),
+  list: [{ text: 'todo' }],
+};
+
+create(
+  baseState,
+  (draft) => {
+    // Drafts and primitives can be read and changed as usual.
+    draft.list[0].text = 'done';
+
+    // The Counter instance is not drafted, so reading it throws.
+    expect(() => draft.counter.count).toThrow();
+
+    // Inside unsafe(), it can be read.
+    expect(unsafe(() => draft.counter.count)).toBe(0);
+  },
+  {
+    strict: true,
+  }
+);
+```
+
+要修改这类值，可用新值替换，或将其类标为 `immutable`，让 Mutative 为实例创建草稿并复制：
+
+```ts
+import { create } from 'mutative';
+
+class Counter {
+  count = 0;
+}
+
+const baseState = { counter: new Counter() };
+
+const state = create(
+  baseState,
+  (draft) => {
+    draft.counter.count += 1;
+  },
+  {
+    strict: true,
+    mark: (target, { immutable }) =>
+      target instanceof Counter ? immutable : undefined,
+  }
+);
+
+expect(state.counter.count).toBe(1);
+expect(baseState.counter.count).toBe(0);
+```
+
+## 在开发环境启用 [#enable-it-in-development]
+
+严格模式检查更新函数读取的每个值，因此对于可能含对象的数组，原本在副本上原生执行的数组方法，以及已修改数组的 `current()`，都会改为通过草稿读取数组。建议仅在开发环境启用：
+
+```ts
+import { makeCreator } from 'mutative';
+
+export const create = makeCreator({
+  strict: process.env.NODE_ENV !== 'production',
+});
+```
+
+<Callout type="idea">
+严格模式对 `rawReturn()` 尤其有用：未开启时，不会搜索其包裹值中的草稿；若其中含有草稿，最终状态会保留已撤销的代理。
+</Callout>
