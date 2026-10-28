@@ -1,2 +1,6 @@
 allowBuilds:
   esbuild: true
+
+overrides:
+  # serve 14.2.6 pins the vulnerable release; remove when it accepts 1.8.2+.
+  'serve@14.2.6>compression': 1.8.2
