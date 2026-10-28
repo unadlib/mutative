@@ -1,16 +1,21 @@
 1:"$Sreact.fragment"
-2:I[89750,["/_next/static/chunks/040cm_txkgtl2.js"],""]
-3:I[41928,["/_next/static/chunks/040cm_txkgtl2.js"],"default"]
-4:I[8595,["/_next/static/chunks/040cm_txkgtl2.js"],"default"]
-5:I[90004,["/_next/static/chunks/040cm_txkgtl2.js"],"OutletBoundary"]
-6:"$Sreact.suspense"
-9:I[90004,["/_next/static/chunks/040cm_txkgtl2.js"],"ViewportBoundary"]
-b:I[90004,["/_next/static/chunks/040cm_txkgtl2.js"],"MetadataBoundary"]
-d:I[69681,[],"default",1]
-:HL["/_next/static/chunks/26f_j31o8ao_t.css","style"]
-8:X
-0:{"P":null,"c":["","_not-found",""],"q":"","i":false,"f":[[["",{"children":["/_not-found",{"children":["__PAGE__",{},"$undefined","$undefined",4608]},"$undefined","$undefined",4608]},"$undefined","$undefined",4624],[["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/26f_j31o8ao_t.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/_next/static/chunks/040cm_txkgtl2.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","children":["$","body",null,{"className":"flex min-h-screen items-center justify-center bg-fd-background px-6 text-fd-foreground","children":["$","main",null,{"className":"max-w-lg space-y-8 py-16 text-center","children":[["$","p",null,{"className":"text-lg font-semibold","children":"Mutative"}],["$","h1",null,{"className":"text-7xl font-bold text-fd-muted-foreground","children":"404"}],["$","section",null,{"className":"space-y-3","children":[["$","h2",null,{"className":"text-2xl font-semibold","children":"Page Not Found"}],["$","p",null,{"className":"text-fd-muted-foreground","children":"This page may have been removed, renamed or be temporarily unavailable."}],["$","$L2",null,{"href":"/","className":"inline-block underline underline-offset-4","children":"Back to English home"}]]}],["$","section",null,{"lang":"zh-CN","className":"space-y-3 border-t pt-8","children":[["$","h2",null,{"className":"text-2xl font-semibold","children":"页面未找到"}],["$","p",null,{"className":"text-fd-muted-foreground","children":"此页面可能已被删除、改名或暂时无法访问。"}],["$","$L2",null,{"href":"/zh/","className":"inline-block underline underline-offset-4","children":"返回中文首页"}]]}]]}]}]}]]}],{"children":[["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":[["$","$1","c",{"children":[null,null,["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],{},null,false,null]},null,false,"$8"]},null,false,null],["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L9",null,{"children":"$La"}],["$","div",null,{"hidden":true,"children":["$","$Lb",null,{"children":["$","$6",null,{"name":"Next.Metadata","children":"$Lc"}]}]}],null]}],false]],"m":"$undefined","G":["$d",[]],"S":true,"h":null,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"tSRXiD2_zs6Yb8Lbd0-fF"}
-8:C
-a:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
-7:null
-c:[["$","title","0",{"children":"Page Not Found / 页面未找到 | Mutative"}],["$","meta","1",{"name":"robots","content":"noindex, nofollow"}]]
+2:"/_next/static/chunks/0nz_zk5jdavwt.js"
+3:I[83388,["$2"],""]
+5:I[84659,["$2"],"default"]
+6:I[74191,["$2"],"default"]
+9:I[64228,["$2"],"OutletBoundary"]
+a:"$Sreact.suspense"
+c:"ViewportBoundary"
+d:I[64228,["$2"],"$c"]
+f:"MetadataBoundary"
+10:I[64228,["$2"],"$f"]
+12:I[39425,[],"default",1]
+:HL["/_next/static/chunks/0r6ao-37ngov1.css","style"]
+7:X
+8:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":[null,null,["$","$L9",null,{"children":["$","$a",null,{"name":"Next.MetadataOutlet","children":"$@b"}]}]]}],"p":false,"v":null}}]]
+4:[["children",{"s":"/_not-found","h":512,"d":{"r":["$","$1","c",{"children":[null,["$","$L5",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$7"},"c":"$Q8"}]]
+0:{"P":null,"c":["","_not-found",""],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/0r6ao-37ngov1.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/_next/static/chunks/0nz_zk5jdavwt.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","children":["$","body",null,{"className":"flex min-h-screen items-center justify-center bg-fd-background px-6 text-fd-foreground","children":["$","main",null,{"className":"max-w-lg space-y-8 py-16 text-center","children":[["$","p",null,{"className":"text-lg font-semibold","children":"Mutative"}],["$","h1",null,{"className":"text-7xl font-bold text-fd-muted-foreground","children":"404"}],["$","section",null,{"className":"space-y-3","children":[["$","h2",null,{"className":"text-2xl font-semibold","children":"Page Not Found"}],["$","p",null,{"className":"text-fd-muted-foreground","children":"This page may have been removed, renamed or be temporarily unavailable."}],["$","$L3",null,{"href":"/","className":"inline-block underline underline-offset-4","children":"Back to English home"}]]}],["$","section",null,{"lang":"zh-CN","className":"space-y-3 border-t pt-8","children":[["$","h2",null,{"className":"text-2xl font-semibold","children":"页面未找到"}],["$","p",null,{"className":"text-fd-muted-foreground","children":"此页面可能已被删除、改名或暂时无法访问。"}],["$","$L3",null,{"href":"/zh/","className":"inline-block underline underline-offset-4","children":"返回中文首页"}]]}]]}]}]}]]}],"p":false,"v":null},"c":"$Q4"},"h":{"r":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$Ld",null,{"children":"$Le"}],["$","$L10",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$a",null,{"name":"Next.Metadata","children":"$L11"}]}],null]}],null]}],"p":false,"v":null}},"m":"$undefined","G":["$12",[]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"cSwptDpnSFMxbnpU4eOHD"}
+7:C
+e:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+b:null
+11:[["$","title","0",{"children":"Page Not Found / 页面未找到 | Mutative"}],["$","meta","1",{"name":"robots","content":"noindex, nofollow"}]]
