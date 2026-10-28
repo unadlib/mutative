@@ -156,7 +156,7 @@ const zh: Record<string, string> = {
   'Immer faster': 'Immer 更快',
   'The overall comparison': '整体性能对比',
   'Each card covers a different set of measured cases. Faster means more than 5% less time; the factors are geometric means, not a speedup guaranteed for every workload.':
-    '两组卡片覆盖不同的测量案例。“更快”指耗时减少超过 5%；倍数为几何平均值，不保证每项工作负载都有同样的提升。',
+    '两张卡片分别覆盖不同的测量案例。“更快”指耗时减少超过 5%；倍数为几何平均值，不保证每项工作负载都有同样的提升。',
   'faster on geometric mean': '耗时比的几何平均值',
   'cases favor Mutative': '个案例中 Mutative 更快',
   'How the gap changes with array size': '性能差距如何随数组规模变化',
