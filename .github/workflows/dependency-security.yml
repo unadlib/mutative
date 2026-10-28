@@ -1,0 +1,55 @@
+name: Dependency Security
+
+on:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'website/package.json'
+      - 'website/pnpm-lock.yaml'
+      - 'website/pnpm-workspace.yaml'
+      - '.github/workflows/dependency-security.yml'
+      - '.github/dependabot.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'website/package.json'
+      - 'website/pnpm-lock.yaml'
+      - 'website/pnpm-workspace.yaml'
+      - '.github/workflows/dependency-security.yml'
+      - '.github/dependabot.yml'
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Audit ${{ matrix.directory }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ['.', 'website']
+    defaults:
+      run:
+        working-directory: ${{ matrix.directory }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: pnpm
+          cache-dependency-path: ${{ matrix.directory }}/pnpm-lock.yaml
+      - name: Check the frozen dependency graph without running install scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Audit production and development dependencies at every severity
+        run: pnpm audit --audit-level=low

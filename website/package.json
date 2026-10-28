@@ -7,7 +7,7 @@
     "build": "node scripts/check-locales.mjs --source && next build && node scripts/write-redirects.mjs && node scripts/check-links.mjs && node scripts/check-locales.mjs",
     "locales:check": "node scripts/check-locales.mjs --source",
     "start": "serve out",
-    "deploy": "pnpm build && gh-pages --dist out --nojekyll --repo git@github.com:unadlib/mutative.git --message \"Deploy website - based on $(git rev-parse HEAD)\"",
+    "deploy": "pnpm audit --audit-level=low && pnpm build && gh-pages --dist out --nojekyll --repo git@github.com:unadlib/mutative.git --message \"Deploy website - based on $(git rev-parse HEAD)\"",
     "types:check": "next typegen && tsc --noEmit"
   },
   "dependencies": {

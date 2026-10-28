@@ -15,6 +15,16 @@ pnpm lint
 pnpm format --check
 ```
 
+## Dependency security
+
+The root project and `website/` have separate lockfiles. Run `pnpm audit:dependencies` to audit both, including development dependencies and all advisory severities. The Dependency Security workflow checks frozen installs and audits both graphs on dependency changes and weekly for newly published advisories. The npm release workflow and website deployment command also audit their respective dependencies before publishing. Registry failures fail the check; no advisories are ignored.
+
+Prefer compatible upstream releases and refreshed transitive dependencies. If an upstream package pins a vulnerable version, keep any override scoped to that parent and document when to remove it in `pnpm-workspace.yaml`. The website currently overrides `serve@14.2.6`'s exact `compression` pin. Website version-update PRs remain disabled, but security-update PRs are allowed; do not replace that policy with a wildcard dependency ignore.
+
+`pnpm test:coverage` generates local coverage reports without sending data to a service. The main-branch Coveralls workflow uploads `coverage/lcov.info` once through the pinned official action using `GITHUB_TOKEN`; the legacy npm CLI and its unmaintained `request` dependency are not needed.
+
+The published library has no production dependencies. The website's static export does not run a Next.js server or its image optimizer on GitHub Pages, but the development and build tools must still receive security updates. Historical size and performance reports retain the versions used for those measurements; the current consumer-bundler version and size baseline live in `package.json` and `scripts/build-size-baseline.json`.
+
 ## Build pipeline
 
 `tsdown.config.mjs` produces the existing CJS, ESM and UMD entry points. The pipeline deliberately retains two parts of the previous build:
