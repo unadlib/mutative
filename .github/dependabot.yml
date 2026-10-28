@@ -4,10 +4,23 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      security-updates:
+        applies-to: security-updates
+        patterns: ["*"]
 
   - package-ecosystem: "npm"
     directory: "/website"
     schedule:
       interval: "daily"
-    ignore:
-      - dependency-name: "*"
+    # Keep routine website upgrades manual without suppressing security fixes.
+    open-pull-requests-limit: 0
+    groups:
+      security-updates:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
