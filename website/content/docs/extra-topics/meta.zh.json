@@ -1,0 +1,14 @@
+{
+  "title": "扩展主题",
+  "defaultOpen": true,
+  "collapsible": false,
+  "pages": [
+    "comparison-with-immer",
+    "faq",
+    "contributing",
+    "mutative-ecosystem",
+    "who-uses-mutative",
+    "shared-references",
+    "errors"
+  ]
+}

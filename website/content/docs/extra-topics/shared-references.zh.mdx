@@ -1,0 +1,58 @@
+---
+title: 共享引用
+description: 多条路径指向同一对象时的草稿行为，以及如何保留共享关系。
+---
+
+Mutative 支持从根节点到同一节点存在多条路径的结构，即含共享节点的有向无环图（DAG），**但不能包含循环引用**。需要理解草稿处理共享引用时的以下行为。
+
+## 多条路径使用独立草稿 [#independent-drafts-for-multiple-paths]
+
+基础状态的多条路径引用同一对象时，Mutative 会为**每条路径创建独立草稿**。修改一条路径**不会**自动反映到其他路径。
+
+```javascript
+import { create } from 'mutative';
+
+const obj = {};
+// Same object referenced by two keys
+obj.color1 = obj.color2 = { name: 'Red' };
+
+const result = create(obj, (draft) => {
+  // ⚠️ Different drafts created for each path!
+  console.log(draft.color1 === draft.color2); // false
+
+  draft.color1.name = 'Blue';
+
+  // color2 remains unchanged because it has a separate draft
+  console.log(draft.color2.name); // 'Red'
+});
+
+console.log(result.color1 === result.color2); // false
+// Result: { color1: { name: 'Blue' }, color2: { name: 'Red' } }
+```
+
+这是**有意设计的行为**，与 Immer 一致。状态树中的每条路径都有独立的草稿代理。
+
+## 创建共享引用 [#creating-shared-references]
+
+若需在结果状态中**保留或创建共享引用**，必须在更新函数中显式将一个草稿赋给另一个位置。
+
+```javascript
+const result = create(obj, (draft) => {
+  draft.color1.name = 'Blue';
+
+  // ✅ Explicitly share the reference
+  draft.color2 = draft.color1;
+});
+
+// Now they share the same reference in the result
+console.log(result.color1 === result.color2); // true
+// Result: { color1: { name: 'Blue' }, color2: { name: 'Blue' } }
+```
+
+## 行为汇总 [#summary]
+
+| 场景 | 行为 |
+| --- | --- |
+| **基础状态中的共享节点** | 每条路径有**独立草稿**，一条路径的修改**不会**反映到其他路径。 |
+| **手动赋值的引用** | ✅ **支持**。`draft.x = draft.y` 在最终状态中创建共享引用。 |
+| **真正的循环引用** | ❌ **不支持**。开发环境开启自动冻结时会主动检测。 |

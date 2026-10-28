@@ -1,0 +1,136 @@
+---
+title: Mutative 生态系统
+description: 用于 React、Zustand、Jotai、XState、Yjs、撤销与重做等场景的 Mutative 生态库。
+---
+
+这些库通过 Mutative 为其他工具提供不可变更新。请与 `mutative` 一起安装，并查阅各自仓库中的完整 API。
+
+## React [#react]
+
+- [use-mutative](https://github.com/mutativejs/use-mutative)：比使用展开语法的 useState 快 2–6 倍的替代方案，提供 `useMutative()` 和 `useMutativeReducer()`，见[在 React 中使用 Mutative](/zh/docs/getting-started/mutative-with-react)。
+- [use-travel](https://github.com/mutativejs/use-travel)：状态时间旅行 Hook，支持撤销、重做、重置和归档。
+- [reactant](https://github.com/unadlib/reactant)：使用 Mutative 进行不可变更新的 React 应用框架。
+
+## Zustand [#zustand]
+
+[zustand-mutative](https://github.com/mutativejs/zustand-mutative) 是 Zustand 中间件，让 `set()` 接收更新函数：
+
+```tsx
+import { create } from 'zustand';
+import { mutative } from 'zustand-mutative';
+
+type State = { count: number };
+type Actions = { increment: (qty: number) => void };
+
+export const useCountStore = create<State & Actions>()(
+  mutative((set) => ({
+    count: 0,
+    increment: (qty) =>
+      set((state) => {
+        state.count += qty;
+      }),
+  }))
+);
+```
+
+[zustand-travel](https://github.com/mutativejs/zustand-travel) 基于 travels，为 Zustand 提供撤销与重做。
+
+## Jotai [#jotai]
+
+[jotai-mutative](https://github.com/mutativejs/jotai-mutative) 提供 setter 接收更新函数的 atom：
+
+```tsx
+import { useAtom } from 'jotai';
+import { atomWithMutative } from 'jotai-mutative';
+
+const countAtom = atomWithMutative({ value: 0 });
+
+export function Counter() {
+  const [count, setCount] = useAtom(countAtom);
+  return (
+    <button
+      onClick={() =>
+        setCount((draft) => {
+          draft.value += 1;
+        })
+      }
+    >
+      {count.value}
+    </button>
+  );
+}
+```
+
+`withMutative(atom)` 和 `useMutativeAtom(atom)` 为现有 atom 提供相同 setter。
+
+## XState [#xstate]
+
+[xstate-mutative](https://github.com/mutativejs/xstate-mutative) 为 XState 5 提供修改 context 草稿的 `assign()` action：
+
+```ts
+import { createActor, createMachine } from 'xstate';
+import { assign } from 'xstate-mutative';
+
+const machine = createMachine({
+  context: { count: 0 },
+  on: {
+    increment: {
+      actions: assign(({ context }) => {
+        context.count += 1;
+      }),
+    },
+  },
+});
+
+const actor = createActor(machine).start();
+actor.send({ type: 'increment' });
+```
+
+## 撤销与重做 [#undo-and-redo]
+
+[travels](https://github.com/mutativejs/travels) 是与框架无关的撤销、重做核心，以 Mutative 补丁保存历史，支持历史长度限制、归档和持久化：
+
+```ts
+import { createTravels } from 'travels';
+
+const travels = createTravels({ count: 0 });
+
+travels.setState((draft) => {
+  draft.count += 1;
+});
+travels.back();
+travels.forward();
+```
+
+[use-travel](https://github.com/mutativejs/use-travel) 和 [zustand-travel](https://github.com/mutativejs/zustand-travel) 分别集成到 React 和 Zustand。自行基于补丁实现的方法见[撤销与重做](/zh/docs/advanced-guides/patches#undo-and-redo)。
+
+## 协同编辑 [#collaboration]
+
+[mutative-yjs](https://github.com/mutativejs/mutative-yjs) 将 Yjs 的 `Y.Map` 或 `Y.Array` 绑定到普通快照，通过更新函数修改，并在远端变化时刷新：
+
+```ts
+import * as Y from 'yjs';
+import { bind } from 'mutative-yjs';
+
+const doc = new Y.Doc();
+const binder = bind<{ count: number; items: string[] }>(doc.getMap('data'));
+
+binder.update((state) => {
+  state.count = 0;
+  state.items = ['apple'];
+});
+binder.update((state) => {
+  state.count += 1;
+  state.items.push('banana');
+});
+
+binder.get(); // { count: 1, items: ['apple', 'banana'] }
+```
+
+## 其他库 [#other-libraries]
+
+- [mutative-compat](https://github.com/exuanbo/mutative-compat)：完全兼容 Immer API 的 Mutative 封装。
+- [mutability](https://github.com/mutativejs/mutability)：事务式可变更新库，原地修改状态并返回补丁。
+- [usm](https://github.com/reactant/usm)：用于 Redux、MobX、Vuex、Pinia 等的简洁灵活状态模型。
+- [coaction](https://github.com/coactionjs/coaction)：TypeScript 不可变响应式状态运行时。
+- [coexist](https://github.com/coactionjs/coexist)：支持多个 UI 框架共存的应用运行时。

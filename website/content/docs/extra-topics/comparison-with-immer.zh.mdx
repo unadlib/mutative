@@ -1,0 +1,84 @@
+---
+title: 与 Immer 对比
+description: 对比 Mutative 与 Immer 11.1.18 的 API、默认配置、草稿和补丁，以及两者共有的行为。
+---
+
+Mutative 与 Immer 采用相同模型：更新函数修改草稿，库生成下一个状态，并共享未修改部分。大多数代码只需按[迁移指南](/zh/docs/advanced-guides/migration)替换函数名。本页基于 Immer 11.1.18，列出影响执行行为或结果的差异，以及容易被误解的共有行为。
+
+## 功能概览 [#at-a-glance]
+
+| 功能 | Mutative | Immer |
+| :--- | :---: | :---: |
+| 默认关闭自动冻结 | ✅ | ❌ |
+| 每次调用独立选项，无全局设置或插件 | ✅ | ❌ |
+| 无需修改类定义即可创建实例草稿 | ✅ | ❌ |
+| 自定义浅拷贝 | ✅ | ❌ |
+| 严格模式 | ✅ | ❌ |
+| 异步更新函数 | ✅ | ❌ |
+| Map 和 Set 子类保留类型 | ✅ | ❌ |
+| Set 草稿支持 ES2025 Set 方法 | ✅ | ❌ |
+| 冻结 Map 键中的对象 | ✅ | ❌ |
+| 原生执行草稿数组方法 | ✅ | 需开启插件 |
+| 补丁支持 JSON Pointer 字符串路径 | ✅ | ❌ |
+
+## API [#apis]
+
+| Immer | Mutative |
+| :--- | :--- |
+| `produce(base, recipe)` | `create(base, recipe)` |
+| `produce(recipe)`，柯里化生产函数 | `create(recipe)` |
+| `produceWithPatches()`，或传给 `produce()` 的补丁监听器 | `create(base, recipe, { enablePatches: true })`，返回 `[state, patches, inversePatches]` |
+| `applyPatches(state, patches)` | `apply(state, patches)` |
+| `createDraft(base)` 和 `finishDraft(draft)` | `const [draft, finalize] = create(base)` 和 `finalize()` |
+| `current()`、`original()`、`isDraft()`、`isDraftable()` | 同名函数，`isDraftable()` 还接受 `{ mark }` |
+| `castDraft()`、`castImmutable()` | 同名函数，另有 `castMutable()` |
+| `nothing`，用于返回 `undefined` | `rawReturn(undefined)` |
+| 类上的 `[immerable]: true` | `mark` 选项或 `markSimpleObject()` |
+| `freeze(value, deep)` | 无对应导出；用 `enableAutoFreeze` 冻结结果 |
+| `setAutoFreeze()` | 每次调用的 `enableAutoFreeze` 选项 |
+| `new Immer(config)` | `makeCreator(options)` 返回带默认选项的 `create()` |
+| `enableMapSet()`、`enablePatches()` | 无需调用 |
+| `enableArrayMethods()` | 无需调用，相关数组方法原生执行 |
+| `setUseStrictShallowCopy()`、`setUseStrictIteration()` | 无对应设置，见[标记](#defaults-and-configuration) |
+| 无对应 API | `unsafe()`，用于严格模式下显式读取 |
+
+## 默认值与配置 [#defaults-and-configuration]
+
+- **自动冻结**：Mutative 默认不冻结结果，需开启 `enableAutoFreeze`；Immer 默认冻结。开启后，两者均深度冻结整个结果及未修改部分，并冻结 Map/Set 实例使修改方法抛错。Mutative 还冻结 Map 的对象键，Immer 不会。
+- **每次调用独立选项**：`create()` 和 `apply()` 接收独立选项，`makeCreator()` 设置默认值；Immer 的 `setAutoFreeze()` 和插件影响模块的所有调用方。Mutative 内置 Map、Set 和补丁支持，无需 Immer 要求的 `enableMapSet()`、`enablePatches()`。
+- **标记**：`mark` 决定如何创建草稿：无需修改类定义即可支持实例，而 Immer 要求 `[immerable]`；也可保持值可变以原地修改，或返回自定义复制函数。Mutative 对已标记实例复制全部自有属性，包括不可枚举属性，类似 Immer 的 `setUseStrictShallowCopy('class_only')`；但对可枚举、可写、可配置属性使用赋值，类似 Immer 默认复制。因此遮蔽类 setter 的自有属性会触发它，详见[复制已标记的实例](/zh/docs/advanced-guides/mark#copying-marked-instances)。两者对普通对象都只复制可枚举属性，并将 getter 读取为值。另见[标记](/zh/docs/advanced-guides/mark)。
+- **严格模式**：`strict: true` 时，读取可能绕过草稿被修改的值（如未标记类实例）必须放在 `unsafe()` 内，否则抛错。Immer 没有对应模式，详见[严格模式](/zh/docs/advanced-guides/strict-mode)。
+
+## 草稿 [#drafts]
+
+- **Map 和 Set 子类**在草稿和结果中保留类型及方法；Immer 的结果为普通 Map 和 Set。
+- **ES2025 Set 方法**（如 `union()`、`isSubsetOf()`）可用于 Set 草稿，按草稿迭代返回的对象进行比较，见[常见问题](/zh/docs/extra-topics/faq#do-the-set-methods-such-as-union-and-issubsetof-work-on-set-drafts)。Immer 的这些方法看不到草稿元素，例如 `new Set([1, 2])` 的草稿与 `new Set([3])` 求并集会返回 `Set {3}`。
+- **异步更新函数**使 `create()` 返回结果 Promise，草稿在 Promise 落定前有效，见 [create()](/zh/docs/api-reference/create)。Immer 11 会因修改草稿同时返回 Promise 而抛错。
+- **嵌套 `create()` 接收草稿**时，会复制其当前状态，而 Immer 的 `produce()` 直接代理草稿，见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。
+- **返回值**：两者都支持用返回值替换状态，也都拒绝同时修改草稿并返回其他值。`rawReturn()` 像 Immer 的 `nothing` 一样支持返回 `undefined`，还可跳过返回值中的草稿搜索，见 [rawReturn()](/zh/docs/api-reference/rawreturn)。
+- **数组方法**：`shift()`、`unshift()`、`splice()`、`reverse()` 在普通数组副本上移动元素，`indexOf()`、`lastIndexOf()`、`includes()` 原生搜索，行为边界见[常见问题](/zh/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts)。Immer 默认通过代理执行，需显式开启 `enableArrayMethods()`；11.1.18 的该插件可能返回原始基础对象并生成无法重放的补丁，见[审计](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md)。
+- **共有行为**：共享对象的每条路径有独立草稿，见[共享引用](/zh/docs/extra-topics/shared-references)。未标记也无 `[immerable]` 的类实例不创建草稿，修改它会改变基础状态。`current()`、`original()` 对非草稿抛错。Map 草稿在首次修改前开始的迭代会遍历基础 Map，见[常见问题](/zh/docs/extra-topics/faq#can-a-recipe-change-a-map-draft-while-iterating-over-it)。
+
+## 补丁 [#patches]
+
+两者对多数修改生成相同操作、路径和值；嵌套草稿的补丁先于父级；补丁值引用下一个状态的对象，并随状态冻结。以下场景存在差异，生成与应用细节见[补丁行为](/zh/docs/advanced-guides/patches#patch-behavior)。
+
+- **缩短数组**：Mutative 默认以 `replace` 修改 `length`，适用于 `pop()`、`list.length = 0` 的正向补丁，以及 `push()`、插入型 `splice()` 的逆向补丁。Immer 逐索引生成 `remove`。Mutative 设置 `enablePatches: { arrayLengthAssignment: false }` 后采用相同方式。
+- **修改 Set 元素**：只修改对象、不增删元素时，Mutative 按元素位置生成内部 `replace`，Immer 删除旧对象并添加新对象。一旦增删元素，两者都按值携带已修改元素。
+- **字符串路径**：Mutative 的 `enablePatches: { pathAsArray: false }` 生成 JSON Patch 要求的 JSON Pointer 字符串；Immer 始终使用数组。字符串无法表示非字符串 Map 键或 symbol 键。
+- **应用选项**：`apply()` 支持 `enableAutoFreeze`、`strict` 和 `mark`，或用 `mutable: true` 原地修改并返回 `undefined`。
+- **共有行为**：两者均原地修改传入草稿、应用前复制补丁值、接受数组追加索引 `-`，并拒绝 `move`、`copy`、`test` 及经过 `__proto__`、`constructor` 的路径。由于复制补丁值，向 Set 添加的对象是副本，逆向补丁无法删除它，所以重做后撤销会留下对象。两者都在末尾添加元素，Set 顺序可能改变，详见[包含对象的 Set](/zh/docs/advanced-guides/patches#sets-of-objects)。
+
+## Mutative 正确处理的 Immer 边界情况 [#immer-behaviors-that-mutative-handles]
+
+Mutative 通过了适配到自身 API 的 Immer 测试套件。[差异测试](https://github.com/unadlib/mutative/blob/main/test/immer-non-support.test.ts)固定了 Immer 11.1.18 处理错误而 Mutative 正确处理的案例，如草稿泄漏到最终状态、冻结后 Map 键仍可变等。[数组方法审计](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.md)复现了 `enableArrayMethods()` 的补丁顺序、基础状态修改和草稿最终处理问题；[复现测试](https://github.com/unadlib/mutative/blob/main/test/immer-array-methods.test.ts)包含关闭插件的对照，并对 Mutative 运行相同更新函数。
+
+## Mutative 与 Immer 的性能 [#mutative-vs-immer-performance]
+
+相同配置下（冻结与补丁设置一致），Mutative 在 614 个测量案例中的 595 个快于 Immer 11.1.18，耗时比的几何平均值为 3.6 倍。各自默认配置下（仅 Immer 自动冻结），157 个中的 154 个更快，几何平均值为 6.6 倍。相同配置的比较中，Immer 只在开启自动冻结时更快：更新多字段类实例，以及两个耗时区间与 Mutative 重叠的 100 行数组更新。
+
+开启补丁、关闭冻结时，Mutative 在 150 个案例中的 148 个更快，其余未明显更慢；所有数组案例都更快，几何平均值为 Immer 的 4.4 倍、Mutative 1.3.0 的 13 倍。比较未开启 Immer 的 `enableArrayMethods()`，因为 11.1.18 的插件会从 `shift`、`pop`、`splice` 返回原始基础对象，修改它们会改变之前的状态，补丁也可能无法重放。上方审计包含复现。
+
+Immer 11.0.0 在 [immerjs/immer#1183](https://github.com/immerjs/immer/pull/1183) 中移植了 Mutative 的最终处理回调机制，替代递归遍历草稿树。本次测量使用的 Immer 11.1.18 已包含该改进。
+
+精选结果见[性能](/zh/docs/getting-started/performance)，完整结果、方法和局限见[性能报告](https://github.com/unadlib/mutative/blob/main/perf-testing/reports/SUMMARY.md)。

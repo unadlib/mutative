@@ -1,0 +1,26 @@
+---
+title: 参与贡献
+description: 配置仓库、运行检查，为代码、基准测试和文档贡献改进。
+---
+
+Mutative 致力于高效的不可变更新，重点关注性能与易用的 API。欢迎相关改进的 Pull Request。较大改动请先创建 [issue](https://github.com/unadlib/mutative/issues) 或[讨论](https://github.com/unadlib/mutative/discussions)。
+
+### 开发流程 [#development-workflow]
+
+- 克隆[仓库](https://github.com/unadlib/mutative)，使用 Node.js 22 或 24，以及 `package.json` 声明的 pnpm 版本。
+- 运行 `pnpm install` 安装依赖。
+- 运行 `pnpm test` 执行测试，或用 `pnpm test --watch` 持续观察。
+- 提交前运行 `pnpm format`、`pnpm lint` 和 `pnpm type-check`。
+- 使用 `pnpm commit` 编写符合 [Conventional Commits](https://www.conventionalcommits.org/) 的提交信息。
+- 创建 Pull Request。
+
+### 构建、包与基准测试 [#builds-packages-and-benchmarks]
+
+[构建与验证指南](https://github.com/unadlib/mutative/blob/main/BUILDING.md)介绍构建流程、包检查、体积限制和生成的 API 参考。[基准测试套件](https://github.com/unadlib/mutative/blob/main/perf-testing/README.md)比较当前构建、Mutative 1.3.0、Immer 和手写 reducer，并介绍 CI 回归预算。运行 `pnpm benchmark:immer:check` 验证工作负载，运行 `pnpm benchmark:immer` 测量性能。
+
+### 文档 [#docs]
+
+- 网站位于 [`website/`](https://github.com/unadlib/mutative/tree/main/website)。仓库根目录运行 `pnpm start:docs` 预览，在 `website/` 内运行 `pnpm build` 导出并检查链接。
+- 仅从 `mutative` 或 `immer` 导入的 Mutative 代码示例会作为测试运行，可使用 Vitest 的 `expect`。请保持这类示例完整；不用于运行的片段应省略导入。
+- `pnpm build:doc` 从源码 TSDoc 重新生成 [`docs/`](https://github.com/unadlib/mutative/tree/main/docs) 的 API 参考，CI 会检查是否保持最新。
+- 每个 Markdown 段落和列表项写在单独一行。
