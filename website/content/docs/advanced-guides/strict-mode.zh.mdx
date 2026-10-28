@@ -3,7 +3,7 @@ title: 严格模式
 description: 显式读取无法创建草稿的值，并在开发环境检查返回值。
 ---
 
-Mutative 为普通对象、数组、Map、Set 和被[标记](/zh/docs/advanced-guides/mark)为不可变的值创建草稿。状态中其他对象（如 `Date` 或类实例）被草稿、基础状态和下一个状态共享，更新函数修改它们也会修改基础状态。`strict` 选项要求显式进行这类读取。
+Mutative 为普通对象、数组、Map、Set 和被[标为](/zh/docs/advanced-guides/mark) `immutable` 的值创建草稿。状态中其他对象（如 `Date` 或类实例）被草稿、基础状态和下一个状态共享，更新函数修改它们也会修改基础状态。`strict` 选项要求显式进行这类读取。
 
 ## 严格模式检查什么 [#what-strict-mode-checks]
 

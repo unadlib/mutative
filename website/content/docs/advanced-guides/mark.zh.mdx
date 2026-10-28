@@ -64,7 +64,7 @@ expect(cache.hits).toBe(1);
 
 ## 补丁、自动冻结与严格模式 [#patches-auto-freeze-and-strict-mode]
 
-- 标为 `immutable` 的值像普通对象一样支持补丁和自动冻结。将所有对象标为不可变的函数（如 `() => 'immutable'`）也同样支持。
+- 标为 `immutable` 的值像普通对象一样支持补丁和自动冻结。对所有对象都返回 `'immutable'` 的标记（如 `() => 'immutable'`）也同样支持。
 - 返回拷贝函数的标记不能与补丁或自动冻结组合，开发构建会报错；部分补丁也可能无法应用到这类值。
 - [严格模式](/zh/docs/advanced-guides/strict-mode)下，从草稿读取标为 `mutable` 的值必须位于 [`unsafe()`](/zh/docs/api-reference/unsafe) 内，否则会像读取其他不可创建草稿的对象一样抛错。
 

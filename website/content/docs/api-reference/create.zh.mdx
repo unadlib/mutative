@@ -82,7 +82,7 @@ TypeScript 根据传给 `create()` 或 `makeCreator()` 的 `enablePatches` 类�
 - 返回浅拷贝的函数：使用该副本处理草稿。必须关闭补丁和自动冻结，部分补丁也可能无法应用到这类值。
 - `undefined`：使用默认处理方式。
 
-传入标记数组时，第一个返回值的函数决定处理方式。若标记将所有对象设为不可变（如 `() => 'immutable'`），补丁和自动冻结仍正常工作。标为 `immutable` 的实例会复制全部自有属性，其中可枚举、可写、可配置的属性通过赋值复制。因此，自有属性遮蔽类 setter 时会触发该 setter，遮蔽无 setter 的 getter 或只读属性时会抛错，详见[复制已标记的实例](/zh/docs/advanced-guides/mark#copying-marked-instances)。
+传入标记数组时，第一个返回值的函数决定处理方式。若标记对所有对象都返回 `'immutable'`（如 `() => 'immutable'`），补丁和自动冻结仍正常工作。标为 `immutable` 的实例会复制全部自有属性，其中可枚举、可写、可配置的属性通过赋值复制。因此，自有属性遮蔽类 setter 时会触发该 setter，遮蔽无 setter 的 getter 或只读属性时会抛错，详见[复制已标记的实例](/zh/docs/advanced-guides/mark#copying-marked-instances)。
 
 ## 返回新状态 [#returning-a-new-state]
 
