@@ -6,6 +6,7 @@ export const i18n = defineI18n({
   languages: locales,
   defaultLanguage: 'en',
   hideLocale: 'default-locale',
+  fallbackLanguage: null,
 });
 
 export function localePath(path: string, locale: Locale): string {
@@ -15,5 +16,9 @@ export function localePath(path: string, locale: Locale): string {
 }
 
 export function languageAlternates(path: string) {
-  return { en: localePath(path, 'en'), 'zh-CN': localePath(path, 'zh'), 'x-default': localePath(path, 'en') };
+  return {
+    en: localePath(path, 'en'),
+    'zh-CN': localePath(path, 'zh'),
+    'x-default': localePath(path, 'en'),
+  };
 }
