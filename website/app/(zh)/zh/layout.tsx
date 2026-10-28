@@ -12,7 +12,7 @@ export const metadata = {
         default: 'Mutative - 高效的 JavaScript 不可变更新库',
         template: '%s | Mutative',
       },
-      description: `高效的不可变更新：相同配置下约为 Immer 的 ${speedups.matched.factor} 倍性能，各自默认配置下约为 ${speedups.defaults.factor} 倍。`,
+      description: `高效的不可变更新：相同配置下性能约为 Immer 的 ${speedups.matched.factor} 倍，各自默认配置下约为 ${speedups.defaults.factor} 倍。`,
     },
     'zh'
   ),
