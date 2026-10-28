@@ -22,8 +22,10 @@ const redirects = {
     '/docs/api-reference/marksimpleobject/',
 };
 
+for (const [from, to] of Object.entries(redirects)) redirects[`/zh${from}`] = `/zh${to}`;
+
 const page = (to) => `<!DOCTYPE html>
-<html lang="en">
+<html lang="${to.startsWith('/zh/') ? 'zh-CN' : 'en'}">
   <head>
     <meta charset="utf-8" />
     <title>Redirecting to ${to}</title>

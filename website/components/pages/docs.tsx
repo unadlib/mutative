@@ -1,3 +1,4 @@
+import { type Locale, localePath } from '@/lib/i18n';
 import { DocsCategory } from '@/components/docs-category';
 import { getMDXComponents } from '@/components/mdx';
 import { getLastUpdate } from '@/lib/git';
@@ -22,9 +23,8 @@ import { createRelativeLink } from 'fumadocs-ui/mdx';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
-  const params = await props.params;
-  const page = source.getPage(params.slug);
+export async function DocsContent({ slug, locale = 'en' }: { slug?: string[]; locale?: Locale }) {
+  const page = source.getPage(slug, locale);
   if (!page) notFound();
 
   const MDX = page.data.body;
@@ -51,7 +51,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
           components={getMDXComponents({
             // this allows you to link to other pages with relative file paths
             a: createRelativeLink(source, page),
-            DocsCategory: () => <DocsCategory url={page.url} />,
+            DocsCategory: () => <DocsCategory url={page.url} locale={locale} />,
           })}
         />
       </DocsBody>
@@ -59,11 +59,11 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
         <EditOnGitHub href={githubFileUrl} />
         {lastUpdate && (
           <p className="text-sm text-fd-muted-foreground">
-            Last updated on{' '}
+            {locale === 'zh' ? '最后更新于' : 'Last updated on'}{' '}
             <time dateTime={lastUpdate.date.toISOString()}>
-              {formatDate(lastUpdate.date)}
+              {formatDate(lastUpdate.date, locale)}
             </time>{' '}
-            by {lastUpdate.author}
+            {locale === 'zh' ? '作者：' : 'by '}{lastUpdate.author}
           </p>
         )}
       </div>
@@ -71,15 +71,8 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   );
 }
 
-export async function generateStaticParams() {
-  return source.generateParams();
-}
-
-export async function generateMetadata(
-  props: PageProps<'/docs/[[...slug]]'>
-): Promise<Metadata> {
-  const params = await props.params;
-  const page = source.getPage(params.slug);
+export async function docsMetadata(slug: string[] | undefined, locale: Locale = 'en'): Promise<Metadata> {
+  const page = source.getPage(slug, locale);
   if (!page) notFound();
 
   return createMetadata({
@@ -91,5 +84,5 @@ export async function generateMetadata(
     openGraph: {
       url: page.url,
     },
-  });
+  }, locale);
 }

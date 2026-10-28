@@ -2,7 +2,7 @@ import { Provider } from '@/components/provider';
 import { speedups } from '@/lib/benchmarks';
 import { createMetadata, metadataBase } from '@/lib/metadata';
 import type { Metadata } from 'next';
-import './global.css';
+import '../global.css';
 
 export const metadata: Metadata = {
   metadataBase,

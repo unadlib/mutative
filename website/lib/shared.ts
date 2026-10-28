@@ -1,3 +1,4 @@
+import { i18n, type Locale } from './i18n';
 import { createGetUrl } from 'fumadocs-core/source';
 
 export const appName = 'Mutative';
@@ -13,8 +14,8 @@ export const gitConfig = {
 
 export const githubUrl = `https://github.com/${gitConfig.user}/${gitConfig.repo}`;
 
-export function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', {
+export function formatDate(date: Date, locale: Locale = 'en'): string {
+  return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -22,7 +23,7 @@ export function formatDate(date: Date): string {
   });
 }
 
-const getContentUrl = createGetUrl(docsContentRoute);
+const getContentUrl = createGetUrl(docsContentRoute, i18n);
 
 /**
  * The URL of the Markdown of a docs page, a static file at

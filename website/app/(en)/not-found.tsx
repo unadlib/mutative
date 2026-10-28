@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <HomeLayout {...baseOptions()} links={homeLinks}>
+    <HomeLayout {...baseOptions()} links={homeLinks()}>
       <DefaultNotFound />
       <Footer />
     </HomeLayout>

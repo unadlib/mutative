@@ -1,3 +1,4 @@
+import { languageAlternates, localePath, type Locale } from './i18n';
 import type { Metadata } from 'next';
 import { appName, siteUrl } from './shared';
 
@@ -15,17 +16,22 @@ export const feedTypes = {
  * page that sets `alternates`, `openGraph` or `twitter` starts from these
  * defaults.
  */
-export function createMetadata(override: Metadata): Metadata {
+export function createMetadata(override: Metadata, locale: Locale = 'en'): Metadata {
   return {
     ...override,
     alternates: {
-      types: feedTypes,
+      types: locale === 'en' ? feedTypes : {
+        'application/rss+xml': [{ url: localePath('/blog/rss.xml', locale), title: 'Mutative 中文 RSS 订阅' }],
+        'application/atom+xml': [{ url: localePath('/blog/atom.xml', locale), title: 'Mutative 中文 Atom 订阅' }],
+      },
+      ...(typeof override.alternates?.canonical === 'string' && { languages: languageAlternates(override.alternates.canonical) }),
       ...override.alternates,
     },
     openGraph: {
       siteName: appName,
       type: 'website',
-      locale: 'en',
+      locale: locale === 'zh' ? 'zh_CN' : 'en_US',
+      alternateLocale: locale === 'zh' ? 'en_US' : 'zh_CN',
       images: socialImage,
       title: override.title ?? undefined,
       description: override.description ?? undefined,

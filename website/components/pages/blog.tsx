@@ -1,3 +1,4 @@
+import { localePath, type Locale } from '@/lib/i18n';
 import { getPosts, getReadingTime } from '@/lib/blog';
 import { createMetadata } from '@/lib/metadata';
 import { formatDate } from '@/lib/shared';
@@ -5,20 +6,13 @@ import { getPageDescription } from '@/lib/source';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = createMetadata({
-  title: 'Blog',
-  description: 'Mutative Blog',
-  alternates: {
-    canonical: '/blog',
-  },
-  openGraph: {
-    url: '/blog',
-  },
-});
+export function blogMetadata(locale: Locale = 'en') {
+  return createMetadata({ title: locale === 'zh' ? '博客' : 'Blog', description: locale === 'zh' ? 'Mutative 中文博客' : 'Mutative Blog', alternates: { canonical: localePath('/blog', locale) }, openGraph: { url: localePath('/blog', locale) } }, locale);
+}
 
-export default async function Page() {
+export async function BlogList({ locale = 'en' }: { locale?: Locale }) {
   const posts = await Promise.all(
-    getPosts().map(async (post) => ({
+    getPosts(locale).map(async (post) => ({
       post,
       readingTime: await getReadingTime(post),
     }))
@@ -26,7 +20,7 @@ export default async function Page() {
 
   return (
     <div className="mx-auto w-full max-w-[860px] flex-1 px-4 py-12 md:py-16">
-      <h1 className="mb-8 text-3xl font-bold md:text-4xl">Blog</h1>
+      <h1 className="mb-8 text-3xl font-bold md:text-4xl">{locale === 'zh' ? '博客' : 'Blog'}</h1>
       <div className="flex flex-col gap-4">
         {posts.map(({ post, readingTime }) => (
           <Link
@@ -36,9 +30,9 @@ export default async function Page() {
           >
             <p className="text-sm text-fd-muted-foreground">
               <time dateTime={post.data.date.toISOString()}>
-                {formatDate(post.data.date)}
+                {formatDate(post.data.date, locale)}
               </time>{' '}
-              · {readingTime} min read
+              · {readingTime} {locale === 'zh' ? '分钟阅读' : 'min read'}
             </p>
             <h2 className="mt-2 text-xl font-semibold">{post.data.title}</h2>
             <p className="mt-2 text-fd-muted-foreground">

@@ -1,3 +1,4 @@
+import { localePath, type Locale } from './i18n';
 import { Feed } from 'feed';
 import { getAuthors, getPosts } from './blog';
 import { siteUrl } from './shared';
@@ -8,19 +9,19 @@ import { getPageDescription } from './source';
  * so that feed readers keep the posts they have seen, and only Atom names the
  * authors: an RSS `<author>` must be an email address.
  */
-export function getFeed(format: 'rss' | 'atom'): string {
-  const posts = getPosts();
+export function getFeed(format: 'rss' | 'atom', locale: Locale = 'en'): string {
+  const posts = getPosts(locale);
   const feed = new Feed({
-    id: `${siteUrl}/blog`,
-    title: 'Mutative Blog',
-    description: 'Mutative Blog',
-    link: `${siteUrl}/blog`,
-    language: 'en',
+    id: `${siteUrl}${localePath('/blog', locale)}`,
+    title: locale === 'zh' ? 'Mutative 中文博客' : 'Mutative Blog',
+    description: locale === 'zh' ? 'Mutative 中文博客' : 'Mutative Blog',
+    link: `${siteUrl}${localePath('/blog', locale)}`,
+    language: locale === 'zh' ? 'zh-CN' : 'en',
     favicon: `${siteUrl}/img/favicon.ico`,
     updated: posts[0]?.data.date,
     feedLinks: {
-      rss: `${siteUrl}/blog/rss.xml`,
-      atom: `${siteUrl}/blog/atom.xml`,
+      rss: `${siteUrl}${localePath('/blog/rss.xml', locale)}`,
+      atom: `${siteUrl}${localePath('/blog/atom.xml', locale)}`,
     },
   });
 

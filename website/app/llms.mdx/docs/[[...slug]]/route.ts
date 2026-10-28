@@ -21,7 +21,7 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-  return source.getPages().map((page) => ({
+  return source.getPages('en').map((page) => ({
     slug: getPageMarkdownUrl(page).segments,
   }));
 }

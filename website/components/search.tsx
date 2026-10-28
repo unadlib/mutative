@@ -1,4 +1,5 @@
 'use client';
+import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { useDocsSearch } from 'fumadocs-core/search/client';
 import { staticClient } from 'fumadocs-core/search/client/orama-static';
 import {
@@ -14,9 +15,10 @@ import {
 } from 'fumadocs-ui/components/dialog/search';
 
 export default function DefaultSearchDialog(props: SharedProps) {
+  const { locale } = useI18n();
   const { search, setSearch, query } = useDocsSearch({
     // A `.json` file, so that GitHub Pages serves it compressed.
-    client: staticClient({ from: '/api/search.json' }),
+    client: staticClient({ from: '/api/search.json', locale }),
   });
 
   return (

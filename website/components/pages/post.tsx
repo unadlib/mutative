@@ -1,3 +1,4 @@
+import { type Locale, localePath } from '@/lib/i18n';
 import { getMDXComponents } from '@/components/mdx';
 import { blog, getAuthors, getReadingTime } from '@/lib/blog';
 import { createMetadata } from '@/lib/metadata';
@@ -10,9 +11,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export default async function Page(props: PageProps<'/blog/[...slug]'>) {
-  const { slug } = await props.params;
-  const post = blog.getPage(slug);
+export async function BlogPostContent({ slug, locale = 'en' }: { slug: string[]; locale?: Locale }) {
+  const post = blog.getPage(slug, locale);
   if (!post) notFound();
 
   const MDX = post.data.body;
@@ -21,17 +21,17 @@ export default async function Page(props: PageProps<'/blog/[...slug]'>) {
   return (
     <div className="mx-auto w-full max-w-[860px] flex-1 px-4 py-12 md:py-16">
       <Link
-        href="/blog"
+        href={localePath("/blog", locale)}
         className="text-sm text-fd-muted-foreground transition-colors hover:text-fd-foreground"
       >
-        ← Blog
+        ← {locale === 'zh' ? '博客' : 'Blog'}
       </Link>
       <h1 className="mt-4 text-3xl font-bold md:text-4xl">{post.data.title}</h1>
       <p className="mt-3 text-sm text-fd-muted-foreground">
         <time dateTime={post.data.date.toISOString()}>
-          {formatDate(post.data.date)}
+          {formatDate(post.data.date, locale)}
         </time>{' '}
-        · {readingTime} min read
+        · {readingTime} {locale === 'zh' ? '分钟阅读' : 'min read'}
       </p>
       <div className="mt-6 flex flex-wrap gap-6">
         {getAuthors(post).map((author) => (
@@ -52,7 +52,7 @@ export default async function Page(props: PageProps<'/blog/[...slug]'>) {
             <span>
               <span className="block font-medium">{author.name}</span>
               <span className="block text-sm text-fd-muted-foreground">
-                {author.title}
+                {locale === 'zh' ? 'Mutative 作者' : author.title}
               </span>
             </span>
           </a>
@@ -65,13 +65,13 @@ export default async function Page(props: PageProps<'/blog/[...slug]'>) {
       <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
         {post.data.tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="font-medium">Tags:</span>
+            <span className="font-medium">{locale === 'zh' ? '标签：' : 'Tags:'}</span>
             {post.data.tags.map((tag) => (
               <span
-                key={tag}
+                key={locale === 'zh' && tag === 'release' ? '版本发布' : tag}
                 className="rounded-full border bg-fd-secondary px-3 py-0.5 text-fd-secondary-foreground"
               >
-                {tag}
+                {locale === 'zh' && tag === 'release' ? '版本发布' : tag}
               </span>
             ))}
           </div>
@@ -85,15 +85,8 @@ export default async function Page(props: PageProps<'/blog/[...slug]'>) {
   );
 }
 
-export function generateStaticParams() {
-  return blog.generateParams();
-}
-
-export async function generateMetadata(
-  props: PageProps<'/blog/[...slug]'>
-): Promise<Metadata> {
-  const { slug } = await props.params;
-  const post = blog.getPage(slug);
+export async function postMetadata(slug: string[], locale: Locale = 'en'): Promise<Metadata> {
+  const post = blog.getPage(slug, locale);
   if (!post) notFound();
 
   // Next.js leaves out the trailing slash of a URL that looks like a file, such
@@ -117,5 +110,5 @@ export async function generateMetadata(
     twitter: {
       ...(post.data.image && { images: post.data.image }),
     },
-  });
+  }, locale);
 }

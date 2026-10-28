@@ -1,3 +1,4 @@
+import { languageAlternates } from '@/lib/i18n';
 import { blog } from '@/lib/blog';
 import { getLastUpdate } from '@/lib/git';
 import { siteUrl } from '@/lib/shared';
@@ -15,6 +16,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages: MetadataRoute.Sitemap = [
     { url: getUrl('/') },
     { url: getUrl('/blog') },
+    { url: getUrl('/zh') },
+    { url: getUrl('/zh/blog') },
     ...blog.getPages().map((post) => ({
       url: getUrl(post.url),
       lastModified: getLastUpdate(`content/blog/${post.path}`)?.date,
@@ -29,5 +32,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'weekly',
     priority: 0.5,
     ...page,
+    alternates: { languages: Object.fromEntries(Object.entries(languageAlternates(new URL(page.url).pathname)).map(([lang, path]) => [lang, `${siteUrl}${path}`])) },
   }));
 }

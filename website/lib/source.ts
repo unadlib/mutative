@@ -4,6 +4,7 @@ import { getPageTreePeers } from 'fumadocs-core/page-tree';
 import { llms, loader } from 'fumadocs-core/source';
 import { metaSchema, pageSchema } from 'fumadocs-core/source/schema';
 import { defineDocs } from 'fumadocs-mdx/macro';
+import { i18n } from './i18n';
 import { docsRoute, getPageMarkdownUrl, siteUrl } from './shared';
 
 const docs = defineDocs({
@@ -37,6 +38,7 @@ const docs = defineDocs({
 // See https://fumadocs.dev/docs/headless/source-api for more info
 export const source = loader({
   baseUrl: docsRoute,
+  i18n,
   source: docs.toFumadocsSource(),
 });
 
@@ -47,6 +49,7 @@ export const source = loader({
 export const llmsIndex = llms(
   loader({
     baseUrl: docsRoute,
+  i18n,
     url: (slugs, locale) =>
       `${siteUrl}${getPageMarkdownUrl({ slugs, locale }).url}`,
     source: docs.toFumadocsSource(),
@@ -60,7 +63,7 @@ export const docsLlms = llms(source, {
       {
         // The pages of a section, as its overview page lists them.
         DocsCategory: () =>
-          getPageTreePeers(source.getPageTree(), page.url)
+          getPageTreePeers(source.getPageTree(page.locale), page.url)
             .map((peer) => `- [${peer.name}](${peer.url})`)
             .join('\n'),
       }

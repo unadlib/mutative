@@ -1,6 +1,7 @@
 import { loader } from 'fumadocs-core/source';
 import { pageSchema } from 'fumadocs-core/source/schema';
 import { defineCollections } from 'fumadocs-mdx/macro';
+import { i18n, type Locale } from './i18n';
 import { z } from 'zod';
 
 const posts = defineCollections({
@@ -18,6 +19,7 @@ const posts = defineCollections({
 
 export const blog = loader({
   baseUrl: '/blog',
+  i18n,
   source: posts.toFumadocsSource(),
 });
 
@@ -42,9 +44,9 @@ export const authors: Record<string, Author> = {
 /**
  * The posts, newest first.
  */
-export function getPosts(): BlogPost[] {
+export function getPosts(locale: Locale = 'en'): BlogPost[] {
   return blog
-    .getPages()
+    .getPages(locale)
     .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 }
 

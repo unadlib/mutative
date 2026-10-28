@@ -1,3 +1,4 @@
+import { localePath, type Locale } from '@/lib/i18n';
 import { appName, githubUrl } from '@/lib/shared';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -33,13 +34,13 @@ const columns = [
   },
 ];
 
-export function Footer() {
+export function Footer({ locale = 'en' }: { locale?: Locale }) {
   return (
     <footer className="border-t bg-fd-card/50">
       <div className="mx-auto grid max-w-[1100px] gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <Link
-            href="/"
+            href={localePath("/", locale)}
             className="inline-flex items-center gap-2 text-lg font-semibold"
           >
             <Image src="/img/logo.svg" alt="" width={28} height={28} />
@@ -57,14 +58,14 @@ export function Footer() {
                 <li key={link.text}>
                   {link.href.startsWith('/') ? (
                     <Link
-                      href={link.href}
+                      href={localePath(link.href, locale)}
                       className="transition-colors hover:text-fd-primary"
                     >
                       {link.text}
                     </Link>
                   ) : (
                     <a
-                      href={link.href}
+                      href={localePath(link.href, locale)}
                       target="_blank"
                       rel="noreferrer noopener"
                       className="transition-colors hover:text-fd-primary"
