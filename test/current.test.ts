@@ -3,6 +3,7 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-param-reassign */
 import { create, current, isDraft } from '../src';
+import { PROXY_DRAFT } from '../src/constant';
 
 describe('current', () => {
   test('base', () => {
@@ -370,4 +371,20 @@ test('current() snapshots an assigned object that a mark makes draftable', () =>
   expect(snapshot.box.value).toEqual({ count: 1 });
   expect(state.child.count).toBe(2);
   expect(state.box!.value.count).toBe(2);
+});
+
+// A finalized draft no longer drafts the values read through it and generates
+// its patches only once, so a snapshot must not clear the flag.
+test('current() leaves the finalized flag of a draft as it was', () => {
+  create({ a: { b: 1 } }, (draft) => {
+    draft.a.b = 2;
+    const proxyDraft = (draft.a as any)[PROXY_DRAFT];
+    expect(current(draft.a)).toEqual({ b: 2 });
+    expect(proxyDraft.finalized).toBe(false);
+    proxyDraft.finalized = true;
+    expect(current(draft.a)).toEqual({ b: 2 });
+    expect(proxyDraft.finalized).toBe(true);
+    // The producer finalizes the draft itself.
+    proxyDraft.finalized = false;
+  });
 });
