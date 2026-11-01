@@ -166,10 +166,12 @@ export function finalizeNode(
         ? proxyDraft.copy
         : proxyDraft.original;
       // A draft of another producer, which a recipe placed here, is
-      // finalized by that producer.
-      if (proxyDraft.finalities === node.finalities)
+      // finalized by that producer: its recipe may still change the draft,
+      // and the paths of its patches lead through that producer's state.
+      if (proxyDraft.finalities === node.finalities) {
         finalizeSetValue(proxyDraft);
-      finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
+        finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
+      }
       // final update value
       if (isMapLike) {
         copy.set(key, updatedValue);
