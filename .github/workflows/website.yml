@@ -37,3 +37,5 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Build, type-check and check the links
         run: pnpm build
+      - name: Check preview dependency compatibility
+        run: pnpm test:preview

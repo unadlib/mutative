@@ -4,3 +4,8 @@ allowBuilds:
 overrides:
   # serve 14.2.6 pins the vulnerable release; remove when it accepts 1.8.2+.
   'serve@14.2.6>compression': 1.8.2
+  # The companion serve-handler patch adapts its legacy callable import.
+  'serve-handler@6.1.7>minimatch': 11.0.3
+
+patchedDependencies:
+  serve-handler@6.1.7: patches/serve-handler@6.1.7.patch
