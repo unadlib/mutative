@@ -130,11 +130,13 @@ function getCurrent(target: any, rootOptions?: Options<any, any>) {
 
   if (proxyDraft) {
     // It's a proxy draft, let's create a shallow copy eagerly
+    // Patch values can snapshot a draft that has already been finalized.
+    const previousFinalized = proxyDraft.finalized;
     proxyDraft.finalized = true;
     try {
       ensureShallowCopy();
     } finally {
-      proxyDraft.finalized = false;
+      proxyDraft.finalized = previousFinalized;
     }
   } else if (type === DraftType.Set) {
     // A plain Set is walked as an indexed snapshot so nested drafts can be
