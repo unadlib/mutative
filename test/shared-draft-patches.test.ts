@@ -1,5 +1,5 @@
 /* eslint-disable no-void -- Pre-reads intentionally discard values to control draft creation order. */
-import { apply, create } from '../src';
+import { apply, create, type Patches } from '../src';
 
 type SharedValue = number[] | { inner: SharedValue };
 type SharedParent = { q: SharedValue; extra?: SharedValue };
@@ -11,6 +11,10 @@ type State = {
 
 function sharedValue(depth: number, values: number[]): SharedValue {
   return depth === 0 ? values : { inner: sharedValue(depth - 1, values) };
+}
+
+function changedArray(value: SharedValue): number[] {
+  return Array.isArray(value) ? value : changedArray(value.inner);
 }
 
 function makeBase(depth: number): State {
@@ -72,12 +76,13 @@ describe.each(configurations)(
               else void draft.c.x;
             }
             const q = draft.a.q;
-            let values = q;
-            while (!Array.isArray(values)) values = values.inner;
+            const values = changedArray(q);
             if (readB) void draft.b;
             draft.b = draft.a;
             if (readX) void draft.c.x;
-            draft.c.x = q;
+            // The changed array itself is shared, so the snapshot of q for
+            // a.extra reaches it after c.x finalized it.
+            draft.c.x = values;
             draft.a.extra = q;
             values.push(1);
           },
@@ -89,10 +94,10 @@ describe.each(configurations)(
         expect(state).toStrictEqual({
           a: expectedParent,
           b: expectedParent,
-          c: { x: expectedValue },
+          c: { x: [0, 1] },
         });
         expect(state.b).toBe(state.a);
-        expect(state.c.x).toBe(state.a.q);
+        expect(state.c.x).toBe(changedArray(state.a.q as SharedValue));
         expect(state.a.extra).toBe(state.a.q);
         expect(Object.isFrozen(state)).toBe(options.enableAutoFreeze);
         expect(apply(base, patches)).toStrictEqual(state);
@@ -121,3 +126,120 @@ describe.each(configurations)(
     });
   }
 );
+
+type ListState = {
+  a: { q: number[]; extra?: number[] };
+  b: { q?: number[]; extra?: number[] };
+  c: { x: number[] };
+};
+
+const makeListBase = (): ListState => ({
+  a: { q: [0, 1, 2] },
+  b: {},
+  c: { x: [] },
+});
+
+const removals: [string, (values: number[]) => void][] = [
+  [
+    'pop',
+    (values) => {
+      values.pop();
+    },
+  ],
+  [
+    'splice',
+    (values) => {
+      values.splice(1, 1);
+    },
+  ],
+  [
+    'shift',
+    (values) => {
+      values.shift();
+    },
+  ],
+];
+
+// A repeated inverse patch restores a removed item twice, which breaks undo.
+describe.each(
+  [false, true].flatMap((strict) =>
+    [false, true].map((arrayLengthAssignment) => ({
+      strict,
+      enablePatches: { arrayLengthAssignment },
+    }))
+  )
+)('shared draft removals with options %j', (options) => {
+  test.each(removals)('%s', (_, remove) => {
+    const base = makeListBase();
+    const [state, patches, inversePatches] = create(
+      base,
+      (draft) => {
+        const q = draft.a.q;
+        void draft.b;
+        draft.b = draft.a;
+        void draft.c.x;
+        draft.c.x = q;
+        draft.a.extra = q;
+        remove(q);
+      },
+      options
+    );
+    expect(apply(base, patches)).toStrictEqual(state);
+    expect(apply(state, inversePatches)).toStrictEqual(base);
+    expect(base).toStrictEqual(makeListBase());
+  });
+});
+
+const sharedDrafts: [string, () => object, (value: any) => void][] = [
+  [
+    'object',
+    () => ({ k: 0 }),
+    (value) => {
+      value.n = 1;
+    },
+  ],
+  [
+    'Map',
+    () => new Map([['k', 0]]),
+    (value) => {
+      value.set('n', 1);
+    },
+  ],
+  [
+    'Set',
+    () => new Set([0]),
+    (value) => {
+      value.add(1);
+    },
+  ],
+];
+
+describe.each([false, true])('shared drafts with strict %s', (strict) => {
+  test.each(sharedDrafts)(
+    'a shared %s draft generates its patches once',
+    (_, make, change) => {
+      const base: any = { a: { q: make() }, b: {}, c: { x: {} } };
+      const [state, patches, inversePatches] = create(
+        base,
+        (draft: any) => {
+          const q = draft.a.q;
+          void draft.b;
+          draft.b = draft.a;
+          void draft.c.x;
+          draft.c.x = q;
+          draft.a.extra = q;
+          change(q);
+        },
+        { enablePatches: true, strict }
+      );
+      const inQ = (list: Patches) =>
+        list.filter(
+          (patch) => patch.path.length === 3 && patch.path[1] === 'q'
+        );
+      expect(inQ(patches)).toHaveLength(1);
+      expect(inQ(inversePatches)).toHaveLength(1);
+      expect(apply(base, patches)).toStrictEqual(state);
+      expect(apply(state, inversePatches)).toStrictEqual(base);
+    }
+  );
+});
