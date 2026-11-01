@@ -35,6 +35,7 @@ jobs:
         pnpm test:build-watch
         pnpm type-check
         pnpm test:api-docs
+        pnpm test:tooling
         pnpm test
       env:
         CI: true

@@ -35,6 +35,7 @@
     "test:package": "node scripts/check-package.mjs",
     "test:build-watch": "node scripts/check-build-watch.mjs",
     "test:api-docs": "node scripts/check-api-docs.mjs",
+    "test:tooling": "node scripts/check-tooling-dependencies.mjs",
     "type-check": "tsc --noEmit && tsc --noEmit -p test",
     "lint": "oxlint",
     "clean": "rimraf dist",

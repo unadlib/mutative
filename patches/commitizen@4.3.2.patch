@@ -1,0 +1,22 @@
+diff --git a/dist/configLoader/findup.js b/dist/configLoader/findup.js
+index 2e2f07a12e10547e6b82cc09f5b03e9ec822be1b..5cfd4a53009e839ad6800c36cba44d60ab5f4ef8 100644
+--- a/dist/configLoader/findup.js
++++ b/dist/configLoader/findup.js
+@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
+ });
+ exports.default = void 0;
+ var _path = _interopRequireDefault(require("path"));
+-var _glob = _interopRequireDefault(require("glob"));
++var _glob = require("glob");
+ function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+ function cov_wjwib8bhg() {
+   var path = "/home/runner/work/cz-cli/cz-cli/src/configLoader/findup.js";
+@@ -312,7 +312,7 @@ function findup(patterns, options, fn) {
+     cov_wjwib8bhg().s[4]++;
+     file = patterns.filter(function (pattern) {
+       cov_wjwib8bhg().f[1]++;
+-      var configPath = (cov_wjwib8bhg().s[5]++, _glob.default.sync(pattern, options)[0]);
++      var configPath = (cov_wjwib8bhg().s[5]++, _glob.sync(pattern, options)[0]);
+       cov_wjwib8bhg().s[6]++;
+       if (configPath) {
+         cov_wjwib8bhg().b[0][0]++;

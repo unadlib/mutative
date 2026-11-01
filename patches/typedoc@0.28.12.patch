@@ -1,0 +1,21 @@
+diff --git a/dist/lib/utils/fs.js b/dist/lib/utils/fs.js
+index 956605e164ba166e21da2868672e0c744ba6e95f..99d6bf89d482df4128de97420430ea5e72969448 100644
+--- a/dist/lib/utils/fs.js
++++ b/dist/lib/utils/fs.js
+@@ -194,6 +194,7 @@ export function discoverFiles(rootDir, controller) {
+  */
+ export function glob(pattern, root, options = {}) {
+     const mini = new Minimatch(pattern);
++    const partial = new Minimatch(pattern, { partial: true, flipNegate: true });
+     const shouldIncludeNodeModules = pattern.includes("node_modules");
+     const controller = {
+         matches(path) {
+@@ -208,7 +209,7 @@ export function glob(pattern, root, options = {}) {
+                 !shouldIncludeNodeModules) {
+                 return false;
+             }
+-            return mini.set.some((row) => mini.matchOne(childPath, row, /* partial */ true));
++            return partial.match(childPath.join("/"));
+         },
+         matchDirectories: options.includeDirectories,
+         followSymlinks: options.followSymlinks,
