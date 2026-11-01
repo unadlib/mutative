@@ -208,8 +208,11 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
     proxyDraft.callbacks.push(() => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
       if (isEqual(get(copy, key), value)) {
-        // The target generates its own patches once all drafts it holds have
-        // been finalized, so its patch values never need deep cloning.
+        // Drafts are finalized in reverse order of creation, so a target
+        // created before this draft generates its patches after this callback
+        // and they carry the value written here. A target created after it
+        // has already generated its patches, which carry a snapshot of the
+        // draft from `cloneIfNeeded()` in place of this value.
         const updatedValue = proxyDraft.operated
           ? proxyDraft.copy
           : proxyDraft.original;
