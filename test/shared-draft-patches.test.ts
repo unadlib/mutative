@@ -80,8 +80,9 @@ describe.each(configurations)(
             if (readB) void draft.b;
             draft.b = draft.a;
             if (readX) void draft.c.x;
-            // The changed array itself is shared, so the snapshot of q for
-            // a.extra reaches it after c.x finalized it.
+            // The changed array itself is shared, also when q nests it: with
+            // c.x read after it, c.x finds it before its own node, the order
+            // in which #217 generated its patches twice.
             draft.c.x = values;
             draft.a.extra = q;
             values.push(1);

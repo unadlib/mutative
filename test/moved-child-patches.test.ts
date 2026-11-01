@@ -193,10 +193,10 @@ describe('patches of drafts that left their key', () => {
   });
 });
 
-// A parent that a recipe placed at a key read after the parent is finalized
-// through that key, before the drafts it holds. Their patches assume its
+// A parent that a recipe placed at a key read after the drafts it holds is
+// found at that key before they are finalized. Their patches assume its
 // original layout, so they still come before its own.
-describe('patches of a parent finalized before the drafts it holds', () => {
+describe('patches of a parent placed at a key read after the drafts it holds', () => {
   const optionSets = [
     { enablePatches: { arrayLengthAssignment: true }, strict: false },
     { enablePatches: { arrayLengthAssignment: false }, strict: false },
