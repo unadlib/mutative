@@ -98,4 +98,44 @@ describe('a draft of an outer create() call placed where an inner one read', () 
     expect(innerPatches.some((patch) => patch.path[0] === 'item')).toBe(false);
     expect(() => apply({ slot: {}, list: [{}] }, innerPatches)).not.toThrow();
   });
+
+  // An inner call that finalized the outer draft would mark it done whether
+  // or not either call makes patches, and the outer recipe would then change
+  // the base through it.
+  const patchOptions: [boolean, boolean][] = [
+    [false, false],
+    [true, false],
+    [false, true],
+  ];
+  test.each(
+    placements.flatMap(([name, place]) =>
+      patchOptions.map(
+        ([outer, inner]): [string, boolean, boolean, typeof place] => [
+          name,
+          outer,
+          inner,
+          place,
+        ]
+      )
+    )
+  )(
+    '%s, with outer patches %s and inner patches %s',
+    (_, outer, inner, place) => {
+      const base = makeBase();
+      const recipe = (draft: ReturnType<typeof makeBase>) => {
+        draft.item.value = 1;
+        create(
+          { slot: {}, list: [{}] },
+          (innerDraft) => place(innerDraft, draft.item),
+          { enablePatches: inner }
+        );
+        draft.item.nested.value = 2;
+      };
+      const state = outer
+        ? create(base, recipe, { enablePatches: true })[0]
+        : create(base, recipe);
+      expect(base).toStrictEqual(makeBase());
+      expect(state).toStrictEqual({ item: { value: 1, nested: { value: 2 } } });
+    }
+  );
 });
