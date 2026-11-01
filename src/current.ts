@@ -130,11 +130,15 @@ function getCurrent(target: any, rootOptions?: Options<any, any>) {
 
   if (proxyDraft) {
     // It's a proxy draft, let's create a shallow copy eagerly
+    // Restore the flag instead of clearing it: current() must not unfinalize
+    // a draft, which would let reads through it create drafts again and let
+    // it generate its patches twice.
+    const finalized = proxyDraft.finalized;
     proxyDraft.finalized = true;
     try {
       ensureShallowCopy();
     } finally {
-      proxyDraft.finalized = false;
+      proxyDraft.finalized = finalized;
     }
   } else if (type === DraftType.Set) {
     // A plain Set is walked as an indexed snapshot so nested drafts can be

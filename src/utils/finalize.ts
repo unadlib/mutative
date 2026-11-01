@@ -146,6 +146,10 @@ export function finalizeNode(
   inversePatches?: Patches
 ) {
   const parent = node.parent;
+  // A Set draft gives its items their final values before it generates its
+  // patches, and also when it left its key: it then reaches its new place as
+  // a value, through a callback or a value assigned there.
+  finalizeSetValue(node);
   if (parent) {
     const parentType = parent.type;
     // if the parent is a Set draft, `setMap` is the real Set copies proxy mapping.
@@ -155,21 +159,25 @@ export function finalizeNode(
       parentType === DraftType.Set || parentType === DraftType.Map;
     const draft = isMapLike ? copy.get(key) : copy[key];
     // Fast path: the node is still at its own key. Otherwise another draft
-    // may have been moved here, e.g. by `reverse()`, and is finalized instead.
+    // may have been moved here, e.g. by `reverse()`, and its value is written
+    // here instead.
     const proxyDraft = draft === node.proxy ? node : getProxyDraft(draft);
-    // A draft that left its key reaches its new place as a value, through a
-    // callback or a value assigned there, so a Set finalizes its items here.
-    if (proxyDraft !== node) finalizeSetValue(node);
     if (proxyDraft) {
       // assign the updated value to the copy object
       const updatedValue = proxyDraft.operated
         ? proxyDraft.copy
         : proxyDraft.original;
+      // A draft generates its patches at its own node, after the nodes of its
+      // child drafts, whose patches assume its original layout and so come
+      // before its own. A draft found at another node's key generates them at
+      // its own node, in its own producer, if it is still at its own key;
+      // otherwise its value is part of the patches of the draft holding it.
+      if (proxyDraft === node)
+        finalizePatches(node, generatePatches, patches, inversePatches);
       // A draft of another producer, which a recipe placed here, is
-      // finalized by that producer.
-      if (proxyDraft.finalities === node.finalities)
+      // finalized by that producer: its recipe may still change the draft.
+      else if (proxyDraft.finalities === node.finalities)
         finalizeSetValue(proxyDraft);
-      finalizePatches(proxyDraft, generatePatches, patches, inversePatches);
       // final update value
       if (isMapLike) {
         copy.set(key, updatedValue);
@@ -179,7 +187,6 @@ export function finalizeNode(
     }
   } else {
     // !case: handle the root draft
-    finalizeSetValue(node);
     finalizePatches(node, generatePatches, patches, inversePatches);
   }
   // !case: handle the deleted key
