@@ -106,7 +106,7 @@ When several paths of the state lead to the same object, each path gets a draft 
 
 ## Changing patch values
 
-A patch value is an object that the next state holds, frozen with it when auto-freeze is on. Copy a patch value before changing it, or apply the patches with [`apply()`](/docs/api-reference/apply), which copies patch values before applying them.
+A patch value is an object that the next state holds, frozen with it when auto-freeze is on, except for a changed draft held by a container that the recipe first read after the draft, whose patch value is an unfrozen copy; see [Patch behavior](/docs/advanced-guides/patches#patch-behavior). Copy a patch value before changing it, or apply the patches with [`apply()`](/docs/api-reference/apply), which copies patch values before applying them.
 
 ## Freezing the base state
 
