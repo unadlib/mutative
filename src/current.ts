@@ -14,7 +14,6 @@ import {
   isDraft,
   isDraftable,
   isEqual,
-  isFreezable,
   iterateSet,
   latest,
   set,
@@ -35,16 +34,15 @@ export function handleReturnValue(
   const options = rootDraft?.options;
   // With auto-freeze, the state is frozen, so production builds do not search
   // frozen objects, the returned value included, or the values they hold,
-  // which spares searching state built from earlier states. Nor do they search
-  // the objects that auto-freeze leaves unfrozen, such as class instances,
-  // which would otherwise be searched again in every update. Without it,
-  // values are rarely frozen and checking would cost more than it saves.
+  // which spares searching state built from earlier states. An unfrozen
+  // container may hold drafts regardless of whether it will be frozen.
+  // Without auto-freeze, values are rarely frozen and checking would cost
+  // more than it saves.
   const isSkipped = (target: object) =>
-    !!options?.enableAutoFreeze &&
-    (Object.isFrozen(target) || !isFreezable(target, options.mark));
+    !!options?.enableAutoFreeze && Object.isFrozen(target);
   // Development builds search the skipped objects too, to report the drafts
-  // that production builds would leave there, and each of them once, as an
-  // object that auto-freeze leaves unfrozen may hold itself.
+  // that production builds would leave there, and each of them once, as a
+  // frozen object may hold itself.
   const searched = __DEV__ ? new WeakSet<object>() : undefined;
   // `skipped` tells development builds that a skipped object holds `target`.
   // The elements of an ArrayBuffer view are numbers, and listing them as keys
@@ -61,7 +59,7 @@ export function handleReturnValue(
       ) {
         if (__DEV__ && skipped) {
           throw new Error(
-            `The return value holds a draft in a frozen object, in an object that auto-freeze leaves unfrozen, such as a class instance, or in a value they hold. With auto-freeze, production builds do not search those objects for drafts, so do not put drafts there.`
+            `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.`
           );
         }
         containsDraft = true;

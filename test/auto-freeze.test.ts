@@ -7,10 +7,6 @@ class Point {
   nested = { y: 0 };
 }
 
-class Holder {
-  constructor(public item: any) {}
-}
-
 const mutables = new WeakSet<object>();
 const markedMutable = <T extends object>(value: T) => {
   mutables.add(value);
@@ -191,40 +187,6 @@ for (const dev of [true, false]) {
         { enableAutoFreeze: true }
       );
       expect(Object.isFrozen(state.node)).toBe(false);
-      // A returned value that holds it is searched for drafts all the same.
-      const next: any = create(
-        state as any,
-        (draft: any) => ({ node: draft.node, item: draft.item, n: 2 }),
-        { enableAutoFreeze: true }
-      );
-      expect(next.node).toBe(base.node);
-      expect(next.item).toBe(base.item);
-    });
-
-    test('drafts in a class instance of a returned value', () => {
-      const { create } = mutative;
-      const base = { item: { k: 1 } };
-      const recipe = (draft: any) => ({ holder: new Holder(draft.item) });
-      // Without auto-freeze, they are replaced.
-      const state: any = create(base as any, recipe);
-      expect(state.holder.item).toBe(base.item);
-      // With it, production builds do not search class instances, and
-      // development builds report the drafts that they would leave there.
-      const ownKeys = vi.spyOn(Reflect, 'ownKeys');
-      try {
-        const update = () =>
-          create(base as any, recipe, { enableAutoFreeze: true });
-        if (dev) {
-          expect(update).toThrow('auto-freeze leaves unfrozen');
-        } else {
-          const next: any = update();
-          expect(
-            ownKeys.mock.calls.some(([target]) => target === next.holder)
-          ).toBe(false);
-        }
-      } finally {
-        ownKeys.mockRestore();
-      }
     });
 
     test('a value marked mutable can be changed in place by later updates', () => {

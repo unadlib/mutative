@@ -36,7 +36,7 @@ Since 2.1, `enableAutoFreeze` freezes the values that Mutative drafts, as Immer 
 - Values that a mark makes `mutable` are left unfrozen, so that later recipes can still change them in place; earlier versions froze them, so such a change threw in the next update.
 - A regular expression with the global or sticky flag keeps working; earlier versions froze it, so its `test()` and `exec()` threw.
 - Auto-freeze calls the marks for each object that it reaches, also for objects that the recipe did not read.
-- With `enableAutoFreeze`, production builds do not search the objects that auto-freeze leaves unfrozen, such as class instances, in a value returned from a recipe for drafts, and development builds throw when they find one there; earlier versions replaced it. Development builds also no longer throw for a class instance that holds itself.
+- Development builds no longer throw when freezing a class instance that holds itself.
 - Development builds warn once when auto-freeze leaves unfrozen an object that Mutative does not draft and that has own enumerable properties, such as a class instance with fields. Mark such values `mutable` to silence the warning.
 
 ## Returned values

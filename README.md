@@ -509,7 +509,7 @@ expect(isDraftable(baseState.list)).toBeTruthy();
 
 For return values that do not contain any drafts, you can use `rawReturn()` to wrap this return value to improve performance: `create()` then returns it as it is, without searching it for drafts. `rawReturn(undefined)` also makes `undefined` the next state.
 
-Mutative searches the value a recipe returns for drafts, so that drafts mixed into it are replaced. With auto-freeze enabled, production builds do not search frozen objects, the objects that auto-freeze leaves unfrozen, such as class instances, or the values they hold, so returning an earlier, frozen state, or state built from one, costs little even without `rawReturn()`. Development builds still search them and throw when they find a draft there, so never put a draft in such an object or in a value it holds.
+Mutative searches the value a recipe returns for drafts, so that drafts mixed into it are replaced. With auto-freeze enabled, production builds do not search frozen objects or the values they hold, so returning an earlier, frozen state, or state built from one, costs little even without `rawReturn()`. Development builds still search them and throw when they find a draft there, so never put a draft in a frozen object or in a value it holds.
 
 ```ts
 const baseState = { id: "test" };
@@ -809,7 +809,7 @@ Since 2.1, `enableAutoFreeze` freezes the values that Mutative drafts, as Immer 
 - Values that a mark makes `mutable` are left unfrozen, so that later recipes can still change them in place; earlier versions froze them, so such a change threw in the next update.
 - A regular expression with the global or sticky flag keeps working; earlier versions froze it, so its `test()` and `exec()` threw.
 - Auto-freeze calls the marks for each object that it reaches, also for objects that the recipe did not read.
-- With `enableAutoFreeze`, production builds do not search the objects that auto-freeze leaves unfrozen, such as class instances, in a value returned from a recipe for drafts, and development builds throw when they find one there; earlier versions replaced it. Development builds also no longer throw for a class instance that holds itself.
+- Development builds no longer throw when freezing a class instance that holds itself.
 - Development builds warn once when auto-freeze leaves unfrozen an object that Mutative does not draft and that has own enumerable properties, such as a class instance with fields. Mark such values `mutable` to silence the warning.
 
 ### Returned values

@@ -43,10 +43,6 @@ function isFreezableAs(target: object, type: DraftType, mark?: Mark<any, any>) {
   );
 }
 
-export function isFreezable(target: object, mark?: Mark<any, any>) {
-  return isFreezableAs(target, getType(target), mark);
-}
-
 // Development builds warn once, see `warnUnfrozen()`.
 let unfrozenWarned = false;
 

@@ -100,7 +100,7 @@ To keep the instances of a class frozen, either:
 
 Development builds throw for a next state that holds a circular reference among the objects that auto-freeze freezes, an object that holds itself through its values, which Mutative does not support; see [Shared references](/docs/extra-topics/shared-references). Production builds skip this check.
 
-With auto-freeze, production builds also skip frozen objects, and the objects that auto-freeze leaves unfrozen, such as class instances, when they search a [returned value](/docs/api-reference/rawreturn) for drafts, so returning an earlier, frozen state costs little. Development builds still search them and throw when they find a draft there.
+With auto-freeze, production builds also skip frozen objects when they search a [returned value](/docs/api-reference/rawreturn) for drafts, so returning an earlier, frozen state costs little. Development builds still search them and throw when they find a draft there.
 
 Since auto-freeze froze every object before 2.1, development builds warn once when it leaves unfrozen an object that Mutative does not draft and that has own enumerable properties, such as a class instance with fields. Mark such values `mutable` to silence the warning.
 
