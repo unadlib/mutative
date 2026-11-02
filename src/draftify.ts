@@ -44,7 +44,8 @@ export function draftify<
           returnedValue,
           patches,
           inversePatches,
-          options.enableAutoFreeze
+          options.enableAutoFreeze,
+          options.mark
         );
       return (
         options.enablePatches

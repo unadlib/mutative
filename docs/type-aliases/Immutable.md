@@ -10,7 +10,9 @@
 
 A deeply readonly `T`, the type of a state that `enableAutoFreeze` freezes:
 Maps and Sets become `ReadonlyMap` and `ReadonlySet`, and functions,
-Promises, dates and regular expressions keep their types.
+Promises, dates and regular expressions keep their types. Class instances
+become readonly too, though auto-freeze freezes only those that a mark
+makes draftable.
 
 ## Type Parameters
 

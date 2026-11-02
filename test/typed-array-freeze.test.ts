@@ -162,5 +162,27 @@ for (const dev of [true, false]) {
       expect(state.view).toBe(view);
       expect(Object.isFrozen(state.view)).toBe(true);
     });
+
+    test('a view that a mark makes draftable is left unfrozen too', () => {
+      const { create } = mutative;
+      const marks = [
+        (value: any, types: any) =>
+          ArrayBuffer.isView(value) ? types.immutable : undefined,
+        (value: any) =>
+          value instanceof Uint8Array ? () => value.slice() : undefined,
+      ];
+      for (const mark of marks) {
+        const view = new Uint8Array([1, 2]);
+        const state = create(
+          { view, n: 0 },
+          (draft) => {
+            draft.n = 1;
+          },
+          { enableAutoFreeze: true, mark }
+        );
+        expect(state.view).toBe(view);
+        expect(Object.isFrozen(view)).toBe(false);
+      }
+    });
   });
 }

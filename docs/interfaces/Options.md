@@ -23,7 +23,11 @@
 > `optional` **enableAutoFreeze**: `F`
 
 Freeze the next state deeply, also the parts that it shares with the base
-state. Development builds also throw for an object that holds itself.
+state: the values that Mutative drafts, which are plain objects, arrays,
+Maps and Sets and the values that `mark` makes draftable, unless `mark`
+makes them mutable. Like Immer, it leaves other values as they are, with
+the values they hold, such as class instances, dates and typed arrays.
+Development builds also throw for an object that holds itself.
 
 ***
 
@@ -44,7 +48,9 @@ Decide how values are drafted: a mark returns `immutable` to make a value
 draftable, such as a class instance, `mutable` to keep it out of drafts so
 that the recipe changes it in place, or a function that returns a shallow
 copy of the value, which needs patches and auto-freeze off. With several
-marks, the first one that returns a value decides.
+marks, the first one that returns a value decides. Auto-freeze calls the
+marks too, for each object that it reaches: it freezes the values that
+they make draftable and leaves those that they make mutable.
 
 ***
 

@@ -14,6 +14,7 @@ import {
   isDraft,
   isDraftable,
   isEqual,
+  isFreezable,
   iterateSet,
   latest,
   set,
@@ -31,15 +32,24 @@ export function handleReturnValue(
   useRawReturn?: boolean
 ) {
   let containsDraft = false;
+  const options = rootDraft?.options;
   // With auto-freeze, the state is frozen, so production builds do not search
   // frozen objects, the returned value included, or the values they hold,
-  // which spares searching state built from earlier states. Without it,
+  // which spares searching state built from earlier states. Nor do they search
+  // the objects that auto-freeze leaves unfrozen, such as class instances,
+  // which would otherwise be searched again in every update. Without it,
   // values are rarely frozen and checking would cost more than it saves.
-  const skipsFrozen = !!rootDraft?.options.enableAutoFreeze;
-  // `frozen` tells development builds that a skipped object holds `target`.
+  const isSkipped = (target: object) =>
+    !!options?.enableAutoFreeze &&
+    (Object.isFrozen(target) || !isFreezable(target, options.mark));
+  // Development builds search the skipped objects too, to report the drafts
+  // that production builds would leave there, and each of them once, as an
+  // object that auto-freeze leaves unfrozen may hold itself.
+  const searched = __DEV__ ? new WeakSet<object>() : undefined;
+  // `skipped` tells development builds that a skipped object holds `target`.
   // The elements of an ArrayBuffer view are numbers, and listing them as keys
   // costs time in proportion to its bytes, so views are not searched.
-  const replaceDrafts = (target: object, frozen?: boolean) =>
+  const replaceDrafts = (target: object, skipped?: boolean) =>
     !ArrayBuffer.isView(target) &&
     forEach(target, (key, item, source) => {
       const proxyDraft = getProxyDraft(item);
@@ -49,9 +59,9 @@ export function handleReturnValue(
         rootDraft &&
         proxyDraft.finalities === rootDraft.finalities
       ) {
-        if (__DEV__ && frozen) {
+        if (__DEV__ && skipped) {
           throw new Error(
-            `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.`
+            `The return value holds a draft in a frozen object, in an object that auto-freeze leaves unfrozen, such as a class instance, or in a value they hold. With auto-freeze, production builds do not search those objects for drafts, so do not put drafts there.`
           );
         }
         containsDraft = true;
@@ -67,19 +77,19 @@ export function handleReturnValue(
           set(source, key, currentValue);
         }
       } else if (typeof item === 'object' && item !== null) {
-        // Development builds search skipped objects too, to report the drafts
-        // that production builds would leave there.
-        if (!skipsFrozen || !Object.isFrozen(item)) {
-          replaceDrafts(item, frozen);
-        } else if (__DEV__) {
+        if (!skipped && !isSkipped(item)) {
+          replaceDrafts(item);
+        } else if (__DEV__ && !searched!.has(item)) {
+          searched!.add(item);
           replaceDrafts(item, true);
         }
       }
     });
   // The returned value follows the same rule as the values it holds.
-  if (!skipsFrozen || !Object.isFrozen(value)) {
+  if (!isSkipped(value)) {
     replaceDrafts(value);
   } else if (__DEV__) {
+    searched!.add(value);
     replaceDrafts(value, true);
   }
   if (__DEV__) {

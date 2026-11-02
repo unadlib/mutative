@@ -615,7 +615,8 @@ test('returned frozen values are kept and drafts outside them are replaced', () 
 });
 
 test('development builds fail on drafts that frozen returned values hold', () => {
-  const message = /holds a draft in a frozen object or in a value it holds/;
+  const message =
+    /holds a draft in a frozen object, in an object that auto-freeze leaves unfrozen, such as a class instance, or in a value they hold/;
   const baseState = { a: { value: 1 }, held: {} as Record<string, unknown> };
   const options = { enableAutoFreeze: true };
   // A draft in a frozen object.
@@ -652,7 +653,8 @@ test('development builds fail on drafts that frozen returned values hold', () =>
 });
 
 test('development builds fail on drafts under a frozen returned value', () => {
-  const message = /holds a draft in a frozen object or in a value it holds/;
+  const message =
+    /holds a draft in a frozen object, in an object that auto-freeze leaves unfrozen, such as a class instance, or in a value they hold/;
   const baseState = { a: { value: 1 }, held: {} as Record<string, unknown> };
   const options = { enableAutoFreeze: true };
   // A draft in the frozen returned value itself.

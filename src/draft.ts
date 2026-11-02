@@ -1,6 +1,7 @@
 import {
   DraftType,
   Finalities,
+  Mark,
   Patches,
   ProxyDraft,
   Options,
@@ -447,7 +448,8 @@ export function finalizeDraft<T>(
   returnedValue: [T] | [],
   patches?: Patches,
   inversePatches?: Patches,
-  enableAutoFreeze?: boolean
+  enableAutoFreeze?: boolean,
+  mark?: Mark<any, any>
 ) {
   const proxyDraft = getProxyDraft(result);
   if (__DEV__ && proxyDraft?.options.strict && !unchangedDraftsWarned) {
@@ -475,7 +477,7 @@ export function finalizeDraft<T>(
       : result;
   if (proxyDraft) revokeProxy(proxyDraft.finalities);
   if (enableAutoFreeze) {
-    deepFreeze(state);
+    deepFreeze(state, mark);
   }
   return [
     state,
