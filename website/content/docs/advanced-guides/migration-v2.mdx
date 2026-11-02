@@ -1,6 +1,6 @@
 ---
 title: Migration from Mutative v1 to v2
-description: The changes since Mutative 1.3.0 that can affect existing code, in builds, patches, arrays, returned values, development builds, types and fixes.
+description: The changes since Mutative 1.3.0 that can affect existing code, in builds, patches, arrays, auto-freeze, returned values, development builds, types and fixes.
 ---
 
 Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect existing code.
@@ -26,6 +26,17 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - `shift`, `unshift`, `splice` and `reverse` run natively on the draft's copy of a plain array, and `indexOf`, `lastIndexOf` and `includes` search it natively; see [which array methods run natively](/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts). For data arrays, the results are those of v1 and the patches replay in both directions. An accessor property on an array index is read as a data value, so its getter may run a different number of times.
 - `current()` of a changed array copies the current array instead of reading every element through the draft. Base elements that a native method moved and that hold drafts of an outer `create()` call are left as they are, as unmoved elements always were.
 - To search a large array without drafting each element it visits, search `current(draft.list)` and change the match through the draft; see [`current()`](/docs/api-reference/current).
+
+## Auto-freeze
+
+Since 2.1, `enableAutoFreeze` freezes the values that Mutative drafts, as Immer does: plain objects, arrays, Maps and Sets, Map keys included, and the values that a mark makes draftable, unless a mark makes them mutable. Earlier versions froze every object that they reached; see [What is frozen](/docs/advanced-guides/auto-freeze#what-is-frozen).
+
+- Class instances, objects without a prototype, dates, regular expressions and functions are left unfrozen, with the values they hold. Code that relies on auto-freeze to catch changes to class instances should freeze them in their constructors or mark them `immutable`; see [Keeping class instances frozen](/docs/advanced-guides/auto-freeze#keeping-class-instances-frozen).
+- Typed arrays, Node.js Buffers and DataViews are left unfrozen. Earlier versions threw `TypeError: Cannot freeze array buffer views with elements` for a typed array with elements.
+- Values that a mark makes `mutable` are left unfrozen, so that later recipes can still change them in place; earlier versions froze them, so such a change threw in the next update.
+- A regular expression with the global or sticky flag keeps working; earlier versions froze it, so its `test()` and `exec()` threw.
+- Auto-freeze calls the marks for each object that it reaches, also for objects that the recipe did not read.
+- With `enableAutoFreeze`, production builds do not search the objects that auto-freeze leaves unfrozen, such as class instances, in a value returned from a recipe for drafts, and development builds throw when they find one there; earlier versions replaced it. Development builds also no longer throw for a class instance that holds itself.
 
 ## Returned values
 

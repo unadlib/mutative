@@ -71,14 +71,14 @@ TypeScript 根据传给 `create()` 或 `makeCreator()` 的 `enablePatches` 类�
 
 ### enableAutoFreeze [#enableautofreeze]
 
-深度冻结下一个状态，包括与基础状态共享的部分。开发构建还会拒绝持有自身的对象，详见[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
+深度冻结下一个状态，包括与基础状态共享的部分。开发构建还会拒绝持有自身的对象，详见[自动冻结](/zh/docs/advanced-guides/auto-freeze)。与 Immer 一样，它只冻结 Mutative 会创建草稿的值：普通对象、数组、Map、Set，以及 `mark` 使其可创建草稿的值（`mark` 标为 mutable 的除外）；类实例、日期、typed array 等其他值保持原样。
 
 ### mark [#mark]
 
-标记决定如何为值创建草稿，详见[标记数据结构](/zh/docs/advanced-guides/mark)。它接收更新函数读取的每个值和 `{ mutable: 'mutable', immutable: 'immutable' }`，返回：
+标记决定如何为值创建草稿，详见[标记数据结构](/zh/docs/advanced-guides/mark)。它接收更新函数读取的每个值（开启自动冻结时，还有冻结时遇到的每个对象）和 `{ mutable: 'mutable', immutable: 'immutable' }`，返回：
 
 - `'immutable'`：允许创建草稿，如类实例；修改时会复制该值。
-- `'mutable'`：不创建草稿，直接原地读取和修改该值及其内部值。
+- `'mutable'`：不创建草稿，直接原地读取和修改该值及其内部值，自动冻结也不会冻结它。
 - 返回浅拷贝的函数：使用该副本处理草稿。必须关闭补丁和自动冻结，部分补丁也可能无法应用到这类值。
 - `undefined`：使用默认处理方式。
 

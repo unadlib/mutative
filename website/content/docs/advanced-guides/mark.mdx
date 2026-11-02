@@ -7,7 +7,7 @@ By default, Mutative drafts plain objects, arrays, Maps and Sets, and leaves eve
 
 ## Mark functions
 
-A mark is a function that receives each value that a recipe reads from a draft, and `{ mutable: 'mutable', immutable: 'immutable' }`. It returns:
+A mark is a function that receives each value that a recipe reads from a draft, and with auto-freeze each object that freezing reaches, together with `{ mutable: 'mutable', immutable: 'immutable' }`. It returns:
 
 - `'immutable'` to draft the value, such as a class instance. Mutative copies it when the recipe changes it, keeping its prototype.
 - `'mutable'` to keep the value out of drafts. The recipe reads and changes the value itself, and every value that it holds, and the next state shares it.
@@ -65,6 +65,7 @@ Use the same marks for every call on the same state: [`makeCreator({ mark })`](/
 ## Patches, auto-freeze and strict mode
 
 - Values marked `immutable` work with patches and auto-freeze like plain objects, and so does a mark that makes every object immutable, as `() => 'immutable'` does.
+- [Auto-freeze](/docs/advanced-guides/auto-freeze) leaves the values marked `mutable` unfrozen, with the values they hold, so that later recipes can still change them in place. It calls the marks for each object that it reaches, also for objects that the recipe did not read.
 - A mark that returns a copy function cannot be combined with patches or auto-freeze, which development builds report with an error, and some patches might not apply to such values.
 - In [strict mode](/docs/advanced-guides/strict-mode), reading a value marked `mutable` from a draft throws outside [`unsafe()`](/docs/api-reference/unsafe), as reading any value that is not drafted does.
 

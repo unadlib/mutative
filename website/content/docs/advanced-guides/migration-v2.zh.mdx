@@ -1,6 +1,6 @@
 ---
 title: 从 Mutative v1 迁移到 v2
-description: 相比 1.3.0，构建、补丁、数组、返回值、开发检查、类型和修复中可能影响现有代码的变化。
+description: 相比 1.3.0，构建、补丁、数组、自动冻结、返回值、开发检查、类型和修复中可能影响现有代码的变化。
 ---
 
 Mutative v2 保留 v1 API。以下列出自 v1.3.0 以来可能影响现有代码的变化。
@@ -26,6 +26,17 @@ Mutative v2 保留 v1 API。以下列出自 v1.3.0 以来可能影响现有代�
 - `shift`、`unshift`、`splice`、`reverse` 在普通数组草稿的副本上原生执行，`indexOf`、`lastIndexOf`、`includes` 原生搜索，详见[哪些数组方法原生执行](/zh/docs/extra-topics/faq#which-array-methods-run-natively-on-drafts)。数据数组的结果与 v1 一致，补丁可双向重放。数组索引上的访问器会读取为数据值，因此 getter 调用次数可能变化。
 - 已修改数组的 `current()` 复制当前数组，不再逐元素通过草稿读取。原生方法移动的基础元素若含外层 `create()` 的草稿，会保持原样，与未移动元素原有行为一致。
 - 大数组搜索可用 `current(draft.list)`，避免为每个访问元素创建草稿，再通过草稿修改匹配项，详见 [`current()`](/zh/docs/api-reference/current)。
+
+## 自动冻结 [#auto-freeze]
+
+自 2.1 起，`enableAutoFreeze` 只冻结 Mutative 会创建草稿的值，与 Immer 一致：普通对象、数组、Map 和 Set（包括 Map 的键），以及标记使其可创建草稿的值（标为 mutable 的除外）。此前版本会冻结遇到的所有对象，详见[冻结范围](/zh/docs/advanced-guides/auto-freeze#what-is-frozen)。
+
+- 类实例、无原型对象、日期、正则表达式和函数及其内部值保持原样，不再冻结。依赖自动冻结发现类实例被意外修改的代码，应在构造函数中冻结实例，或将类标为 `immutable`，详见[保持类实例冻结](/zh/docs/advanced-guides/auto-freeze#keeping-class-instances-frozen)。
+- typed array、Node.js Buffer 和 DataView 保持原样。此前版本对有元素的 typed array 会抛出 `TypeError: Cannot freeze array buffer views with elements`。
+- 标记为 `mutable` 的值不再冻结，后续更新函数仍可原地修改；此前版本会冻结它们，导致下一次更新中的原地修改抛错。
+- 带 global 或 sticky 标志的正则表达式可正常使用；此前版本会冻结它，导致 `test()` 和 `exec()` 抛错。
+- 自动冻结会对遇到的每个对象调用标记函数，包括更新函数没有读取过的对象。
+- 开启 `enableAutoFreeze` 时，生产构建在返回值中搜索草稿时，不再搜索自动冻结保持原样的对象（如类实例），开发构建在其中发现草稿时会抛错；此前版本会替换这些草稿。开发构建也不再对持有自身的类实例抛错。
 
 ## 返回值 [#returned-values]
 

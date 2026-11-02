@@ -69,7 +69,7 @@ Freezing by default is a trade-off rather than a shortcut. Data that is not froz
 - Never wrap a value that holds drafts. Without strict mode, Mutative does not search it, so the next state keeps those drafts, which are revoked when the recipe ends and throw when they are read. In [strict mode](/docs/advanced-guides/strict-mode), Mutative still searches a value that `rawReturn()` wraps and replaces its drafts, and development builds warn: ``The return value contains drafts, please don't use 'rawReturn()' to wrap the return value.``
 - Call it with exactly one argument; it throws otherwise.
 - Wrap only objects and `undefined`. A recipe can return a primitive as it is, since a primitive holds no drafts, and development builds warn when `rawReturn()` receives one.
-- With auto-freeze, production builds do not search frozen objects in a returned value or the values they hold, so returning an earlier, frozen state, or state built from one, costs little even without `rawReturn()`. Development builds still search them and throw when they find a draft there, so never put a draft in a frozen object or in a value it holds.
+- With auto-freeze, production builds do not search frozen objects in a returned value, the objects that auto-freeze leaves unfrozen, such as class instances, or the values they hold, so returning an earlier, frozen state, or state built from one, costs little even without `rawReturn()`. Development builds still search them and throw when they find a draft there, so never put a draft in such an object or in a value it holds.
 
 <Callout type="idea">
 Enable strict mode in development when you use `rawReturn()`, for example with `strict: process.env.NODE_ENV !== 'production'`, so that a wrapped value that holds drafts is reported.

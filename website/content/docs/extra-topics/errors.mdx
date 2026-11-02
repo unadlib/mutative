@@ -58,10 +58,10 @@ Development builds also throw these errors, for checks that production builds sk
 | `Invalid options: <options>, 'options' should be an object.` | `create()` or `makeCreator()` received options that are not an object. |
 | `Invalid mark: <mark>, 'mark' should be a function.` | An array of marks holds a value that is not a function. |
 | `You can't use mark and patches or auto freeze together.` | A mark returned a copy function while patches or auto-freeze are on. |
-| `Forbids circular reference` | With auto-freeze, the next state holds an object that holds itself; a longer message names the path of the object that repeats. |
+| `Forbids circular reference` | With auto-freeze, the next state holds an object that auto-freeze freezes and that holds itself; a longer message names the path of the object that repeats. |
 | `Patches with string paths only support string Map keys and no symbol keys, got a key of type '<type>'. Set 'pathAsArray' to true to keep keys of other types.` | With `pathAsArray: false`, a patch path would hold a Map key that is not a string, or a symbol key. |
 | `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq` | A recipe passed a draft to the `set()` method of a Map draft as the key. |
-| `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.` | With auto-freeze, a value that a recipe returned holds a draft inside a frozen object. |
+| `The return value holds a draft in a frozen object, in an object that auto-freeze leaves unfrozen, such as a class instance, or in a value they hold. With auto-freeze, production builds do not search those objects for drafts, so do not put drafts there.` | With auto-freeze, a value that a recipe returned holds a draft inside a frozen object, or inside an object that auto-freeze leaves unfrozen, such as a class instance. |
 
 ## Development warnings
 

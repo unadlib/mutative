@@ -71,14 +71,14 @@ TypeScript types the result from the type of `enablePatches` in the options pass
 
 ### enableAutoFreeze
 
-Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself; see [Auto Freeze](/docs/advanced-guides/auto-freeze).
+Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself; see [Auto Freeze](/docs/advanced-guides/auto-freeze). Like Immer, it freezes the values that Mutative drafts: plain objects, arrays, Maps and Sets, and the values that `mark` makes draftable, unless `mark` makes them mutable. It leaves other values, such as class instances, dates and typed arrays, as they are.
 
 ### mark
 
-A mark decides how a value is drafted; see [Marking data structure](/docs/advanced-guides/mark). It receives each value that the recipe reads and `{ mutable: 'mutable', immutable: 'immutable' }`, and returns:
+A mark decides how a value is drafted; see [Marking data structure](/docs/advanced-guides/mark). It receives each value that the recipe reads, and with auto-freeze each object that freezing reaches, and `{ mutable: 'mutable', immutable: 'immutable' }`, and returns:
 
 - `'immutable'` to make the value draftable, such as a class instance, which is then copied when the recipe changes it.
-- `'mutable'` to keep the value out of drafts: the recipe reads and changes it in place, as it does all the values that it holds.
+- `'mutable'` to keep the value out of drafts: the recipe reads and changes it in place, as it does all the values that it holds, and auto-freeze leaves it unfrozen.
 - A function that returns a shallow copy of the value, which drafts it with that copy. Patches and auto-freeze must be off, and some patches might not apply to such values.
 - `undefined` to draft the value as usual.
 

@@ -44,7 +44,7 @@ Mutative 与 Immer 采用相同模型：更新函数修改草稿，库生成下�
 
 ## 默认值与配置 [#defaults-and-configuration]
 
-- **自动冻结**：Mutative 默认不冻结结果，需开启 `enableAutoFreeze`；Immer 默认冻结。开启后，两者均深度冻结整个结果及未修改部分，并冻结 Map/Set 实例使修改方法抛错。Mutative 还冻结 Map 的对象键，Immer 不会。
+- **自动冻结**：Mutative 默认不冻结结果，需开启 `enableAutoFreeze`；Immer 默认冻结。开启后，两者均深度冻结各自会创建草稿的值（包括未修改部分），并冻结 Map/Set 实例使修改方法抛错；类实例、日期等不创建草稿的值及其内部值，两者都保持原样。Immer 会为无原型对象和其他 realm 中的普通对象创建草稿并冻结它们，Mutative 需使用 [`markSimpleObject()`](/zh/docs/api-reference/marksimpleobject)。Mutative 还冻结 Map 键中的普通对象、数组、Map 和 Set，Immer 不会；标记为 mutable 的值，Mutative 不会冻结。
 - **每次调用独立选项**：`create()` 和 `apply()` 接收独立选项，`makeCreator()` 设置默认值；Immer 的 `setAutoFreeze()` 和插件影响模块的所有调用方。Mutative 内置 Map、Set 和补丁支持，无需 Immer 要求的 `enableMapSet()`、`enablePatches()`。
 - **标记**：`mark` 决定如何创建草稿：无需修改类定义即可支持实例，而 Immer 要求 `[immerable]`；也可保持值可变以原地修改，或返回自定义复制函数。Mutative 对已标记实例复制全部自有属性，包括不可枚举属性，类似 Immer 的 `setUseStrictShallowCopy('class_only')`；但对可枚举、可写、可配置属性使用赋值，类似 Immer 默认复制。因此遮蔽类 setter 的自有属性会触发它，详见[复制已标记的实例](/zh/docs/advanced-guides/mark#copying-marked-instances)。两者对普通对象都只复制可枚举属性，并将 getter 读取为值。另见[标记](/zh/docs/advanced-guides/mark)。
 - **严格模式**：`strict: true` 时，读取可能绕过草稿被修改的值（如未标记类实例）必须放在 `unsafe()` 内，否则抛错。Immer 没有对应模式，详见[严格模式](/zh/docs/advanced-guides/strict-mode)。

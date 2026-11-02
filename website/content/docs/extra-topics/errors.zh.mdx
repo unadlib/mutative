@@ -58,10 +58,10 @@ Mutative 的压缩生产构建用数字错误码替代完整消息，以减少�
 | `Invalid options: <options>, 'options' should be an object.` | `create()` 或 `makeCreator()` 收到非对象选项。 |
 | `Invalid mark: <mark>, 'mark' should be a function.` | 标记数组含非函数值。 |
 | `You can't use mark and patches or auto freeze together.` | 开启补丁或自动冻结时，标记返回了拷贝函数。 |
-| `Forbids circular reference` | 开启自动冻结时，结果含持有自身的对象；完整消息会指出重复对象的路径。 |
+| `Forbids circular reference` | 开启自动冻结时，结果含持有自身、且会被自动冻结的对象；完整消息会指出重复对象的路径。 |
 | `Patches with string paths only support string Map keys and no symbol keys, got a key of type '<type>'. Set 'pathAsArray' to true to keep keys of other types.` | `pathAsArray: false` 时，路径含非字符串 Map 键或 symbol 键。 |
 | `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq` | 更新函数将草稿作为 Map 草稿 `set()` 的键。 |
-| `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.` | 开启自动冻结时，返回值的冻结对象内部含草稿。 |
+| `The return value holds a draft in a frozen object, in an object that auto-freeze leaves unfrozen, such as a class instance, or in a value they hold. With auto-freeze, production builds do not search those objects for drafts, so do not put drafts there.` | 开启自动冻结时，返回值的冻结对象，或自动冻结保持原样的对象（如类实例）内部含草稿。 |
 
 ## 开发环境警告 [#development-warnings]
 
