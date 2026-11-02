@@ -102,6 +102,8 @@ expect(Object.isFrozen(marked.account)).toBe(true);
 
 开启自动冻结后，生产构建在[返回值](/zh/docs/api-reference/rawreturn)中搜索草稿时也会跳过冻结对象，以及自动冻结保持原样的对象（如类实例），所以返回之前已冻结的状态开销很小。开发构建仍会搜索，并在发现草稿时抛错。
 
+由于 2.1 之前自动冻结会冻结所有对象，开发构建在自动冻结首次跳过不创建草稿、且有自有可枚举属性的对象（如带字段的类实例）时会警告一次。将这类值标为 `mutable` 可关闭该警告。
+
 ## 成本与建议 [#cost-and-recommendation]
 
 冻结需要访问所有要冻结且尚未冻结的对象，每次更新都有开销，宽对象和大数组尤其明显。在[基准测试](/zh/docs/getting-started/performance)所选的大多数工作负载中，默认冻结的 Immer 开启自动冻结时比关闭时更慢；Mutative 默认关闭此功能。

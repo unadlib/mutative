@@ -74,4 +74,5 @@ Mutative 的压缩生产构建用数字错误码替代完整消息，以减少�
 | ``rawReturn() must be called with an object(including plain object, arrays, Set, Map, etc.) or `undefined`, other types do not need to be returned via rawReturn().`` | `rawReturn()` 收到可直接返回的原始值。 |
 | `Strict mode: the recipe left <count> drafts unchanged; …` | 严格模式下，留下 1,000 个或更多未修改草稿时警告一次，见[搜索大数组](/zh/docs/api-reference/current#searching-a-large-array)。 |
 | `create() received a draft as its base and drafts current(draft), unlike Immer's produce: …` | `create()` 收到草稿与更新函数时警告一次，见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。 |
+| `Auto-freeze left <value> unfrozen: since Mutative 2.1, it freezes only the values that Mutative drafts, as Immer does. …` | 自动冻结首次跳过不创建草稿、且有自有可枚举属性的对象（如带字段的类实例）时警告一次，此前版本会冻结这类对象，见[保持类实例冻结](/zh/docs/advanced-guides/auto-freeze#keeping-class-instances-frozen)。 |
 | `The "mutable" option is not allowed to be used with other options.` | `apply()` 将 `mutable: true` 与其他选项组合使用。 |

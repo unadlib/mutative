@@ -90,6 +90,37 @@ const cases: Case[] = [
   ],
 ];
 
+test('development builds warn once when auto-freeze leaves a class instance unfrozen', async () => {
+  vi.resetModules();
+  globalThis.__DEV__ = true;
+  const { create } = await import('../src');
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  try {
+    const update = (value: any, mark?: any) =>
+      create(
+        { value, n: 0 },
+        (draft) => {
+          draft.n += 1;
+        },
+        { enableAutoFreeze: true, mark }
+      );
+    // Objects without own enumerable properties, and values marked mutable,
+    // give no warning.
+    update(new Date(0));
+    update(new Uint8Array(1));
+    update(markedMutable(new Point()), marks.mutable);
+    expect(warn).not.toHaveBeenCalled();
+    update(new Point());
+    update(Object.assign(Object.create(null), { a: 1 }));
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^Auto-freeze left an instance of Point unfrozen: since Mutative 2\.1/
+    );
+  } finally {
+    warn.mockRestore();
+  }
+});
+
 for (const dev of [true, false]) {
   const build = dev ? 'development' : 'production';
   describe(`auto-freeze, ${build}`, () => {

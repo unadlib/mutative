@@ -47,6 +47,31 @@ export function isFreezable(target: object, mark?: Mark<any, any>) {
   return isFreezableAs(target, getType(target), mark);
 }
 
+// Development builds warn once, see `warnUnfrozen()`.
+let unfrozenWarned = false;
+
+/**
+ * Before 2.1, auto-freeze also froze the objects that Mutative does not
+ * draft, so development builds warn once when it leaves one unfrozen that
+ * has own enumerable properties, such as a class instance with fields, for
+ * code that relied on it being frozen. Objects that a mark makes mutable are
+ * left without a warning, which calls the mark a second time.
+ */
+function warnUnfrozen(target: object, type: DraftType, mark?: Mark<any, any>) {
+  if (
+    type === DraftType.Object &&
+    !ArrayBuffer.isView(target) &&
+    Object.keys(target).length > 0 &&
+    mark?.(target, dataTypes) !== dataTypes.mutable
+  ) {
+    unfrozenWarned = true;
+    const prototype = Object.getPrototypeOf(target);
+    console.warn(
+      `Auto-freeze left ${prototype === null ? 'an object without a prototype' : `an instance of ${prototype.constructor?.name || 'a class'}`} unfrozen: since Mutative 2.1, it freezes only the values that Mutative drafts, as Immer does. Freeze such values in their constructor or mark them immutable to keep them frozen, or mark them mutable to silence this warning; see https://mutative.js.org/docs/advanced-guides/auto-freeze#keeping-class-instances-frozen`
+    );
+  }
+}
+
 export function deepFreeze(
   target: any,
   mark?: Mark<any, any>,
@@ -90,12 +115,10 @@ export function deepFreeze(
     }
   }
   const type = getType(target);
-  if (
-    Object.isFrozen(target) ||
-    isDraft(target) ||
-    !isFreezableAs(target, type, mark)
-  ) {
+  const skipped = Object.isFrozen(target) || isDraft(target);
+  if (skipped || !isFreezableAs(target, type, mark)) {
     if (__DEV__) {
+      if (!skipped && !unfrozenWarned) warnUnfrozen(target, type, mark);
       stack!.pop();
       keys!.pop();
     }
