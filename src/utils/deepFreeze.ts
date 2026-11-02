@@ -53,7 +53,15 @@ export function deepFreeze(
       stack.push(target);
     }
   }
-  if (Object.isFrozen(target) || isDraft(target)) {
+  // `Object.freeze()` throws for a typed array with elements and cannot make
+  // the bytes of any ArrayBuffer view read-only, so typed arrays, Node.js
+  // Buffers and DataViews are left as they are, with the values they hold.
+  // `ArrayBuffer.isView()` also recognizes views of other realms.
+  if (
+    Object.isFrozen(target) ||
+    isDraft(target) ||
+    ArrayBuffer.isView(target)
+  ) {
     if (__DEV__) {
       stack!.pop();
       keys!.pop();

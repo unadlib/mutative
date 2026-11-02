@@ -37,7 +37,10 @@ export function handleReturnValue(
   // values are rarely frozen and checking would cost more than it saves.
   const skipsFrozen = !!rootDraft?.options.enableAutoFreeze;
   // `frozen` tells development builds that a skipped object holds `target`.
+  // The elements of an ArrayBuffer view are numbers, and listing them as keys
+  // costs time in proportion to its bytes, so views are not searched.
   const replaceDrafts = (target: object, frozen?: boolean) =>
+    !ArrayBuffer.isView(target) &&
     forEach(target, (key, item, source) => {
       const proxyDraft = getProxyDraft(item);
       // just handle the draft which is created by the same rootDraft
