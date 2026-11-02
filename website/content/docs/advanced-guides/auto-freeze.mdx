@@ -3,7 +3,7 @@ title: Auto Freeze
 description: Freeze the next state deeply with enableAutoFreeze, so that accidental changes to it fail.
 ---
 
-Mutative leaves the next state unfrozen by default. With the `enableAutoFreeze` option, it freezes the values of the next state that it drafts deeply with `Object.freeze()`, so that code that changes the state by accident fails instead of changing a state that other code still uses.
+Mutative leaves the next state unfrozen by default. With the `enableAutoFreeze` option, it freezes the next state deeply with `Object.freeze()`, so that code that changes the state by accident fails instead of changing a state that other code still uses.
 
 ## Enable auto-freeze
 
@@ -39,77 +39,30 @@ Set it for a whole application with [`makeCreator()`](/docs/api-reference/makecr
 
 ## What is frozen
 
-Auto-freeze freezes the values that Mutative drafts, as Immer does:
+- Every object of the next state that its enumerable keys reach: the copies of the objects that the recipe changed, the values that it assigned, and the objects that the next state shares with the base state, which are frozen in the base state as well. A recipe that changes nothing returns the base state itself, frozen.
+- Class instances, objects without a prototype, dates and regular expressions. Development builds also freeze functions and their own enumerable properties. A `Date` keeps its setters, such as `setFullYear()`, since its value is not a property.
+- Maps and Sets, whose `set()`, `add()`, `delete()` and `clear()` methods then throw, and the objects that a Map uses as keys.
 
-- The plain objects, arrays, Maps and Sets of the next state that its enumerable keys reach: the copies of the objects that the recipe changed, the values that it assigned, and the objects that the next state shares with the base state, which are frozen in the base state as well. A recipe that changes nothing returns the base state itself, frozen.
-- Maps and Sets, whose `set()`, `add()`, `delete()` and `clear()` methods then throw, and the plain objects, arrays, Maps and Sets that a Map uses as keys.
-- The values that a [mark](/docs/advanced-guides/mark) makes draftable, such as class instances that it makes `immutable`.
+Typed arrays, Node.js Buffers and DataViews are skipped together with the values they hold, even when empty or marked `immutable`. Freezing a non-empty typed array throws, and `Object.freeze()` cannot make any view's bytes read-only. Views are shared with the base state; copy the bytes before changing them. Other values retain the 2.0.x freeze behavior: unmarked class instances and the plain objects they hold are still frozen.
 
-It leaves other values as they are, with the values they hold: class instances, objects without a prototype, dates, regular expressions, functions, and the values that a mark makes `mutable`, so that later recipes can still change them in place. It also leaves typed arrays, Node.js Buffers and DataViews as they are, even when a mark makes them draftable: `Object.freeze()` throws for a typed array with elements, and no view's bytes can be frozen. Before 2.1, auto-freeze froze all of these values too, and threw for typed arrays.
-
-```ts
-import { create } from 'mutative';
-
-class Account {
-  constructor(public balance: number) {}
-}
-
-const baseState = { account: new Account(100), history: [100] };
-
-const state = create(
-  baseState,
-  (draft) => {
-    draft.history.push(120);
-  },
-  { enableAutoFreeze: true }
-);
-
-expect(Object.isFrozen(state.history)).toBe(true);
-// A class instance is left as it is.
-expect(state.account).toBe(baseState.account);
-expect(Object.isFrozen(state.account)).toBe(false);
-
-// A mark that makes it draftable freezes it too.
-const marked = create(
-  baseState,
-  (draft) => {
-    draft.history.push(130);
-  },
-  {
-    enableAutoFreeze: true,
-    mark: (value, { immutable }) =>
-      value instanceof Account ? immutable : undefined,
-  }
-);
-
-expect(Object.isFrozen(marked.account)).toBe(true);
-```
+A [mark](/docs/advanced-guides/mark) controls drafting, does not exempt an object from freezing, and is not called again by freezing. Objects marked `mutable` are still frozen; turn off auto-freeze if later updates need to change them in place.
 
 Objects that are already frozen are skipped together with the values they hold, so after the first update freezes the state, each later update freezes only the objects that it copied or added. A base state may be frozen already: Mutative copies frozen objects when a recipe changes them, as it copies any other object.
 
 Writing to a frozen object throws a `TypeError` in strict mode code, which includes ES modules and classes, and does nothing elsewhere. A frozen Map or Set throws in either case.
 
-### Keeping class instances frozen
-
-To keep the instances of a class frozen, either:
-
-- Freeze each instance when it is created, with `Object.freeze(this)` at the end of the constructor of a class that no other class extends, since a subclass could not add its fields to a frozen instance. Auto-freeze skips frozen objects, and a recipe replaces such an instance instead of changing it.
-- Mark the class `immutable`, which also makes Mutative draft its instances, so that a recipe changes copies of them. Mutative cannot draft an instance with private fields (`#field`): its methods throw when they read such a field through a draft, and its copies lack those fields. Freeze such instances in their constructor instead.
-
 ## Development checks
 
-Development builds throw for a next state that holds a circular reference among the objects that auto-freeze freezes, an object that holds itself through its values, which Mutative does not support; see [Shared references](/docs/extra-topics/shared-references). Production builds skip this check.
+Development builds throw for a next state that holds a circular reference, an object that holds itself through its values, which Mutative does not support; see [Shared references](/docs/extra-topics/shared-references). Production builds skip this check.
 
 With auto-freeze, production builds also skip frozen objects when they search a [returned value](/docs/api-reference/rawreturn) for drafts, so returning an earlier, frozen state costs little. Development builds still search them and throw when they find a draft there.
 
-Since auto-freeze froze every object before 2.1, development builds warn once when it leaves unfrozen an object that Mutative does not draft and that has own enumerable properties, such as a class instance with fields. Mark such values `mutable` to silence the warning.
-
 ## Cost and recommendation
 
-Freezing visits every object that it freezes and that is not frozen yet, so it costs time on every update, most of all for states that change wide objects or large arrays. In the [benchmark](/docs/getting-started/performance), Immer, which freezes by default, took longer with auto-freeze than without it in most of the selected workloads, and Mutative's defaults leave it off.
+Freezing visits every object that is not frozen yet, so it costs time on every update, most of all for states that change wide objects or large arrays. In the [benchmark](/docs/getting-started/performance), Immer, which freezes by default, took longer with auto-freeze than without it in most of the selected workloads, and Mutative's defaults leave it off.
 
 <Callout type="idea">
 Enable auto-freeze in development to catch accidental changes to the state, and leave it off in production for speed: `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })`. Keep it on in production if other code relies on a frozen state.
 </Callout>
 
-A [mark](/docs/advanced-guides/mark) that returns a custom shallow copy function cannot be combined with auto-freeze. [`current()`](/docs/api-reference/current) returns unfrozen snapshots, also with auto-freeze, and TypeScript types the result of `create()` with `enableAutoFreeze: true` as `Immutable<State>`, whose properties are `readonly`, also those of the class instances that auto-freeze leaves unfrozen.
+A [mark](/docs/advanced-guides/mark) that returns a custom shallow copy function cannot be combined with auto-freeze. [`current()`](/docs/api-reference/current) returns unfrozen snapshots, also with auto-freeze, and TypeScript types the result of `create()` with `enableAutoFreeze: true` as `Immutable<State>`, whose properties are `readonly`.

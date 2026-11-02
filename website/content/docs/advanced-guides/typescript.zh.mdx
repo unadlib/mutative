@@ -47,7 +47,7 @@ expect(state.items).toEqual(['a']);
 ## `Draft<T>` 与 `Immutable<T>` [#draftt-and-immutablet]
 
 - `Draft<T>` 表示 `T` 的草稿：深度移除对象、数组、Map 和 Set 的只读限制。函数、Promise、日期和正则表达式保留原类型，Map 的键不会变成草稿。
-- `Immutable<T>` 表示深度只读的 `T`，Map 和 Set 分别使用 `ReadonlyMap` 和 `ReadonlySet`，用于冻结状态。类实例在该类型中也是只读的，但[自动冻结](/zh/docs/advanced-guides/auto-freeze#what-is-frozen)不冻结它们时，只读限制只在编译期由 TypeScript 检查。
+- `Immutable<T>` 表示深度只读的 `T`，Map 和 Set 分别使用 `ReadonlyMap` 和 `ReadonlySet`，用于冻结状态。
 
 用 `Draft<State>` 标注修改草稿的辅助函数：
 

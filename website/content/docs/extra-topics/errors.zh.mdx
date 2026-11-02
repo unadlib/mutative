@@ -58,7 +58,7 @@ Mutative 的压缩生产构建用数字错误码替代完整消息，以减少�
 | `Invalid options: <options>, 'options' should be an object.` | `create()` 或 `makeCreator()` 收到非对象选项。 |
 | `Invalid mark: <mark>, 'mark' should be a function.` | 标记数组含非函数值。 |
 | `You can't use mark and patches or auto freeze together.` | 开启补丁或自动冻结时，标记返回了拷贝函数。 |
-| `Forbids circular reference` | 开启自动冻结时，结果含持有自身、且会被自动冻结的对象；完整消息会指出重复对象的路径。 |
+| `Forbids circular reference` | 开启自动冻结时，结果含持有自身的对象；完整消息会指出重复对象的路径。 |
 | `Patches with string paths only support string Map keys and no symbol keys, got a key of type '<type>'. Set 'pathAsArray' to true to keep keys of other types.` | `pathAsArray: false` 时，路径含非字符串 Map 键或 symbol 键。 |
 | `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq` | 更新函数将草稿作为 Map 草稿 `set()` 的键。 |
 | `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.` | 开启自动冻结时，返回值的冻结对象内部含草稿。 |
@@ -74,5 +74,4 @@ Mutative 的压缩生产构建用数字错误码替代完整消息，以减少�
 | ``rawReturn() must be called with an object(including plain object, arrays, Set, Map, etc.) or `undefined`, other types do not need to be returned via rawReturn().`` | `rawReturn()` 收到可直接返回的原始值。 |
 | `Strict mode: the recipe left <count> drafts unchanged; …` | 严格模式下，留下 1,000 个或更多未修改草稿时警告一次，见[搜索大数组](/zh/docs/api-reference/current#searching-a-large-array)。 |
 | `create() received a draft as its base and drafts current(draft), unlike Immer's produce: …` | `create()` 收到草稿与更新函数时警告一次，见[在草稿上调用 create()](/zh/docs/api-reference/create#create-on-a-draft)。 |
-| `Auto-freeze left <value> unfrozen: since Mutative 2.1, it freezes only the values that Mutative drafts, as Immer does. …` | 自动冻结首次跳过不创建草稿、且有自有可枚举属性的对象（如带字段的类实例）时警告一次，此前版本会冻结这类对象，见[保持类实例冻结](/zh/docs/advanced-guides/auto-freeze#keeping-class-instances-frozen)。 |
 | `The "mutable" option is not allowed to be used with other options.` | `apply()` 将 `mutable: true` 与其他选项组合使用。 |

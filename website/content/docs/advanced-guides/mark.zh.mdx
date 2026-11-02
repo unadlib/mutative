@@ -7,7 +7,7 @@ description: 通过 mark 选项决定哪些值创建草稿、哪些保持可变�
 
 ## 标记函数 [#mark-functions]
 
-标记函数接收更新函数从草稿读取的每个值（开启自动冻结时，还有冻结时遇到的每个对象），以及 `{ mutable: 'mutable', immutable: 'immutable' }`。它可以返回：
+标记函数接收更新函数从草稿读取的每个值，以及 `{ mutable: 'mutable', immutable: 'immutable' }`。它可以返回：
 
 - `'immutable'`：为值创建草稿，例如类实例。修改时 Mutative 会保留原型并复制它。
 - `'mutable'`：不为值创建草稿。更新函数直接读取和修改原值及其内部值，下一个状态也与之共享。
@@ -64,8 +64,8 @@ expect(cache.hits).toBe(1);
 
 ## 补丁、自动冻结与严格模式 [#patches-auto-freeze-and-strict-mode]
 
+- 自动冻结保留 2.0.x 的行为，也会冻结标为 `mutable` 的对象及其内部值。标记只控制草稿，不会让对象免于冻结；后续需要原地修改时请关闭自动冻结。冻结过程不会额外调用标记函数。
 - 标为 `immutable` 的值像普通对象一样支持补丁和自动冻结。对所有对象都返回 `'immutable'` 的标记（如 `() => 'immutable'`）也同样支持。
-- [自动冻结](/zh/docs/advanced-guides/auto-freeze)不会冻结标为 `mutable` 的值及其内部值，后续更新函数仍可原地修改它们。自动冻结会对遇到的每个对象调用标记函数，包括更新函数没有读取过的对象。
 - 返回拷贝函数的标记不能与补丁或自动冻结组合，开发构建会报错；部分补丁也可能无法应用到这类值。
 - [严格模式](/zh/docs/advanced-guides/strict-mode)下，从草稿读取标为 `mutable` 的值必须位于 [`unsafe()`](/zh/docs/api-reference/unsafe) 内，否则会像读取其他不可创建草稿的对象一样抛错。
 

@@ -1,7 +1,7 @@
 {
   "reference": {
-    "revision": "8a06ad8c31a722be4f80b57f552ef6f876acb4be",
-    "description": "Auto-freeze freezes only the values that Mutative drafts, as Immer does, and leaves ArrayBuffer views unfrozen, after the fix of #218: production artifacts add at most 351 raw, 93 gzip and 103 Brotli bytes, consumer bundles at most 352 raw, 120 gzip and 113 Brotli bytes, and development artifacts, with their comments and the warning for class instances that auto-freeze leaves unfrozen, at most 3,190 raw, 962 gzip and 808 Brotli bytes",
+    "revision": "1a363492eca37ee283477d5357d3d3dd6257efb5",
+    "description": "Reference auto-freeze implementation before restoring the 2.0.x freeze policy: includes the ArrayBuffer view exception, draftable-only freezing and the class-instance migration warning.",
     "node": "v24.22.0",
     "commands": [
       "pnpm install --frozen-lockfile",

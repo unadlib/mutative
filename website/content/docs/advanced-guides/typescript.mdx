@@ -47,7 +47,7 @@ With an explicit state type, TypeScript infers no other type argument, so pass `
 ## `Draft<T>` and `Immutable<T>`
 
 - `Draft<T>` is the type of a draft of `T`: its objects, arrays, Maps and Sets without `readonly`, deeply. Functions, Promises, dates and regular expressions keep their types, and the keys of a Map are not drafted.
-- `Immutable<T>` is a deeply readonly `T`, with `ReadonlyMap` and `ReadonlySet` for Maps and Sets: the type of a frozen state. It makes class instances readonly too, which TypeScript only checks at compile time where [auto-freeze](/docs/advanced-guides/auto-freeze#what-is-frozen) leaves them unfrozen.
+- `Immutable<T>` is a deeply readonly `T`, with `ReadonlyMap` and `ReadonlySet` for Maps and Sets: the type of a frozen state.
 
 Use `Draft<State>` to type helpers that change a draft:
 

@@ -1,6 +1,6 @@
 ---
 title: Migration from Mutative v1 to v2
-description: The changes since Mutative 1.3.0 that can affect existing code, in builds, patches, arrays, auto-freeze, returned values, development builds, types and fixes.
+description: The changes since Mutative 1.3.0 that can affect existing code, in builds, patches, arrays, returned values, development builds, types and fixes.
 ---
 
 Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect existing code.
@@ -29,15 +29,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 ## Auto-freeze
 
-Since 2.1, `enableAutoFreeze` freezes the values that Mutative drafts, as Immer does: plain objects, arrays, Maps and Sets, Map keys included, and the values that a mark makes draftable, unless a mark makes them mutable. Earlier versions froze every object that they reached; see [What is frozen](/docs/advanced-guides/auto-freeze#what-is-frozen).
-
-- Class instances, objects without a prototype, dates, regular expressions and functions are left unfrozen, with the values they hold. Code that relies on auto-freeze to catch changes to class instances should freeze them in their constructors or mark them `immutable`; see [Keeping class instances frozen](/docs/advanced-guides/auto-freeze#keeping-class-instances-frozen).
-- Typed arrays, Node.js Buffers and DataViews are left unfrozen. Earlier versions threw `TypeError: Cannot freeze array buffer views with elements` for a typed array with elements.
-- Values that a mark makes `mutable` are left unfrozen, so that later recipes can still change them in place; earlier versions froze them, so such a change threw in the next update.
-- A regular expression with the global or sticky flag keeps working; earlier versions froze it, so its `test()` and `exec()` threw.
-- Auto-freeze calls the marks for each object that it reaches, also for objects that the recipe did not read.
-- Development builds no longer throw when freezing a class instance that holds itself.
-- Development builds warn once when auto-freeze leaves unfrozen an object that Mutative does not draft and that has own enumerable properties, such as a class instance with fields. Mark such values `mutable` to silence the warning.
+Auto-freeze now leaves typed arrays, Node.js Buffers and DataViews unfrozen, including empty views. Earlier versions threw `TypeError: Cannot freeze array buffer views with elements` for a non-empty typed array. Their bytes and custom properties remain mutable, so copy the bytes before changing them. Other values retain the 2.0.x freeze behavior; see [What is frozen](/docs/advanced-guides/auto-freeze#what-is-frozen).
 
 ## Returned values
 

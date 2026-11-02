@@ -58,7 +58,7 @@ Development builds also throw these errors, for checks that production builds sk
 | `Invalid options: <options>, 'options' should be an object.` | `create()` or `makeCreator()` received options that are not an object. |
 | `Invalid mark: <mark>, 'mark' should be a function.` | An array of marks holds a value that is not a function. |
 | `You can't use mark and patches or auto freeze together.` | A mark returned a copy function while patches or auto-freeze are on. |
-| `Forbids circular reference` | With auto-freeze, the next state holds an object that auto-freeze freezes and that holds itself; a longer message names the path of the object that repeats. |
+| `Forbids circular reference` | With auto-freeze, the next state holds an object that holds itself; a longer message names the path of the object that repeats. |
 | `Patches with string paths only support string Map keys and no symbol keys, got a key of type '<type>'. Set 'pathAsArray' to true to keep keys of other types.` | With `pathAsArray: false`, a patch path would hold a Map key that is not a string, or a symbol key. |
 | `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq` | A recipe passed a draft to the `set()` method of a Map draft as the key. |
 | `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.` | With auto-freeze, a value that a recipe returned holds a draft inside a frozen object. |
@@ -74,5 +74,4 @@ Development builds print these warnings with `console.warn()`; production builds
 | ``rawReturn() must be called with an object(including plain object, arrays, Set, Map, etc.) or `undefined`, other types do not need to be returned via rawReturn().`` | `rawReturn()` received a primitive, which a recipe can return as it is. |
 | `Strict mode: the recipe left <count> drafts unchanged; …` | Once, in strict mode, when a recipe leaves 1,000 or more drafts unchanged; see [searching a large array](/docs/api-reference/current#searching-a-large-array). |
 | `create() received a draft as its base and drafts current(draft), unlike Immer's produce: …` | Once, when `create()` receives a draft with a recipe; see [create() on a draft](/docs/api-reference/create#create-on-a-draft). |
-| `Auto-freeze left <value> unfrozen: since Mutative 2.1, it freezes only the values that Mutative drafts, as Immer does. …` | Once, when auto-freeze leaves unfrozen an object that Mutative does not draft and that has own enumerable properties, such as a class instance with fields, which earlier versions froze; see [Keeping class instances frozen](/docs/advanced-guides/auto-freeze#keeping-class-instances-frozen). |
 | `The "mutable" option is not allowed to be used with other options.` | `apply()` received `mutable: true` together with other options. |

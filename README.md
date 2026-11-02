@@ -247,14 +247,14 @@ The `options` argument is optional; [`makeCreator()`](#makecreator) sets default
 
 - `enableAutoFreeze` - `boolean`, the default is `false`.
 
-  Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself. Like Immer, it freezes the values that Mutative drafts: plain objects, arrays, Maps and Sets, and the values that `mark` makes draftable, unless `mark` makes them mutable. It leaves other values, such as class instances, dates and typed arrays, as they are; see [What is frozen](https://mutative.js.org/docs/advanced-guides/auto-freeze#what-is-frozen).
+  Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself. Typed arrays, Node.js Buffers and DataViews are left unfrozen; see [What is frozen](https://mutative.js.org/docs/advanced-guides/auto-freeze#what-is-frozen).
 
 - `mark` - `Mark | Mark[]`, where `Mark` is `(target, { mutable, immutable }) => 'mutable' | 'immutable' | (() => copy) | undefined`.
 
-  A mark decides how a value is drafted. It receives each value that the recipe reads, and with auto-freeze each object that freezing reaches, and returns:
+  A mark decides how a value is drafted. It receives each value that the recipe reads, and returns:
 
   - `'immutable'` to make the value draftable, such as a class instance, which is then copied when the recipe changes it.
-  - `'mutable'` to keep the value out of drafts: the recipe reads and changes it in place, as it does all the values that it holds, and auto-freeze leaves it unfrozen.
+  - `'mutable'` to keep the value out of drafts: the recipe reads and changes it in place, as it does all the values that it holds.
   - A function that returns a shallow copy of the value, which drafts it with that copy. Patches and auto-freeze must be off, and some patches might not apply to such values.
   - `undefined` to draft the value as usual.
 
@@ -802,15 +802,7 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 
 ### Auto-freeze
 
-Since 2.1, `enableAutoFreeze` freezes the values that Mutative drafts, as Immer does: plain objects, arrays, Maps and Sets, Map keys included, and the values that a mark makes draftable, unless a mark makes them mutable. Earlier versions froze every object that they reached; see [What is frozen](https://mutative.js.org/docs/advanced-guides/auto-freeze#what-is-frozen).
-
-- Class instances, objects without a prototype, dates, regular expressions and functions are left unfrozen, with the values they hold. Code that relies on auto-freeze to catch changes to class instances should freeze them in their constructors or mark them `immutable`; see [Keeping class instances frozen](https://mutative.js.org/docs/advanced-guides/auto-freeze#keeping-class-instances-frozen).
-- Typed arrays, Node.js Buffers and DataViews are left unfrozen. Earlier versions threw `TypeError: Cannot freeze array buffer views with elements` for a typed array with elements.
-- Values that a mark makes `mutable` are left unfrozen, so that later recipes can still change them in place; earlier versions froze them, so such a change threw in the next update.
-- A regular expression with the global or sticky flag keeps working; earlier versions froze it, so its `test()` and `exec()` threw.
-- Auto-freeze calls the marks for each object that it reaches, also for objects that the recipe did not read.
-- Development builds no longer throw when freezing a class instance that holds itself.
-- Development builds warn once when auto-freeze leaves unfrozen an object that Mutative does not draft and that has own enumerable properties, such as a class instance with fields. Mark such values `mutable` to silence the warning.
+Auto-freeze now leaves typed arrays, Node.js Buffers and DataViews unfrozen, including empty views. Earlier versions threw `TypeError: Cannot freeze array buffer views with elements` for a non-empty typed array. Their bytes and custom properties remain mutable, so copy the bytes before changing them. Other values retain the 2.0.x freeze behavior; see [What is frozen](https://mutative.js.org/docs/advanced-guides/auto-freeze#what-is-frozen).
 
 ### Returned values
 

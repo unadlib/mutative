@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Which values auto-freeze freezes, in development and production builds.
 import { vi } from 'vitest';
+import { runInNewContext } from 'node:vm';
 
 class Point {
   x = 0;
@@ -42,17 +43,28 @@ const cases: Case[] = [
   ['an array', () => [1], both(true)],
   ['a Map', () => new Map([[1, 1]]), both(true)],
   ['a Set', () => new Set([1]), both(true)],
-  ['a class instance', () => new Point(), both(false)],
+  ['a class instance', () => new Point(), both(true)],
   [
     'a plain object that a class instance holds',
     () => new Point(),
-    both(false),
+    both(true),
     { at: (point) => point.nested },
   ],
-  ['a null-prototype object', () => Object.create(null), both(false)],
-  ['a date', () => new Date(0), both(false)],
-  ['a regular expression', () => /a/g, both(false)],
-  ['a function', () => () => 1, both(false)],
+  ['a null-prototype object', () => Object.create(null), both(true)],
+  [
+    'a plain object of another realm',
+    () => runInNewContext('({ n: 1 })'),
+    both(true),
+  ],
+  ['a date', () => new Date(0), both(true)],
+  ['a regular expression', () => /a/g, both(true)],
+  ['a function', () => () => 1, { development: true, production: false }],
+  [
+    'a plain object that a function holds',
+    () => Object.assign(() => 1, { nested: { n: 0 } }),
+    { development: true, production: false },
+    { at: (value) => value.nested },
+  ],
   ['a typed array', () => new Uint8Array(1), both(false)],
   [
     'a class instance marked immutable',
@@ -75,43 +87,41 @@ const cases: Case[] = [
   [
     'a plain object marked mutable',
     () => markedMutable({ a: 1 }),
-    both(false),
+    both(true),
     { mark: marks.mutable },
   ],
   [
     'a class instance marked mutable',
     () => markedMutable(new Point()),
-    both(false),
+    both(true),
     { mark: marks.mutable },
   ],
 ];
 
-test('development builds warn once when auto-freeze leaves a class instance unfrozen', async () => {
+test('freezing an unmarked instance does not read its constructor or warn', async () => {
   vi.resetModules();
   globalThis.__DEV__ = true;
   const { create } = await import('../src');
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   try {
-    const update = (value: any, mark?: any) =>
-      create(
-        { value, n: 0 },
-        (draft) => {
-          draft.n += 1;
+    const prototype = Object.create(null, {
+      constructor: {
+        get() {
+          throw new Error('The constructor must not be read');
         },
-        { enableAutoFreeze: true, mark }
-      );
-    // Objects without own enumerable properties, and values marked mutable,
-    // give no warning.
-    update(new Date(0));
-    update(new Uint8Array(1));
-    update(markedMutable(new Point()), marks.mutable);
-    expect(warn).not.toHaveBeenCalled();
-    update(new Point());
-    update(Object.assign(Object.create(null), { a: 1 }));
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toMatch(
-      /^Auto-freeze left an instance of Point unfrozen: since Mutative 2\.1/
+      },
+    });
+    const value = Object.assign(Object.create(prototype), { nested: { n: 0 } });
+    const state = create(
+      { value, n: 0 },
+      (draft) => {
+        draft.n += 1;
+      },
+      { enableAutoFreeze: true }
     );
+    expect(Object.isFrozen(state.value)).toBe(true);
+    expect(Object.isFrozen(state.value.nested)).toBe(true);
+    expect(warn).not.toHaveBeenCalled();
   } finally {
     warn.mockRestore();
   }
@@ -158,7 +168,7 @@ for (const dev of [true, false]) {
 
     test.each([
       ['a plain object', () => ({ a: 1 }), true],
-      ['a class instance', () => new Point(), false],
+      ['a class instance', () => new Point(), true],
     ])('%s used as a Map key', (_, make, frozen) => {
       const { create } = mutative;
       const key = make();
@@ -179,53 +189,50 @@ for (const dev of [true, false]) {
         self = this;
       }
       const base = { node: new Node(), item: { k: 1 }, n: 0 };
-      const state = create(
-        base,
-        (draft) => {
-          draft.n += 1;
-        },
-        { enableAutoFreeze: true }
-      );
-      expect(Object.isFrozen(state.node)).toBe(false);
+      const update = () =>
+        create(
+          base,
+          (draft) => {
+            draft.n += 1;
+          },
+          { enableAutoFreeze: true }
+        );
+      if (dev) {
+        expect(update).toThrow('Forbids circular reference');
+      } else {
+        const state = update();
+        expect(state.node.self).toBe(state.node);
+        expect(Object.isFrozen(state.node)).toBe(true);
+      }
     });
 
-    test('a value marked mutable can be changed in place by later updates', () => {
+    test('a mutable mark does not exempt a value from the 2.x freeze policy', () => {
       const { create } = mutative;
       const options = { enableAutoFreeze: true as const, mark: marks.mutable };
       const counter = markedMutable({ count: 0 });
-      let state = create(
+      const state = create(
         { counter, n: 0 },
         (draft) => {
           draft.counter.count += 1;
         },
         options
       );
-      state = create(
-        state,
-        (draft) => {
-          draft.counter.count += 1;
-        },
-        options
-      );
       expect(state.counter).toBe(counter);
-      expect(counter.count).toBe(2);
+      expect(counter.count).toBe(1);
+      expect(Object.isFrozen(counter)).toBe(true);
       expect(Object.isFrozen(state)).toBe(true);
-      // A state that is marked mutable as a whole, too.
-      const root = markedMutable({ count: 0 });
-      for (let i = 0; i < 2; i += 1) {
+      expect(() =>
         create(
-          root,
+          state,
           (draft) => {
-            draft.count += 1;
+            draft.counter.count += 1;
           },
           options
-        );
-      }
-      expect(root.count).toBe(2);
-      expect(Object.isFrozen(root)).toBe(false);
+        )
+      ).toThrow(TypeError);
     });
 
-    test('a regular expression with the global flag keeps working', () => {
+    test('a regular expression retains the 2.x freeze policy', () => {
       const { create } = mutative;
       const state = create(
         { pattern: /a/g, n: 0 },
@@ -234,11 +241,11 @@ for (const dev of [true, false]) {
         },
         { enableAutoFreeze: true }
       );
-      expect(state.pattern.test('a')).toBe(true);
-      expect(state.pattern.lastIndex).toBe(1);
+      expect(Object.isFrozen(state.pattern)).toBe(true);
+      expect(() => state.pattern.test('a')).toThrow(TypeError);
     });
 
-    test('auto-freeze calls the marks for the objects that it reaches', () => {
+    test('auto-freeze does not call marks for unread objects', () => {
       const { create } = mutative;
       const seen = new Set<unknown>();
       const base = { unread: { a: 1 }, n: 0 };
@@ -255,8 +262,55 @@ for (const dev of [true, false]) {
           },
         }
       );
-      expect(seen.has(base.unread)).toBe(true);
+      expect(seen.has(base.unread)).toBe(false);
       expect(Object.isFrozen(base.unread)).toBe(true);
+    });
+
+    test('a shared class instance cannot be used to change earlier states', () => {
+      const { create } = mutative;
+      const base = { point: new Point(), n: 0 };
+      const state = create(
+        base,
+        (draft) => {
+          draft.n += 1;
+        },
+        { enableAutoFreeze: true }
+      );
+      expect(state.point).toBe(base.point);
+      expect(() => {
+        (state.point as Point).nested.y = 42;
+      }).toThrow(TypeError);
+      expect(base.point.nested.y).toBe(0);
+    });
+
+    test('a no-op recipe freezes a class instance and its children', () => {
+      const { create } = mutative;
+      const base = { point: new Point() };
+      const state = create(base, () => {}, { enableAutoFreeze: true });
+      expect(state).toBe(base);
+      expect(Object.isFrozen(state.point)).toBe(true);
+      expect(Object.isFrozen(state.point.nested)).toBe(true);
+    });
+
+    test('an identity mark does not leave the changed class copy unfrozen', () => {
+      const { create } = mutative;
+      const point = new Point();
+      const state = create(
+        { point },
+        (draft) => {
+          draft.point.x = 1;
+        },
+        {
+          enableAutoFreeze: true,
+          mark: (value, { immutable }) =>
+            value === point ? immutable : undefined,
+        }
+      );
+      expect(state.point).not.toBe(point);
+      expect(state.point.x).toBe(1);
+      expect(point.x).toBe(0);
+      expect(Object.isFrozen(state.point)).toBe(true);
+      expect(Object.isFrozen(state.point.nested)).toBe(true);
     });
   });
 }
