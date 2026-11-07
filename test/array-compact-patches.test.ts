@@ -198,19 +198,241 @@ describe('compact array patches', () => {
     ]);
   });
 
-  test('disconnected changes of the length replay through the replaced middle', () => {
-    const list = Array.from({ length: 30 }, (_, id) => ({ id }));
-    const inserted = roundtrip(list, (draft) => {
-      draft.splice(20, 0, { id: 'a' });
-      draft.unshift({ id: 'b' });
+  describe('elements that keep their order stay out of the patches', () => {
+    const list = () => Array.from({ length: 30 }, (_, id) => ({ id }));
+
+    test('disconnected insertions and deletions', () => {
+      const inserted = roundtrip(list(), (draft) => {
+        draft.splice(20, 0, { id: 'a' });
+        draft.unshift({ id: 'b' });
+      });
+      expect(inserted.patches).toEqual([
+        { op: 'add', path: [0], value: { id: 'b' } },
+        { op: 'add', path: [21], value: { id: 'a' } },
+      ]);
+      expect(inserted.inverse).toEqual([
+        { op: 'remove', path: [21] },
+        { op: 'remove', path: [0] },
+      ]);
+
+      const removed = roundtrip(list(), (draft) => {
+        draft.splice(20, 1);
+        draft.splice(10, 1);
+      });
+      expect(removed.patches).toEqual([
+        { op: 'remove', path: [20] },
+        { op: 'remove', path: [10] },
+      ]);
+      expect(removed.inverse).toEqual([
+        { op: 'add', path: [10], value: { id: 10 } },
+        { op: 'add', path: [20], value: { id: 20 } },
+      ]);
     });
-    // Only the elements before the last change are patched.
-    expect(inserted.patches).toHaveLength(22);
-    const removed = roundtrip(list, (draft) => {
-      draft.splice(20, 1);
-      draft.splice(10, 1);
+
+    test('an insertion and a deletion at the same length', () => {
+      // A window that slides over a list, in either order.
+      for (const recipe of [
+        (draft: any[]) => {
+          draft.push({ id: 'n' });
+          draft.shift();
+        },
+        (draft: any[]) => {
+          draft.shift();
+          draft.push({ id: 'n' });
+        },
+      ]) {
+        const { patches, inverse } = roundtrip(list(), recipe);
+        expect(patches).toEqual([
+          { op: 'remove', path: [0] },
+          { op: 'add', path: [29], value: { id: 'n' } },
+        ]);
+        expect(inverse).toEqual([
+          { op: 'remove', path: [29] },
+          { op: 'add', path: [0], value: { id: 0 } },
+        ]);
+      }
+      // A new head with a deletion further on.
+      const replaced = roundtrip(list(), (draft) => {
+        draft.unshift({ id: 'n' });
+        draft.splice(21, 1);
+      });
+      expect(replaced.patches).toEqual([
+        { op: 'remove', path: [20] },
+        { op: 'add', path: [0], value: { id: 'n' } },
+      ]);
     });
-    expect(removed.patches).toHaveLength(11);
+
+    test('a move within the array, in either direction', () => {
+      const forward = roundtrip(list(), (draft) => {
+        const [item] = draft.splice(5, 1);
+        draft.splice(20, 0, item);
+      });
+      expect(forward.patches).toEqual([
+        { op: 'remove', path: [5] },
+        { op: 'add', path: [20], value: { id: 5 } },
+      ]);
+      const backward = roundtrip(list(), (draft) => {
+        const [item] = draft.splice(20, 1);
+        draft.splice(5, 0, item);
+      });
+      expect(backward.patches).toEqual([
+        { op: 'remove', path: [20] },
+        { op: 'add', path: [5], value: { id: 20 } },
+      ]);
+      // Moves through the proxy, and of a block.
+      for (const options of [{ strict: true }, { mark: () => undefined }]) {
+        const { patches } = roundtrip(
+          list(),
+          (draft) => {
+            const items = draft.splice(5, 3);
+            draft.splice(20, 0, ...items);
+          },
+          compactOptions({}, options)
+        );
+        expect(patches).toEqual([
+          { op: 'remove', path: [7] },
+          { op: 'remove', path: [6] },
+          { op: 'remove', path: [5] },
+          { op: 'add', path: [20], value: { id: 5 } },
+          { op: 'add', path: [21], value: { id: 6 } },
+          { op: 'add', path: [22], value: { id: 7 } },
+        ]);
+      }
+    });
+
+    test('a sort of an array that was nearly sorted', () => {
+      const unsorted = list();
+      const [last] = unsorted.splice(25, 1);
+      unsorted.unshift(last);
+      const { state, patches } = roundtrip(unsorted, (draft) => {
+        draft.sort((a: any, b: any) => a.id - b.id);
+      });
+      expect(state).toEqual(list());
+      expect(patches).toEqual([
+        { op: 'remove', path: [0] },
+        { op: 'add', path: [25], value: { id: 25 } },
+      ]);
+    });
+
+    test('a shorter array whose length a recipe also assigned', () => {
+      const { patches, inverse } = roundtrip([0, 1, 2, 3], (draft) => {
+        draft.length = 3;
+        draft.unshift(-1);
+      });
+      expect(patches).toEqual([
+        { op: 'remove', path: [3] },
+        { op: 'add', path: [0], value: -1 },
+      ]);
+      expect(inverse).toEqual([
+        { op: 'remove', path: [0] },
+        { op: 'add', path: [3], value: 3 },
+      ]);
+    });
+
+    test('new values take a replace patch between kept elements', () => {
+      const { patches, inverse } = roundtrip(list(), (draft) => {
+        draft.splice(20, 1, { id: 'b' });
+        draft.splice(5, 1, { id: 'a' });
+        draft.shift();
+        draft.push({ id: 'c' });
+      });
+      expect(patches).toEqual([
+        { op: 'remove', path: [0] },
+        { op: 'add', path: [29], value: { id: 'c' } },
+        { op: 'replace', path: [4], value: { id: 'a' } },
+        { op: 'replace', path: [19], value: { id: 'b' } },
+      ]);
+      expect(inverse).toEqual([
+        { op: 'replace', path: [4], value: { id: 5 } },
+        { op: 'replace', path: [19], value: { id: 20 } },
+        { op: 'remove', path: [29] },
+        { op: 'add', path: [0], value: { id: 0 } },
+      ]);
+    });
+
+    test('an element that moved and changed takes a replace patch at its final index', () => {
+      const { patches, inverse } = roundtrip(list(), (draft) => {
+        draft[10].id = 'moved';
+        draft.push({ id: 'n' });
+        draft.shift();
+      });
+      expect(patches).toEqual([
+        { op: 'remove', path: [0] },
+        { op: 'add', path: [29], value: { id: 'n' } },
+        { op: 'replace', path: [9], value: { id: 'moved' } },
+      ]);
+      expect(inverse).toEqual([
+        { op: 'replace', path: [9], value: { id: 10 } },
+        { op: 'remove', path: [29] },
+        { op: 'add', path: [0], value: { id: 0 } },
+      ]);
+    });
+
+    test("an element that keeps its index between changes keeps its child's patches", () => {
+      // The insertion and the deletion cancel out at index 25.
+      const { patches, inverse } = roundtrip(list(), (draft) => {
+        draft[25].id = 'edited';
+        draft.splice(20, 1);
+        draft.splice(10, 0, { id: 'n' });
+      });
+      expect(patches).toEqual([
+        { op: 'replace', path: [25, 'id'], value: 'edited' },
+        { op: 'remove', path: [20] },
+        { op: 'add', path: [10], value: { id: 'n' } },
+      ]);
+      expect(inverse).toEqual([
+        { op: 'replace', path: [25, 'id'], value: 25 },
+        { op: 'remove', path: [10] },
+        { op: 'add', path: [20], value: { id: 20 } },
+      ]);
+      // Between kept elements too, at a length that stays the same.
+      const between = roundtrip(list(), (draft) => {
+        draft[15].id = 'edited';
+        draft.splice(25, 1);
+        draft.splice(20, 0, { id: 'b' });
+        draft.splice(10, 1);
+        draft.splice(5, 0, { id: 'a' });
+      });
+      expect(between.patches).toEqual([
+        { op: 'replace', path: [15, 'id'], value: 'edited' },
+        { op: 'remove', path: [25] },
+        { op: 'remove', path: [10] },
+        { op: 'add', path: [5], value: { id: 'a' } },
+        { op: 'add', path: [20], value: { id: 'b' } },
+      ]);
+    });
+
+    test('repeated elements, -0 and NaN are matched as the patches compare them', () => {
+      const shared = { id: 's' };
+      const values = (): any[] => [0, -0, NaN, 'a', 'a', shared, 1, shared, 2];
+      const recipes = [
+        (draft: any[]) => {
+          draft.reverse();
+        },
+        (draft: any[]) => {
+          draft.push(draft.shift());
+        },
+        (draft: any[]) => {
+          draft.unshift(draft.pop());
+        },
+        (draft: any[]) => {
+          draft.splice(4, 0, draft[0], draft[1], draft[2]);
+          draft.splice(0, 2);
+        },
+        (draft: any[]) => {
+          [draft[0], draft[1]] = [draft[1], draft[0]];
+        },
+      ];
+      for (const recipe of recipes) roundtrip(values(), recipe);
+      // Moving 0 past -0 is a change, which a Map key would not tell.
+      const signed = roundtrip([0, -0, 1, 2, 3, 4, 5], (draft) => {
+        draft[0] = -0;
+        draft[1] = 0;
+        draft.splice(2, 1);
+      });
+      expect(Object.is(signed.state[0], -0)).toBe(true);
+      expect(Object.is(signed.state[1], 0)).toBe(true);
+    });
   });
 
   test('a length change that dwarfs the suffix keeps the smaller index patches', () => {
@@ -315,20 +537,25 @@ describe('compact array patches', () => {
     }
   });
 
-  test('reorders and multi-segment changes fall back without a diff', () => {
+  test('changes that keep no order keep the index patches', () => {
     expectFallback([1, 2, 3, 4], (draft) => {
       draft.reverse();
     });
-    expectFallback([3, 1, 2], (draft) => {
-      draft.sort();
+    expectFallback([0, 1, 2], (draft) => {
+      draft[0] = 3;
+      draft[1] = 4;
+      draft[2] = 5;
     });
-    expectFallback([0, 1, 2, 3, 4], (draft) => {
-      const [item] = draft.splice(1, 1);
-      draft.splice(3, 0, item);
-    });
+    // Two elements that swap take two replace patches, which is no more.
+    expectFallback(
+      Array.from({ length: 10 }, (_, id) => ({ id })),
+      (draft) => {
+        [draft[2], draft[7]] = [draft[7], draft[2]];
+      }
+    );
+    // One or two assigned indices need no search at all.
     expectFallback([0, 1, 2, 3], (draft) => {
-      draft.length = 3;
-      draft.unshift(-1);
+      draft[1] = 9;
     });
   });
 
@@ -357,10 +584,7 @@ describe('compact array patches', () => {
     ]);
     const rows = roundtrip(
       {
-        rows: [
-          [1, 2],
-          [3, 4],
-        ],
+        rows: [[1, 2], [3, 4], [5], [6]],
       },
       (draft) => {
         draft.rows[1].unshift(2);
@@ -495,6 +719,16 @@ describe('compact array patches', () => {
       path: [5],
       value: { id: 's', v: 1 },
     });
+    // At a length that stays the same, its element is kept past the changes.
+    const moved = roundtrip(makeBase().slice(0, 6), (draft) => {
+      draft.shift();
+      const changed = draft[0];
+      draft.splice(4, 0, changed);
+      changed.v = 1;
+      draft.reverse();
+      draft.sort((a: any, b: any) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    });
+    expect(moved.state.filter(({ v }: any) => v === 1)).toHaveLength(2);
   });
 
   test('a changed alias draft at a retained index is replaced', () => {
@@ -684,16 +918,37 @@ describe('compact array patches', () => {
     }
   });
 
-  test('sparse arrays and direct length changes preserve default behavior', () => {
+  test('sparse arrays preserve default behavior', () => {
     const sparse: any[] = [1, undefined, 3, 4];
     delete sparse[1];
     expectFallback(sparse, (draft) => {
       draft.splice(0, 1);
     });
     expectFallback([0, 1, 2, 3], (draft) => {
+      draft.length = 6;
+      draft.pop();
+    });
+    const lengthened: any[] = [0, 1, 2, 3, 4, 5];
+    expectFallback(lengthened, (draft) => {
+      draft.length = 8;
+      draft.shift();
+    });
+  });
+
+  test('a direct length change leaves an undefined element', () => {
+    const { state, patches, inverse } = roundtrip([0, 1, 2, 3], (draft) => {
       draft.length = 5;
       draft.shift();
     });
+    expect(state).toEqual([1, 2, 3, undefined]);
+    expect(patches).toEqual([
+      { op: 'remove', path: [0] },
+      { op: 'add', path: [3], value: undefined },
+    ]);
+    expect(inverse).toEqual([
+      { op: 'remove', path: [3] },
+      { op: 'add', path: [0], value: 0 },
+    ]);
   });
 
   test('duplicates, NaN, signed zero, undefined, Map and Set replay by value', () => {

@@ -28,9 +28,7 @@ test('compact benchmark scenarios are unique and cover hits, fallbacks and contr
     2
   );
   for (const name of [
-    'disjoint-insert-plan',
     'reverse-fallback',
-    'sort-fallback',
     'append-control',
     'local-edit-control',
   ]) {
@@ -56,8 +54,8 @@ test('scenario fixtures produce independent deterministic native results', () =>
     assert.equal(base.length, 40, scenario.name);
   }
   assert.deepStrictEqual(
-    makeBase('sort-fallback', 40).map(({ id }) => id),
-    makeBase('sort-fallback', 40).map(({ id }) => id)
+    makeBase('sort-shuffled', 40).map(({ id }) => id),
+    makeBase('sort-shuffled', 40).map(({ id }) => id)
   );
 });
 

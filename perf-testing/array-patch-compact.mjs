@@ -69,10 +69,34 @@ export const SCENARIOS = [
   },
   {
     name: 'disjoint-insert-plan',
-    fallback: true,
+    compactPatches: (context) => context.first.length + context.second.length,
     mutate(draft, context) {
       draft.splice(Math.floor(draft.length / 4), 0, ...context.first);
       draft.splice(Math.floor((draft.length * 3) / 4), 0, ...context.second);
+    },
+  },
+  {
+    name: 'replace-segment',
+    // A replace patch for the new element and a remove patch for the other.
+    compactPatches: 2,
+    mutate(draft, context) {
+      draft.splice(Math.floor(draft.length / 2), 2, ...context.one);
+    },
+  },
+  {
+    name: 'sliding-window',
+    compactPatches: 2,
+    mutate(draft, context) {
+      draft.push(...context.one);
+      draft.shift();
+    },
+  },
+  {
+    name: 'move-within-array',
+    compactPatches: 2,
+    mutate(draft) {
+      const [item] = draft.splice(1, 1);
+      draft.splice(draft.length - 1, 0, item);
     },
   },
   {
@@ -92,8 +116,9 @@ export const SCENARIOS = [
     },
   },
   {
-    name: 'sort-fallback',
-    fallback: true,
+    // Few elements of a shuffled array keep their order, so the patch count
+    // depends on the shuffle.
+    name: 'sort-shuffled',
     mutate(draft) {
       draft.sort((a, b) => a.id - b.id);
     },
@@ -132,7 +157,7 @@ export function makeBase(name, size) {
     return Array.from({ length: size }, () => [0, 1, 2]);
   }
   const base = Array.from({ length: size }, (_, id) => ({ id, value: id }));
-  if (name === 'sort-fallback') {
+  if (name === 'sort-shuffled') {
     let seed = 42;
     for (let index = base.length - 1; index > 0; index -= 1) {
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
@@ -224,7 +249,7 @@ function validate(api, base, scenario, context, strategy, autoFreeze) {
         legacy[2],
         `${scenario.name}: inverse fallback`
       );
-    } else {
+    } else if (scenario.compactPatches !== undefined) {
       const expectedCount =
         typeof scenario.compactPatches === 'function'
           ? scenario.compactPatches(context)

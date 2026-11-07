@@ -120,11 +120,7 @@ function recordWrittenDraft(
   draft: ProxyDraft,
   atKey?: boolean
 ) {
-  if (
-    draft.operated &&
-    target.options.enablePatches?.arrayPatchStrategy &&
-    target.copy.length !== target.original.length
-  ) {
+  if (draft.operated && target.options.enablePatches?.arrayPatchStrategy) {
     (target.writtenDrafts ??= new Map()).set(Number(key), draft);
     if (atKey) draft.finalizedAtKey = true;
   }
