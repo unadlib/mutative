@@ -201,8 +201,7 @@ export function makeOptions(api, strategy, autoFreeze) {
   };
   if (strategy === 'compact') {
     enablePatches.arrayPatchStrategy = api.compactArrayPatches;
-  }
-  else assert.equal(strategy, 'index');
+  } else assert.equal(strategy, 'index');
   return { enableAutoFreeze: autoFreeze, enablePatches };
 }
 
