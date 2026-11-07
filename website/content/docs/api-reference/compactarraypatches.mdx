@@ -1,0 +1,37 @@
+---
+title: compactArrayPatches
+description: Keep array elements that stay in order out of patches.
+---
+
+`compactArrayPatches` is the value of the `arrayPatchStrategy` option of [`enablePatches`](/docs/api-reference/create#enablepatches) that keeps array elements which stay in order out of patches. Removing the first of 10,000 elements then takes one patch instead of 10,000.
+
+```ts
+const compactArrayPatches: ArrayPatchStrategy;
+```
+
+## Usage
+
+```ts
+import { compactArrayPatches, create } from 'mutative';
+
+const baseState = { list: [1, 2, 3, 4] };
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.list.splice(1, 1);
+  },
+  { enablePatches: { arrayPatchStrategy: compactArrayPatches } }
+);
+
+expect(state).toEqual({ list: [1, 3, 4] });
+expect(patches).toEqual([{ op: 'remove', path: ['list', 1] }]);
+expect(inversePatches).toEqual([{ op: 'add', path: ['list', 1], value: 2 }]);
+```
+
+It works with every producer that generates patches, also through [`makeCreator()`](/docs/api-reference/makecreator), and [`apply()`](/docs/api-reference/apply) applies its patches without any option.
+
+## Notes
+
+- Pass it as it is. It is opaque: how a strategy works is not part of the API, and `arrayPatchStrategy` takes no other value.
+- Bundlers drop it unless you import it, so its code stays out of the ESM bundles of those who do not.
+- It only makes patches smaller. [Compact array patches](/docs/advanced-guides/patches#compact-array-patches) describes what it does, where it leaves an array to the default patches, and why it does not give elements identities.

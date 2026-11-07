@@ -1,0 +1,37 @@
+---
+title: compactArrayPatches
+description: 让保持相对顺序的数组元素不进入补丁。
+---
+
+`compactArrayPatches` 是 [`enablePatches`](/zh/docs/api-reference/create#enablepatches) 的 `arrayPatchStrategy` 选项的取值，它让保持相对顺序的数组元素不进入补丁。这样删除 10,000 个元素中的第一个只需 1 个补丁，而不是 10,000 个。
+
+```ts
+const compactArrayPatches: ArrayPatchStrategy;
+```
+
+## 用法 [#usage]
+
+```ts
+import { compactArrayPatches, create } from 'mutative';
+
+const baseState = { list: [1, 2, 3, 4] };
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.list.splice(1, 1);
+  },
+  { enablePatches: { arrayPatchStrategy: compactArrayPatches } }
+);
+
+expect(state).toEqual({ list: [1, 3, 4] });
+expect(patches).toEqual([{ op: 'remove', path: ['list', 1] }]);
+expect(inversePatches).toEqual([{ op: 'add', path: ['list', 1], value: 2 }]);
+```
+
+它适用于所有生成补丁的 producer，也可通过 [`makeCreator()`](/zh/docs/api-reference/makecreator) 使用；[`apply()`](/zh/docs/api-reference/apply) 应用它生成的补丁时无需任何选项。
+
+## 说明 [#notes]
+
+- 请原样传入。它是不透明的值：策略的工作方式不属于 API，`arrayPatchStrategy` 也不接受其他取值。
+- 打包工具会在未导入时移除它，因此它的代码不会进入不使用者的 ESM 包。
+- 它只让补丁变小。[紧凑数组补丁](/zh/docs/advanced-guides/patches#compact-array-patches)介绍了它的做法、何时把数组交给默认补丁，以及它为何不提供元素标识。

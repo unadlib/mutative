@@ -403,10 +403,12 @@ function generateCompactArrayPatches(
 }
 
 /**
- * The value of the `arrayPatchStrategy` option that keeps elements which a
- * change only moved out of the patches, so that a recipe which inserts or
- * removes elements before the end of an array gets patches for what it changed
- * rather than for every index after it. Bundlers drop it unless it is imported.
+ * The value of the `arrayPatchStrategy` option that keeps array elements which
+ * stay in order out of patches: removing the first of 10,000 elements takes one
+ * patch instead of 10,000, and `draft.list = draft.list.filter(...)` a patch per
+ * removed element instead of the whole array. An array is left to the default
+ * patches where those are about as small. Bundlers drop this value unless it is
+ * imported.
  *
  * @example
  * ```ts

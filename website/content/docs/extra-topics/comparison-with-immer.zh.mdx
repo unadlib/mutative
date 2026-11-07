@@ -64,6 +64,7 @@ Mutative 与 Immer 采用相同模型：更新函数修改草稿，库生成下�
 两者对多数修改生成相同操作、路径和值；嵌套草稿的补丁先于父级；补丁值引用下一个状态的对象，并随状态冻结。以下场景存在差异，生成与应用细节见[补丁行为](/zh/docs/advanced-guides/patches#patch-behavior)。
 
 - **缩短数组**：Mutative 默认以 `replace` 修改 `length`，适用于 `pop()`、`list.length = 0` 的正向补丁，以及 `push()`、插入型 `splice()` 的逆向补丁。Immer 逐索引生成 `remove`。Mutative 设置 `enablePatches: { arrayLengthAssignment: false }` 后采用相同方式。
+- **移动的数组元素**：默认情况下，两者都为元素被移动的每个索引生成 `replace`，例如 `shift()` 和 `unshift()` 的补丁。设置 `enablePatches: { arrayPatchStrategy: compactArrayPatches }` 后，Mutative 让保持相对顺序的元素不进入补丁，Immer 没有此功能；详见[紧凑数组补丁](/zh/docs/advanced-guides/patches#compact-array-patches)。
 - **修改 Set 元素**：只修改对象、不增删元素时，Mutative 按元素位置生成内部 `replace`，Immer 删除旧对象并添加新对象。一旦增删元素，两者都按值携带已修改元素。
 - **字符串路径**：Mutative 的 `enablePatches: { pathAsArray: false }` 生成 JSON Patch 要求的 JSON Pointer 字符串；Immer 始终使用数组。字符串无法表示非字符串 Map 键或 symbol 键。
 - **应用选项**：`apply()` 支持 `enableAutoFreeze`、`strict` 和 `mark`，或用 `mutable: true` 原地修改并返回 `undefined`。

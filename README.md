@@ -78,7 +78,7 @@ At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method p
 | on          | off     |                      3.9x |                       4.2x |               32x |                39x |
 | on          | on      |                      2.7x |                       2.8x |              6.6x |               6.8x |
 
-Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.04 µs against 7,408 µs, 1,052x. With patches, both libraries emit one patch per moved index by default, which bounds the gain to 5-9x; Mutative's opt-in [compact array patches](https://mutative.js.org/docs/advanced-guides/patches#compact-array-patches) instead record an insertion or deletion before the end of an array, as by `shift`, `unshift` or `splice`, with one patch per inserted or removed element. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
+Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.04 µs against 7,408 µs, 1,052x. With patches, both libraries emit one patch per moved index by default, which bounds the gain to 5-9x; Mutative's opt-in [compact array patches](https://mutative.js.org/docs/advanced-guides/patches#compact-array-patches) instead keep elements that stay in order out of the patches, so `shift`, `unshift` and `splice` take one patch per inserted or removed element. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
 
 </details>
 
@@ -240,7 +240,7 @@ The `options` argument is optional; [`makeCreator()`](#makecreator) sets default
 
   - `pathAsArray`, `true` by default: a path is an array of keys, such as `['list', 0]`. With `false`, it is a JSON Pointer string, such as `'/list/0'`. A string path holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
   - `arrayLengthAssignment`, `true` by default: an array that gets shorter gets a `replace` patch of its `length`. With `false`, it gets a `remove` patch for each index that it loses, which takes more time for large arrays. With `compactArrayPatches`, this applies where an array loses elements at its end or the strategy leaves it to the default; the `remove` patches of a deletion before the end do not depend on it.
-  - `arrayPatchStrategy`: by default, patches compare the values at each index. With the exported `compactArrayPatches`, a change that alters the length of an array keeps the common prefix and suffix out of its patches, and an in-place change of a retained element takes the element's own patches or a `replace` patch at its final index. It leaves the array to the default when that is smaller or holes are involved. See [Compact array patches](https://mutative.js.org/docs/advanced-guides/patches#compact-array-patches).
+  - `arrayPatchStrategy`: by default, patches compare the values at each index, so an element that moved takes a patch. With the exported `compactArrayPatches`, elements that stay in order stay out of the patches, also when a recipe assigns a new array over the old one, as in `draft.list = draft.list.filter(...)`. An array is left to the default where that is about as small. It only makes patches smaller; see [Compact array patches](https://mutative.js.org/docs/advanced-guides/patches#compact-array-patches).
 
   With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)); see the [related discussion](https://github.com/unadlib/mutative/issues/6).
 
@@ -397,6 +397,28 @@ expect(baseState).toEqual({ foo: { bar: "test2" } });
 > `apply()` throws for a patch path through the `__proto__` or `constructor` of an object or array, or through the `prototype` of a function, so that patches cannot change the prototypes of objects; Map keys of these names are ordinary keys. It reads the other path segments as properties, as Immer does, and does not guard against prototypes that other code has already changed.
 
 > Patches add and remove Set elements by value, also a changed element of a Set that added or removed elements, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. `apply()` also appends the elements that it adds, so such a Set can hold its elements in another order, and the patches of a later recipe, which find Set elements by position, can then change another element. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/patches#sets-of-objects).
+
+### `compactArrayPatches`
+
+The value of the `arrayPatchStrategy` option that keeps array elements which stay in order out of patches, so that removing the first of 10,000 elements takes one patch instead of 10,000. Bundlers drop it unless it is imported.
+
+```ts
+import { compactArrayPatches, create } from 'mutative';
+
+const [state, patches, inversePatches] = create(
+  { list: [1, 2, 3, 4] },
+  (draft) => {
+    draft.list.splice(1, 1);
+  },
+  { enablePatches: { arrayPatchStrategy: compactArrayPatches } }
+);
+
+expect(state).toEqual({ list: [1, 3, 4] });
+expect(patches).toEqual([{ op: 'remove', path: ['list', 1] }]);
+expect(inversePatches).toEqual([{ op: 'add', path: ['list', 1], value: 2 }]);
+```
+
+It only makes patches smaller; see [Compact array patches](https://mutative.js.org/docs/advanced-guides/patches#compact-array-patches) for what it does and where it leaves an array to the default patches.
 
 ### `current()`
 

@@ -6,6 +6,7 @@
 
 ## Interfaces
 
+- [ArrayPatchStrategy](interfaces/ArrayPatchStrategy.md)
 - [Options](interfaces/Options.md)
 
 ## Type Aliases
@@ -19,6 +20,7 @@
 
 ## Variables
 
+- [compactArrayPatches](variables/compactArrayPatches.md)
 - [create](variables/create.md)
 - [makeCreator](variables/makeCreator.md)
 

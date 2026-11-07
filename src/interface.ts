@@ -50,12 +50,13 @@ export type PatchesOptions =
       arrayLengthAssignment?: boolean;
       /**
        * How to represent array changes. By default, patches compare the values
-       * at each index, so elements that a change moved take a patch each.
-       * `compactArrayPatches` keeps them out of the patches where it can, and
-       * leaves the rest to the default.
+       * at each index, so an element that a change moved takes a patch.
+       * `compactArrayPatches` keeps elements that stay in order out of the
+       * patches, where that makes them smaller.
        *
-       * Both generate value-based patches. Compact patches do not record the
-       * recipe's operations or preserve JavaScript object aliases.
+       * Both generate value-based patches. Compact patches only make them
+       * smaller: they do not record the recipe's operations, preserve JavaScript
+       * object aliases or give elements identities.
        */
       arrayPatchStrategy?: ArrayPatchStrategy;
     };
