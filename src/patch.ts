@@ -5,7 +5,6 @@ import {
   get,
   getProxyDraft,
   getType,
-  getWrittenDrafts,
   has,
   isEqual,
 } from './utils';
@@ -140,18 +139,14 @@ function retained(
   return draft.operated || draft.finalities !== target.finalities ? 2 : 1;
 }
 
-// A child emits patches under its array only at its own index.
+// A changed child emits patches under its array only at its own index, where
+// its own patches carry its change.
 function ownPatches(
   draft: ProxyDraft | undefined,
   parent: ProxyDraft,
   index: number
 ) {
-  return (
-    draft !== undefined &&
-    draft.patched &&
-    draft.parent === parent &&
-    draft.key === index
-  );
+  return draft !== undefined && draft.parent === parent && draft.key === index;
 }
 
 // Compact array patches keep the common prefix and suffix of an array whose
@@ -199,7 +194,7 @@ function tryGenerateCompactArrayPatches(
 
   // Identity alone is not enough: a draft of a base element may have
   // changed, and the indices of such elements are collected.
-  const drafts = getWrittenDrafts(proxyState);
+  const drafts = proxyState.writtenDrafts;
   let changed: number[] | undefined;
   let prefix = 0;
   let state;
@@ -244,13 +239,11 @@ function tryGenerateCompactArrayPatches(
   if (Math.abs(newLength - oldLength) > 4 * suffix) return false;
   // Before the change, an element keeps its index, and the patches of its own
   // child carry its change; anywhere else, they would change another element.
-  if (proxyState.patched) {
-    let moved = drafts === undefined;
-    drafts?.forEach((draft, index) => {
-      if (index >= prefix && ownPatches(draft, proxyState, index)) moved = true;
-    });
-    if (moved) return false;
-  }
+  let moved = false;
+  drafts?.forEach((draft, index) => {
+    if (index >= prefix && ownPatches(draft, proxyState, index)) moved = true;
+  });
+  if (moved) return false;
   // A hole compares like an undefined element, which the patches would make
   // explicit. Only an array that has the compact shape is searched for holes.
   if (hasHoles(original) || hasHoles(copy)) return false;

@@ -73,11 +73,12 @@ export interface Finalities {
 }
 
 export interface ProxyDraft<T = any> {
+  // For compact array patches, the changed drafts that finalization wrote into
+  // the indices of this array, whose final values no longer lead to them.
+  writtenDrafts?: Map<number, ProxyDraft>;
   type: DraftType;
   operated: boolean;
   finalized: boolean;
-  // Whether this node or a finalized descendant emitted patches.
-  patched: boolean;
   original: T;
   copy: T | null;
   proxy: T | null;

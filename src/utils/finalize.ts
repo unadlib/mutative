@@ -112,12 +112,8 @@ export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
   });
 }
 
-// The changed drafts that finalization wrote into the indices of an array
-// whose producer generates compact array patches, once its length changed.
-// The original of such a draft tells those patches which base element the
-// final value at an index stands for.
-const writtenDrafts = new WeakMap<ProxyDraft, Map<number, ProxyDraft>>();
-
+// The original of a changed draft that finalization wrote into an index tells
+// compact array patches which base element the final value there stands for.
 function recordWrittenDraft(target: ProxyDraft, key: any, draft: ProxyDraft) {
   const { enablePatches } = target.options;
   if (
@@ -127,13 +123,7 @@ function recordWrittenDraft(target: ProxyDraft, key: any, draft: ProxyDraft) {
     target.copy.length === target.original.length
   )
     return;
-  let drafts = writtenDrafts.get(target);
-  if (drafts === undefined) writtenDrafts.set(target, (drafts = new Map()));
-  drafts.set(Number(key), draft);
-}
-
-export function getWrittenDrafts(target: ProxyDraft) {
-  return writtenDrafts.get(target);
+  (target.writtenDrafts ??= new Map()).set(Number(key), draft);
 }
 
 export function finalizePatches(
@@ -151,22 +141,7 @@ export function finalizePatches(
     if (patches && inversePatches) {
       const basePath = getPath(target);
       if (basePath) {
-        const patchCount = patches.length;
-        const inversePatchCount = inversePatches.length;
         generatePatches(target, basePath, patches, inversePatches);
-        if (
-          patches.length !== patchCount ||
-          inversePatches.length !== inversePatchCount
-        ) {
-          // A compact array checks where its children emitted patches. Mark
-          // this subtree chain once instead of scanning every accumulated
-          // patch for every array. A marked node already marked its ancestors.
-          let node: ProxyDraft | null = target;
-          while (node !== null && !node.patched) {
-            node.patched = true;
-            node = node.parent;
-          }
-        }
       }
     }
     target.finalized = true;
