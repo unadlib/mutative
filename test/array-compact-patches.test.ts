@@ -457,16 +457,18 @@ describe('compact array patches', () => {
       { op: 'replace', path: [0], value: { id: 0 } },
       { op: 'replace', path: ['length'], value: 1 },
     ]);
-    // Up to four times the suffix, the structural patches stay.
-    const kept = roundtrip(makeList(5), (draft) => {
-      draft.splice(0, 4);
+    // Up to about three times the suffix, the structural patches stay.
+    const kept = roundtrip(makeList(4), (draft) => {
+      draft.splice(0, 3);
     });
     expect(kept.patches).toEqual([
-      { op: 'remove', path: [3] },
       { op: 'remove', path: [2] },
       { op: 'remove', path: [1] },
       { op: 'remove', path: [0] },
     ]);
+    expectFallback(makeList(5), (draft) => {
+      draft.splice(0, 4);
+    });
   });
 
   test('tail edits keep the existing efficient patch forms', () => {
@@ -535,6 +537,33 @@ describe('compact array patches', () => {
         expect(inverse).toEqual([{ op: 'remove', path: [0] }]);
       }
     }
+  });
+
+  test('a close count keeps the index patches, as values differ in size', () => {
+    // Keeping the elements that stay in order would leave out `big`, which
+    // stays at its index, and carry it where index patches do not.
+    const big = {
+      id: 'big',
+      kids: Array.from({ length: 50 }, (_, id) => ({ id })),
+    };
+    const { patches } = expectFallback(
+      [
+        { id: 'a' },
+        { id: 'b' },
+        big,
+        { id: 'c' },
+        { id: 'd' },
+        { id: 'e' },
+        { id: 'f' },
+      ],
+      (draft) => {
+        const [a, b, kept, c, d, e] = draft;
+        draft.splice(0, draft.length, { id: 'x' }, c, kept, d, a, b, e, {
+          id: 'y',
+        });
+      }
+    );
+    expect(JSON.stringify(patches)).not.toContain('big');
   });
 
   test('large arrays take the same patches through the early exits', () => {

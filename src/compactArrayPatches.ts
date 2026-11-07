@@ -298,7 +298,14 @@ function generateCompactArrayPatches(
       }
     }
     const lengthChange = Math.abs(newLength - oldLength);
-    if (cost >= 4 * slots + 2 * lengthChange + (lengthChange > 0 ? 1 : 0))
+    // The count ignores the size of each value, as when an element that stays
+    // at its index is not among those kept, and index patches would not carry
+    // it. They win a close count: requiring a tenth less changes the total size
+    // of random patches by under 0.5%, but makes them larger far less often.
+    if (
+      10 * cost >=
+      9 * (4 * slots + 2 * lengthChange + (lengthChange > 0 ? 1 : 0))
+    )
       return false;
   }
 
