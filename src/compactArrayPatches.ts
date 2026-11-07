@@ -1,5 +1,6 @@
 import {
   type ArrayPatchStrategy,
+  DraftType,
   Operation,
   type Patches,
   type ProxyDraft,
@@ -178,6 +179,15 @@ function generateCompactArrayPatches(
     )
   )
     return false;
+  if (isAssigned && proxyState.type === DraftType.Object) {
+    const key = basePath[basePath.length - 1];
+    const descriptor = Object.getOwnPropertyDescriptor(
+      proxyState.original,
+      key
+    );
+    // A getter may return a temporary array on each read during replay.
+    if (!descriptor || !('value' in descriptor)) return false;
+  }
   const original: any[] = isAssigned ? assignedFrom : proxyState.original;
   const copy: any[] = isAssigned ? assigned : proxyState.copy!;
   const assignedMap = proxyState.assignedMap!;

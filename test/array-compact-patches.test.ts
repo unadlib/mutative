@@ -722,6 +722,24 @@ describe('compact array patches', () => {
       }
     );
 
+    test('replacing an accessor that returns a fresh array replays at the property', () => {
+      const base = {
+        get rows() {
+          return [1, 2, 3, 4];
+        },
+      };
+      const { state, patches, inverse } = roundtrip(base, (draft) => {
+        draft.rows = [1, 3, 4];
+      });
+      expect(state.rows).toEqual([1, 3, 4]);
+      expect(patches).toEqual([
+        { op: 'replace', path: ['rows'], value: state.rows },
+      ]);
+      expect(inverse).toEqual([
+        { op: 'replace', path: ['rows'], value: base.rows },
+      ]);
+    });
+
     test('keeps one patch where that is smaller', () => {
       const whole = (recipe: (draft: any) => void) => {
         const { patches, inverse, state } = roundtrip(makeBase(), recipe);
