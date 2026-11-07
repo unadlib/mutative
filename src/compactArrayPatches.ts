@@ -7,6 +7,7 @@ import {
 import { escapePath, getProxyDraft, isEqual, isPlainArray } from './utils';
 import { cloneIfNeeded } from './patch';
 import { hasHoles } from './array';
+import { dataTypes } from './constant';
 
 // Whether `value`, at `index` of an array, is `base` or an unchanged draft of
 // it (1), a changed draft of it (2), or another value (0). A draft that the
@@ -169,7 +170,11 @@ function generateCompactArrayPatches(
     !(
       Array.isArray(assignedFrom) &&
       isPlainArray(assignedFrom) &&
-      isPlainArray(assigned)
+      isPlainArray(assigned) &&
+      // Forward and inverse replay must both be able to draft the array.
+      proxyState.options.mark?.(assignedFrom, dataTypes) !==
+        dataTypes.mutable &&
+      proxyState.options.mark?.(assigned, dataTypes) !== dataTypes.mutable
     )
   )
     return false;

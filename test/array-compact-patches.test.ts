@@ -700,6 +700,28 @@ describe('compact array patches', () => {
       ]);
     });
 
+    test.each(['old', 'new'])(
+      'a mutable mark on the %s array keeps the assignment atomic',
+      (side) => {
+        const base = { rows: [1, 2, 3, 4] };
+        const next = base.rows.filter((value) => value !== 2);
+        const marked = side === 'old' ? base.rows : next;
+        const mark = (value: unknown) =>
+          value === marked ? ('mutable' as const) : undefined;
+        const [state, patches, inverse] = create(
+          base,
+          (draft) => {
+            draft.rows = next;
+          },
+          { ...compactOptions(), mark }
+        );
+        expect(apply(base, patches, { mark })).toEqual({ rows: [1, 3, 4] });
+        expect(base.rows).toEqual([1, 2, 3, 4]);
+        expect(apply(state, inverse, { mark })).toEqual(base);
+        expect(state.rows).toEqual([1, 3, 4]);
+      }
+    );
+
     test('keeps one patch where that is smaller', () => {
       const whole = (recipe: (draft: any) => void) => {
         const { patches, inverse, state } = roundtrip(makeBase(), recipe);
