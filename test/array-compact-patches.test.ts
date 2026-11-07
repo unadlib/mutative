@@ -2031,3 +2031,235 @@ describe('any two arrays', () => {
     });
   });
 });
+
+// The application in https://github.com/unadlib/mutative/issues/162: a flowchart
+// whose state is a tree of nodes, each with metadata and an array of children,
+// and whose patches serve undo, redo and synchronization with a server.
+describe('a flowchart, as issue #162 describes it', () => {
+  interface FlowNode {
+    id: string;
+    type: string;
+    metadata: { label: string; conditions: string[] };
+    children: FlowNode[];
+  }
+  let created = 0;
+  const makeNode = (children: FlowNode[] = []): FlowNode => {
+    created += 1;
+    return {
+      id: `00000000-0000-4000-8000-${String(created).padStart(12, '0')}`,
+      type: created % 3 === 0 ? 'if-else' : 'task',
+      metadata: { label: `Step ${created}`, conditions: ['a > 1', 'b < 2'] },
+      children,
+    };
+  };
+  const makeTree = (depth: number, width: number): FlowNode =>
+    makeNode(
+      depth === 0
+        ? []
+        : Array.from({ length: width }, () => makeTree(depth - 1, width))
+    );
+  const makeState = () => ({ process: makeTree(3, 12) });
+  type State = ReturnType<typeof makeState>;
+
+  // As the issue shows them, but for the types of the application.
+  const getNodeAtPathDraft = (node: any, path: number[]) =>
+    path.reduce((current, index) => current.children[index], node);
+  const performNodeInsertion = (draft: any, insertion: any) => {
+    const parent = getNodeAtPathDraft(draft.process, insertion.parentPath);
+    parent.children.splice(insertion.childIndex, 0, insertion.node);
+  };
+  const applyImportPlanInsertions = (draft: any, insertions: any[]) => {
+    for (const insertion of insertions) performNodeInsertion(draft, insertion);
+  };
+
+  const size = (value: unknown) => JSON.stringify(value).length;
+  const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value));
+  // The patches cross the wire to a server's copy of the state, and undo and
+  // redo run on the client's state.
+  const check = (state: State, recipe: (draft: any) => void) => {
+    const [next, patches, inverse] = create(
+      state,
+      recipe,
+      compactOptions()
+    ) as unknown as [State, any[], any[]];
+    const server = copy(state);
+    expect(apply(server, copy(patches))).toEqual(next);
+    const undone = apply(next, inverse);
+    expect(undone).toEqual(state);
+    expect(apply(undone, patches)).toEqual(next);
+    const [, defaultPatches] = create(state, recipe, {
+      enablePatches: true,
+    }) as unknown as [State, any[]];
+    return {
+      next,
+      patches,
+      inverse,
+      bytes: size(patches),
+      defaultBytes: size(defaultPatches),
+    };
+  };
+
+  test('inserting a node at the beginning takes one patch, not all siblings', () => {
+    const state = makeState();
+    const node = makeNode();
+    const { patches, inverse, bytes, defaultBytes } = check(state, (draft) => {
+      applyImportPlanInsertions(draft, [
+        { parentPath: [], childIndex: 0, node },
+      ]);
+    });
+    expect(patches).toEqual([
+      { op: 'add', path: ['process', 'children', 0], value: node },
+    ]);
+    expect(inverse).toEqual([
+      { op: 'remove', path: ['process', 'children', 0] },
+    ]);
+    // By default each sibling, with its whole subtree, takes a patch.
+    expect(defaultBytes).toBeGreaterThan(size(state) * 0.9);
+    expect(bytes).toBeLessThan(200);
+  });
+
+  test('pasting nodes takes a patch per node, wherever the plan puts them', () => {
+    const state = makeState();
+    const nodes = Array.from({ length: 5 }, () => makeNode());
+    const { patches, bytes, defaultBytes } = check(state, (draft) => {
+      applyImportPlanInsertions(draft, [
+        // Next to each other, and into two places of one parent.
+        { parentPath: [3], childIndex: 2, node: nodes[0] },
+        { parentPath: [3], childIndex: 3, node: nodes[1] },
+        { parentPath: [3], childIndex: 9, node: nodes[2] },
+        // Into other parents, at any depth.
+        { parentPath: [7, 2], childIndex: 0, node: nodes[3] },
+        { parentPath: [], childIndex: 9, node: nodes[4] },
+      ]);
+    });
+    expect(patches).toHaveLength(5);
+    expect(patches.every(({ op }) => op === 'add')).toBe(true);
+    expect(bytes).toBeLessThan(defaultBytes / 50);
+  });
+
+  test('a parent that an insertion moved carries its change with its whole subtree', () => {
+    // The insertion moves the eighth branch, so the node pasted into it cannot
+    // have a path of its own: the branch takes a replace patch at its new index.
+    const state = makeState();
+    const nodes = [makeNode(), makeNode()];
+    const { patches, bytes, defaultBytes } = check(state, (draft) => {
+      applyImportPlanInsertions(draft, [
+        { parentPath: [7, 2], childIndex: 0, node: nodes[0] },
+        { parentPath: [], childIndex: 5, node: nodes[1] },
+      ]);
+    });
+    expect(patches.map(({ op, path }) => [op, path])).toEqual([
+      ['add', ['process', 'children', 5]],
+      ['replace', ['process', 'children', 8]],
+    ]);
+    // That is about one of the twelve branches, against seven by default.
+    expect(bytes).toBeLessThan(defaultBytes / 5);
+    expect(bytes).toBeGreaterThan(size(state.process.children[7]));
+  });
+
+  test('editing metadata takes its own patch, also beside an insertion', () => {
+    const state = makeState();
+    const edited = check(state, (draft) => {
+      getNodeAtPathDraft(draft.process, [4, 1]).metadata.label = 'Renamed';
+    });
+    expect(edited.patches).toEqual([
+      {
+        op: 'replace',
+        path: ['process', 'children', 4, 'children', 1, 'metadata', 'label'],
+        value: 'Renamed',
+      },
+    ]);
+    // A sibling before the insertion keeps its index, and so its own patch.
+    const beside = check(state, (draft) => {
+      const parent = getNodeAtPathDraft(draft.process, [4]);
+      parent.children[1].metadata.label = 'Renamed';
+      parent.children.splice(6, 0, makeNode());
+    });
+    expect(beside.patches).toHaveLength(2);
+    expect(beside.patches[0].path).toContain('label');
+  });
+
+  test('removing a node takes one patch, and undoing it restores its subtree', () => {
+    const state = makeState();
+    const { patches, inverse } = check(state, (draft) => {
+      getNodeAtPathDraft(draft.process, [2]).children.splice(0, 1);
+    });
+    expect(patches).toEqual([
+      { op: 'remove', path: ['process', 'children', 2, 'children', 0] },
+    ]);
+    expect(inverse[0].value).toEqual(state.process.children[2].children[0]);
+  });
+
+  test('moving a node takes two patches, within a parent and across parents', () => {
+    const state = makeState();
+    const within = check(state, (draft) => {
+      const { children } = getNodeAtPathDraft(draft.process, [5]);
+      const [node] = children.splice(1, 1);
+      children.splice(9, 0, node);
+    });
+    expect(within.patches.map(({ op }) => op)).toEqual(['remove', 'add']);
+    expect(within.bytes).toBeLessThan(within.defaultBytes / 4);
+
+    const across = check(state, (draft) => {
+      const [node] = getNodeAtPathDraft(draft.process, [5]).children.splice(
+        1,
+        1
+      );
+      getNodeAtPathDraft(draft.process, [8]).children.unshift(node);
+    });
+    expect(across.patches.map(({ op }) => op).sort()).toEqual([
+      'add',
+      'remove',
+    ]);
+    expect(across.bytes).toBeLessThan(across.defaultBytes / 4);
+  });
+
+  test('a session of edits stays in step with the server and undoes to the start', () => {
+    const start = makeState();
+    const random = mulberry32(162);
+    const pathOf = (root: FlowNode) => {
+      const path: number[] = [];
+      let node = root;
+      while (node.children.length && random() < 0.6) {
+        const index = Math.floor(random() * node.children.length);
+        path.push(index);
+        node = node.children[index];
+      }
+      return path;
+    };
+    let state = start;
+    let server = copy(start);
+    const undo: any[][] = [];
+    for (let step = 0; step < 300; step += 1) {
+      const kind = random();
+      const path = pathOf(state.process);
+      const at = (length: number) => Math.floor(random() * (length + 1));
+      const recipe = (draft: any) => {
+        const node = getNodeAtPathDraft(draft.process, path);
+        if (kind < 0.4) {
+          node.children.splice(at(node.children.length), 0, makeNode());
+        } else if (kind < 0.6 && node.children.length) {
+          node.children.splice(at(node.children.length - 1), 1);
+        } else if (kind < 0.8 && node.children.length > 1) {
+          const [moved] = node.children.splice(at(node.children.length - 1), 1);
+          node.children.splice(at(node.children.length), 0, moved);
+        } else {
+          node.metadata.label = `Edit ${step}`;
+        }
+      };
+      const [next, patches, inverse] = create(
+        state,
+        recipe,
+        compactOptions()
+      ) as unknown as [State, any[], any[]];
+      server = apply(server, copy(patches)) as State;
+      expect(server).toEqual(next);
+      undo.push(inverse);
+      state = next;
+    }
+    for (const inverse of undo.reverse()) {
+      state = apply(state, inverse) as State;
+    }
+    expect(state).toEqual(start);
+  });
+});
