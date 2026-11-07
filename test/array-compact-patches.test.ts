@@ -537,6 +537,62 @@ describe('compact array patches', () => {
     }
   });
 
+  test('large arrays take the same patches through the early exits', () => {
+    const list = (length = 1000) => Array.from({ length }, (_, id) => ({ id }));
+    // Few elements stay in order, so the sample skips the search.
+    expectFallback(list(), (draft) => {
+      draft.reverse();
+    });
+    expectFallback(list(), (draft) => {
+      draft.sort(
+        (a: any, b: any) => ((a.id * 7919) % 1009) - ((b.id * 7919) % 1009)
+      );
+    });
+    // Without a search, the replaced elements still leave the suffix alone.
+    const fresh = Array.from({ length: 400 }, (_, id) => ({ id: -id - 1 }));
+    const replaced = roundtrip(list(), (draft) => {
+      draft.splice(100, 500, ...fresh);
+    });
+    expect(replaced.patches).toHaveLength(500);
+    expect(
+      replaced.patches.filter(({ op }: any) => op === 'remove')
+    ).toHaveLength(100);
+    // Half of the elements staying in order is enough for the search.
+    const rotated = roundtrip(list(), (draft) => {
+      const half = draft.splice(0, 500);
+      draft.push(...half);
+    });
+    expect(rotated.patches).toHaveLength(1000);
+    expect(
+      rotated.patches.filter(({ op }: any) => op === 'remove')
+    ).toHaveLength(500);
+    // A few assigned indices far apart are their own patches.
+    for (const options of [{}, { strict: true }, { mark: () => undefined }]) {
+      const assigned = expectFallback(
+        list(),
+        (draft) => {
+          draft[1] = { id: 'a' };
+          draft[500] = { id: 'b' };
+          draft[900] = { id: 'c' };
+        },
+        compactOptions({}, options)
+      );
+      expect(assigned.patches).toHaveLength(3);
+    }
+    // A change that a moved element happens to undo still counts as no patch.
+    const repeated = roundtrip(
+      Array.from({ length: 1000 }, () => 0),
+      (draft) => {
+        draft[500] = 1;
+        draft[600] = 1;
+        draft.shift();
+      }
+    );
+    expect(repeated.state.filter((value: number) => value === 1)).toHaveLength(
+      2
+    );
+  });
+
   test('changes that keep no order keep the index patches', () => {
     expectFallback([1, 2, 3, 4], (draft) => {
       draft.reverse();

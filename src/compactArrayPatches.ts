@@ -47,14 +47,21 @@ const NEGATIVE_ZERO = {};
 const toKey = (value: any) =>
   value === 0 && 1 / value < 0 ? NEGATIVE_ZERO : value;
 
+const SAMPLE_SIZE = 64;
+
 // The positions of a longest increasing subsequence of `values`.
 function longestIncreasing(values: number[]) {
   // The last position of the best subsequence of each length.
   const tails: number[] = [];
   const previous: number[] = [];
   for (let position = 0; position < values.length; position += 1) {
-    let low = 0;
-    let high = tails.length;
+    // Elements that mostly stay in order extend the longest subsequence.
+    const longest = tails.length;
+    let low =
+      longest > 0 && values[tails[longest - 1]] < values[position]
+        ? longest
+        : 0;
+    let high = longest;
     while (low < high) {
       const middle = Math.floor((low + high) / 2);
       if (values[tails[middle]] < values[position]) low = middle + 1;
@@ -82,6 +89,27 @@ function keptElements(
 ) {
   const kept = new Int32Array(endNew - start).fill(-1);
   if (start === endOld) return kept;
+  const keyAt = (index: number) => {
+    const draft = getProxyDraft(copy[index]) ?? drafts?.get(index);
+    return toKey(draft ? draft.original : copy[index]);
+  };
+  // Matching a large range costs far more than the moves of `reverse()`. A
+  // sample of its base elements shows whether enough of them stay in order to
+  // pay off, as keeping under a third of them saves under a third of the patches.
+  const size = endOld - start;
+  if (size > SAMPLE_SIZE * 4) {
+    const step = Math.floor(size / SAMPLE_SIZE);
+    const sample = new Map<any, number>();
+    for (let index = start; index < endOld; index += step) {
+      sample.set(toKey(original[index]), index);
+    }
+    const order: number[] = [];
+    for (let index = start; index < endNew; index += 1) {
+      const position = sample.get(keyAt(index));
+      if (position !== undefined) order.push(position);
+    }
+    if (3 * longestIncreasing(order).length < sample.size) return kept;
+  }
   // The first unmatched base index of each element, and the next one of each
   // base index, as an element may appear more than once.
   const firsts = new Map<any, number>();
@@ -95,8 +123,7 @@ function keptElements(
   const fromOld: number[] = [];
   const fromNew: number[] = [];
   for (let index = start; index < endNew; index += 1) {
-    const draft = getProxyDraft(copy[index]) ?? drafts?.get(index);
-    const key = toKey(draft ? draft.original : copy[index]);
+    const key = keyAt(index);
     const first = firsts.get(key);
     if (first !== undefined && first !== -1) {
       firsts.set(key, nexts[first - start]);
@@ -199,6 +226,9 @@ function generateCompactArrayPatches(
   // form, and elements that all stay in place need no structural patches.
   if (prefix === shortest || (prefix === endOld && prefix === endNew))
     return false;
+  // Without native moves, only assigned indices can differ, so far fewer of them
+  // than the range has elements leave few index patches and nothing to search.
+  if (!relocated && 2 * assignedMap.size < endNew - prefix) return false;
   // A hole compares like an undefined element, which the patches would make
   // explicit. Only an array that has a compact shape is searched for holes.
   if (hasHoles(original) || hasHoles(copy)) return false;
@@ -252,23 +282,25 @@ function generateCompactArrayPatches(
   // Counting a patch with a value as two and one without as one, in both
   // directions: `splice(0, 999)` of 1,000 elements takes 999 remove patches, but
   // one replace patch and one of the `length`, and reversing an array would
-  // remove and add nearly all of its elements.
-  let slots = 0;
-  for (let index = prefix; index < shortest; index += 1) {
-    if (
-      retained(copy[index], original[index], drafts, index, proxyState) !== 1
-    ) {
-      slots += 1;
-    }
-  }
-  const lengthChange = Math.abs(newLength - oldLength);
+  // remove and add nearly all of its elements. A moved element rarely equals what
+  // its new index held, so counting those is left out if it could not matter.
   const changedElsewhere = changed ? changed.length - changedInPrefix : 0;
-  if (
+  const cost =
     3 * (removes.length + adds.length) +
-      4 * (replaces.length / 2 + changedElsewhere) >=
-    4 * slots + 2 * lengthChange + (lengthChange > 0 ? 1 : 0)
-  )
-    return false;
+    4 * (replaces.length / 2 + changedElsewhere);
+  if (cost >= shortest - prefix) {
+    let slots = 0;
+    for (let index = prefix; index < shortest; index += 1) {
+      if (
+        retained(copy[index], original[index], drafts, index, proxyState) !== 1
+      ) {
+        slots += 1;
+      }
+    }
+    const lengthChange = Math.abs(newLength - oldLength);
+    if (cost >= 4 * slots + 2 * lengthChange + (lengthChange > 0 ? 1 : 0))
+      return false;
+  }
 
   const pathOf = (index: number) =>
     escapePath(basePath.concat([index]), pathAsArray);
