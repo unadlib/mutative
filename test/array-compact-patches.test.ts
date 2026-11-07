@@ -136,6 +136,76 @@ describe('compact array patches', () => {
     ]);
   });
 
+  test('one replacement of another length replaces what both sides have', () => {
+    const shorter = roundtrip([0, 1, 2, 3, 4, 5, 6, 7], (draft) => {
+      draft.splice(3, 2, 9);
+    });
+    expect(shorter.patches).toEqual([
+      { op: 'remove', path: [4] },
+      { op: 'replace', path: [3], value: 9 },
+    ]);
+    expect(shorter.inverse).toEqual([
+      { op: 'replace', path: [3], value: 3 },
+      { op: 'add', path: [4], value: 4 },
+    ]);
+
+    const longer = roundtrip([0, 1, 2, 3, 4, 5, 6, 7], (draft) => {
+      draft.splice(3, 1, 8, 9);
+    });
+    expect(longer.patches).toEqual([
+      { op: 'add', path: [4], value: 9 },
+      { op: 'replace', path: [3], value: 8 },
+    ]);
+    expect(longer.inverse).toEqual([
+      { op: 'replace', path: [3], value: 3 },
+      { op: 'remove', path: [4] },
+    ]);
+
+    // The final elements decide, not how the recipe made the change.
+    const assigned = roundtrip([0, 1, 2, 3], (draft) => {
+      draft[1] = 9;
+      draft.shift();
+    });
+    expect(assigned.state).toEqual([9, 2, 3]);
+    expect(assigned.patches).toEqual([
+      { op: 'remove', path: [1] },
+      { op: 'replace', path: [0], value: 9 },
+    ]);
+
+    // A slot between the changes that holds its base element needs no patch.
+    const same = roundtrip([0, 1, 2, 3, 4, 5, 6], (draft) => {
+      draft[1] = 9;
+      draft[3] = 8;
+      draft.splice(4, 0, 7);
+    });
+    expect(same.state).toEqual([0, 9, 2, 8, 7, 4, 5, 6]);
+    expect(same.patches).toEqual([
+      { op: 'add', path: [4], value: 7 },
+      { op: 'replace', path: [1], value: 9 },
+      { op: 'replace', path: [3], value: 8 },
+    ]);
+    expect(same.inverse).toEqual([
+      { op: 'replace', path: [1], value: 1 },
+      { op: 'replace', path: [3], value: 3 },
+      { op: 'remove', path: [4] },
+    ]);
+  });
+
+  test('disconnected changes of the length replay through the replaced middle', () => {
+    const list = Array.from({ length: 30 }, (_, id) => ({ id }));
+    const inserted = roundtrip(list, (draft) => {
+      draft.splice(20, 0, { id: 'a' });
+      draft.unshift({ id: 'b' });
+    });
+    // Only the elements before the last change are patched.
+    expect(inserted.patches).toHaveLength(22);
+    const removed = roundtrip(list, (draft) => {
+      draft.splice(20, 1);
+      draft.splice(10, 1);
+    });
+    expect(removed.patches).toHaveLength(11);
+  });
+
   test('a length change that dwarfs the suffix keeps the smaller index patches', () => {
     const makeList = (length: number) =>
       Array.from({ length }, (_, id) => ({ id }));
@@ -248,10 +318,6 @@ describe('compact array patches', () => {
     expectFallback([0, 1, 2, 3, 4], (draft) => {
       const [item] = draft.splice(1, 1);
       draft.splice(3, 0, item);
-    });
-    expectFallback([0, 1, 2, 3], (draft) => {
-      draft[1] = 9;
-      draft.shift();
     });
     expectFallback([0, 1, 2, 3], (draft) => {
       draft.length = 3;

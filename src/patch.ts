@@ -154,16 +154,17 @@ function ownPatches(
   );
 }
 
-// Compact array patches keep the common prefix and suffix of one contiguous
-// insertion or deletion, and carry only elements, like the default generator.
-// A retained element may also have changed in place: where it keeps its index,
-// the patches of its own draft carry the change, and a replace patch at its
-// final index does where the insertion or deletion moved it, or for a draft
-// that the array holds from another path or producer. Anything else,
-// such as a new value at a retained index, holes, reordering or an ambiguous
-// shape, uses the default generator. The final elements decide, so the patches
-// do not depend on how the recipe changed the array: through native methods,
-// the proxy path of strict mode or a mark, index assignments or `length`.
+// Compact array patches keep the common prefix and suffix of an array whose
+// length changed, and turn what lies between them into `replace` patches for as
+// many elements as both sides have, then `remove` or `add` patches for the
+// rest. They carry only elements, like the default generator. A retained element
+// may also have changed in place: where it keeps its index, the patches of its
+// own draft carry the change, and a replace patch at its final index does where
+// the change moved it, or for a draft that the array holds from another path or
+// producer. Holes and arrays that keep their length use the default generator.
+// The final elements decide, so the patches do not depend on how the recipe
+// changed the array: through native methods, the proxy path of strict mode or a
+// mark, index assignments or `length`.
 function tryGenerateCompactArrayPatches(
   proxyState: ProxyDraft<Array<any>>,
   basePath: any[],
@@ -232,18 +233,17 @@ function tryGenerateCompactArrayPatches(
     index -= 1;
   }
 
-  // A full shorter side proves one contiguous insertion or deletion. Tail
-  // changes already use the default generator's efficient append/truncate form.
-  if (prefix + suffix !== shortest || prefix === shortest) return false;
+  // Tail changes already use the default generator's efficient append/truncate
+  // form.
+  if (prefix === shortest) return false;
   // Counting a patch with a value as two and one without as one, in both
   // directions, index patches are smaller once the length changes by more than
   // four times the suffix they would have to move: `splice(0, 999)` of 1,000
   // elements takes 999 `remove` patches, but one `replace` patch and one of
   // the `length`; inserting that many takes as many `remove` patches to undo.
   if (Math.abs(newLength - oldLength) > 4 * suffix) return false;
-  // Before the insertion or deletion, an element keeps its index, and the
-  // patches of its own child carry its change; anywhere else, they would
-  // change another element.
+  // Before the change, an element keeps its index, and the patches of its own
+  // child carry its change; anywhere else, they would change another element.
   if (proxyState.patched) {
     let moved = drafts === undefined;
     drafts?.forEach((draft, index) => {
@@ -257,7 +257,10 @@ function tryGenerateCompactArrayPatches(
 
   const removed = oldLength - prefix - suffix;
   const added = newLength - prefix - suffix;
-  for (index = prefix + removed - 1; index >= prefix; index -= 1) {
+  // The elements that both sides have take a replace patch each, in the place
+  // of a remove patch and an add patch.
+  const paired = Math.min(removed, added);
+  for (index = prefix + removed - 1; index >= prefix + paired; index -= 1) {
     patches.push({
       op: Operation.Remove,
       path: escapePath(basePath.concat([index]), pathAsArray),
@@ -266,16 +269,32 @@ function tryGenerateCompactArrayPatches(
   // An inserted draft that is finalized after this array, because the recipe
   // read it first or another producer owns it, is still a draft here. It is
   // represented as in the default generator's patches.
-  for (index = prefix; index < prefix + added; index += 1) {
+  for (index = prefix + paired; index < prefix + added; index += 1) {
     patches.push({
       op: Operation.Add,
       path: escapePath(basePath.concat([index]), pathAsArray),
       value: cloneIfNeeded(copy[index]),
     });
   }
+  for (index = prefix; index < prefix + paired; index += 1) {
+    if (
+      retained(copy[index], original[index], drafts, index, proxyState) !== 1
+    ) {
+      const path = escapePath(basePath.concat([index]), pathAsArray);
+      patches.push({
+        op: Operation.Replace,
+        path,
+        value: cloneIfNeeded(copy[index]),
+      });
+      inversePatches.push({
+        op: Operation.Replace,
+        path,
+        value: cloneIfNeeded(original[index]),
+      });
+    }
+  }
   // A changed element that its own patches do not carry is replaced at its
-  // final index once the insertion or deletion is done, and restored before
-  // it is undone.
+  // final index once the change is done, and restored before it is undone.
   changed?.forEach((index) => {
     if (!ownPatches(drafts?.get(index), proxyState, index)) {
       const path = escapePath(basePath.concat([index]), pathAsArray);
@@ -293,13 +312,13 @@ function tryGenerateCompactArrayPatches(
       });
     }
   });
-  for (index = prefix + added - 1; index >= prefix; index -= 1) {
+  for (index = prefix + added - 1; index >= prefix + paired; index -= 1) {
     inversePatches.push({
       op: Operation.Remove,
       path: escapePath(basePath.concat([index]), pathAsArray),
     });
   }
-  for (index = prefix; index < prefix + removed; index += 1) {
+  for (index = prefix + paired; index < prefix + removed; index += 1) {
     inversePatches.push({
       op: Operation.Add,
       path: escapePath(basePath.concat([index]), pathAsArray),
