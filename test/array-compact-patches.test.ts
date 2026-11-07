@@ -1405,6 +1405,35 @@ describe('compact array patches', () => {
     });
   });
 
+  test('a sparse assignment stops inspecting indices at the first hole', () => {
+    let reads = 0;
+    const sparse = (last: number) => {
+      const values: number[] = [];
+      values[100_000] = last;
+      return new Proxy(values, {
+        get(target, key, receiver) {
+          if (typeof key === 'string' && /^\d+$/.test(key)) reads++;
+          return Reflect.get(target, key, receiver);
+        },
+      });
+    };
+    const base = { rows: sparse(1) };
+    const next = sparse(2);
+    const [, patches, inverse] = create(
+      base,
+      (draft) => {
+        draft.rows = next;
+      },
+      compactOptions()
+    );
+    // Count element reads during generation without deep-comparing the arrays.
+    expect(reads).toBeLessThan(10);
+    expect(patches).toHaveLength(1);
+    expect(patches[0].path).toEqual(['rows']);
+    expect(patches[0].value).toBe(next);
+    expect(inverse[0].value).toBe(base.rows);
+  });
+
   test('a direct length change leaves an undefined element', () => {
     const { state, patches, inverse } = roundtrip([0, 1, 2, 3], (draft) => {
       draft.length = 5;

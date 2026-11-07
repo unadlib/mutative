@@ -282,6 +282,10 @@ function generateCompactArrayPatches(
     if (first >= shortest) return false;
   }
 
+  // Holes compare like undefined. Check before matching so a sparse prefix
+  // or suffix does not require reading every absent index in both arrays.
+  if (hasHoles(original) || hasHoles(copy)) return false;
+
   // Identity alone is not enough: a draft of a base element may have changed,
   // and the indices of the kept elements that only a replace patch can carry
   // are collected.
@@ -336,9 +340,6 @@ function generateCompactArrayPatches(
     // search.
     if (!relocated && 2 * assignedMap.size < endNew - prefix) return false;
   }
-  // A hole compares like an undefined element, which the patches would make
-  // explicit. Only an array that has a compact shape is searched for holes.
-  if (hasHoles(original) || hasHoles(copy)) return false;
 
   const kept = keptElements(original, copy, prefix, endOld, endNew, drafts);
   const baseIndex = (index: number) =>
