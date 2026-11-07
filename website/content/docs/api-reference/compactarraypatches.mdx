@@ -33,5 +33,5 @@ It works with every producer that generates patches, also through [`makeCreator(
 ## Notes
 
 - Pass it as it is. It is opaque: how a strategy works is not part of the API, and `arrayPatchStrategy` takes no other value.
-- Bundlers drop it unless you import it, so its code stays out of the ESM bundles of those who do not.
+- Bundlers drop it unless you import it, so its code, about 1.2 kB with Brotli, stays out of the ESM bundles of those who do not.
 - It only makes patches smaller. [Compact array patches](/docs/advanced-guides/patches#compact-array-patches) describes what it does, where it leaves an array to the default patches, and why it does not give elements identities.

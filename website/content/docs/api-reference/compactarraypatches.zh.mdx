@@ -33,5 +33,5 @@ expect(inversePatches).toEqual([{ op: 'add', path: ['list', 1], value: 2 }]);
 ## 说明 [#notes]
 
 - 请原样传入。它是不透明的值：策略的工作方式不属于 API，`arrayPatchStrategy` 也不接受其他取值。
-- 打包工具会在未导入时移除它，因此它的代码不会进入不使用者的 ESM 包。
+- 打包工具会在未导入时移除它，因此它的代码（Brotli 压缩后约 1.2 kB）不会进入不使用者的 ESM 包。
 - 它只让补丁变小。[紧凑数组补丁](/zh/docs/advanced-guides/patches#compact-array-patches)介绍了它的做法、何时把数组交给默认补丁，以及它为何不提供元素标识。
