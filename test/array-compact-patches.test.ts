@@ -906,6 +906,19 @@ describe('compact array patches', () => {
     });
   });
 
+  test('a grandchild patch on a repeated row replays at just one index', () => {
+    const row = { nested: { x: 0 } };
+    const base = [row, row];
+    const { state } = roundtrip(base, (draft) => {
+      draft.unshift({ nested: { x: 0 } });
+      const first = draft[1];
+      // Reading the other occurrence creates a second draft at the same base key.
+      Reflect.get(draft, 2);
+      first.nested.x++;
+    });
+    expect(state.map((item: typeof row) => item.nested.x)).toEqual([0, 1, 0]);
+  });
+
   test('a child back at its own index before the insertion keeps its patches', () => {
     // The insertion is aligned after the child, whose patches change the
     // base element at its index, and the inserted value is the base element.

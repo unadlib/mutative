@@ -263,13 +263,11 @@ function generateCompactArrayPatches(
         : kept[index - prefix];
   // The patches of a child are valid where its element keeps its index; anywhere
   // else, they would change another element.
-  let moved = false;
-  drafts?.forEach((draft, index) => {
-    if (ownPatches(draft, proxyState, index) && baseIndex(index) !== index) {
-      moved = true;
+  if (proxyState.patchedIndices) {
+    for (const index of proxyState.patchedIndices) {
+      if (baseIndex(index) !== index) return false;
     }
-  });
-  if (moved) return false;
+  }
 
   const removes: number[] = [];
   const adds: number[] = [];
