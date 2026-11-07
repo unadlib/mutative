@@ -74,6 +74,38 @@ module.exports = (api, mode) => {
     { enablePatches: true }
   );
   assert.deepEqual(Array.from(api.apply(regrown, inverse)), [1, 2, 3]);
+  // Compact array patches, of a move, which matches elements, and of a large
+  // array, which samples them first, and of an array assigned over a key.
+  const compact = (list, recipe) => {
+    const [state, patches, inverse] = api.create(list, recipe, {
+      enablePatches: { arrayPatchStrategy: api.compactArrayPatches },
+    });
+    assert.deepEqual(api.apply(list, patches), state);
+    assert.deepEqual(api.apply(state, inverse), list);
+    return patches;
+  };
+  const rows = Array.from({ length: 400 }, (_, id) => ({ id }));
+  assert.equal(
+    compact(rows, (draft) => {
+      draft.push(draft.shift());
+    }).length,
+    2
+  );
+  assert.deepEqual(
+    compact(rows, (draft) => {
+      draft.shift();
+    }),
+    [{ op: 'remove', path: [0] }]
+  );
+  compact(rows, (draft) => {
+    draft.reverse();
+  });
+  assert.deepEqual(
+    compact({ rows: rows.slice(0, 5) }, (draft) => {
+      draft.rows = draft.rows.filter((row) => row.id !== 2);
+    }),
+    [{ op: 'remove', path: ['rows', 2] }]
+  );
   const strict = api.create(
     base,
     (draft) => {
