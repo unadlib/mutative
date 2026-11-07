@@ -235,6 +235,12 @@ function tryGenerateCompactArrayPatches(
   // A full shorter side proves one contiguous insertion or deletion. Tail
   // changes already use the default generator's efficient append/truncate form.
   if (prefix + suffix !== shortest || prefix === shortest) return false;
+  // Counting a patch with a value as two and one without as one, in both
+  // directions, index patches are smaller once the length changes by more than
+  // four times the suffix they would have to move: `splice(0, 999)` of 1,000
+  // elements takes 999 `remove` patches, but one `replace` patch and one of
+  // the `length`; inserting that many takes as many `remove` patches to undo.
+  if (Math.abs(newLength - oldLength) > 4 * suffix) return false;
   // Before the insertion or deletion, an element keeps its index, and the
   // patches of its own child carry its change; anywhere else, they would
   // change another element.

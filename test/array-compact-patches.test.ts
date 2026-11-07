@@ -136,6 +136,40 @@ describe('compact array patches', () => {
     ]);
   });
 
+  test('a length change that dwarfs the suffix keeps the smaller index patches', () => {
+    const makeList = (length: number) =>
+      Array.from({ length }, (_, id) => ({ id }));
+    // A deletion that leaves a short tail would take a patch per element.
+    const deleted = expectFallback(makeList(1000), (draft) => {
+      draft.splice(0, 999);
+    });
+    expect(deleted.patches).toEqual([
+      { op: 'replace', path: [0], value: { id: 999 } },
+      { op: 'replace', path: ['length'], value: 1 },
+    ]);
+    expectFallback(makeList(1000), (draft) => {
+      draft.splice(1, 998);
+    });
+    // Undoing an insertion before a short tail would too.
+    const inserted = expectFallback(makeList(1), (draft) => {
+      draft.unshift(...makeList(100));
+    });
+    expect(inserted.inverse).toEqual([
+      { op: 'replace', path: [0], value: { id: 0 } },
+      { op: 'replace', path: ['length'], value: 1 },
+    ]);
+    // Up to four times the suffix, the structural patches stay.
+    const kept = roundtrip(makeList(5), (draft) => {
+      draft.splice(0, 4);
+    });
+    expect(kept.patches).toEqual([
+      { op: 'remove', path: [3] },
+      { op: 'remove', path: [2] },
+      { op: 'remove', path: [1] },
+      { op: 'remove', path: [0] },
+    ]);
+  });
+
   test('tail edits keep the existing efficient patch forms', () => {
     // A mark moves elements through the proxy instead of the native methods.
     for (const options of [{}, { mark: () => undefined }]) {
