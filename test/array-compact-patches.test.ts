@@ -1871,3 +1871,163 @@ test.each([
     expect(compactCases).toBeGreaterThanOrEqual(643);
   }
 );
+
+// Whatever two arrays a recipe goes between, the patches must lead from one to
+// the other in both directions. These pairs come from no particular recipe, so
+// they reach shapes that no list of operations would think of.
+describe('any two arrays', () => {
+  const primitives = [0, -0, 1, 2, NaN, 'a', 'b', '', null, true, undefined];
+  const jsonPrimitives = [0, 1, 2, 'a', 'b', '', null, true];
+  const index = (length: number, random: () => number) =>
+    Math.floor(random() * length);
+
+  const makeElement = (random: () => number, json: boolean, pool: any[]) => {
+    const kind = random();
+    if (kind < 0.35) {
+      const values = json ? jsonPrimitives : primitives;
+      return values[index(values.length, random)];
+    }
+    // An object that the arrays hold more than once keeps its reference.
+    if (kind < 0.6 && pool.length) return pool[index(pool.length, random)];
+    const made: any = { id: index(1000, random) };
+    if (random() < 0.3) {
+      made.kids = [index(5, random), { v: index(5, random) }];
+    }
+    pool.push(made);
+    return made;
+  };
+  const makeArray = (random: () => number, json: boolean, pool: any[]) =>
+    Array.from({ length: index(12, random) }, () =>
+      makeElement(random, json, pool)
+    );
+  // The next array shares elements with the base, as updates do, or none.
+  const makeNext = (
+    random: () => number,
+    base: any[],
+    json: boolean,
+    pool: any[]
+  ) => {
+    if (random() < 0.1) return makeArray(random, json, []);
+    const next = base.slice();
+    for (let step = index(5, random); step >= 0; step -= 1) {
+      const at = index(next.length + 1, random);
+      const element = () => makeElement(random, json, pool);
+      switch (index(8, random)) {
+        case 0:
+          next.splice(at, index(4, random));
+          break;
+        case 1:
+          next.splice(at, 0, element());
+          break;
+        case 2:
+          next.splice(at, index(3, random), element(), element());
+          break;
+        case 3:
+          if (next.length) {
+            const [moved] = next.splice(index(next.length, random), 1);
+            next.splice(index(next.length + 1, random), 0, moved);
+          }
+          break;
+        case 4:
+          if (next.length) next.push(next[index(next.length, random)]);
+          break;
+        case 5:
+          next.reverse();
+          break;
+        case 6:
+          if (next.length) next[index(next.length, random)] = element();
+          break;
+        default:
+          if (next.length) next.push(next.shift());
+      }
+    }
+    return next;
+  };
+  const write = (draft: any, next: any[]) => {
+    draft.list.length = next.length;
+    next.forEach((value, at) => {
+      draft.list[at] = value;
+    });
+  };
+
+  describe.each([
+    { path: 'native', options: {} },
+    { path: 'strict', options: { strict: true } },
+    { path: 'mark', options: { mark: () => undefined } },
+    { path: 'frozen', options: { enableAutoFreeze: true } },
+  ])('on the $path path', ({ options }) => {
+    test.each([
+      {
+        name: 'assigned over the key',
+        form: (next: any[]) => (draft: any) => {
+          draft.list = next.slice();
+        },
+      },
+      {
+        name: 'written index by index',
+        form: (next: any[]) => (draft: any) => write(draft, next),
+      },
+      {
+        name: 'written after reading all elements, which leaves drafts',
+        form: (next: any[]) => (draft: any) => {
+          draft.list.forEach((element: any) => element);
+          write(draft, next);
+        },
+      },
+    ])('$name replay in both directions', ({ form }) => {
+      const failures: number[] = [];
+      let compactCases = 0;
+      for (let seed = 1; seed <= 1500; seed += 1) {
+        const random = mulberry32(seed);
+        const json = random() < 0.4;
+        const pool: any[] = [];
+        const list = makeArray(random, json, pool);
+        const next = makeNext(random, list, json, pool);
+        const base = { list };
+        const expected = { list: next };
+        let passed = false;
+        try {
+          const [state, patches, inverse] = create(
+            base,
+            form(next),
+            compactOptions({}, options)
+          ) as any;
+          if (patches.some(({ op }: any) => op === 'remove')) compactCases += 1;
+          passed =
+            isDeepStrictEqual(state, expected) &&
+            isDeepStrictEqual(apply(base, patches), expected) &&
+            isDeepStrictEqual(apply(state, inverse), base);
+          if (passed && json) {
+            // A strict consumer rejects an index that the document lacks.
+            const [jsonState, jsonPatches, jsonInverse] = create(
+              base,
+              form(next),
+              compactOptions(
+                { pathAsArray: false, arrayLengthAssignment: false },
+                options
+              )
+            ) as any;
+            const copy = (value: any) => JSON.parse(JSON.stringify(value));
+            passed =
+              isDeepStrictEqual(
+                jsonPatch.applyPatch(copy(base), copy(jsonPatches), true)
+                  .newDocument,
+                copy(jsonState)
+              ) &&
+              isDeepStrictEqual(
+                jsonPatch.applyPatch(copy(jsonState), copy(jsonInverse), true)
+                  .newDocument,
+                copy(base)
+              );
+          }
+        } catch {
+          // A pair that throws fails like one with a wrong result.
+        }
+        if (!passed) failures.push(seed);
+      }
+      expect(failures.slice(0, 3)).toEqual([]);
+      // Hundreds of pairs take structural patches, so the replay checks those.
+      expect(compactCases).toBeGreaterThan(200);
+    });
+  });
+});
