@@ -181,6 +181,8 @@ function generateCompactArrayPatches(
     return false;
   if (isAssigned && proxyState.type === DraftType.Object) {
     const key = basePath[basePath.length - 1];
+    // apply() allows assigning an own constructor, but rejects traversing it.
+    if (key === 'constructor') return false;
     const descriptor = Object.getOwnPropertyDescriptor(
       proxyState.original,
       key

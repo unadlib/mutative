@@ -740,6 +740,41 @@ describe('compact array patches', () => {
       ]);
     });
 
+    test.each([true, false])(
+      'constructor is traversable only on a Map, pathAsArray=%s',
+      (pathAsArray) => {
+        const rows = [1, 2, 3, 4];
+        const options = compactOptions({ pathAsArray });
+        const filtered = rows.filter((value) => value !== 2);
+        const object = roundtrip(
+          { constructor: rows },
+          (draft) => {
+            draft.constructor = filtered;
+          },
+          options
+        );
+        const path = pathAsArray ? ['constructor'] : '/constructor';
+        expect(object.patches).toEqual([
+          { op: 'replace', path, value: filtered },
+        ]);
+        expect(object.inverse).toEqual([{ op: 'replace', path, value: rows }]);
+
+        const map = roundtrip(
+          new Map([['constructor', rows]]),
+          (draft) => {
+            draft.set('constructor', filtered);
+          },
+          options
+        );
+        expect(map.patches).toEqual([
+          {
+            op: 'remove',
+            path: pathAsArray ? ['constructor', 1] : '/constructor/1',
+          },
+        ]);
+      }
+    );
+
     test('keeps one patch where that is smaller', () => {
       const whole = (recipe: (draft: any) => void) => {
         const { patches, inverse, state } = roundtrip(makeBase(), recipe);
