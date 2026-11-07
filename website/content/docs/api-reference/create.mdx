@@ -73,6 +73,8 @@ TypeScript types the result from the type of `enablePatches` in the options pass
 
 Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself; see [Auto Freeze](/docs/advanced-guides/auto-freeze).
 
+Typed arrays, Node.js Buffers and DataViews are left unfrozen, including empty views. Other values retain the 2.0.x freeze behavior, including class instances and their contents.
+
 ### mark
 
 A mark decides how a value is drafted; see [Marking data structure](/docs/advanced-guides/mark). It receives each value that the recipe reads and `{ mutable: 'mutable', immutable: 'immutable' }`, and returns:

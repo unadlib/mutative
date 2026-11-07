@@ -27,6 +27,10 @@ Mutative v2 保留 v1 API。以下列出自 v1.3.0 以来可能影响现有代�
 - 已修改数组的 `current()` 复制当前数组，不再逐元素通过草稿读取。原生方法移动的基础元素若含外层 `create()` 的草稿，会保持原样，与未移动元素原有行为一致。
 - 大数组搜索可用 `current(draft.list)`，避免为每个访问元素创建草稿，再通过草稿修改匹配项，详见 [`current()`](/zh/docs/api-reference/current)。
 
+## 自动冻结 [#auto-freeze]
+
+自动冻结现在会跳过 typed array、Node.js Buffer 和 DataView，包括空视图。此前版本对非空 typed array 会抛出 `TypeError: Cannot freeze array buffer views with elements`。视图的字节和自定义属性仍可修改，修改字节前请先复制。其他值保留 2.0.x 的冻结行为，详见[冻结范围](/zh/docs/advanced-guides/auto-freeze#what-is-frozen)。
+
 ## 返回值 [#returned-values]
 
 - 开启 `enableAutoFreeze` 时，生产构建不再搜索返回值中的冻结对象（包括返回值本身）及其内部值，内部草稿会保持未解析。开发构建仍会搜索并在发现草稿时抛错，包括冻结对象内部尚未冻结的对象，v1 会替换其中草稿。不要将草稿放入冻结对象或其内部值。关闭自动冻结时，返回值搜索与 v1 一致。

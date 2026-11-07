@@ -53,7 +53,13 @@ export function deepFreeze(
       stack.push(target);
     }
   }
-  if (Object.isFrozen(target) || isDraft(target)) {
+  // Views cannot make their bytes read-only, and freezing a non-empty typed
+  // array throws. Keep the 2.x freeze policy for every other value.
+  if (
+    Object.isFrozen(target) ||
+    isDraft(target) ||
+    ArrayBuffer.isView(target)
+  ) {
     if (__DEV__) {
       stack!.pop();
       keys!.pop();

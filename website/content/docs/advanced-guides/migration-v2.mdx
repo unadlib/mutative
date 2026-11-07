@@ -27,6 +27,10 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - `current()` of a changed array copies the current array instead of reading every element through the draft. Base elements that a native method moved and that hold drafts of an outer `create()` call are left as they are, as unmoved elements always were.
 - To search a large array without drafting each element it visits, search `current(draft.list)` and change the match through the draft; see [`current()`](/docs/api-reference/current).
 
+## Auto-freeze
+
+Auto-freeze now leaves typed arrays, Node.js Buffers and DataViews unfrozen, including empty views. Earlier versions threw `TypeError: Cannot freeze array buffer views with elements` for a non-empty typed array. Their bytes and custom properties remain mutable, so copy the bytes before changing them. Other values retain the 2.0.x freeze behavior; see [What is frozen](/docs/advanced-guides/auto-freeze#what-is-frozen).
+
 ## Returned values
 
 - With `enableAutoFreeze`, production builds no longer search frozen objects in a value returned from a recipe, the returned value included, or the values they hold, for drafts, and leave a draft there unresolved. Development builds still search them and throw when they find one, also in an unfrozen object that a frozen one holds, where v1 replaced it. Never put a draft in a frozen object or in a value it holds. Without auto-freeze, returned values are searched as in v1.

@@ -23,7 +23,8 @@
 > `optional` **enableAutoFreeze**: `F`
 
 Freeze the next state deeply, also the parts that it shares with the base
-state. Development builds also throw for an object that holds itself.
+state. ArrayBuffer views are left unfrozen. Development builds also
+throw for an object that holds itself.
 
 ***
 

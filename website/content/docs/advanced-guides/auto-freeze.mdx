@@ -40,8 +40,12 @@ Set it for a whole application with [`makeCreator()`](/docs/api-reference/makecr
 ## What is frozen
 
 - Every object of the next state that its enumerable keys reach: the copies of the objects that the recipe changed, the values that it assigned, and the objects that the next state shares with the base state, which are frozen in the base state as well. A recipe that changes nothing returns the base state itself, frozen.
-- Class instances, dates and functions, which `Object.freeze()` freezes like any object. A `Date` keeps its setters, such as `setFullYear()`, since its value is not a property.
+- Class instances, objects without a prototype, dates and regular expressions. Development builds also freeze functions and their own enumerable properties. A `Date` keeps its setters, such as `setFullYear()`, since its value is not a property.
 - Maps and Sets, whose `set()`, `add()`, `delete()` and `clear()` methods then throw, and the objects that a Map uses as keys.
+
+Typed arrays, Node.js Buffers and DataViews are skipped together with the values they hold, even when empty or marked `immutable`. Freezing a non-empty typed array throws, and `Object.freeze()` cannot make any view's bytes read-only. Views are shared with the base state; copy the bytes before changing them. Other values retain the 2.0.x freeze behavior: unmarked class instances and the plain objects they hold are still frozen.
+
+A [mark](/docs/advanced-guides/mark) controls drafting, does not exempt an object from freezing, and is not called again by freezing. Objects marked `mutable` are still frozen; turn off auto-freeze if later updates need to change them in place.
 
 Objects that are already frozen are skipped together with the values they hold, so after the first update freezes the state, each later update freezes only the objects that it copied or added. A base state may be frozen already: Mutative copies frozen objects when a recipe changes them, as it copies any other object.
 

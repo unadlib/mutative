@@ -247,7 +247,7 @@ The `options` argument is optional; [`makeCreator()`](#makecreator) sets default
 
 - `enableAutoFreeze` - `boolean`, the default is `false`.
 
-  Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself.
+  Freeze the next state deeply, also the parts that it shares with the base state, and, in development builds, throw for an object that holds itself. Typed arrays, Node.js Buffers and DataViews are left unfrozen; see [What is frozen](https://mutative.js.org/docs/advanced-guides/auto-freeze#what-is-frozen).
 
 - `mark` - `Mark | Mark[]`, where `Mark` is `(target, { mutable, immutable }) => 'mutable' | 'immutable' | (() => copy) | undefined`.
 
@@ -799,6 +799,10 @@ Mutative v2 keeps the v1 API. The changes below, made since v1.3.0, can affect e
 - `shift`, `unshift`, `splice` and `reverse` run natively on the draft's copy of a plain array, and `indexOf`, `lastIndexOf` and `includes` search it natively; see [which array methods run natively](#faqs). For data arrays, the results are those of v1 and the patches replay in both directions. An accessor property on an array index is read as a data value, so its getter may run a different number of times.
 - `current()` of a changed array copies the current array instead of reading every element through the draft. Base elements that a native method moved and that hold drafts of an outer `create()` call are left as they are, as unmoved elements always were.
 - To search a large array without drafting each element it visits, search `current(draft.list)` and change the match through the draft; see [`current()`](#current).
+
+### Auto-freeze
+
+Auto-freeze now leaves typed arrays, Node.js Buffers and DataViews unfrozen, including empty views. Earlier versions threw `TypeError: Cannot freeze array buffer views with elements` for a non-empty typed array. Their bytes and custom properties remain mutable, so copy the bytes before changing them. Other values retain the 2.0.x freeze behavior; see [What is frozen](https://mutative.js.org/docs/advanced-guides/auto-freeze#what-is-frozen).
 
 ### Returned values
 

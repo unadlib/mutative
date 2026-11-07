@@ -73,6 +73,8 @@ TypeScript 根据传给 `create()` 或 `makeCreator()` 的 `enablePatches` 类�
 
 深度冻结下一个状态，包括与基础状态共享的部分。开发构建还会拒绝持有自身的对象，详见[自动冻结](/zh/docs/advanced-guides/auto-freeze)。
 
+typed array、Node.js Buffer 和 DataView 会保持未冻结，即使为空。其他值保留 2.0.x 的冻结行为，包括类实例及其内部值。
+
 ### mark [#mark]
 
 标记决定如何为值创建草稿，详见[标记数据结构](/zh/docs/advanced-guides/mark)。它接收更新函数读取的每个值和 `{ mutable: 'mutable', immutable: 'immutable' }`，返回：

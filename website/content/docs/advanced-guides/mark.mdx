@@ -64,6 +64,7 @@ Use the same marks for every call on the same state: [`makeCreator({ mark })`](/
 
 ## Patches, auto-freeze and strict mode
 
+- Auto-freeze retains the 2.0.x behavior and also freezes objects marked `mutable` and the values they hold. A mark controls drafting, not exemption from freezing; turn off auto-freeze when later updates must change these values in place. Freezing does not call the marks again.
 - Values marked `immutable` work with patches and auto-freeze like plain objects, and so does a mark that makes every object immutable, as `() => 'immutable'` does.
 - A mark that returns a copy function cannot be combined with patches or auto-freeze, which development builds report with an error, and some patches might not apply to such values.
 - In [strict mode](/docs/advanced-guides/strict-mode), reading a value marked `mutable` from a draft throws outside [`unsafe()`](/docs/api-reference/unsafe), as reading any value that is not drafted does.
