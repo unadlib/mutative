@@ -46,7 +46,7 @@ expect(apply(state, inversePatches)).toEqual(baseState);
 - **Operations and paths.** Patches use `add`, `remove` and `replace`. A path leads from the root to the changed value through object keys, array indices, Map keys as they are, objects and arrays included, and the positions of Set items. A recipe that returns a new state gets one `replace` patch with an empty path.
 - **Order.** The patches of a nested draft come before those of its parents, as in Immer.
 - **Values.** A patch value is the object that the next state holds, frozen with it when `enableAutoFreeze` is on. The exception is a changed draft held by a container that the recipe first read after the draft, as in `const item = draft.a; item.x = 1; draft.b.item = item;`: the container's patches carry a copy of the draft's final value, which the next state does not hold and auto-freeze does not freeze. Copy a patch value before changing it. `apply()` copies patch values before applying them.
-- **Arrays.** By default, `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. Patches preserve holes in both directions: filling a hole takes a `replace` patch, and recreating one rebuilds the array from its index; see [Sparse arrays](#sparse-arrays). With `arrayPatchStrategy: 'compact'`, a supported contiguous insertion or deletion instead uses structural `add` or `remove` patches; see [Compact array patches](#compact-array-patches).
+- **Arrays.** By default, `shift()`, `unshift()`, `splice()`, `reverse()` and `sort()` emit a `replace` patch for each index whose element changed, and an `add` patch for each index past the old length. An array that gets shorter gets one `replace` patch of its `length` by default, or a `remove` patch for each index it loses with `arrayLengthAssignment: false`. Patches preserve holes in both directions: filling a hole takes a `replace` patch, and recreating one rebuilds the array from its index; see [Sparse arrays](#sparse-arrays). With `arrayPatchStrategy: compactArrayPatches`, a supported change of the length instead uses structural `add` or `remove` patches; see [Compact array patches](#compact-array-patches).
 - **Maps.** `set()` emits an `add` patch for a new key and a `replace` patch for an existing one, and `delete()` a `remove` patch.
 - **Sets.** Patches add an item by its value and remove one by the value it holds; see [Sets of objects](#sets-of-objects).
 - **Moved drafts.** A changed draft that leaves its key, because `sort()` or an assignment moved it or another value replaced it there, emits no patches under its old path; the patches of its parent carry its value.
@@ -121,7 +121,7 @@ expect(inversePatches).toEqual([
 ]);
 ```
 
-With `arrayPatchStrategy: 'compact'`, the option applies where an array loses elements at its end or the strategy falls back to `'index'`; the `remove` patches of a deletion before the end do not depend on it.
+With `compactArrayPatches`, the option applies where an array loses elements at its end or the strategy leaves it to the default; the `remove` patches of a deletion before the end do not depend on it.
 
 <Callout type="idea">
 A `remove` patch per index takes more time and more patches for large arrays than one `replace` patch of the `length`, so leave `arrayLengthAssignment` on unless the patches must be JSON Patch operations.
@@ -129,10 +129,10 @@ A `remove` patch per index takes more time and more patches for large arrays tha
 
 ## Compact array patches
 
-The default `arrayPatchStrategy: 'index'` compares array slots. Consequently, removing the first element can replace every element that moved to a new index. Opt in to `arrayPatchStrategy: 'compact'` to represent a supported insertion or deletion structurally instead:
+By default, patches compare array slots. Consequently, removing the first element can replace every element that moved to a new index. Opt in with `arrayPatchStrategy: compactArrayPatches` to represent a supported insertion or deletion structurally instead; bundlers drop the strategy unless you import it:
 
 ```ts
-import { create } from 'mutative';
+import { compactArrayPatches, create } from 'mutative';
 
 const baseState = { list: [1, 2, 3, 4] };
 const [state, patches, inversePatches] = create(
@@ -142,7 +142,7 @@ const [state, patches, inversePatches] = create(
   },
   {
     enablePatches: {
-      arrayPatchStrategy: 'compact',
+      arrayPatchStrategy: compactArrayPatches,
     },
   }
 );
@@ -156,12 +156,12 @@ expect(inversePatches).toEqual([
 
 The compact strategy handles a dense array whose length changes through one contiguous insertion or deletion. Retained elements may also change in place: where an element keeps its index, the patches of its own draft carry the change, and a `replace` patch at its final index does where the insertion or deletion moved the element, or where the array holds a draft of it that the recipe read through another path or that another producer created. It compares the final array with the base array, so the patches are the same however the recipe made the change: with array methods, index assignments or `length` writes, in strict mode or with `mark`. It emits `remove` operations in descending index order and `add` operations in ascending index order; inverse patches are planned independently for the opposite direction. For a contiguous change of `k` inserted or removed elements, it emits **O(k)** patches, plus the patches of the retained elements that changed, rather than one patch for every moved tail element. Finding the common prefix and suffix still takes **O(n)** time, and array copying retains its existing cost.
 
-Ordinary appends, pops and tail truncations keep the existing efficient patch forms. The generator falls back to `'index'` when it cannot prove the compact form safe, including same-length reordering, sparse arrays, multiple disconnected changes and new values assigned to retained indices. Thus compact mode does not promise the smallest possible patch sequence or record the recipe's exact operations.
+Ordinary appends, pops and tail truncations keep the existing efficient patch forms. The generator leaves an array to the default patches when it cannot prove the compact form safe, including same-length reordering, sparse arrays, multiple disconnected changes and new values assigned to retained indices. Thus compact mode does not promise the smallest possible patch sequence or record the recipe's exact operations.
 
 An element edited before the deletion below keeps its index, so its own patch carries the edit:
 
 ```ts
-import { create } from 'mutative';
+import { compactArrayPatches, create } from 'mutative';
 
 const baseState = {
   todos: [
@@ -176,7 +176,7 @@ const [, patches] = create(
     draft.todos[0].done = true;
     draft.todos.splice(1, 1);
   },
-  { enablePatches: { arrayPatchStrategy: 'compact' } }
+  { enablePatches: { arrayPatchStrategy: compactArrayPatches } }
 );
 
 expect(patches).toEqual([
@@ -190,7 +190,7 @@ Compact patches use the same `add`, `remove` and `replace` operations and work w
 ```ts
 const options = {
   enablePatches: {
-    arrayPatchStrategy: 'compact',
+    arrayPatchStrategy: compactArrayPatches,
     pathAsArray: false,
     arrayLengthAssignment: false,
   },

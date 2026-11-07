@@ -1,6 +1,6 @@
 import jsonPatch, { type Operation } from 'fast-json-patch';
 import type { Immer, Patch } from 'immer';
-import { apply, create } from '../src';
+import { apply, compactArrayPatches, create } from '../src';
 import {
   arrayMethodCases,
   arrayMethodOperations,
@@ -258,7 +258,7 @@ describe.each([false, true])('enableArrayMethods = %s', (optimized) => {
           { name: 'default', enablePatches: true as const },
           {
             name: 'compact',
-            enablePatches: { arrayPatchStrategy: 'compact' as const },
+            enablePatches: { arrayPatchStrategy: compactArrayPatches },
           },
         ])(
           'Mutative preserves the base and replays both directions with $name patches',

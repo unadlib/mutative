@@ -62,7 +62,8 @@ test('scenario fixtures produce independent deterministic native results', () =>
 });
 
 test('benchmark options select only the requested implementation', () => {
-  const index = makeOptions('index', false);
+  const api = { compactArrayPatches: () => false };
+  const index = makeOptions(api, 'index', false);
   assert.deepStrictEqual(index, {
     enableAutoFreeze: false,
     enablePatches: {
@@ -71,12 +72,12 @@ test('benchmark options select only the requested implementation', () => {
     },
   });
   assert.equal(
-    makeOptions('compact', true).enablePatches.arrayPatchStrategy,
-    'compact'
+    makeOptions(api, 'compact', true).enablePatches.arrayPatchStrategy,
+    api.compactArrayPatches
   );
-  assert.equal(makeOptions('compact', true).enableAutoFreeze, true);
-  assert.throws(() => makeOptions('prototype', false));
-  assert.throws(() => makeOptions('unknown', false));
+  assert.equal(makeOptions(api, 'compact', true).enableAutoFreeze, true);
+  assert.throws(() => makeOptions(api, 'prototype', false));
+  assert.throws(() => makeOptions(api, 'unknown', false));
 });
 
 test('frozen fixtures pre-freeze bases and insertion payloads', () => {

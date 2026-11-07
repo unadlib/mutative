@@ -115,15 +115,12 @@ export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
 // The original of a changed draft that finalization wrote into an index tells
 // compact array patches which base element the final value there stands for.
 function recordWrittenDraft(target: ProxyDraft, key: any, draft: ProxyDraft) {
-  const { enablePatches } = target.options;
   if (
-    !draft.operated ||
-    typeof enablePatches !== 'object' ||
-    enablePatches.arrayPatchStrategy !== 'compact' ||
-    target.copy.length === target.original.length
+    draft.operated &&
+    target.options.enablePatches?.arrayPatchStrategy &&
+    target.copy.length !== target.original.length
   )
-    return;
-  (target.writtenDrafts ??= new Map()).set(Number(key), draft);
+    (target.writtenDrafts ??= new Map()).set(Number(key), draft);
 }
 
 export function finalizePatches(
@@ -221,7 +218,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
     if (!proxyDraft.callbacks) {
       proxyDraft.callbacks = [];
     }
-    proxyDraft.callbacks.push((patches) => {
+    proxyDraft.callbacks.push(() => {
       const copy = target.type === DraftType.Set ? target.setMap : target.copy;
       if (isEqual(get(copy, key), value)) {
         // Drafts are finalized in reverse order of creation, so a target
@@ -238,7 +235,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
           finalizeSetValue(target, true);
         // final update value
         set(copy, key, updatedValue);
-        if (patches && target.type === DraftType.Array)
+        if (target.type === DraftType.Array)
           recordWrittenDraft(target, key, proxyDraft);
       }
     });

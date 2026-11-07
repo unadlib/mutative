@@ -3,7 +3,14 @@ import { isDeepStrictEqual } from 'node:util';
 import jsonPatch, {
   type Operation as JsonPatchOperation,
 } from 'fast-json-patch';
-import { apply, create, makeCreator, original, rawReturn } from '../src';
+import {
+  apply,
+  compactArrayPatches,
+  create,
+  makeCreator,
+  original,
+  rawReturn,
+} from '../src';
 
 const compactOptions = (
   patches: Record<string, unknown> = {},
@@ -12,7 +19,7 @@ const compactOptions = (
   enableAutoFreeze: false,
   ...options,
   enablePatches: {
-    arrayPatchStrategy: 'compact' as const,
+    arrayPatchStrategy: compactArrayPatches,
     ...patches,
   },
 });
@@ -852,7 +859,7 @@ describe('compact array patches', () => {
     }
   });
 
-  test("explicit 'index' and enablePatches: true preserve default patches", () => {
+  test('an object without a strategy and enablePatches: true give the default patches', () => {
     const recipes = [
       (draft: any) => {
         draft.rows.shift();
@@ -877,7 +884,7 @@ describe('compact array patches', () => {
       });
       const actual = create(base, recipe, {
         enableAutoFreeze: false,
-        enablePatches: { arrayPatchStrategy: 'index' },
+        enablePatches: {},
       });
       expect(actual).toEqual(expected);
     }
@@ -899,7 +906,7 @@ describe('compact array patches', () => {
       const [state, patches, inverse] = create(base, recipe, {
         enableAutoFreeze: false,
         enablePatches: {
-          arrayPatchStrategy: 'compact',
+          arrayPatchStrategy: compactArrayPatches,
           pathAsArray: false,
           arrayLengthAssignment: false,
         },
@@ -938,7 +945,7 @@ describe('compact array patches', () => {
       const [state, patches, inverse] = create(base, recipe, {
         enableAutoFreeze: false,
         enablePatches: {
-          arrayPatchStrategy: 'compact',
+          arrayPatchStrategy: compactArrayPatches,
           pathAsArray: false,
           arrayLengthAssignment: false,
         },

@@ -169,12 +169,14 @@ export function createContext(arraySize, batchSize, autoFreeze = false) {
   return context;
 }
 
-export function makeOptions(strategy, autoFreeze) {
+export function makeOptions(api, strategy, autoFreeze) {
   const enablePatches = {
     pathAsArray: false,
     arrayLengthAssignment: false,
   };
-  if (strategy === 'compact') enablePatches.arrayPatchStrategy = 'compact';
+  if (strategy === 'compact') {
+    enablePatches.arrayPatchStrategy = api.compactArrayPatches;
+  }
   else assert.equal(strategy, 'index');
   return { enableAutoFreeze: autoFreeze, enablePatches };
 }
@@ -183,7 +185,7 @@ function produce(api, base, scenario, context, strategy, autoFreeze) {
   return api.create(
     base,
     (draft) => scenario.mutate(draft, context),
-    makeOptions(strategy, autoFreeze)
+    makeOptions(api, strategy, autoFreeze)
   );
 }
 

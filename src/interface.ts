@@ -15,6 +15,17 @@ export const Operation = {
 
 export type DataType = keyof typeof dataTypes;
 
+declare const arrayPatchStrategy: unique symbol;
+
+/**
+ * A way to represent array changes in patches, for the `arrayPatchStrategy`
+ * option of `enablePatches`. Mutative provides `compactArrayPatches`; how a
+ * strategy works is not part of the API.
+ */
+export interface ArrayPatchStrategy {
+  readonly [arrayPatchStrategy]: true;
+}
+
 /**
  * The `enablePatches` option: `true` or an object generates patches, `false`
  * does not.
@@ -30,26 +41,23 @@ export type PatchesOptions =
       /**
        * Whether an array that gets shorter gets a `replace` patch of its
        * `length`, as by default, or a `remove` patch for each index that it
-       * loses, as JSON Patch requires. With `arrayPatchStrategy: 'compact'`,
-       * this applies where an array loses elements at its end or the strategy
-       * falls back to `'index'`; the `remove` patches of a deletion before the
-       * end do not depend on it. Recreating holes in a sparse array still uses
-       * length patches; JSON cannot represent holes.
+       * loses, as JSON Patch requires. With `compactArrayPatches`, this applies
+       * where an array loses elements at its end or the strategy leaves it to
+       * the default; the `remove` patches of a deletion before the end do not
+       * depend on it. Recreating holes in a sparse array still uses length
+       * patches; JSON cannot represent holes.
        */
       arrayLengthAssignment?: boolean;
       /**
-       * How to represent array changes. The default `'index'` compares the
-       * values at each index. `'compact'` expresses one contiguous, non-tail
-       * insertion or deletion as `add` or `remove` patches, and a retained
-       * element that changed in place by its own patches or a `replace` patch
-       * at its final index. Otherwise it falls back to `'index'`.
+       * How to represent array changes. By default, patches compare the values
+       * at each index, so elements that a change moved take a patch each.
+       * `compactArrayPatches` keeps them out of the patches where it can, and
+       * leaves the rest to the default.
        *
-       * Both strategies generate value-based patches. Compact patches do not
-       * record the recipe's operations or preserve JavaScript object aliases.
-       *
-       * @default 'index'
+       * Both generate value-based patches. Compact patches do not record the
+       * recipe's operations or preserve JavaScript object aliases.
        */
-      arrayPatchStrategy?: 'index' | 'compact';
+      arrayPatchStrategy?: ArrayPatchStrategy;
     };
 
 export type FinalizeCallback = (

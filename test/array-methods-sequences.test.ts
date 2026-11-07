@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import { apply, create } from '../src';
+import { apply, compactArrayPatches, create } from '../src';
 import {
   arrayMethodOperations,
   makeArrayState,
@@ -32,7 +32,7 @@ describe.each([
   { name: 'default', enablePatches: true as const },
   {
     name: 'compact',
-    enablePatches: { arrayPatchStrategy: 'compact' as const },
+    enablePatches: { arrayPatchStrategy: compactArrayPatches },
   },
 ])('$name array patches', ({ enablePatches }) => {
   describe.each([
