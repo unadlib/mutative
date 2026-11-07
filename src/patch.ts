@@ -286,12 +286,14 @@ function generateArrayPatches(
 }
 
 function generatePatchesFromAssigned(
-  { original, copy, assignedMap }: ProxyDraft<Record<string, any>>,
+  proxyState: ProxyDraft<Record<string, any>>,
   basePath: any[],
   patches: Patches,
   inversePatches: Patches,
   pathAsArray: boolean
 ) {
+  const { original, copy, assignedMap, options } = proxyState;
+  const { arrayPatchStrategy } = options.enablePatches;
   assignedMap!.forEach((assignedValue, key) => {
     const originalValue = get(original, key);
     const value = cloneIfNeeded(get(copy, key));
@@ -304,6 +306,21 @@ function generatePatchesFromAssigned(
     if (__DEV__) checkPathKey(getType(original), key, pathAsArray);
     // A Map key can be an array, which stays one path segment.
     const _path = basePath.concat([key]);
+    if (
+      arrayPatchStrategy &&
+      op === Operation.Replace &&
+      Array.isArray(value) &&
+      arrayPatchStrategy(
+        proxyState,
+        _path,
+        patches,
+        inversePatches,
+        pathAsArray,
+        originalValue,
+        value
+      )
+    )
+      return;
     const path = escapePath(_path, pathAsArray);
     patches.push(op === Operation.Remove ? { op, path } : { op, path, value });
     inversePatches.push(

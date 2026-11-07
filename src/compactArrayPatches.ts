@@ -4,7 +4,7 @@ import {
   type Patches,
   type ProxyDraft,
 } from './interface';
-import { escapePath, getProxyDraft, isEqual } from './utils';
+import { escapePath, getProxyDraft, isEqual, isPlainArray } from './utils';
 import { cloneIfNeeded } from './patch';
 import { hasHoles } from './array';
 
@@ -150,38 +150,56 @@ function keptElements(
 // the patches do not depend on how the recipe changed the array: through native
 // methods, the proxy path of strict mode or a mark, index assignments or
 // `length`.
+//
+// With `assignedFrom` and `assigned`, the array that the recipe assigned to a key
+// of `proxyState`, as in `draft.list = draft.list.filter(...)`, is compared with
+// the one that the key held, and the alternative is one patch for the whole array.
 function generateCompactArrayPatches(
-  proxyState: ProxyDraft<Array<any>>,
+  proxyState: ProxyDraft<any>,
   basePath: any[],
   patches: Patches,
   inversePatches: Patches,
-  pathAsArray: boolean
+  pathAsArray: boolean,
+  assignedFrom?: any,
+  assigned?: any
 ) {
-  const original = proxyState.original;
-  const copy = proxyState.copy!;
+  const isAssigned = assigned !== undefined;
+  if (
+    isAssigned &&
+    !(
+      Array.isArray(assignedFrom) &&
+      isPlainArray(assignedFrom) &&
+      isPlainArray(assigned)
+    )
+  )
+    return false;
+  const original: any[] = isAssigned ? assignedFrom : proxyState.original;
+  const copy: any[] = isAssigned ? assigned : proxyState.copy!;
   const assignedMap = proxyState.assignedMap!;
   const oldLength = original.length;
   const newLength = copy.length;
   const shortest = Math.min(oldLength, newLength);
   const arrayState = proxyState.arrayState;
   const relocated = arrayState !== null && arrayState.relocated;
-  // Two assigned indices at the same length take two replace patches at most,
-  // which no other patches beat.
-  if (oldLength === newLength && !relocated && assignedMap.size < 3)
-    return false;
-  // Elements change places only at indices that native methods moved or the
-  // recipe assigned. When none lies below the shorter length, the change is
-  // an append or a truncation, which the default generator patches as such.
-  let first = relocated ? arrayState!.diffStart : shortest;
-  assignedMap.forEach((_flag, key) => {
-    if (key !== 'length') first = Math.min(first, Number(key));
-  });
-  if (first >= shortest) return false;
+  if (!isAssigned) {
+    // Two assigned indices at the same length take two replace patches at most,
+    // which no other patches beat.
+    if (oldLength === newLength && !relocated && assignedMap.size < 3)
+      return false;
+    // Elements change places only at indices that native methods moved or the
+    // recipe assigned. When none lies below the shorter length, the change is
+    // an append or a truncation, which the default generator patches as such.
+    let first = relocated ? arrayState!.diffStart : shortest;
+    assignedMap.forEach((_flag: boolean, key: any) => {
+      if (key !== 'length') first = Math.min(first, Number(key));
+    });
+    if (first >= shortest) return false;
+  }
 
   // Identity alone is not enough: a draft of a base element may have changed,
   // and the indices of the kept elements that only a replace patch can carry
   // are collected.
-  const drafts = proxyState.writtenDrafts;
+  const drafts = isAssigned ? undefined : proxyState.writtenDrafts;
   let changed: number[] | undefined;
   const keep = (state: number, index: number) => {
     if (state === 2 && !ownPatches(drafts?.get(index), proxyState, index)) {
@@ -222,13 +240,16 @@ function generateCompactArrayPatches(
   }
   const endOld = oldLength - suffix;
   const endNew = newLength - suffix;
-  // Tail changes already use the default generator's efficient append/truncate
-  // form, and elements that all stay in place need no structural patches.
-  if (prefix === shortest || (prefix === endOld && prefix === endNew))
-    return false;
-  // Without native moves, only assigned indices can differ, so far fewer of them
-  // than the range has elements leave few index patches and nothing to search.
-  if (!relocated && 2 * assignedMap.size < endNew - prefix) return false;
+  if (!isAssigned) {
+    // Tail changes already use the default generator's efficient append/truncate
+    // form, and elements that all stay in place need no structural patches.
+    if (prefix === shortest || (prefix === endOld && prefix === endNew))
+      return false;
+    // Without native moves, only assigned indices can differ, so far fewer of
+    // them than the range has elements leave few index patches and nothing to
+    // search.
+    if (!relocated && 2 * assignedMap.size < endNew - prefix) return false;
+  }
   // A hole compares like an undefined element, which the patches would make
   // explicit. Only an array that has a compact shape is searched for holes.
   if (hasHoles(original) || hasHoles(copy)) return false;
@@ -288,7 +309,11 @@ function generateCompactArrayPatches(
   const cost =
     3 * (removes.length + adds.length) +
     4 * (replaces.length / 2 + changedElsewhere);
-  if (cost >= shortest - prefix) {
+  if (isAssigned) {
+    // One patch in each direction holds a whole array, so its elements need no
+    // paths of their own.
+    if (10 * cost >= 9 * (2 + oldLength + newLength)) return false;
+  } else if (cost >= shortest - prefix) {
     let slots = 0;
     for (let index = prefix; index < shortest; index += 1) {
       if (
@@ -309,12 +334,27 @@ function generateCompactArrayPatches(
       return false;
   }
 
-  const pathOf = (index: number) =>
+  const pathOf = (index: number | string) =>
     escapePath(basePath.concat([index]), pathAsArray);
-  // Removing from the end and adding from the start, both index lists hold for
-  // the array as those patches find it.
-  for (let position = removes.length - 1; position >= 0; position -= 1) {
-    patches.push({ op: Operation.Remove, path: pathOf(removes[position]) });
+  // An assigned array that ends where the old one went on is one patch of its
+  // length, as the default generator would give.
+  if (
+    isAssigned &&
+    prefix === newLength &&
+    proxyState.options.enablePatches.arrayLengthAssignment !== false &&
+    removes.length > 0
+  ) {
+    patches.push({
+      op: Operation.Replace,
+      path: pathOf('length'),
+      value: newLength,
+    });
+  } else {
+    // Removing from the end and adding from the start, both index lists hold for
+    // the array as those patches find it.
+    for (let position = removes.length - 1; position >= 0; position -= 1) {
+      patches.push({ op: Operation.Remove, path: pathOf(removes[position]) });
+    }
   }
   // An inserted draft that is finalized after this array, because the recipe
   // read it first or another producer owns it, is still a draft here. It is

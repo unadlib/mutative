@@ -10,6 +10,7 @@ import {
   makeCreator,
   original,
   rawReturn,
+  unsafe,
 } from '../src';
 
 const compactOptions = (
@@ -620,6 +621,195 @@ describe('compact array patches', () => {
     expect(repeated.state.filter((value: number) => value === 1)).toHaveLength(
       2
     );
+  });
+
+  describe('an array assigned over the one at a key', () => {
+    const makeBase = () => ({
+      list: Array.from({ length: 30 }, (_, id) => ({ id })),
+    });
+    const fresh = { id: 'n' };
+
+    test('takes patches for what it changed', () => {
+      const filtered = roundtrip(makeBase(), (draft) => {
+        draft.list = draft.list.filter(({ id }: any) => id !== 5 && id !== 20);
+      });
+      expect(filtered.patches).toEqual([
+        { op: 'remove', path: ['list', 20] },
+        { op: 'remove', path: ['list', 5] },
+      ]);
+      expect(filtered.inverse).toEqual([
+        { op: 'add', path: ['list', 5], value: { id: 5 } },
+        { op: 'add', path: ['list', 20], value: { id: 20 } },
+      ]);
+
+      const appended = roundtrip(makeBase(), (draft) => {
+        draft.list = [...draft.list, fresh];
+      });
+      expect(appended.patches).toEqual([
+        { op: 'add', path: ['list', 30], value: fresh },
+      ]);
+      expect(appended.inverse).toEqual([{ op: 'remove', path: ['list', 30] }]);
+
+      const prepended = roundtrip(makeBase(), (draft) => {
+        draft.list = [fresh].concat(draft.list);
+      });
+      expect(prepended.patches).toEqual([
+        { op: 'add', path: ['list', 0], value: fresh },
+      ]);
+
+      const mapped = roundtrip(makeBase(), (draft) => {
+        draft.list = draft.list.map((item: any) =>
+          item.id === 7 ? { ...item, done: true } : item
+        );
+      });
+      expect(mapped.patches).toEqual([
+        { op: 'replace', path: ['list', 7], value: { id: 7, done: true } },
+      ]);
+      expect(mapped.inverse).toEqual([
+        { op: 'replace', path: ['list', 7], value: { id: 7 } },
+      ]);
+    });
+
+    test('takes no patches when it holds the same elements', () => {
+      const { state, patches, inverse } = roundtrip(makeBase(), (draft) => {
+        draft.list = draft.list.map((item: any) => item);
+      });
+      expect(state).toEqual(makeBase());
+      expect(patches).toEqual([]);
+      expect(inverse).toEqual([]);
+    });
+
+    test('that ends earlier takes a patch of the length, as the option says', () => {
+      const cut = roundtrip(makeBase(), (draft) => {
+        draft.list = draft.list.slice(0, 20);
+      });
+      expect(cut.patches).toEqual([
+        { op: 'replace', path: ['list', 'length'], value: 20 },
+      ]);
+      expect(cut.inverse).toHaveLength(10);
+      const removed = roundtrip(
+        makeBase(),
+        (draft) => {
+          draft.list = draft.list.slice(0, 28);
+        },
+        compactOptions({ arrayLengthAssignment: false })
+      );
+      expect(removed.patches).toEqual([
+        { op: 'remove', path: ['list', 29] },
+        { op: 'remove', path: ['list', 28] },
+      ]);
+    });
+
+    test('keeps one patch where that is smaller', () => {
+      const whole = (recipe: (draft: any) => void) => {
+        const { patches, inverse, state } = roundtrip(makeBase(), recipe);
+        expect(patches).toEqual([
+          { op: 'replace', path: ['list'], value: state.list },
+        ]);
+        expect(inverse).toEqual([
+          { op: 'replace', path: ['list'], value: makeBase().list },
+        ]);
+      };
+      whole((draft) => {
+        draft.list = [...draft.list].reverse();
+      });
+      whole((draft) => {
+        draft.list = [{ id: 'new' }];
+      });
+      whole((draft) => {
+        draft.list = [];
+      });
+      whole((draft) => {
+        draft.list = 'not an array';
+      });
+      whole((draft) => {
+        draft.list = undefined;
+      });
+      whole((draft) => {
+        draft.list = null;
+      });
+      // A subclass or holes do not survive patches of the elements.
+      class List extends Array {}
+      whole((draft) => {
+        draft.list = List.from(draft.list);
+      });
+      const sparse = new Array(30);
+      sparse[0] = { id: 0 };
+      const holes = create(
+        makeBase(),
+        (draft) => {
+          draft.list = sparse;
+        },
+        compactOptions()
+      ) as any;
+      expect(holes[1]).toEqual([
+        { op: 'replace', path: ['list'], value: sparse },
+      ]);
+    });
+
+    test('carries changed elements by value', () => {
+      const { patches, state } = roundtrip(makeBase(), (draft) => {
+        draft.list[3].id = 'edited';
+        draft.list = draft.list.filter(({ id }: any) => id !== 20);
+        draft.list[10].id = 'later';
+      });
+      expect(state.list[3]).toEqual({ id: 'edited' });
+      expect(patches).toEqual([
+        { op: 'remove', path: ['list', 20] },
+        { op: 'replace', path: ['list', 3], value: { id: 'edited' } },
+        { op: 'replace', path: ['list', 10], value: { id: 'later' } },
+      ]);
+    });
+
+    test('works at any depth, in a Map and with JSON Pointer paths', () => {
+      const nested = roundtrip(
+        { a: { b: { list: [0, 1, 2, 3, 4, 5] } } },
+        (draft) => {
+          draft.a.b.list = draft.a.b.list.filter(
+            (value: number) => value !== 2
+          );
+        },
+        compactOptions({ pathAsArray: false })
+      );
+      expect(nested.patches).toEqual([{ op: 'remove', path: '/a/b/list/2' }]);
+      expect(nested.inverse).toEqual([
+        { op: 'add', path: '/a/b/list/2', value: 2 },
+      ]);
+
+      const map = roundtrip(
+        new Map([['list', [0, 1, 2, 3, 4, 5]]]),
+        (draft) => {
+          draft.set(
+            'list',
+            draft.get('list').filter((value: number) => value !== 2)
+          );
+        }
+      );
+      expect(map.patches).toEqual([{ op: 'remove', path: ['list', 2] }]);
+    });
+
+    test('in strict mode, with a mark and after a change of the old array', () => {
+      for (const options of [{ strict: true }, { mark: () => undefined }]) {
+        const { patches } = roundtrip(
+          makeBase(),
+          (draft) => {
+            draft.list = unsafe(() => [...draft.list, fresh]);
+          },
+          compactOptions({}, options)
+        );
+        expect(patches).toEqual([
+          { op: 'add', path: ['list', 30], value: fresh },
+        ]);
+      }
+      const { patches } = roundtrip(makeBase(), (draft) => {
+        draft.list.shift();
+        draft.list = draft.list.filter(({ id }: any) => id !== 20);
+      });
+      expect(patches).toEqual([
+        { op: 'remove', path: ['list', 20] },
+        { op: 'remove', path: ['list', 0] },
+      ]);
+    });
   });
 
   test('changes that keep no order keep the index patches', () => {
@@ -1506,6 +1696,20 @@ const pick = (list: any[], random: () => number) =>
 // Steps on `{ a, b, shared, meta }`: rows with nested arrays in two arrays,
 // moves between them, and `shared`, which may be the first row of `a` too.
 const nestedSteps: ((draft: any, random: () => number) => void)[] = [
+  (draft, random) => {
+    draft.a = draft.a.filter(() => random() < 0.7);
+  },
+  (draft, random) => {
+    draft.b = [...draft.b, makeRow(random)];
+  },
+  (draft, random) => {
+    draft.a = draft.a.map((row: any) =>
+      random() < 0.2 ? { ...row, n: 99 } : row
+    );
+  },
+  (draft, random) => {
+    draft.b = draft.b.slice(Math.floor(random() * 2));
+  },
   (draft) => {
     draft.a.shift();
   },
