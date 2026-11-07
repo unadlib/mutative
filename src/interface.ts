@@ -66,6 +66,10 @@ export interface Finalities {
   // and releases module-level references to its drafts. False for drafts
   // returned by `create(base)` without a recipe.
   scoped: boolean;
+  // Whether drafts of other producers hold drafts of this producer. It then
+  // finalizes them, to write their values there, even when its recipe
+  // changed nothing.
+  heldElsewhere: boolean;
 }
 
 export interface ProxyDraft<T = any> {

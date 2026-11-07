@@ -199,7 +199,7 @@ function rename(item: Item, name: string): Item {
 
 如果不适合这种方式，可在辅助函数的更新函数内完成修改，或在调用前通过外层草稿修改。如果结果必须与基础状态完全隔离，可传入深拷贝，如 `create(structuredClone(current(draft)), recipe)`，代价是每次复制整个草稿、未修改值也获得新引用；`structuredClone` 还会将类实例变成普通对象，遇到函数则抛错。为捕获意外写入，可在开发环境为辅助函数开启 `enableAutoFreeze`，例如 `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })`。它会同时冻结结果及其与基础状态共享的对象，使意外写入像 Immer 默认冻结时一样抛错。
 
-草稿只属于创建它的 `create()` 调用，包括 `create(base)` 返回的手动草稿。不要存入其他调用的草稿，或赋入其中的对象：本次调用结束时它就会被撤销，另一次调用的结果可能保留无法读取的草稿，接收它的 Set 草稿也可能无法再通过 `has()` 或 `delete()` 找到它。请保存 `current(draft)`、原始对象或该调用的最终结果。
+草稿只属于创建它的 `create()` 调用，包括 `create(base)` 返回的手动草稿。不要存入其他调用的草稿、赋入其中的对象，或该调用的 recipe 返回的值：本次调用结束时它就会被撤销，另一次调用的结果可能保留无法读取的草稿，接收它的 Set 草稿也可能无法再通过 `has()` 或 `delete()` 找到它。请保存 `current(draft)`、原始对象或该调用的最终结果。
 
 ## 错误 [#errors]
 

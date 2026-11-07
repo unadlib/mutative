@@ -456,7 +456,12 @@ export function finalizeDraft<T>(
   }
   const original = proxyDraft?.original ?? result;
   const hasReturnedValue = !!returnedValue.length;
-  if (proxyDraft?.operated) {
+  // Unchanged drafts need no finalization, unless other producers hold some,
+  // which then need their originals written there.
+  if (
+    proxyDraft &&
+    (proxyDraft.operated || proxyDraft.finalities.heldElsewhere)
+  ) {
     const list = proxyDraft.finalities.draft;
     while (list.length > 0) {
       const entry = list.pop()!;
