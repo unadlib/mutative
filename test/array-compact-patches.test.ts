@@ -775,6 +775,113 @@ describe('compact array patches', () => {
       }
     );
 
+    test.each([true, false])(
+      'mutable replay isolates a shared array assignment, pathAsArray=%s',
+      (pathAsArray) => {
+        const rows = [1, 2, 3, 4];
+        const filtered = [1, 3, 4];
+        // The old array is also reachable from a Map. The new array is already
+        // held by another property, which inverse replay must leave alone.
+        const base = {
+          a: { rows },
+          b: new Map([['alias', rows]]),
+          c: filtered,
+        };
+        const [state, patches, inverse] = create(
+          base,
+          (draft) => {
+            draft.a.rows = filtered;
+          },
+          compactOptions({ pathAsArray })
+        );
+        const forward = structuredClone(base);
+        apply(forward, patches, { mutable: true });
+        expect(forward).toEqual(state);
+        expect(forward.b.get('alias')).toEqual([1, 2, 3, 4]);
+        const backward = structuredClone(state);
+        apply(backward, inverse, { mutable: true });
+        expect(backward).toEqual(base);
+        expect(backward.c).toEqual([1, 3, 4]);
+      }
+    );
+
+    test('mutable replay of a replacement leaves its original sibling alone', () => {
+      const rows = [1, 2, 3, 4];
+      const base = { a: rows, b: rows };
+      const [state, patches] = create(
+        base,
+        (draft) => {
+          draft.a = draft.a.filter((x) => x !== 2);
+        },
+        compactOptions()
+      );
+      const replayed = structuredClone(base);
+      apply(replayed, patches, { mutable: true });
+      expect(replayed).toEqual(state);
+      expect(replayed.b).toEqual([1, 2, 3, 4]);
+    });
+
+    test('checking multiple assignments inspects a wide sibling only once', () => {
+      let enumerations = 0;
+      const wide = new Proxy(
+        Object.fromEntries(Array.from({ length: 1000 }, (_, i) => [i, i])),
+        {
+          ownKeys(target) {
+            enumerations++;
+            return Reflect.ownKeys(target);
+          },
+        }
+      );
+      const base = { wide, a: [0, 1, 2, 3], b: [4, 5, 6, 7] };
+      const [, patches] = create(
+        base,
+        (draft) => {
+          draft.a = [0, 2, 3];
+          draft.b = [4, 6, 7];
+        },
+        compactOptions()
+      );
+      expect(enumerations).toBeLessThanOrEqual(1);
+      expect(patches.map((patch) => patch.path)).toEqual([['a'], ['b']]);
+    });
+
+    test('mutable replay detaches an equal replacement before later edits', () => {
+      const rows = [1, 2, 3, 4];
+      const base = { a: rows, b: rows };
+      const [detached, first] = create(
+        base,
+        (draft) => {
+          draft.a = [...draft.a];
+        },
+        compactOptions()
+      );
+      const [final, second] = create(
+        detached,
+        (draft) => {
+          draft.a = draft.a.filter((x) => x !== 2);
+        },
+        compactOptions()
+      );
+      const replayed = structuredClone(base);
+      apply(replayed, [...first, ...second], { mutable: true });
+      expect(replayed).toEqual(final);
+    });
+
+    test('mutable undo isolates an array shared only in the result', () => {
+      const base = { rows: [1, 2, 3, 4], other: [1, 3, 4] };
+      const [state, , inverse] = create(
+        base,
+        (draft) => {
+          draft.rows = draft.other;
+        },
+        compactOptions()
+      );
+      expect(state.rows).toBe(state.other);
+      const replayed = structuredClone(state);
+      apply(replayed, inverse, { mutable: true });
+      expect(replayed).toEqual(base);
+    });
+
     test('keeps one patch where that is smaller', () => {
       const whole = (recipe: (draft: any) => void) => {
         const { patches, inverse, state } = roundtrip(makeBase(), recipe);

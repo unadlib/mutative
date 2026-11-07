@@ -87,6 +87,8 @@ export interface ProxyDraft<T = any> {
   writtenDrafts?: Map<number, ProxyDraft>;
   // Base indices addressed by patches from any depth below this array.
   patchedIndices?: Set<number>;
+  // On the root, objects too wide to inspect for shared assigned arrays.
+  widePatchContainers?: WeakSet<object>;
   // For compact array patches, whether finalization found this draft at its own
   // key, where it generates its patches. Another draft with the same key, as a
   // repeated element gets, can write its value there first.
