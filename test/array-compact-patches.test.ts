@@ -465,6 +465,38 @@ describe('compact array patches', () => {
     ]);
   });
 
+  test('a child that another draft of its key finalized has no patches of its own', () => {
+    // A repeated element read where it moved gets the key of its last copy, so
+    // two drafts share a key. The later one writes the earlier one's value
+    // there, which then no longer finds itself at its key to emit patches.
+    const shared = { id: 's', v: 0 };
+    const makeBase = () => [
+      { id: 'a' },
+      shared,
+      { id: 'b' },
+      { id: 'c' },
+      { id: 'd' },
+      shared,
+      { id: 'e' },
+      { id: 'f' },
+      { id: 'g' },
+    ];
+    const { state, patches } = roundtrip(makeBase(), (draft) => {
+      draft.reverse();
+      const changed = draft[3];
+      expect(draft[7]).toEqual(shared);
+      changed.v = 1;
+      draft.reverse();
+      draft.splice(7, 1);
+    });
+    expect(state[5]).toEqual({ id: 's', v: 1 });
+    expect(patches).toContainEqual({
+      op: 'replace',
+      path: [5],
+      value: { id: 's', v: 1 },
+    });
+  });
+
   test('a changed alias draft at a retained index is replaced', () => {
     // A draft read through another path before the array is finalized after
     // it, so the array still holds the draft. It stands for its original only

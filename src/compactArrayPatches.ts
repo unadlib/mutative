@@ -27,14 +27,19 @@ function retained(
   return draft.operated || draft.finalities !== target.finalities ? 2 : 1;
 }
 
-// A changed child emits patches under its array only at its own index, where
-// its own patches carry its change.
+// A changed child emits patches under its array only if finalization found it
+// at its own index, where they carry its change.
 function ownPatches(
   draft: ProxyDraft | undefined,
   parent: ProxyDraft,
   index: number
 ) {
-  return draft !== undefined && draft.parent === parent && draft.key === index;
+  return (
+    draft !== undefined &&
+    draft.finalizedAtKey === true &&
+    draft.parent === parent &&
+    draft.key === index
+  );
 }
 
 // Compact array patches keep the common prefix and suffix of an array whose

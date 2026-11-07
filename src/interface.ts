@@ -84,6 +84,10 @@ export interface ProxyDraft<T = any> {
   // For compact array patches, the changed drafts that finalization wrote into
   // the indices of this array, whose final values no longer lead to them.
   writtenDrafts?: Map<number, ProxyDraft>;
+  // For compact array patches, whether finalization found this draft at its own
+  // key, where it generates its patches. Another draft with the same key, as a
+  // repeated element gets, can write its value there first.
+  finalizedAtKey?: boolean;
   type: DraftType;
   operated: boolean;
   finalized: boolean;

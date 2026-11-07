@@ -114,13 +114,20 @@ export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
 
 // The original of a changed draft that finalization wrote into an index tells
 // compact array patches which base element the final value there stands for.
-function recordWrittenDraft(target: ProxyDraft, key: any, draft: ProxyDraft) {
+function recordWrittenDraft(
+  target: ProxyDraft,
+  key: any,
+  draft: ProxyDraft,
+  atKey?: boolean
+) {
   if (
     draft.operated &&
     target.options.enablePatches?.arrayPatchStrategy &&
     target.copy.length !== target.original.length
-  )
+  ) {
     (target.writtenDrafts ??= new Map()).set(Number(key), draft);
+    if (atKey) draft.finalizedAtKey = true;
+  }
 }
 
 export function finalizePatches(
@@ -195,7 +202,7 @@ export function finalizeNode(
       } else {
         copy[key] = updatedValue;
         if (patches && parentType === DraftType.Array)
-          recordWrittenDraft(parent, key, proxyDraft);
+          recordWrittenDraft(parent, key, proxyDraft, proxyDraft === node);
       }
     }
   } else {
