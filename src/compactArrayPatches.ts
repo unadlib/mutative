@@ -207,10 +207,38 @@ function generateCompactArrayPatches(
     // recipe assigned. When none lies below the shorter length, the change is
     // an append or a truncation, which the default generator patches as such.
     let first = relocated ? arrayState!.diffStart : shortest;
+    let last = -1;
     assignedMap.forEach((_flag: boolean, key: any) => {
-      if (key !== 'length') first = Math.min(first, Number(key));
+      if (key !== 'length') {
+        first = Math.min(first, Number(key));
+        last = Math.max(last, Number(key));
+      }
     });
     if (first >= shortest) return false;
+    // Without native moves at the same length, the elements at other indices
+    // are retained, so trimming stops at the first and the last assigned index
+    // where both changed. Far fewer assigned indices than lie between them then
+    // leave by the exit below, without reading every element outside them.
+    if (
+      !relocated &&
+      oldLength === newLength &&
+      2 * assignedMap.size < last + 1 - first &&
+      !retained(
+        copy[first],
+        original[first],
+        proxyState.writtenDrafts,
+        first,
+        proxyState
+      ) &&
+      !retained(
+        copy[last],
+        original[last],
+        proxyState.writtenDrafts,
+        last,
+        proxyState
+      )
+    )
+      return false;
   }
 
   // Holes compare like undefined, which the patches would make explicit. An
