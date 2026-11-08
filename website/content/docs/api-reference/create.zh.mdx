@@ -48,7 +48,7 @@ create(base, options?) // [draft, finalize]
 | 选项 | 类型 | 默认值 |
 | --- | --- | --- |
 | [`strict`](#strict) | `boolean` | `false` |
-| [`enablePatches`](#enablepatches) | `boolean \| { pathAsArray?: boolean; arrayLengthAssignment?: boolean }` | `false` |
+| [`enablePatches`](#enablepatches) | `boolean \| { pathAsArray?: boolean; arrayLengthAssignment?: boolean; arrayPatchStrategy?: ArrayPatchStrategy }` | `false` |
 | [`enableAutoFreeze`](#enableautofreeze) | `boolean` | `false` |
 | [`mark`](#mark) | `Mark \| Mark[]`，其中 `Mark` 为 `(target, { mutable, immutable }) => 'mutable' \| 'immutable' \| (() => copy) \| undefined` | 无 |
 
@@ -63,7 +63,8 @@ create(base, options?) // [draft, finalize]
 设为 `true` 后，`create()` 返回 `[nextState, patches, inversePatches]`，详见[补丁](/zh/docs/advanced-guides/patches)。也可传对象配置补丁格式：
 
 - `pathAsArray` 默认为 `true`：路径为键数组，如 `['list', 0]`。设为 `false` 时使用 JSON Pointer 字符串，如 `'/list/0'`。字符串路径不能表示非字符串 Map 键或 symbol 键，例如 `draft.set(1, 'b')` 的补丁会写入键 `'1'`。这类键应保留数组路径，开发构建遇到无法表示的字符串路径会抛错。
-- `arrayLengthAssignment` 默认为 `true`：缩短数组时生成修改 `length` 的 `replace`。设为 `false` 后，为每个移除的索引生成 `remove`，大数组的耗时会更高。
+- `arrayLengthAssignment` 默认为 `true`：缩短数组时生成修改 `length` 的 `replace`。设为 `false` 后，为每个移除的索引生成 `remove`，大数组的耗时会更高。使用 `compactArrayPatches` 时，此选项只在数组于末尾失去元素或策略把数组交给默认补丁时生效；末尾之前的删除所生成的 `remove` 不受其影响。
+- `arrayPatchStrategy`：默认情况下，补丁按索引比较值，因此被移动的元素也要占一个补丁。传入 [`compactArrayPatches`](/zh/docs/api-reference/compactarraypatches) 后，保持相对顺序的元素不进入补丁，更新函数把新数组赋给旧数组所在的键时（例如 `draft.list = draft.list.filter(...)`）也一样。两者大小接近时，数组交给默认补丁。它只让补丁变小，详见[紧凑数组补丁](/zh/docs/advanced-guides/patches#compact-array-patches)。
 
 设置 `pathAsArray: false` 和 `arrayLengthAssignment: false` 后，对象和数组的补丁为 JSON Patch 操作（[RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)），另见[相关讨论](https://github.com/unadlib/mutative/issues/6)。
 
@@ -199,7 +200,7 @@ function rename(item: Item, name: string): Item {
 
 如果不适合这种方式，可在辅助函数的更新函数内完成修改，或在调用前通过外层草稿修改。如果结果必须与基础状态完全隔离，可传入深拷贝，如 `create(structuredClone(current(draft)), recipe)`，代价是每次复制整个草稿、未修改值也获得新引用；`structuredClone` 还会将类实例变成普通对象，遇到函数则抛错。为捕获意外写入，可在开发环境为辅助函数开启 `enableAutoFreeze`，例如 `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })`。它会同时冻结结果及其与基础状态共享的对象，使意外写入像 Immer 默认冻结时一样抛错。
 
-草稿只属于创建它的 `create()` 调用，包括 `create(base)` 返回的手动草稿。不要存入其他调用的草稿，或赋入其中的对象：本次调用结束时它就会被撤销，另一次调用的结果可能保留无法读取的草稿，接收它的 Set 草稿也可能无法再通过 `has()` 或 `delete()` 找到它。请保存 `current(draft)`、原始对象或该调用的最终结果。
+草稿只属于创建它的 `create()` 调用，包括 `create(base)` 返回的手动草稿。不要存入其他调用的草稿、赋入其中的对象，或该调用的 recipe 返回的值：本次调用结束时它就会被撤销，另一次调用的结果可能保留无法读取的草稿，接收它的 Set 草稿也可能无法再通过 `has()` 或 `delete()` 找到它。请保存 `current(draft)`、原始对象或该调用的最终结果。
 
 ## 错误 [#errors]
 

@@ -120,6 +120,15 @@ export function getPath(
     }
     path.push(key);
     const resolved = getPath(parent, path);
+    // A grandchild can emit a patch before another occurrence of a shared
+    // element finalizes its parent. Remember the index while the path resolves.
+    if (
+      resolved &&
+      parent.type === DraftType.Array &&
+      parent.options.enablePatches.arrayPatchStrategy
+    ) {
+      (parent.patchedIndices ??= new Set()).add(key);
+    }
     // Checked once the path resolves, as a stale path emits no patches.
     if (__DEV__ && resolved) {
       checkPathKey(parent.type, key, parent.options.enablePatches.pathAsArray);

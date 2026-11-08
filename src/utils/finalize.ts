@@ -112,6 +112,20 @@ export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
   });
 }
 
+// The original of a changed draft that finalization wrote into an index tells
+// compact array patches which base element the final value there stands for.
+function recordWrittenDraft(
+  target: ProxyDraft,
+  key: any,
+  draft: ProxyDraft,
+  atKey?: boolean
+) {
+  if (draft.operated && target.options.enablePatches?.arrayPatchStrategy) {
+    (target.writtenDrafts ??= new Map()).set(Number(key), draft);
+    if (atKey) draft.finalizedAtKey = true;
+  }
+}
+
 export function finalizePatches(
   target: ProxyDraft,
   generatePatches: GeneratePatches,
@@ -162,7 +176,10 @@ export function finalizeNode(
     // may have been moved here, e.g. by `reverse()`, and its value is written
     // here instead.
     const proxyDraft = draft === node.proxy ? node : getProxyDraft(draft);
-    if (proxyDraft) {
+    // A draft of another producer, which a recipe placed here, is finalized
+    // by that producer, which then writes its final value here, as at a key
+    // that held no draft of this producer: its recipe may still change it.
+    if (proxyDraft && proxyDraft.finalities === node.finalities) {
       // assign the updated value to the copy object
       const updatedValue = proxyDraft.operated
         ? proxyDraft.copy
@@ -174,15 +191,14 @@ export function finalizeNode(
       // otherwise its value is part of the patches of the draft holding it.
       if (proxyDraft === node)
         finalizePatches(node, generatePatches, patches, inversePatches);
-      // A draft of another producer, which a recipe placed here, is
-      // finalized by that producer: its recipe may still change the draft.
-      else if (proxyDraft.finalities === node.finalities)
-        finalizeSetValue(proxyDraft);
+      else finalizeSetValue(proxyDraft);
       // final update value
       if (isMapLike) {
         copy.set(key, updatedValue);
       } else {
         copy[key] = updatedValue;
+        if (patches && parentType === DraftType.Array)
+          recordWrittenDraft(parent, key, proxyDraft, proxyDraft === node);
       }
     }
   } else {
@@ -222,13 +238,16 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
           finalizeSetValue(target, true);
         // final update value
         set(copy, key, updatedValue);
+        if (target.type === DraftType.Array)
+          recordWrittenDraft(target, key, proxyDraft);
       }
     });
-    if (target.options.enableAutoFreeze) {
-      // !case: assign the draft value in cross draft tree
-      if (proxyDraft.finalities !== target.finalities) {
-        target.options.enableAutoFreeze = false;
-      }
+    // !case: assign the draft value in cross draft tree
+    if (proxyDraft.finalities !== target.finalities) {
+      // The producer of the draft writes its value here when it finalizes
+      // it, which this producer may have finished before.
+      proxyDraft.finalities.heldElsewhere = true;
+      target.options.enableAutoFreeze = false;
     }
   } else if (isDraftable(value, target.options)) {
     // !case: assign the non-draft value

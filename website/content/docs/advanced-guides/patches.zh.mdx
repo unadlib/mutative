@@ -46,7 +46,7 @@ expect(apply(state, inversePatches)).toEqual(baseState);
 - **操作与路径**：补丁使用 `add`、`remove` 和 `replace`。路径从根节点经由对象键、数组索引、原样保留的 Map 键（包括对象与数组）或 Set 元素位置，指向变化的值。直接返回新状态的更新函数会生成一个路径为空的 `replace` 补丁。
 - **顺序**：嵌套草稿的补丁先于父级补丁，与 Immer 一致。
 - **值**：补丁值引用下一个状态中的对象，开启 `enableAutoFreeze` 时会一起冻结。修改补丁值前应先复制。`apply()` 在应用前会复制补丁值。
-- **数组**：`shift()`、`unshift()`、`splice()`、`reverse()` 和 `sort()` 为每个元素发生变化的索引生成 `replace`，为超出原长度的索引生成 `add`。数组缩短时，默认生成一个修改 `length` 的 `replace`；设置 `arrayLengthAssignment: false` 后则为每个移除的索引生成 `remove`。正向和逆向补丁都保留空洞：填充空洞使用 `replace`，重建空洞则从该索引处重建数组，详见[稀疏数组](#sparse-arrays)。
+- **数组**：默认情况下，`shift()`、`unshift()`、`splice()`、`reverse()` 和 `sort()` 为每个元素发生变化的索引生成 `replace`，为超出原长度的索引生成 `add`。数组缩短时，默认生成一个修改 `length` 的 `replace`；设置 `arrayLengthAssignment: false` 后则为每个移除的索引生成 `remove`。正向和逆向补丁都保留空洞：填充空洞使用 `replace`，重建空洞则从该索引处重建数组，详见[稀疏数组](#sparse-arrays)。使用 `arrayPatchStrategy: compactArrayPatches` 时，保持相对顺序的元素不进入补丁，详见[紧凑数组补丁](#compact-array-patches)。
 - **Map**：`set()` 对新键生成 `add`，对已有键生成 `replace`；`delete()` 生成 `remove`。
 - **Set**：按值添加元素，按持有的值删除元素，详见[包含对象的 Set](#sets-of-objects)。
 - **移动的草稿**：如果已修改的草稿因排序、赋值或被其他值替换而离开原键，就不会在旧路径下生成补丁，其值由父级补丁携带。
@@ -57,7 +57,7 @@ expect(apply(state, inversePatches)).toEqual(baseState);
 
 ## JSON 补丁 [#json-patches]
 
-`enablePatches` 可设为 `true`，或包含两个格式选项的对象。两项都设为 `false` 后，JSON 兼容对象和数组的补丁就是 [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) 操作，可供其他 JSON Patch 库应用（[相关讨论](https://github.com/unadlib/mutative/issues/6)）。
+`enablePatches` 可设为 `true`，或设置补丁形状和数组表示方式的对象。设置 `pathAsArray: false` 和 `arrayLengthAssignment: false` 后，JSON 兼容对象和数组的补丁就是 [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) 操作，可供其他 JSON Patch 库应用（[相关讨论](https://github.com/unadlib/mutative/issues/6)）。
 
 ### pathAsArray：默认为 true [#pathasarray---default-true]
 
@@ -121,8 +121,100 @@ expect(inversePatches).toEqual([
 ]);
 ```
 
+使用 `compactArrayPatches` 时，此选项只在数组于末尾失去元素或策略把数组交给默认补丁时生效；末尾之前的删除所生成的 `remove` 不受其影响。
+
 <Callout type="idea">
 对大数组逐索引生成 `remove` 比单个 `length` 的 `replace` 耗时更多、补丁更多。除非需要 JSON Patch 格式，否则应保持 `arrayLengthAssignment: true`（即保留默认值）。
+</Callout>
+
+## 紧凑数组补丁 [#compact-array-patches]
+
+默认情况下，补丁按数组槽位比较，因此被移到新索引的元素即使没有任何变化也要占一个补丁：删除 10,000 个元素中的第一个需要 10,000 个补丁。紧凑数组补丁让保持相对顺序的元素不进入补丁。把 [`compactArrayPatches`](/zh/docs/api-reference/compactarraypatches) 传给 `arrayPatchStrategy` 即可开启；未导入时，打包工具会移除它：
+
+```ts
+import { compactArrayPatches, create } from 'mutative';
+
+const baseState = { list: [1, 2, 3, 4] };
+const [state, patches, inversePatches] = create(
+  baseState,
+  (draft) => {
+    draft.list.splice(1, 1);
+  },
+  {
+    enablePatches: {
+      arrayPatchStrategy: compactArrayPatches,
+    },
+  }
+);
+
+expect(state).toEqual({ list: [1, 3, 4] });
+expect(patches).toEqual([{ op: 'remove', path: ['list', 1] }]);
+expect(inversePatches).toEqual([
+  { op: 'add', path: ['list', 1], value: 2 },
+]);
+```
+
+在包含 1,000 个小对象的列表上，这些更新函数的正向补丁如下：
+
+| 更新函数 | 默认补丁数 | 默认字节数 | 紧凑补丁数 | 紧凑字节数 |
+| --- | ---: | ---: | ---: | ---: |
+| `draft.shift()` | 1,000 | 63,658 | 1 | 28 |
+| `draft.splice(500, 2, item)` | 500 | 31,982 | 2 | 92 |
+| `draft.push(item); draft.shift()` | 1,000 | 63,673 | 2 | 86 |
+| 在两处插入 | 1,002 | 63,789 | 2 | 115 |
+| 在数组内移动一个元素 | 981 | 62,515 | 2 | 87 |
+| `draft.list = draft.list.filter(...)` | 1 | 25,798 | 1 | 37 |
+| `draft.reverse()` | 1,000 | 63,671 | 1,000 | 63,671 |
+
+生成器按引用比较最终数组和基础数组，因此无论更新函数如何修改数组，补丁都相同：无论使用数组方法、索引赋值还是写入 `length`，无论是否开启严格模式或使用 `mark`。它先裁掉首尾相同的部分，再保留最长的一组保持相对顺序的元素。在两个保留的元素之间，两侧都有的元素数量生成 `replace`，其余生成 `remove` 或 `add`。它先按索引降序生成 `remove`，再按索引升序生成 `add`，最后生成 `replace`；逆向补丁按相反方向单独规划。JSON 兼容状态的补丁在 JSON 序列化后仍能重放；普通的末尾追加、`pop` 和尾部截断仍使用原有的高效形式。
+
+更新函数把新数组赋给旧数组所在的键时也一样，例如 `draft.list = draft.list.filter(...)`、`draft.list = [...draft.list, item]` 或 `draft.list = draft.list.map(...)`：它没有改动的元素不需要补丁。如果这样不会更小（例如全是新值的数组），则仍是一个替换整个数组的 `replace`。更新函数返回的值会用一个补丁替换整个状态，这与不开启此选项时相同。用 `mutable: true` 重放时，赋值数组的补丁会原地修改旧数组，因此引用它的其他路径也会一起变化，详见[共享引用](/zh/docs/extra-topics/shared-references#patches-and-in-place-replay)。
+
+保留的元素也可以原地修改：元素索引不变时，由它自身草稿的补丁携带修改；元素被移动时，或数组持有的是更新函数经其他路径读取的草稿、或其他 producer 创建的草稿时，则在其最终索引上生成 `replace`。下例中，被编辑的元素位于删除位置之前，索引不变，因此由它自身的补丁携带修改：
+
+```ts
+import { compactArrayPatches, create } from 'mutative';
+
+const baseState = {
+  todos: [
+    { id: 0, done: false },
+    { id: 1, done: false },
+    { id: 2, done: false },
+  ],
+};
+const [, patches] = create(
+  baseState,
+  (draft) => {
+    draft.todos[0].done = true;
+    draft.todos.splice(1, 1);
+  },
+  { enablePatches: { arrayPatchStrategy: compactArrayPatches } }
+);
+
+expect(patches).toEqual([
+  { op: 'replace', path: ['todos', 0, 'done'], value: true },
+  { op: 'remove', path: ['todos', 1] },
+]);
+```
+
+当默认补丁的大小与之接近时，生成器把数组交给默认补丁，例如 `reverse()` 及其他只有少数元素保持相对顺序的修改、只赋值少数索引，以及删除后只剩很短尾部的情况。稀疏数组，以及子草稿的补丁会改到其他元素的情况也是如此。它统计补丁数量而不度量值的大小，因此不保证生成最小的补丁，也不记录更新函数的确切操作。
+
+只有元素被移动或被赋值的数组才需要付出这部分开销：原地修改元素的开销与默认情况相同。查找首尾相同部分需要 **O(n)** 时间，匹配其间的元素需要 **O(n log n)**。纯插入或纯删除比默认补丁更快，因为不必为每个移动的元素生成补丁。滑动窗口或移动元素之后的匹配可能比默认补丁更慢，代码热身后最多约三倍，换来的是更小的体积。在这些情况下，应用紧凑补丁都更快，因为 `apply()` 要执行的补丁少得多。
+
+紧凑补丁使用相同的 `add`、`remove` 和 `replace` 操作，支持数组路径和 JSON Pointer 路径。面向严格的 [RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902) 消费方时，请同时设置两个 JSON 选项：
+
+```ts
+const options = {
+  enablePatches: {
+    arrayPatchStrategy: compactArrayPatches,
+    pathAsArray: false,
+    arrayLengthAssignment: false,
+  },
+} as const;
+```
+
+<Callout type="warn">
+紧凑补丁只让补丁变小，不作其他承诺。它重放最终值，因此不保留插入值与其他路径之间的 JavaScript 别名关系。它也不提供元素标识：移动后又被修改的元素会生成 `replace`，某个元素能否不进入补丁取决于整个修改的形状，数组被交给默认补丁时也没有任何信号。因此，把它应用到 CRDT 上，只有在恰好如此时才能避免重写未变化的元素，无法提供并发冲突解决。请在本地 CRDT 事务中把补丁应用到对应的基础快照，并同步 CRDT 原生更新，不要把补丁当作合并协议广播。
 </Callout>
 
 ## 稀疏数组 [#sparse-arrays]

@@ -49,10 +49,36 @@ console.log(result.color1 === result.color2); // true
 // Result: { color1: { name: 'Blue' }, color2: { name: 'Blue' } }
 ```
 
+## 补丁与原地重放 [#patches-and-in-place-replay]
+
+补丁记录修改所在的路径。`apply()` 会复制这条路径上的对象，因此返回的状态和下一个状态一样，只在这条路径上变化。使用 `mutable: true` 时，`apply()` 改为原地修改路径上的对象；如果状态中有多条路径引用同一个对象或数组，这些路径会一起变化：
+
+```javascript
+import { apply, create } from 'mutative';
+
+const list = [1, 2, 3];
+const state = { a: list, b: list };
+
+const [nextState, patches] = create(
+  state,
+  (draft) => {
+    draft.a.push(4);
+  },
+  { enablePatches: true }
+);
+// nextState: { a: [1, 2, 3, 4], b: [1, 2, 3] }
+
+apply(state, patches, { mutable: true });
+// state: { a: [1, 2, 3, 4], b: [1, 2, 3, 4] }, as `a` and `b` hold one array
+```
+
+状态中有共享引用时，请不带 `mutable: true` 重放补丁。使用[紧凑数组补丁](/zh/docs/advanced-guides/patches#compact-array-patches)时，更新函数把新数组赋给某个键（例如 `draft.a = draft.a.filter(...)`）也是如此：它的补丁修改旧数组的元素，而不是替换整个数组。赋入内容相同的数组则完全不生成补丁，因此原地重放也不会把共享的数组分开。
+
 ## 行为汇总 [#summary]
 
 | 场景 | 行为 |
 | --- | --- |
 | **基础状态中的共享节点** | 每条路径有**独立草稿**，一条路径的修改**不会**反映到其他路径。 |
 | **手动赋值的引用** | ✅ **支持**。`draft.x = draft.y` 在最终状态中创建共享引用。 |
+| **用 `mutable: true` 重放补丁** | 经一条路径的修改会出现在**所有**引用同一对象或数组的路径上。此类状态请不带 `mutable` 重放。 |
 | **真正的循环引用** | ❌ **不支持**。开发环境开启自动冻结时会主动检测。 |

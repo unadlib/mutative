@@ -187,6 +187,7 @@ try {
     'castDraft',
     'castImmutable',
     'castMutable',
+    'compactArrayPatches',
     'create',
     'current',
     'isDraft',

@@ -5,6 +5,7 @@
   "pages": [
     "create",
     "apply",
+    "compactarraypatches",
     "makecreator",
     "current",
     "original",

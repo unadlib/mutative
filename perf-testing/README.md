@@ -177,6 +177,20 @@ node perf-testing/check-budgets.mjs perf-testing/results/ci/core/report.json
 
 The gate is a workload-specific regression guard, not a universal performance ranking. Enforcing it as a required merge check additionally depends on the repository's GitHub branch-protection settings.
 
+## Compact array patch benchmark
+
+`array-patch-compact.mjs` is a targeted production-artifact benchmark for `arrayPatchStrategy`. It compares the default patches with `compactArrayPatches` in independent processes and validates forward/inverse replay before measuring. Its 19 scenarios cover 10,000-element head/middle edits, contiguous blocks, coalesced and disjoint insertion plans, a segment replaced by another of a different length, a sliding window, a move within an array, nested edits, reversing and sorting, append/local-edit controls, a control that replaces three elements, an array assigned over the one at a key of an element beside all the other elements, and many small sibling arrays whose patch generation must not scan other subtrees. Use `--array-size` and `--batch-size` for smaller checks or other scales; for `many-small-arrays`, `--array-size` sets the number of three-element arrays. The Node 22/24 build workflow runs the correctness matrix below on the production build.
+
+```sh
+# Correctness matrix on the production build, with both freeze modes
+pnpm benchmark:array-patches:check
+
+# Build, then measure both freeze modes in isolated processes
+pnpm benchmark:array-patches --freeze both --runs 5 --output perf-testing/results/array-patch-compact.json
+```
+
+Each record includes forward/inverse operation counts and JSON bytes, retained base references after replay, create/apply/inverse-apply timings, the complete `create → stringify → parse → apply` replay path, retained output heap, and process-maximum RSS. Timing uses the median within each process and then the median across independent processes. Memory snapshots use three explicit GC readings; max RSS includes the harness and is not an allocation budget. There are no wall-clock pass/fail thresholds. Reports are written to the ignored `perf-testing/results/` directory, and every report records the production artifact hash and methodology. This is a synthetic operation matrix, not real-application telemetry or a claim about insertion-plan hit rates in user workloads.
+
 ## Memory measurement
 
 ```sh

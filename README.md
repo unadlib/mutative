@@ -78,14 +78,14 @@ At 1,000 and 10,000 rows the gap grows. Against Immer without its array-method p
 | on          | off     |                      3.9x |                       4.2x |               32x |                39x |
 | on          | on      |                      2.7x |                       2.8x |              6.6x |               6.8x |
 
-Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.04 µs against 7,408 µs, 1,052x. With patches, both libraries emit one patch per moved index, which bounds the gain to 5-9x. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
+Each value is the geometric mean of Immer's time over Mutative's; moves are `shift`, `unshift`, `splice` insertion, and `reverse`. Mutative moves elements natively on its copy, while Immer moves each one through its draft proxy: removing the first of 10,000 rows took 7.04 µs against 7,408 µs, 1,052x. With patches, both libraries emit one patch per moved index by default, which bounds the gain to 5-9x; Mutative's opt-in [compact array patches](https://mutative.js.org/docs/advanced-guides/patches#compact-array-patches) instead keep elements that stay in order out of the patches, so `shift`, `unshift` and `splice` take one patch per inserted or removed element. The [performance summary](./perf-testing/reports/SUMMARY.md) breaks these results down by scenario.
 
 </details>
 
 <details>
 <summary><strong>With patches</strong></summary>
 
-With patches on and auto-freeze off, Mutative was faster than Immer in 148 of 150 cases and within 5% in the other 2, 3.3x on geometric mean, and faster than Mutative 1.3.0 in 131 and within 5% in the rest, 4.6x. In every array case measured it was faster than both: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.2 µs with patches against 63.8 µs without. Moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches.
+With patches on and auto-freeze off, Mutative was faster than Immer in 148 of 150 cases and within 5% in the other 2, 3.3x on geometric mean, and faster than Mutative 1.3.0 in 131 and within 5% in the rest, 4.6x. In every array case measured it was faster than both: 4.4x Immer and 13x Mutative 1.3.0 on geometric mean. Patches cost little when an update changes a few paths: pushing a row and inserting a property at 10,000 rows took 63.2 µs with patches against 63.8 µs without. By default, moving elements emits one patch per moved index in every library, so removing the first of 10,000 rows produces 10,000 forward and 10,000 inverse patches; with `arrayPatchStrategy: compactArrayPatches`, Mutative emits one of each.
 
 Times are microseconds per update with patches on and auto-freeze off:
 
@@ -113,10 +113,10 @@ Mutative ships patches, `Map`/`Set` support and native array methods built in; I
 
 | Bundle                                      |  Immer | Mutative |
 | ------------------------------------------- | -----: | -------: |
-| With patches, `Map`/`Set` and array methods | 6.4 kB |   8.5 kB |
-| `produce` / `create` only                   | 3.6 kB |   7.9 kB |
+| With patches, `Map`/`Set` and array methods | 6.4 kB |   9.0 kB |
+| `produce` / `create` only                   | 3.6 kB |   8.4 kB |
 
-Mutative's `create` includes patches, `Map`/`Set` support and the native array methods even when a recipe does not use them: they are part of `create`, not separate imports, so bundlers cannot drop them. The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
+Mutative's `create` includes patches, `Map`/`Set` support and the native array methods even when a recipe does not use them: they are part of `create`, not separate imports, so bundlers cannot drop them. Only the optional `compactArrayPatches` is a separate import, which adds about 1.2 kB for those who use it. The difference buys the draft fast paths and the native array methods measured in the [performance summary](./perf-testing/reports/SUMMARY.md), which also records the artifact sizes of each measured source. See the [array methods FAQ](#faqs) for the supported fast paths and their contract, and the [Immer regression cases](./test/immer-array-methods.md) for the behavior of its array-method plugin.
 
 </details>
 
@@ -165,7 +165,7 @@ CDN
 
 The package's other ESM files read `process.env.NODE_ENV`, which bundlers and Node.js provide; a browser without a bundler needs the production file above.
 
-Mutative has no dependencies. A production bundle of `create` alone is about 8.3 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 8.9 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
+Mutative has no dependencies. A production bundle of `create` alone is about 8.4 kB after Brotli compression, and one of `create`, `apply`, `current` and `original` about 9.0 kB, including patches, `Map` and `Set` support and native array methods, which need no plugins.
 
 ## Usage
 
@@ -234,12 +234,13 @@ The `options` argument is optional; [`makeCreator()`](#makecreator) sets default
 
   Strict mode checks every value that the recipe reads, so enable it in development and disable it in production, for example with `strict: process.env.NODE_ENV !== 'production'`.
 
-- `enablePatches` - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean }`, the default is `false`.
+- `enablePatches` - `boolean | { pathAsArray?: boolean; arrayLengthAssignment?: boolean; arrayPatchStrategy?: ArrayPatchStrategy }`, the default is `false`.
 
   `true` makes `create()` return `[nextState, patches, inversePatches]`. An object sets the shape of the patches as well:
 
   - `pathAsArray`, `true` by default: a path is an array of keys, such as `['list', 0]`. With `false`, it is a JSON Pointer string, such as `'/list/0'`. A string path holds only strings, so it cannot name a Map key that is not a string, or a symbol key: with `pathAsArray: false`, the patch of `draft.set(1, 'b')` would set the key `'1'`. Keep the default array paths for such keys; development builds throw an error when a string path would hold one.
-  - `arrayLengthAssignment`, `true` by default: an array that gets shorter gets a `replace` patch of its `length`. With `false`, it gets a `remove` patch for each index that it loses, which takes more time for large arrays.
+  - `arrayLengthAssignment`, `true` by default: an array that gets shorter gets a `replace` patch of its `length`. With `false`, it gets a `remove` patch for each index that it loses, which takes more time for large arrays. With `compactArrayPatches`, this applies where an array loses elements at its end or the strategy leaves it to the default; the `remove` patches of a deletion before the end do not depend on it.
+  - `arrayPatchStrategy`: by default, patches compare the values at each index, so an element that moved takes a patch. With the exported `compactArrayPatches`, elements that stay in order stay out of the patches, also when a recipe assigns a new array over the old one, as in `draft.list = draft.list.filter(...)`. An array is left to the default where that is about as small. It only makes patches smaller; see [Compact array patches](https://mutative.js.org/docs/advanced-guides/patches#compact-array-patches).
 
   With `pathAsArray: false` and `arrayLengthAssignment: false`, the patches of objects and arrays are JSON Patch operations ([RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902)); see the [related discussion](https://github.com/unadlib/mutative/issues/6).
 
@@ -319,7 +320,7 @@ On a draft, `rename()` returns the draft itself, so the outer recipe changes its
 
 Where that does not fit, make such changes in the helper's recipe, or through the outer draft before calling the helper. If the helper's result must not share objects with the base state, give `create()` a deep copy, as in `create(structuredClone(current(draft)), recipe)`, at the cost of copying the draft on each call and of new references for the values that the recipe leaves unchanged; `structuredClone` turns class instances into plain objects and throws on functions. To catch such writes, enable `enableAutoFreeze` in development, for example with `makeCreator({ enableAutoFreeze: process.env.NODE_ENV !== 'production' })` for such helpers: it freezes the helper's result together with the objects of the base state that it shares, so a write to them throws instead of changing the base state, as Immer's default auto-freeze does.
 
-A draft belongs to the `create()` call that made it, also the draft that `create(base)` returns. Do not store it in the draft of another call, or in an object that you assign there: it is revoked when its own call ends, so the other call's result can hold a draft that throws when it is read, and a Set draft that received it may no longer find it with `has()` or `delete()`. Store `current(draft)`, the original object or the result of that call instead.
+A draft belongs to the `create()` call that made it, also the draft that `create(base)` returns. Do not store it in the draft of another call, in an object that you assign there or in a value that the recipe of that call returns: it is revoked when its own call ends, so the other call's result can hold a draft that throws when it is read, and a Set draft that received it may no longer find it with `has()` or `delete()`. Store `current(draft)`, the original object or the result of that call instead.
 
 ### `apply()`
 
@@ -391,11 +392,33 @@ apply(
 expect(baseState).toEqual({ foo: { bar: "test2" } });
 ```
 
-> The `mutable` option cannot be combined with the other options, which development builds report with a warning. It throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, because the state cannot be replaced in place.
+> The `mutable` option cannot be combined with the other options, which development builds report with a warning. It throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, because the state cannot be replaced in place. An object or array that several paths of the state hold changes on each of them; see [Shared references](https://mutative.js.org/docs/extra-topics/shared-references#patches-and-in-place-replay).
 
 > `apply()` throws for a patch path through the `__proto__` or `constructor` of an object or array, or through the `prototype` of a function, so that patches cannot change the prototypes of objects; Map keys of these names are ordinary keys. It reads the other path segments as properties, as Immer does, and does not guard against prototypes that other code has already changed.
 
 > Patches add and remove Set elements by value, also a changed element of a Set that added or removed elements, and `apply()` copies patch values, so inverse patches cannot remove an object that `apply()` added to a Set, as in an undo after a redo. `apply()` also appends the elements that it adds, so such a Set can hold its elements in another order, and the patches of a later recipe, which find Set elements by position, can then change another element. See [Sets of objects](https://mutative.js.org/docs/advanced-guides/patches#sets-of-objects).
+
+### `compactArrayPatches`
+
+The value of the `arrayPatchStrategy` option that keeps array elements which stay in order out of patches, so that removing the first of 10,000 elements takes one patch instead of 10,000. Bundlers drop it unless it is imported.
+
+```ts
+import { compactArrayPatches, create } from 'mutative';
+
+const [state, patches, inversePatches] = create(
+  { list: [1, 2, 3, 4] },
+  (draft) => {
+    draft.list.splice(1, 1);
+  },
+  { enablePatches: { arrayPatchStrategy: compactArrayPatches } }
+);
+
+expect(state).toEqual({ list: [1, 3, 4] });
+expect(patches).toEqual([{ op: 'remove', path: ['list', 1] }]);
+expect(inversePatches).toEqual([{ op: 'add', path: ['list', 1], value: 2 }]);
+```
+
+It only makes patches smaller; see [Compact array patches](https://mutative.js.org/docs/advanced-guides/patches#compact-array-patches) for what it does and where it leaves an array to the default patches.
 
 ### `current()`
 

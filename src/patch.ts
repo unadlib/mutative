@@ -15,7 +15,7 @@ import { current } from './current';
  * container generates patches is represented by its original object when it
  * was not modified, or by a snapshot of its current state otherwise.
  */
-function cloneIfNeeded<T>(target: T): T {
+export function cloneIfNeeded<T>(target: T): T {
   const proxyDraft = getProxyDraft(target);
   if (!proxyDraft) return target;
   return proxyDraft.operated ? current(target as any) : proxyDraft.original;
@@ -128,7 +128,19 @@ function generateArrayPatches(
 ) {
   let { original, assignedMap, options } = proxyState;
   let copy = proxyState.copy!;
-  const { arrayLengthAssignment = true } = options.enablePatches;
+  const { arrayLengthAssignment = true, arrayPatchStrategy } =
+    options.enablePatches;
+  if (
+    arrayPatchStrategy &&
+    arrayPatchStrategy(
+      proxyState,
+      basePath,
+      patches,
+      inversePatches,
+      pathAsArray
+    )
+  )
+    return;
   const shorter = copy.length < original.length;
   if (shorter) {
     [original, copy] = [copy, original];
@@ -274,12 +286,14 @@ function generateArrayPatches(
 }
 
 function generatePatchesFromAssigned(
-  { original, copy, assignedMap }: ProxyDraft<Record<string, any>>,
+  proxyState: ProxyDraft<Record<string, any>>,
   basePath: any[],
   patches: Patches,
   inversePatches: Patches,
   pathAsArray: boolean
 ) {
+  const { original, copy, assignedMap, options } = proxyState;
+  const { arrayPatchStrategy } = options.enablePatches;
   assignedMap!.forEach((assignedValue, key) => {
     const originalValue = get(original, key);
     const value = cloneIfNeeded(get(copy, key));
@@ -292,6 +306,21 @@ function generatePatchesFromAssigned(
     if (__DEV__) checkPathKey(getType(original), key, pathAsArray);
     // A Map key can be an array, which stays one path segment.
     const _path = basePath.concat([key]);
+    if (
+      arrayPatchStrategy &&
+      op === Operation.Replace &&
+      Array.isArray(value) &&
+      arrayPatchStrategy(
+        proxyState,
+        _path,
+        patches,
+        inversePatches,
+        pathAsArray,
+        originalValue,
+        value
+      )
+    )
+      return;
     const path = escapePath(_path, pathAsArray);
     patches.push(op === Operation.Remove ? { op, path } : { op, path, value });
     inversePatches.push(

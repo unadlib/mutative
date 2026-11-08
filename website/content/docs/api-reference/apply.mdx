@@ -51,7 +51,7 @@ expect(prevState).toEqual(baseState);
 
 `enableAutoFreeze`, `strict` and `mark` work as the [options of `create()`](/docs/api-reference/create#options) do. Pass `apply()` the same `mark` as the `create()` calls that generated the patches, so that it drafts the same values, such as class instances.
 
-`mutable: true`, available since Mutative 1.2.0, changes the state in place instead, and `apply()` then returns `undefined`. It cannot be combined with the other options, which development builds report with a warning, and it throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, because the state cannot be replaced in place.
+`mutable: true`, available since Mutative 1.2.0, changes the state in place instead, and `apply()` then returns `undefined`. It cannot be combined with the other options, which development builds report with a warning, and it throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, because the state cannot be replaced in place. An object or array that several paths of the state hold changes on each of them; see [Shared references](/docs/extra-topics/shared-references#patches-and-in-place-replay).
 
 ```ts
 import { apply } from 'mutative';

@@ -1,7 +1,9 @@
 import { expectTypeOf } from 'vitest';
 import {
   apply,
+  compactArrayPatches,
   create,
+  type ArrayPatchStrategy,
   makeCreator,
   type Draft,
   type Immutable,
@@ -660,4 +662,41 @@ test('apply() keeps mutable result types when freezing cannot be enabled', () =>
 
   const optional: { enableAutoFreeze?: false } = {};
   expectTypeOf(apply(base(), [], optional)).toEqualTypeOf<State>();
+});
+
+test('arrayPatchStrategy takes compactArrayPatches, also in declared options', () => {
+  const recipe = (draft: Draft<State>) => {
+    draft.list.unshift(0);
+  };
+  const [, patches] = create(base(), recipe, {
+    enablePatches: { arrayPatchStrategy: compactArrayPatches },
+  });
+  expectTypeOf(patches[0].path).toEqualTypeOf<(string | number)[]>();
+  expect(patches).toEqual([{ op: 'add', path: ['list', 0], value: 0 }]);
+
+  const options = {
+    enablePatches: {
+      arrayPatchStrategy: compactArrayPatches,
+      pathAsArray: false,
+    },
+  } as const;
+  const [, pointerPatches] = create(base(), recipe, options);
+  expectTypeOf(pointerPatches[0].path).toEqualTypeOf<string>();
+  expect(pointerPatches).toEqual([{ op: 'add', path: '/list/0', value: 0 }]);
+
+  // It does not need `as const`, unlike a string would.
+  const declared = {
+    enablePatches: { arrayPatchStrategy: compactArrayPatches },
+  };
+  create(base(), recipe, declared);
+  expectTypeOf(compactArrayPatches).toEqualTypeOf<ArrayPatchStrategy>();
+
+  // @ts-expect-error A strategy is a value that Mutative provides.
+  const name: ArrayPatchStrategy = 'compact';
+  // @ts-expect-error How a strategy works is not part of the API.
+  const custom: ArrayPatchStrategy = () => false;
+  expect([name, custom]).toHaveLength(2);
+  expect(() =>
+    create(base(), recipe, { enablePatches: { arrayPatchStrategy: name } })
+  ).toThrow(TypeError);
 });

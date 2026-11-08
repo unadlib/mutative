@@ -49,10 +49,36 @@ console.log(result.color1 === result.color2); // true
 // Result: { color1: { name: 'Blue' }, color2: { name: 'Blue' } }
 ```
 
+## Patches and in-place replay
+
+A patch names the path of its change. `apply()` copies the objects along that path, so the state it returns changes only there, as the next state did. With `mutable: true`, `apply()` changes the objects along the path in place instead, so an object or array that several paths of the state hold changes on each of them:
+
+```javascript
+import { apply, create } from 'mutative';
+
+const list = [1, 2, 3];
+const state = { a: list, b: list };
+
+const [nextState, patches] = create(
+  state,
+  (draft) => {
+    draft.a.push(4);
+  },
+  { enablePatches: true }
+);
+// nextState: { a: [1, 2, 3, 4], b: [1, 2, 3] }
+
+apply(state, patches, { mutable: true });
+// state: { a: [1, 2, 3, 4], b: [1, 2, 3, 4] }, as `a` and `b` hold one array
+```
+
+Replay patches without `mutable: true` on a state with shared references. With [compact array patches](/docs/advanced-guides/patches#compact-array-patches), the same holds for an array that a recipe assigns over the one at a key, as in `draft.a = draft.a.filter(...)`: its patches change the elements of the old array instead of replacing it. An assignment of an equal array takes no patch at all, so a replay in place does not separate shared arrays either.
+
 ## Summary
 
 | Scenario | Behavior |
 |----------|----------|
 | **Shared nodes in base state** | Each path gets its own **independent draft**. Mutations through one path do **not** reflect in other paths. |
 | **Manually assigned references** | ✅ **Supported**. Assigning `draft.x = draft.y` creates shared references in the final state. |
+| **Patches replayed with `mutable: true`** | A change through one path changes **every** path that holds the same object or array. Replay without `mutable` on such states. |
 | **Real cycles** | ❌ **Not supported**. Cycles are actively detected in development mode when auto-freeze is enabled. |
