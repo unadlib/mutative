@@ -66,7 +66,7 @@
       "name": "production CJS, all exports",
       "path": "dist/mutative.cjs.production.min.js",
       "import": "*",
-      "limit": "10.9 KB"
+      "limit": "10.6 KB"
     },
     {
       "name": "ESM, create",
@@ -78,7 +78,7 @@
       "name": "ESM, all exports",
       "path": "dist/mutative.esm.mjs",
       "import": "*",
-      "limit": "10.7 KB"
+      "limit": "10.5 KB"
     }
   ],
   "repository": {
