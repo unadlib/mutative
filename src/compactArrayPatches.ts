@@ -5,14 +5,7 @@ import {
   type Patches,
   type ProxyDraft,
 } from './interface';
-import {
-  escapePath,
-  get,
-  getProxyDraft,
-  getValue,
-  isEqual,
-  isPlainArray,
-} from './utils';
+import { escapePath, getProxyDraft, isEqual, isPlainArray } from './utils';
 import { cloneIfNeeded } from './patch';
 import { hasHoles } from './array';
 import { dataTypes } from './constant';
@@ -144,68 +137,6 @@ function keptElements(
     kept[fromNew[position] - start] = fromOld[position];
   }
   return kept;
-}
-
-// Element patches mutate the existing array during mutable replay. A property
-// replacement can use them only if no second reference sees that mutation.
-// Stop at the array itself. Bound the search through unrelated state and keep
-// the whole replacement when exclusivity cannot be established cheaply.
-const ALIAS_SEARCH_LIMIT = 256;
-function mayShareArray(scope: ProxyDraft, root: any, array: any[]) {
-  let found = false;
-  let remaining = ALIAS_SEARCH_LIMIT;
-  const seen = new WeakSet<object>();
-  const visit = (value: any): boolean => {
-    if (--remaining < 0) return true;
-    if (!value || typeof value !== 'object') return typeof value === 'function';
-    const draft = getProxyDraft(value);
-    if (draft) {
-      // A Set's copy can still contain items awaiting finalization.
-      if (draft.type === DraftType.Set && draft.operated) return true;
-      value = draft.operated ? draft.copy : draft.original;
-    }
-    if (value === array) {
-      if (found) return true;
-      found = true;
-      return false;
-    }
-    if (seen.has(value)) return false;
-    seen.add(value);
-    const proto = Object.getPrototypeOf(value);
-    if (proto === Map.prototype) {
-      for (const [key, item] of Map.prototype.entries.call(value)) {
-        if (visit(key) || visit(item)) return true;
-      }
-    } else if (proto === Set.prototype) {
-      for (const item of Set.prototype.values.call(value)) {
-        if (visit(item)) return true;
-      }
-    } else if (Array.isArray(value)) {
-      if (value.length > remaining) return true;
-    } else if (proto !== Object.prototype && proto !== null) {
-      return true;
-    }
-    // ownKeys materializes all keys, even if the search stops at its limit.
-    // Enumerate a wide object only once across assignments in this producer.
-    if (scope.widePatchContainers?.has(value)) return true;
-    const keys = Reflect.ownKeys(value);
-    if (keys.length > ALIAS_SEARCH_LIMIT) {
-      (scope.widePatchContainers ??= new WeakSet()).add(value);
-      return true;
-    }
-    for (const key of keys) {
-      const descriptor = Object.getOwnPropertyDescriptor(value, key);
-      if (!descriptor || !('value' in descriptor) || visit(descriptor.value))
-        return true;
-    }
-    return false;
-  };
-  try {
-    return visit(root) || !found;
-  } catch {
-    // Opaque proxies need not allow inspection of their properties.
-    return true;
-  }
 }
 
 // Compact array patches keep the elements that stay in order out of the patches.
@@ -398,17 +329,6 @@ function generateCompactArrayPatches(
     // One patch in each direction holds a whole array, so its elements need no
     // paths of their own.
     if (10 * cost >= 9 * (2 + oldLength + newLength)) return false;
-    // Even an equal assignment can detach a shared array before a later edit.
-    let root = proxyState;
-    while (root.parent) root = root.parent;
-    const key = basePath[basePath.length - 1];
-    // An assigned live draft may have been snapshotted for its patch value.
-    const finalArray = getValue(get(proxyState.copy!, key));
-    if (
-      mayShareArray(root, root.original, original) ||
-      mayShareArray(root, root.copy, finalArray)
-    )
-      return false;
   } else if (cost >= shortest - prefix) {
     let slots = 0;
     for (let index = prefix; index < shortest; index += 1) {

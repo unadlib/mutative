@@ -170,8 +170,6 @@ The generator compares the final array with the base array by identity, so the p
 
 A recipe that assigns a new array over the one at a key gets the same treatment, as in `draft.list = draft.list.filter(...)`, `draft.list = [...draft.list, item]` or `draft.list = draft.list.map(...)`: the elements that it left alone need no patches. Where that would not be smaller, as for an array of new values, it stays one `replace` patch of the whole array. A value that a recipe returns replaces the state with one patch, as without this option.
 
-For a property assignment, Mutative checks whether another path holds the old or new array. If either array is shared, or the surrounding state is too large or opaque to check cheaply, the patch replaces the property. This keeps mutable replay and undo from also editing a sibling.
-
 Kept elements may also change in place: where an element keeps its index, the patches of its own draft carry the change, and a `replace` patch at its final index does where the element moved, or where the array holds a draft of it that the recipe read through another path or that another producer created. An element edited before the deletion below keeps its index, so its own patch carries the edit:
 
 ```ts
