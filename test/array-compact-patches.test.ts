@@ -1327,6 +1327,42 @@ describe('compact array patches', () => {
     expect(inverse[0].value).toBe(base.rows);
   });
 
+  test('replacing a few elements of a large array reads only around them', () => {
+    // Index patches suit these changes, which leave before both arrays are
+    // read to their ends for holes.
+    let reads = 0;
+    let counting = false;
+    const base = new Proxy(
+      Array.from({ length: 100_000 }, (_, index) => ({ index })),
+      {
+        get(target, key, receiver) {
+          if (counting && typeof key === 'string' && /^\d+$/.test(key)) {
+            reads++;
+          }
+          return Reflect.get(target, key, receiver);
+        },
+      }
+    );
+    const [state, patches] = create(
+      base,
+      (draft) => {
+        for (const index of [10, 50_000, 99_990]) {
+          draft[index] = { index: -index };
+        }
+        // Count the reads of finalization only.
+        counting = true;
+      },
+      compactOptions()
+    );
+    expect(reads).toBeLessThan(100);
+    expect(patches.map(({ op, path }) => [op, path])).toEqual([
+      ['replace', [10]],
+      ['replace', [50_000]],
+      ['replace', [99_990]],
+    ]);
+    expect(state[50_000]).toEqual({ index: -50_000 });
+  });
+
   test('a direct length change leaves an undefined element', () => {
     const { state, patches, inverse } = roundtrip([0, 1, 2, 3], (draft) => {
       draft.length = 5;
