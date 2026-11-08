@@ -138,6 +138,28 @@ export const SCENARIOS = [
     },
   },
   {
+    // Three replaced elements leave the compact generator before it reads
+    // both arrays to their ends.
+    name: 'replace-elements-control',
+    fallback: true,
+    mutate(draft) {
+      for (const index of [1, 2, 3]) {
+        const at = Math.floor((draft.length * index) / 4);
+        draft[at] = { ...draft[at], value: -1 };
+      }
+    },
+  },
+  {
+    // An array assigned over the one at a key of an element takes a patch per
+    // removed item, however large the rest of the state is.
+    name: 'nested-assigned-filter',
+    compactPatches: 2,
+    mutate(draft) {
+      const row = draft[Math.floor(draft.length / 2)];
+      row.items = row.items.filter((_, index) => index % 3 !== 1);
+    },
+  },
+  {
     name: 'many-small-arrays',
     compactPatches: (context) => context.arraySize,
     mutate(draft) {
@@ -155,6 +177,13 @@ const scenarioByName = (name) => {
 export function makeBase(name, size) {
   if (name === 'many-small-arrays') {
     return Array.from({ length: size }, () => [0, 1, 2]);
+  }
+  if (name === 'nested-assigned-filter') {
+    return Array.from({ length: size }, (_, id) => ({
+      id,
+      value: id,
+      items: Array.from({ length: 6 }, (_, item) => ({ id: item })),
+    }));
   }
   const base = Array.from({ length: size }, (_, id) => ({ id, value: id }));
   if (name === 'sort-shuffled') {
