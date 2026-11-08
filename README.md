@@ -392,7 +392,7 @@ apply(
 expect(baseState).toEqual({ foo: { bar: "test2" } });
 ```
 
-> The `mutable` option cannot be combined with the other options, which development builds report with a warning. It throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, because the state cannot be replaced in place.
+> The `mutable` option cannot be combined with the other options, which development builds report with a warning. It throws for a patch that replaces the root state with another value, such as the patch of a recipe that returns a new state, because the state cannot be replaced in place. An object or array that several paths of the state hold changes on each of them; see [Shared references](https://mutative.js.org/docs/extra-topics/shared-references#patches-and-in-place-replay).
 
 > `apply()` throws for a patch path through the `__proto__` or `constructor` of an object or array, or through the `prototype` of a function, so that patches cannot change the prototypes of objects; Map keys of these names are ordinary keys. It reads the other path segments as properties, as Immer does, and does not guard against prototypes that other code has already changed.
 

@@ -168,7 +168,7 @@ expect(inversePatches).toEqual([
 
 生成器按引用比较最终数组和基础数组，因此无论更新函数如何修改数组，补丁都相同：无论使用数组方法、索引赋值还是写入 `length`，无论是否开启严格模式或使用 `mark`。它先裁掉首尾相同的部分，再保留最长的一组保持相对顺序的元素。在两个保留的元素之间，两侧都有的元素数量生成 `replace`，其余生成 `remove` 或 `add`。它先按索引降序生成 `remove`，再按索引升序生成 `add`，最后生成 `replace`；逆向补丁按相反方向单独规划。JSON 兼容状态的补丁在 JSON 序列化后仍能重放；普通的末尾追加、`pop` 和尾部截断仍使用原有的高效形式。
 
-更新函数把新数组赋给旧数组所在的键时也一样，例如 `draft.list = draft.list.filter(...)`、`draft.list = [...draft.list, item]` 或 `draft.list = draft.list.map(...)`：它没有改动的元素不需要补丁。如果这样不会更小（例如全是新值的数组），则仍是一个替换整个数组的 `replace`。更新函数返回的值会用一个补丁替换整个状态，这与不开启此选项时相同。
+更新函数把新数组赋给旧数组所在的键时也一样，例如 `draft.list = draft.list.filter(...)`、`draft.list = [...draft.list, item]` 或 `draft.list = draft.list.map(...)`：它没有改动的元素不需要补丁。如果这样不会更小（例如全是新值的数组），则仍是一个替换整个数组的 `replace`。更新函数返回的值会用一个补丁替换整个状态，这与不开启此选项时相同。用 `mutable: true` 重放时，赋值数组的补丁会原地修改旧数组，因此引用它的其他路径也会一起变化，详见[共享引用](/zh/docs/extra-topics/shared-references#patches-and-in-place-replay)。
 
 保留的元素也可以原地修改：元素索引不变时，由它自身草稿的补丁携带修改；元素被移动时，或数组持有的是更新函数经其他路径读取的草稿、或其他 producer 创建的草稿时，则在其最终索引上生成 `replace`。下例中，被编辑的元素位于删除位置之前，索引不变，因此由它自身的补丁携带修改：
 

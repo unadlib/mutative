@@ -51,7 +51,7 @@ expect(prevState).toEqual(baseState);
 
 `enableAutoFreeze`、`strict` 和 `mark` 与 [`create()` 的选项](/zh/docs/api-reference/create#options)一致。应传入生成补丁时相同的 `mark`，确保类实例等值采用一致的草稿处理方式。
 
-Mutative 1.2.0 起支持 `mutable: true`，会原地修改状态并返回 `undefined`。它不能与其他选项组合，否则开发构建会警告。由于不能原地替换根状态，遇到替换根状态的补丁（如直接返回新状态生成的补丁）会抛错。
+Mutative 1.2.0 起支持 `mutable: true`，会原地修改状态并返回 `undefined`。它不能与其他选项组合，否则开发构建会警告。由于不能原地替换根状态，遇到替换根状态的补丁（如直接返回新状态生成的补丁）会抛错。如果状态中有多条路径引用同一个对象或数组，这些路径会一起变化，详见[共享引用](/zh/docs/extra-topics/shared-references#patches-and-in-place-replay)。
 
 ```ts
 import { apply } from 'mutative';
