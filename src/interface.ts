@@ -68,8 +68,11 @@ export interface ProxyDraft<T = any> {
   parent: ProxyDraft | null;
   key: string | number | symbol | undefined;
   // The drafts of a Set draft's items and the objects it added, with its items
-  // in order once finalization rebuilt it.
-  setMap: (Map<any, any> & { items?: any[] }) | undefined;
+  // in order once finalization rebuilt it, and the producer that finalized
+  // drafts when the Set last took their values.
+  setMap:
+    | (Map<any, any> & { items?: any[]; finalities?: Finalities })
+    | undefined;
   assignedMap: Map<any, boolean> | undefined;
   callbacks: FinalizeCallback[] | undefined;
   // Child drafts created by this draft, by key.

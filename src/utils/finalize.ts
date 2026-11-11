@@ -78,17 +78,23 @@ export type GeneratePatches = (
 // The copy of a Set draft holds its items in order, so only items that a draft
 // stands for may need their final value: the Set is rebuilt in order once one
 // of them differs from the item itself. The first rebuild keeps the items on
-// `setMap`. With `again`, only a Set rebuilt before is rebuilt, for a draft of
-// an outer producer that a nested producer's Set holds; other Sets may still
-// be changing, and are rebuilt when their own producer finalizes them.
-export function finalizeSetValue(target: ProxyDraft, again?: boolean) {
+// `setMap`. `finalities` is the producer that is finalizing its drafts, whose
+// values no longer change, so the Set takes them once per producer rather
+// than once per draft it holds. For an outer producer whose drafts a nested
+// producer's Set holds, only a Set rebuilt before is rebuilt; other Sets may
+// still be changing, and are rebuilt when their own producer finalizes them.
+export function finalizeSetValue(
+  target: ProxyDraft,
+  finalities = target.finalities
+) {
   // Only Set drafts have `setMap`, and an unchanged draft stands for its
   // original.
   const setMap = target.setMap;
-  if (!setMap || !target.operated) return;
+  if (!setMap || !target.operated || setMap.finalities === finalities) return;
+  setMap.finalities = finalities;
   let items = setMap.items;
   if (!items) {
-    if (again) return;
+    if (finalities !== target.finalities) return;
     // Without added or deleted items, an item that the Set drafted changed,
     // unless the recipe added and deleted a draft; rebuilding then changes
     // nothing.
@@ -219,7 +225,7 @@ export function markFinalization(target: ProxyDraft, key: any, value: any) {
         // The drafts of a Set's own producer are done changing when it rebuilds
         // the Set; a draft of another producer may change after that.
         if (proxyDraft.finalities !== target.finalities)
-          finalizeSetValue(target, true);
+          finalizeSetValue(target, proxyDraft.finalities);
         // final update value
         set(copy, key, updatedValue);
       }
