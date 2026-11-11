@@ -140,3 +140,75 @@ describe('items of a Set that added or removed items', () => {
     expect([...apply(redone, inversePatches)]).toStrictEqual([...base]);
   });
 });
+
+describe('inverse patches of Set drafts', () => {
+  test('come first, those of the Set draft finalized last first', () => {
+    const base = {
+      a: new Set([1, 2, 3]),
+      o: { v: 0 },
+      b: new Set(['x', 'y']),
+      l: [0],
+    };
+    const [, patches, inversePatches] = replay(base, (draft) => {
+      draft.a.delete(1);
+      draft.a.add(4);
+      draft.o.v = 1;
+      draft.b.add('z');
+      draft.b.delete('x');
+      draft.l.push(1);
+    });
+    // Drafts are finalized in reverse order of creation: l, b, o, then a.
+    expect(patches).toStrictEqual([
+      { op: 'add', path: ['l', 1], value: 1 },
+      { op: 'remove', path: ['b', 0], value: 'x' },
+      { op: 'add', path: ['b', 1], value: 'z' },
+      { op: 'replace', path: ['o', 'v'], value: 1 },
+      { op: 'remove', path: ['a', 0], value: 1 },
+      { op: 'add', path: ['a', 2], value: 4 },
+    ]);
+    expect(inversePatches).toStrictEqual([
+      { op: 'remove', path: ['a', 2], value: 4 },
+      { op: 'add', path: ['a', 0], value: 1 },
+      { op: 'remove', path: ['b', 1], value: 'z' },
+      { op: 'add', path: ['b', 0], value: 'x' },
+      { op: 'replace', path: ['l', 'length'], value: 1 },
+      { op: 'replace', path: ['o', 'v'], value: 0 },
+    ]);
+  });
+
+  test('are not prepended one at a time', () => {
+    const items = Array.from({ length: 1000 }, (_, index) => index);
+    const base = {
+      list: [{ v: 0 }],
+      set: new Set(items),
+      sets: items.map((item) => new Set([item])),
+    };
+    const unshift = vi.spyOn(Array.prototype, 'unshift');
+    try {
+      const [, , inversePatches] = replay(base, (draft) => {
+        draft.list[0].v = 1;
+        draft.set.clear();
+        for (const set of draft.sets) set.add(-1);
+      });
+      // Prepending each would move every inverse patch generated before it.
+      expect(
+        unshift.mock.contexts.filter((context) => context === inversePatches)
+      ).toHaveLength(0);
+      expect(inversePatches).toStrictEqual([
+        ...items.map((_, index) => ({
+          op: 'add',
+          path: ['set', 999 - index],
+          value: 999 - index,
+        })),
+        ...items.map((index) => ({
+          op: 'remove',
+          path: ['sets', index, 1],
+          value: -1,
+        })),
+        { op: 'replace', path: ['list', 0, 'v'], value: 0 },
+      ]);
+    } finally {
+      unshift.mockRestore();
+    }
+  });
+});

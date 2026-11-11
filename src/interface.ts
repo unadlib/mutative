@@ -51,6 +51,9 @@ export interface Finalities {
   // and releases module-level references to its drafts. False for drafts
   // returned by `create(base)` without a recipe.
   scoped: boolean;
+  // The inverse patches of Set drafts, in the order generated; they precede
+  // the other inverse patches in reverse order.
+  setInversePatches?: Patches;
 }
 
 export interface ProxyDraft<T = any> {

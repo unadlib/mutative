@@ -456,7 +456,8 @@ export function finalizeDraft<T>(
   const original = proxyDraft?.original ?? result;
   const hasReturnedValue = !!returnedValue.length;
   if (proxyDraft?.operated) {
-    const list = proxyDraft.finalities.draft;
+    const finalities = proxyDraft.finalities;
+    const list = finalities.draft;
     while (list.length > 0) {
       const entry = list.pop()!;
       if (typeof entry === 'function') {
@@ -464,6 +465,12 @@ export function finalizeDraft<T>(
       } else {
         finalizeNode(entry, generatePatches, patches, inversePatches);
       }
+    }
+    // The inverse patches of Set drafts come first, the last generated first;
+    // see `generateSetPatches()`.
+    const setInversePatches = finalities.setInversePatches;
+    if (setInversePatches) {
+      inversePatches = setInversePatches.reverse().concat(inversePatches!);
     }
   }
   const state = hasReturnedValue
