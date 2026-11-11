@@ -1,5 +1,6 @@
 import { DraftType, Patches, ProxyDraft } from '../interface';
 import {
+  checkMapKey,
   get,
   getPath,
   getProxyDraft,
@@ -28,6 +29,7 @@ export function handleValue(
   const setMap: Map<any, any> | undefined = isSet ? new Map() : undefined;
   handledSet.add(target);
   forEach(target, (key, value) => {
+    if (__DEV__ && target instanceof Map) checkMapKey(key);
     if (isDraft(value)) {
       const proxyDraft = getProxyDraft(value)!;
       // A draft where a child node has been changed, or assigned a value

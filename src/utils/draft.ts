@@ -89,6 +89,25 @@ export function checkPathKey(
   }
 }
 
+// Map keys are used as they are, and a draft is revoked when its producer
+// ends, so a Map would keep a key that throws when it is read. Development
+// builds check the keys that a recipe sets on a Map draft, and those of the
+// Maps it returns or assigns.
+export function checkMapKey(key: unknown) {
+  let isDraftKey = false;
+  try {
+    isDraftKey = !!getProxyDraft(key);
+  } catch {
+    // Map keys are compared by identity only, so a key can also be a Proxy
+    // that rejects reading the symbol of drafts, or a revoked one.
+  }
+  if (isDraftKey) {
+    throw new Error(
+      `A draft cannot be a Map key: its producer revokes it when it ends. Use original(key), current(key) or an id as the key; see https://mutative.js.org/docs/extra-topics/faq`
+    );
+  }
+}
+
 export function getPath(
   target: ProxyDraft,
   path: any[] = []

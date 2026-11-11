@@ -5,6 +5,7 @@ import {
   type ProxyDraft,
 } from './interface';
 import {
+  checkMapKey,
   forEach,
   get,
   getProxyDraft,
@@ -45,6 +46,7 @@ export function handleReturnValue(
     const items = target instanceof Set ? Array.from(target) : target;
     let replaced = false;
     forEach(items, (key, item, source) => {
+      if (__DEV__ && source instanceof Map) checkMapKey(key);
       const proxyDraft = getProxyDraft(item);
       // just handle the draft which is created by the same rootDraft
       if (
