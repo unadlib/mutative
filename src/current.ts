@@ -37,8 +37,14 @@ export function handleReturnValue(
   // values are rarely frozen and checking would cost more than it saves.
   const skipsFrozen = !!rootDraft?.options.enableAutoFreeze;
   // `frozen` tells development builds that a skipped object holds `target`.
-  const replaceDrafts = (target: object, frozen?: boolean) =>
-    forEach(target, (key, item, source) => {
+  const replaceDrafts = (target: object, frozen?: boolean) => {
+    // A Set is searched as an indexed snapshot of its items, whose drafts are
+    // replaced by position, and is rebuilt from it once if any was. Rebuilding
+    // it for each draft would take quadratic time, and its iteration would
+    // visit the re-added items again.
+    const items = target instanceof Set ? Array.from(target) : target;
+    let replaced = false;
+    forEach(items, (key, item, source) => {
       const proxyDraft = getProxyDraft(item);
       // just handle the draft which is created by the same rootDraft
       if (
@@ -51,18 +57,9 @@ export function handleReturnValue(
             `The return value holds a draft in a frozen object or in a value it holds. With auto-freeze, production builds do not search frozen objects for drafts, so do not put drafts there.`
           );
         }
-        containsDraft = true;
-        const currentValue = proxyDraft.original;
+        containsDraft = replaced = true;
         // final update value, but just handle return value
-        if (source instanceof Set) {
-          const arr = Array.from(source);
-          source.clear();
-          arr.forEach((_item) =>
-            source.add(key === _item ? currentValue : _item)
-          );
-        } else {
-          set(source, key, currentValue);
-        }
+        set(source, key, proxyDraft.original);
       } else if (typeof item === 'object' && item !== null) {
         // Development builds search skipped objects too, to report the drafts
         // that production builds would leave there.
@@ -73,6 +70,11 @@ export function handleReturnValue(
         }
       }
     });
+    if (replaced && target instanceof Set) {
+      target.clear();
+      for (const item of items as unknown[]) target.add(item);
+    }
+  };
   // The returned value follows the same rule as the values it holds.
   if (!skipsFrozen || !Object.isFrozen(value)) {
     replaceDrafts(value);
