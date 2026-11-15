@@ -303,4 +303,29 @@ describe('positions of the items of a Set draft in patch paths', () => {
     expect(apply(base, patches)).toStrictEqual(state);
     expect(apply(state, inversePatches)).toStrictEqual(base);
   });
+
+  test('are not used once the recipe deleted an item that is a draft of an outer producer', () => {
+    create({ item: { v: 'outer' } }, (outer) => {
+      // The base of a nested producer can hold a draft as an item.
+      const base = new Set<any>([outer.item, { v: 0 }]);
+      const [state, patches, inversePatches] = create(
+        base,
+        (draft) => {
+          draft.delete(outer.item);
+          for (const item of draft) item.v = 1;
+        },
+        { enablePatches: true }
+      );
+      expect([...state]).toStrictEqual([{ v: 1 }]);
+      // The deletion is recorded, so the patches of the Set carry the changed
+      // item by value; a path to its position would name the deleted item.
+      expect(patches).toStrictEqual([
+        { op: 'remove', path: [0], value: outer.item },
+        { op: 'remove', path: [1], value: { v: 0 } },
+        { op: 'add', path: [0], value: { v: 1 } },
+      ]);
+      expect(apply(base, patches)).toStrictEqual(state);
+      expect(apply(state, inversePatches)).toStrictEqual(base);
+    });
+  });
 });

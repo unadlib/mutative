@@ -120,8 +120,10 @@ export const setHandler = {
       valueProxyDraft && copy.has(valueProxyDraft.original)
         ? valueProxyDraft.original
         : value;
-    if (valueProxyDraft && item === value) {
-      // reassigned
+    // An added draft deleted again leaves the Set unchanged, but a draft that
+    // the base Set holds, as the base of a nested producer can, is deleted
+    // from it like any item.
+    if (valueProxyDraft && item === value && !target.original.has(value)) {
       target.assignedMap!.delete(value);
     } else {
       target.assignedMap!.set(item, false);
