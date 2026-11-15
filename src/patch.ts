@@ -346,6 +346,11 @@ function generateSetPatches(
   diff(copy!, original, Operation.Add, Operation.Remove);
 }
 
+// Adds the patches of one draft to `patches` and its inverse patches to
+// `inversePatches`, except those of a Set draft: they go to
+// `finalities.setInversePatches`, which `finalizeDraft()` prepends to the
+// others once every draft is finalized. Another caller has to do the same, or
+// it loses the inverse patches of Set drafts.
 export function generatePatches(
   proxyState: ProxyDraft,
   basePath: any[],

@@ -70,6 +70,8 @@ export function finalizeAssigned(proxyDraft: ProxyDraft, key: PropertyKey) {
   }
 }
 
+// Set drafts collect their inverse patches on their producer instead of in
+// `inversePatches`; see `generatePatches()`.
 export type GeneratePatches = (
   proxyState: ProxyDraft,
   basePath: any[],
