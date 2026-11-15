@@ -183,33 +183,42 @@ describe('inverse patches of Set drafts', () => {
       set: new Set(items),
       sets: items.map((item) => new Set([item])),
     };
+    // Prepending each would move every inverse patch generated before it, to
+    // whichever list they are collected in, so create() calls no unshift().
     const unshift = vi.spyOn(Array.prototype, 'unshift');
+    let result: ReturnType<typeof replay> | undefined;
+    let calls = -1;
     try {
-      const [, , inversePatches] = replay(base, (draft) => {
-        draft.list[0].v = 1;
-        draft.set.clear();
-        for (const set of draft.sets) set.add(-1);
-      });
-      // Prepending each would move every inverse patch generated before it.
-      expect(
-        unshift.mock.contexts.filter((context) => context === inversePatches)
-      ).toHaveLength(0);
-      expect(inversePatches).toStrictEqual([
-        ...items.map((_, index) => ({
-          op: 'add',
-          path: ['set', 999 - index],
-          value: 999 - index,
-        })),
-        ...items.map((index) => ({
-          op: 'remove',
-          path: ['sets', index, 1],
-          value: -1,
-        })),
-        { op: 'replace', path: ['list', 0, 'v'], value: 0 },
-      ]);
+      result = create(
+        base,
+        (draft) => {
+          draft.list[0].v = 1;
+          draft.set.clear();
+          for (const set of draft.sets) set.add(-1);
+        },
+        { enablePatches: true }
+      );
+      calls = unshift.mock.calls.length;
     } finally {
       unshift.mockRestore();
     }
+    expect(calls).toBe(0);
+    const [state, patches, inversePatches] = result!;
+    expect(apply(base, patches)).toStrictEqual(state);
+    expect(apply(state, inversePatches)).toStrictEqual(base);
+    expect(inversePatches).toStrictEqual([
+      ...items.map((_, index) => ({
+        op: 'add',
+        path: ['set', 999 - index],
+        value: 999 - index,
+      })),
+      ...items.map((index) => ({
+        op: 'remove',
+        path: ['sets', index, 1],
+        value: -1,
+      })),
+      { op: 'replace', path: ['list', 0, 'v'], value: 0 },
+    ]);
   });
 });
 
