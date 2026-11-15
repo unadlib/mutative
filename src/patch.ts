@@ -319,8 +319,8 @@ function generateSetPatches(
   // The inverse patches of Set drafts precede all others, each before those
   // generated before it. They are collected in the order generated, and
   // finalization prepends them reversed at once, as prepending each would
-  // move every inverse patch generated so far.
-  const inversePatches = (finalities.setInversePatches ||= []);
+  // move every inverse patch generated so far. The list is created with its
+  // first patch: finalization copies all inverse patches when it exists.
   // Items of `from` that `to` lacks, at their positions in `from`.
   const diff = (
     from: Set<any>,
@@ -333,7 +333,11 @@ function generateSetPatches(
       if (!to.has(value)) {
         const path = escapePath(basePath.concat([index]), pathAsArray);
         patches.push({ op, path, value });
-        inversePatches.push({ op: inverseOp, path, value });
+        (finalities.setInversePatches ||= []).push({
+          op: inverseOp,
+          path,
+          value,
+        });
       }
       index += 1;
     });
