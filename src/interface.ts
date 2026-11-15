@@ -66,6 +66,8 @@ export interface ProxyDraft<T = any> {
   finalities: Finalities;
   options: Options<any, any>;
   parent: ProxyDraft | null;
+  // The key of the draft in its parent, as patch paths name it: for an item of
+  // a Set, the position at which an iterator found the item.
   key: string | number | symbol | undefined;
   // The drafts of a Set draft's items and the objects it added, with its items
   // in order once finalization rebuilt it, and the producer that finalized

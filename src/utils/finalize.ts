@@ -162,7 +162,9 @@ export function finalizeNode(
     const parentType = parent.type;
     // if the parent is a Set draft, `setMap` is the real Set copies proxy mapping.
     const copy = parentType === DraftType.Set ? parent.setMap : parent.copy;
-    const key = node.key!;
+    // `setMap` holds the draft of an item by the item, which is the original
+    // of the draft; its key is the position of the item.
+    const key = parentType === DraftType.Set ? node.original : node.key!;
     const isMapLike =
       parentType === DraftType.Set || parentType === DraftType.Map;
     const draft = isMapLike ? copy.get(key) : copy[key];
