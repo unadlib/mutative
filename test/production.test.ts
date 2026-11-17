@@ -24,6 +24,11 @@ test('errors carry their minified code', () => {
       draft.list.key = 1;
     })
   ).toThrow(minified(2));
+  expect(() =>
+    create({ list: [] as number[] }, (draft: any) => {
+      draft.list[Symbol('tag')] = 1;
+    })
+  ).toThrow(minified(2));
   expect(() => current({} as any)).toThrow(minified(7));
 });
 

@@ -56,6 +56,7 @@ function isArrayIndexKey(key: string | number | symbol) {
       return true;
     }
   }
+  if (typeof key === 'symbol') return false;
   let _key: number;
   return (
     Number.isInteger((_key = Number(key))) &&
