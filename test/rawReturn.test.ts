@@ -674,3 +674,82 @@ test('development builds fail on drafts under a frozen returned value', () => {
   expect(state.held.a).toBe(baseState.a);
   expect(isDraft(state.held.a)).toBeFalsy();
 });
+
+// Calls of a spied Set method made on the given Set.
+const callsOn = (spy: { mock: { contexts: unknown[] } }, set: Set<unknown>) =>
+  spy.mock.contexts.filter((context) => context === set).length;
+
+const expectItems = (set: Set<unknown>, items: unknown[]) => {
+  expect(set.size).toBe(items.length);
+  [...set].forEach((item, index) => expect(item).toBe(items[index]));
+};
+
+test('a returned Set is rebuilt once for its drafts and its items are checked once', () => {
+  const base = { list: Array.from({ length: 100 }, (_, id) => ({ id })) };
+  let reads = 0;
+  // An item before the drafts, which the iteration of the Set would visit
+  // again after each rebuild.
+  const counted = {
+    get id() {
+      reads += 1;
+      return -1;
+    },
+  };
+  const toSet = (draft: any) => new Set([counted, ...draft.list]);
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const add = vi.spyOn(Set.prototype, 'add');
+  const clear = vi.spyOn(Set.prototype, 'clear');
+  const expectRebuiltOnce = (items: Set<unknown>) => {
+    expect(reads).toBe(1);
+    reads = 0;
+    expect(callsOn(clear, items)).toBe(1);
+    // The recipe adds each item once, and the rebuild adds it again.
+    expect(callsOn(add, items)).toBe(2 * items.size);
+    expectItems(items, [counted, ...base.list]);
+  };
+  try {
+    expectRebuiltOnce(create(base, (draft: any): any => toSet(draft)) as any);
+    const state: any = create(base, (draft: any): any => ({
+      items: toSet(draft),
+    }));
+    expectRebuiltOnce(state.items);
+    // Strict mode also searches the value that rawReturn() wraps.
+    expectRebuiltOnce(
+      create(base, (draft: any): any => rawReturn(toSet(draft)), {
+        strict: true,
+      }) as any
+    );
+  } finally {
+    warn.mockRestore();
+    add.mockRestore();
+    clear.mockRestore();
+  }
+});
+
+test('a returned Set keeps the order of its items and holds the original of a draft once', () => {
+  const base = { a: { id: 'a' }, b: { id: 'b' }, c: { id: 'c' } };
+  const clear = vi.spyOn(Set.prototype, 'clear');
+  try {
+    const state: any = create(base, (draft: any): any => {
+      // A draft and its original are one item, at the first position of either.
+      const items = new Set([draft.b, 1, base.a, draft.a, draft.c, base.c]);
+      return {
+        items,
+        same: items,
+        nested: [new Set([draft.c, new Set([draft.a, draft.b])])],
+        map: new Map([['b', new Set([draft.b])]]),
+      };
+    });
+    expectItems(state.items, [base.b, 1, base.a, base.c]);
+    // A Set reached twice is rebuilt in place, once.
+    expect(state.same).toBe(state.items);
+    expect(callsOn(clear, state.items)).toBe(1);
+    const [nested] = state.nested;
+    const inner = [...nested][1];
+    expectItems(nested, [base.c, inner]);
+    expectItems(inner, [base.a, base.b]);
+    expectItems(state.map.get('b'), [base.b]);
+  } finally {
+    clear.mockRestore();
+  }
+});

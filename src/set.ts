@@ -24,11 +24,19 @@ const getNextIterator =
   (
     target: ProxyDraft<any>,
     iterator: IterableIterator<any>,
-    isValuesIterator: boolean
+    isValuesIterator: boolean,
+    // The position of the item that the iterator is at, which becomes the key
+    // of the item's draft, as patch paths name the items of a Set by position;
+    // searching the Set for each changed item would take quadratic time. The
+    // copy holds the items of the base Set in their order, before those that
+    // the recipe added, so this is the position in the base Set while no item
+    // was deleted; `getPath()` uses it only for a Set that is unchanged.
+    position = -1
   ) =>
   () => {
     const result = iterator.next();
     if (result.done) return result;
+    position += 1;
     assertDraftActive(target);
     const key = result.value as any;
     let value = setItemValue(target, key);
@@ -52,7 +60,7 @@ const getNextIterator =
       const proxy = internal.createDraft(
         key,
         target,
-        key,
+        position,
         target.finalities,
         target.options
       );
@@ -112,8 +120,10 @@ export const setHandler = {
       valueProxyDraft && copy.has(valueProxyDraft.original)
         ? valueProxyDraft.original
         : value;
-    if (valueProxyDraft && item === value) {
-      // reassigned
+    // An added draft deleted again leaves the Set unchanged, but a draft that
+    // the base Set holds, as the base of a nested producer can, is deleted
+    // from it like any item.
+    if (valueProxyDraft && item === value && !target.original.has(value)) {
       target.assignedMap!.delete(value);
     } else {
       target.assignedMap!.set(item, false);

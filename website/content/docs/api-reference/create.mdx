@@ -103,7 +103,7 @@ expect(state).toEqual({ todos: [] });
 - Returning `undefined` or the draft itself keeps the changes made to the draft. To make `undefined` the next state, return [`rawReturn(undefined)`](/docs/api-reference/rawreturn).
 - A recipe that changes the draft and also returns another value throws an error.
 - Returning an unchanged child draft, such as `draft.list`, makes its value the next state; returning a changed one throws an error.
-- Mutative searches a returned object for drafts and replaces each one with its value, so a returned value can hold drafts, such as `{ ...draft, count: 0 }`. [`rawReturn()`](/docs/api-reference/rawreturn) skips that search for a value that holds no drafts, and development builds warn when a returned object holds no drafts to suggest it.
+- Mutative searches a returned object for drafts and replaces each one with its value, so a returned value can hold drafts, such as `{ ...draft, count: 0 }`, but not as a [Map key](/docs/extra-topics/faq#can-a-draft-be-a-map-key). [`rawReturn()`](/docs/api-reference/rawreturn) skips that search for a value that holds no drafts, and development builds warn when a returned object holds no drafts to suggest it.
 
 ## Async recipes
 

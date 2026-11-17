@@ -140,3 +140,201 @@ describe('items of a Set that added or removed items', () => {
     expect([...apply(redone, inversePatches)]).toStrictEqual([...base]);
   });
 });
+
+describe('inverse patches of Set drafts', () => {
+  test('come first, those of the Set draft finalized last first', () => {
+    const base = {
+      a: new Set([1, 2, 3]),
+      o: { v: 0 },
+      b: new Set(['x', 'y']),
+      l: [0],
+    };
+    const [, patches, inversePatches] = replay(base, (draft) => {
+      draft.a.delete(1);
+      draft.a.add(4);
+      draft.o.v = 1;
+      draft.b.add('z');
+      draft.b.delete('x');
+      draft.l.push(1);
+    });
+    // Drafts are finalized in reverse order of creation: l, b, o, then a.
+    expect(patches).toStrictEqual([
+      { op: 'add', path: ['l', 1], value: 1 },
+      { op: 'remove', path: ['b', 0], value: 'x' },
+      { op: 'add', path: ['b', 1], value: 'z' },
+      { op: 'replace', path: ['o', 'v'], value: 1 },
+      { op: 'remove', path: ['a', 0], value: 1 },
+      { op: 'add', path: ['a', 2], value: 4 },
+    ]);
+    expect(inversePatches).toStrictEqual([
+      { op: 'remove', path: ['a', 2], value: 4 },
+      { op: 'add', path: ['a', 0], value: 1 },
+      { op: 'remove', path: ['b', 1], value: 'z' },
+      { op: 'add', path: ['b', 0], value: 'x' },
+      { op: 'replace', path: ['l', 'length'], value: 1 },
+      { op: 'replace', path: ['o', 'v'], value: 0 },
+    ]);
+  });
+
+  test('are not prepended one at a time', () => {
+    const items = Array.from({ length: 1000 }, (_, index) => index);
+    const base = {
+      list: [{ v: 0 }],
+      set: new Set(items),
+      sets: items.map((item) => new Set([item])),
+    };
+    // Prepending each would move every inverse patch generated before it, to
+    // whichever list they are collected in, so create() calls no unshift().
+    const unshift = vi.spyOn(Array.prototype, 'unshift');
+    let result: ReturnType<typeof replay> | undefined;
+    let calls = -1;
+    try {
+      result = create(
+        base,
+        (draft) => {
+          draft.list[0].v = 1;
+          draft.set.clear();
+          for (const set of draft.sets) set.add(-1);
+        },
+        { enablePatches: true }
+      );
+      calls = unshift.mock.calls.length;
+    } finally {
+      unshift.mockRestore();
+    }
+    expect(calls).toBe(0);
+    const [state, patches, inversePatches] = result!;
+    expect(apply(base, patches)).toStrictEqual(state);
+    expect(apply(state, inversePatches)).toStrictEqual(base);
+    expect(inversePatches).toStrictEqual([
+      ...items.map((_, index) => ({
+        op: 'add',
+        path: ['set', 999 - index],
+        value: 999 - index,
+      })),
+      ...items.map((index) => ({
+        op: 'remove',
+        path: ['sets', index, 1],
+        value: -1,
+      })),
+      { op: 'replace', path: ['list', 0, 'v'], value: 0 },
+    ]);
+  });
+});
+
+describe('positions of the items of a Set draft in patch paths', () => {
+  test('are those of the base Set, in whatever order the recipe drafts and changes the items', () => {
+    const base = {
+      other: { v: 0 },
+      set: new Set<any>([
+        { id: 0, child: { v: 0 } },
+        'a',
+        { id: 2, child: { v: 0 }, tags: new Set([{ t: 0 }, { t: 1 }]) },
+        3,
+        { id: 4, child: { v: 0 } },
+        { id: 5, child: { v: 0 } },
+      ]),
+    };
+    const [, patches, inversePatches] = replay(base, (draft) => {
+      // The first iteration stops at the first item.
+      for (const item of draft.set) {
+        item.id = 'first';
+        break;
+      }
+      // Adding and deleting a draft leaves the Set unchanged, so patches
+      // still name its items by position.
+      draft.set.add(draft.other);
+      draft.set.delete(draft.other);
+      // A later iteration drafts the other items. Their children are drafted
+      // from the last item to the first, so they are finalized from the first
+      // item to the last.
+      const items = [...draft.set].filter((item) => typeof item === 'object');
+      for (const item of items.reverse()) item.child.v += 1;
+      items[1].id = 'fifth';
+      // An item of a Set that an item holds has a position at either level.
+      for (const tag of items[2].tags) tag.t += 10;
+    });
+    expect(patches).toStrictEqual([
+      { op: 'replace', path: ['set', 2, 'tags', 1, 't'], value: 11 },
+      { op: 'replace', path: ['set', 2, 'tags', 0, 't'], value: 10 },
+      { op: 'replace', path: ['set', 0, 'child', 'v'], value: 1 },
+      { op: 'replace', path: ['set', 2, 'child', 'v'], value: 1 },
+      { op: 'replace', path: ['set', 4, 'child', 'v'], value: 1 },
+      { op: 'replace', path: ['set', 5, 'child', 'v'], value: 1 },
+      { op: 'replace', path: ['set', 4, 'id'], value: 'fifth' },
+      { op: 'replace', path: ['set', 0, 'id'], value: 'first' },
+    ]);
+    expect(inversePatches).toStrictEqual([
+      { op: 'replace', path: ['set', 2, 'tags', 1, 't'], value: 1 },
+      { op: 'replace', path: ['set', 2, 'tags', 0, 't'], value: 0 },
+      { op: 'replace', path: ['set', 0, 'child', 'v'], value: 0 },
+      { op: 'replace', path: ['set', 2, 'child', 'v'], value: 0 },
+      { op: 'replace', path: ['set', 4, 'child', 'v'], value: 0 },
+      { op: 'replace', path: ['set', 5, 'child', 'v'], value: 0 },
+      { op: 'replace', path: ['set', 4, 'id'], value: 4 },
+      { op: 'replace', path: ['set', 0, 'id'], value: 0 },
+    ]);
+  });
+
+  test('are not searched for in the Set for each changed item', () => {
+    const size = 200;
+    const base = {
+      set: new Set(Array.from({ length: size }, (_, id) => ({ id, v: 0 }))),
+    };
+    // Every step of an iterator over a Set, of the library's among them.
+    const next = vi.spyOn(Object.getPrototypeOf(new Set().values()), 'next');
+    let steps = 0;
+    let result: ReturnType<typeof replay> | undefined;
+    try {
+      result = create(
+        base,
+        (draft) => {
+          for (const item of draft.set) item.v += 1;
+        },
+        { enablePatches: true }
+      );
+      steps = next.mock.calls.length;
+    } finally {
+      next.mockRestore();
+    }
+    // The recipe iterates the Set once, and finalization rebuilds it once.
+    // Counting the items before each changed item to find its position would
+    // take size * (size + 1) / 2 more steps, 20,100 here.
+    expect(steps).toBeLessThan(4 * size);
+    const [state, patches, inversePatches] = result!;
+    expect(patches).toStrictEqual(
+      Array.from({ length: size }, (_, index) => ({
+        op: 'replace',
+        path: ['set', size - 1 - index, 'v'],
+        value: 1,
+      }))
+    );
+    expect(apply(base, patches)).toStrictEqual(state);
+    expect(apply(state, inversePatches)).toStrictEqual(base);
+  });
+
+  test('are not used once the recipe deleted an item that is a draft of an outer producer', () => {
+    create({ item: { v: 'outer' } }, (outer) => {
+      // The base of a nested producer can hold a draft as an item.
+      const base = new Set<any>([outer.item, { v: 0 }]);
+      const [state, patches, inversePatches] = create(
+        base,
+        (draft) => {
+          draft.delete(outer.item);
+          for (const item of draft) item.v = 1;
+        },
+        { enablePatches: true }
+      );
+      expect([...state]).toStrictEqual([{ v: 1 }]);
+      // The deletion is recorded, so the patches of the Set carry the changed
+      // item by value; a path to its position would name the deleted item.
+      expect(patches).toStrictEqual([
+        { op: 'remove', path: [0], value: outer.item },
+        { op: 'remove', path: [1], value: { v: 0 } },
+        { op: 'add', path: [0], value: { v: 1 } },
+      ]);
+      expect(apply(base, patches)).toStrictEqual(state);
+      expect(apply(state, inversePatches)).toStrictEqual(base);
+    });
+  });
+});

@@ -103,7 +103,7 @@ expect(state).toEqual({ todos: [] });
 - 返回 `undefined` 或草稿本身会保留草稿修改。要将状态设为 `undefined`，请返回 [`rawReturn(undefined)`](/zh/docs/api-reference/rawreturn)。
 - 同时修改草稿并返回其他值会抛错。
 - 返回未修改的子草稿（如 `draft.list`）时，其值成为下一个状态；返回已修改的子草稿会抛错。
-- Mutative 搜索返回对象中的草稿并替换为最终值，因此可以返回 `{ ...draft, count: 0 }` 等含草稿的对象。[`rawReturn()`](/zh/docs/api-reference/rawreturn) 可为不含草稿的值跳过搜索；开发构建发现返回对象不含草稿时会给出使用建议。
+- Mutative 搜索返回对象中的草稿并替换为最终值，因此可以返回 `{ ...draft, count: 0 }` 等含草稿的对象，但草稿不能作为 [Map 的键](/zh/docs/extra-topics/faq#can-a-draft-be-a-map-key)。[`rawReturn()`](/zh/docs/api-reference/rawreturn) 可为不含草稿的值跳过搜索；开发构建发现返回对象不含草稿时会给出使用建议。
 
 ## 异步更新函数 [#async-recipes]
 

@@ -211,6 +211,82 @@ test('drafts added to a Set rebuild it once', () => {
   }
 });
 
+// Drafts do not change while their producer finalizes them, so a Set takes
+// their final values once for each producer, not once for each draft.
+describe('a Set holding many drafts that finalize after it', () => {
+  test('a nested producer rebuilds its Set once, and the outer one once more', () => {
+    const base = { list: Array.from({ length: 100 }, (_, id) => ({ id })) };
+    const clear = vi.spyOn(Set.prototype, 'clear');
+    try {
+      let inner: Set<any> | undefined;
+      const state = create(base, (draft) => {
+        inner = create(new Set<any>(), (set) => {
+          for (const item of draft.list) set.add(item);
+        });
+        // The outer recipe changes some of them after the nested one ended.
+        draft.list[0].id = -1;
+        draft.list[99].id = -100;
+      });
+      expect(state.list[0]).toEqual({ id: -1 });
+      [...inner!].forEach((item, index) =>
+        expect(item).toBe(state.list[index])
+      );
+      expect(inner!.size).toBe(100);
+      expect(callsOn(clear, inner!)).toBe(2);
+    } finally {
+      clear.mockRestore();
+    }
+  });
+
+  test('a Set draft placed at the keys of drafts created after it is rebuilt once', () => {
+    const base = {
+      set: new Set([{ id: 0 }, { id: 1 }]),
+      list: Array.from({ length: 100 }, (_, id) => ({ id })),
+    };
+    const clear = vi.spyOn(Set.prototype, 'clear');
+    try {
+      const state = create(base, (draft: any) => {
+        // Drafted before the elements, so finalized after them.
+        const { set } = draft;
+        for (const item of set) item.id += 1;
+        for (const item of draft.list) expect(item.id).toBeGreaterThan(-1);
+        draft.list.fill(set);
+      });
+      expect([...state.set]).toEqual([{ id: 1 }, { id: 2 }]);
+      expect(state.list.every((item: any) => item === state.set)).toBe(true);
+      // Each element draft finds the Set draft at its key.
+      expect(callsOn(clear, state.set)).toBe(1);
+    } finally {
+      clear.mockRestore();
+    }
+  });
+
+  test('a Set holding drafts of two outer producers takes the final value of each', () => {
+    const clear = vi.spyOn(Set.prototype, 'clear');
+    try {
+      let middle: { item: { id: number } } | undefined;
+      let deepest: Set<any> | undefined;
+      const state = create({ item: { id: 1 } }, (outerDraft) => {
+        middle = create({ item: { id: 2 } }, (middleDraft) => {
+          deepest = create(new Set<any>(), (set) => {
+            set.add(outerDraft.item);
+            set.add(middleDraft.item);
+          });
+          middleDraft.item.id = 20;
+        });
+        outerDraft.item.id = 10;
+      });
+      expect([...deepest!]).toEqual([{ id: 10 }, { id: 20 }]);
+      expect([...deepest!][0]).toBe(state.item);
+      expect([...deepest!][1]).toBe(middle!.item);
+      // When each of the three producers finalizes its drafts.
+      expect(callsOn(clear, deepest!)).toBe(3);
+    } finally {
+      clear.mockRestore();
+    }
+  });
+});
+
 test('a Set draft finds an item that is a draft of a finished nested producer', () => {
   const state = create(new Set<any>(), (draft) => {
     let item: any;

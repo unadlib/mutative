@@ -1,4 +1,10 @@
-import { DraftType, Operation, Patches, ProxyDraft } from './interface';
+import {
+  DraftType,
+  type IPatch,
+  Operation,
+  Patches,
+  ProxyDraft,
+} from './interface';
 import {
   checkPathKey,
   escapePath,
@@ -305,50 +311,46 @@ function generatePatchesFromAssigned(
 }
 
 function generateSetPatches(
-  { original, copy }: ProxyDraft<Set<any>>,
+  { original, copy, finalities }: ProxyDraft<Set<any>>,
   basePath: any[],
   patches: Patches,
-  inversePatches: Patches,
   pathAsArray: boolean
 ) {
-  let index = 0;
-  original.forEach((value: any) => {
-    if (!copy!.has(value)) {
-      const _path = basePath.concat([index]);
-      const path = escapePath(_path, pathAsArray);
-      patches.push({
-        op: Operation.Remove,
-        path,
-        value,
-      });
-      inversePatches.unshift({
-        op: Operation.Add,
-        path,
-        value,
-      });
-    }
-    index += 1;
-  });
-  index = 0;
-  copy!.forEach((value: any) => {
-    if (!original.has(value)) {
-      const _path = basePath.concat([index]);
-      const path = escapePath(_path, pathAsArray);
-      patches.push({
-        op: Operation.Add,
-        path,
-        value,
-      });
-      inversePatches.unshift({
-        op: Operation.Remove,
-        path,
-        value,
-      });
-    }
-    index += 1;
-  });
+  // The inverse patches of Set drafts precede all others, each before those
+  // generated before it. They are collected in the order generated, and
+  // finalization prepends them reversed at once, as prepending each would
+  // move every inverse patch generated so far. The list is created with its
+  // first patch: finalization copies all inverse patches when it exists.
+  // Items of `from` that `to` lacks, at their positions in `from`.
+  const diff = (
+    from: Set<any>,
+    to: Set<any>,
+    op: IPatch['op'],
+    inverseOp: IPatch['op']
+  ) => {
+    let index = 0;
+    from.forEach((value) => {
+      if (!to.has(value)) {
+        const path = escapePath(basePath.concat([index]), pathAsArray);
+        patches.push({ op, path, value });
+        (finalities.setInversePatches ||= []).push({
+          op: inverseOp,
+          path,
+          value,
+        });
+      }
+      index += 1;
+    });
+  };
+  diff(original, copy!, Operation.Remove, Operation.Add);
+  diff(copy!, original, Operation.Add, Operation.Remove);
 }
 
+// Adds the patches of one draft to `patches` and its inverse patches to
+// `inversePatches`, except those of a Set draft: they go to
+// `finalities.setInversePatches`, which `finalizeDraft()` prepends to the
+// others once every draft is finalized. Another caller has to do the same, or
+// it loses the inverse patches of Set drafts.
 export function generatePatches(
   proxyState: ProxyDraft,
   basePath: any[],
@@ -375,12 +377,6 @@ export function generatePatches(
         pathAsArray
       );
     case DraftType.Set:
-      return generateSetPatches(
-        proxyState,
-        basePath,
-        patches,
-        inversePatches,
-        pathAsArray
-      );
+      return generateSetPatches(proxyState, basePath, patches, pathAsArray);
   }
 }
