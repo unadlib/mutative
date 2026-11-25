@@ -41,6 +41,10 @@ Mutative 和 Immer 都需要 `Proxy`。Android 上 React Native 的 JavaScriptCo
 
 支持，但按草稿迭代返回的元素比较。基础状态对象在这里是草稿，因此无法与原始对象匹配，尽管 `has()` 接受原始对象。若需与基础状态对象比较，可在 `current(draft)` 上调用（未修改对象保留身份），在 `original(draft)` 上比较基础状态，或按 ID 比较，如 `[...draft].filter((item) => ids.has(item.id))`。此规则适用于 `union()`、`intersection()`、`difference()`、`symmetricDifference()`、`isSubsetOf()`、`isSupersetOf()`、`isDisjointFrom()`。
 
+### Map 草稿支持 `getOrInsert()` 和 `getOrInsertComputed()` 吗？ [#do-getorinsert-and-getorinsertcomputed-work-on-map-drafts]
+
+支持（需运行时提供这两个方法）。与 `get()` 一样，基础 Map 中的对象值会以草稿返回，插入的条目会记录为变更。
+
 ### 草稿可以作为 Map 的键吗？ [#can-a-draft-be-a-map-key]
 
 不可以。Map 键原样保留，producer 结束时草稿被撤销，所以 Map 和引用该键的补丁都会持有已撤销草稿，读取属性会抛错。应改用 `original(draft)`、`current(draft)` 或 ID。开发构建会拒绝将草稿作为 Map 草稿 `set()` 的键。

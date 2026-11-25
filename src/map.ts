@@ -157,4 +157,27 @@ export const mapHandler = {
   },
 };
 
+if ('getOrInsert' in Map.prototype) {
+  // https://github.com/tc39/proposal-upsert
+  // Native methods need a real Map as `this`, so they would throw on a draft.
+  Object.assign(mapHandler, {
+    getOrInsert(this: Map<any, any>, key: any, value: any) {
+      if (!this.has(key)) {
+        this.set(key, value);
+      }
+      return this.get(key);
+    },
+    getOrInsertComputed(
+      this: Map<any, any>,
+      key: any,
+      callback: (key: any) => any
+    ) {
+      if (!this.has(key)) {
+        this.set(key, callback(key));
+      }
+      return this.get(key);
+    },
+  });
+}
+
 export const mapHandlerKeys = Reflect.ownKeys(mapHandler);
